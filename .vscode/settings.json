@@ -1,0 +1,18 @@
+{
+    "go.testTimeout": "40s",
+
+    // Without the '-count=1' flag, tests will not truly run all
+    // the time.
+    //
+    // As a result, integration tests have no value.  For example,
+    // the service being tested might be down, and yet tests will
+    // give the impression that all tests have passed.
+    //
+    // Based on:
+    //      https://stackoverflow.com/a/73490461
+    "go.testFlags": ["-count=1"],
+
+
+    "go.testEnvFile": "${workspaceFolder}/env/.local_opentdf_2.0_env"
+
+}

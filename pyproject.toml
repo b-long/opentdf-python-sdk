@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "otdf-python"
+# Should match 'setup.py' version number (used for gopy/pybindgen)
+version = "0.0.1"
+description = ""
+authors = ["b-long <b-long@users.noreply.github.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">3.11,<3.12"
+pybindgen = "^0.22.1"
+wheel = "^0.42.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

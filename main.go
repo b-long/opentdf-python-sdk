@@ -1,0 +1,556 @@
+package gotdf_python
+
+/*
+All public (upper-case) functions here should be available to Python.
+
+As a result, all public functions should be imported & tested.
+
+Currently, testing is performed via 'validate_otdf_python.py'
+
+FIXME: Expand test coverage, with known good attributes.  See: https://github.com/orgs/opentdf/discussions/947
+
+*/
+import (
+	"bytes"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"os"
+	"strings"
+
+	"github.com/opentdf/platform/sdk"
+)
+
+/*
+A simple "Hello, world" function, used for learning golang (e.g. unit testing),
+as well as validating the necessary mechanisms to compile this library
+into a Python wheel.
+
+In the future, this function might be removed or replaced with a more
+conventional & useful function like GetVersion()
+*/
+func Hello() string {
+	return "Hello, world"
+}
+
+type TokenAuth struct {
+	AccessToken string
+	NpeClientId string
+}
+
+/*
+In a pure golang library, we'd probably embed
+the 'DecryptionConfig' struct into the
+'EncryptionConfig' struct.  However, this makes
+usage from Python / Gopy difficult, so
+it's not worthwhile.
+*/
+type EncryptionConfig struct {
+	ClientId         string
+	ClientSecret     string
+	PlatformEndpoint string
+	TokenEndpoint    string
+	KasUrl           string
+	DataAttributes   []string
+}
+
+type DecryptionConfig struct {
+	ClientId         string
+	ClientSecret     string
+	PlatformEndpoint string
+	TokenEndpoint    string
+	KasUrl           string
+}
+
+/*
+Based on: https://stackoverflow.com/a/42849112
+*/
+func inputValidation(normalConfig DecryptionConfig) (*DecryptionConfig, error) {
+	// Convert our Struct to a Map
+	var inInterface map[string]interface{}
+	inrec, _ := json.Marshal(normalConfig)
+	json.Unmarshal(inrec, &inInterface)
+
+	// Iterate through fields in the map and fail if empty value found
+	for field, val := range inInterface {
+		if val == nil || val == "" {
+			// fmt.Println("KV Pair: ", field, val)
+			return nil, errors.New("Missing configuration value for field " + field)
+		}
+	}
+
+	return &normalConfig, nil
+}
+
+func normalizeConfig(obj interface{}) (*DecryptionConfig, error) {
+	var intermediateConfig DecryptionConfig
+
+	switch v := obj.(type) {
+
+	case DecryptionConfig:
+		fmt.Println("Caller passed DecryptionConfig, no need to trim fields")
+		intermediateConfig = v
+	case EncryptionConfig:
+		fmt.Println("Caller passed EncryptionConfig, trimming fields")
+		intermediateConfig = DecryptionConfig{
+			ClientId:         v.ClientId,
+			ClientSecret:     v.ClientSecret,
+			PlatformEndpoint: v.PlatformEndpoint,
+			TokenEndpoint:    v.TokenEndpoint,
+			KasUrl:           v.KasUrl,
+		}
+	default:
+		return nil, errors.New("invalid gotdf_python configuration type")
+	}
+
+	return inputValidation(intermediateConfig)
+}
+
+func newSdkClient(obj interface{}, authScopes []string) (*sdk.SDK, error) {
+	config, err := normalizeConfig(obj)
+	if err != nil {
+		return nil, err
+	}
+
+	// NOTE: The 'platformEndpoint' is sometimes referenced as 'host'
+	if strings.Count(config.TokenEndpoint, "http://") == 1 {
+		return sdk.New(config.PlatformEndpoint,
+			sdk.WithClientCredentials(config.ClientId, config.ClientSecret, authScopes),
+			sdk.WithTokenEndpoint(config.TokenEndpoint),
+			sdk.WithInsecurePlaintextConn(),
+		)
+	} else if strings.Count(config.TokenEndpoint, "https://") == 1 {
+		return sdk.New(config.PlatformEndpoint,
+			sdk.WithClientCredentials(config.ClientId, config.ClientSecret, authScopes),
+			sdk.WithTokenEndpoint(config.TokenEndpoint),
+			sdk.WithInsecureSkipVerifyConn(),
+		)
+	} else {
+		return nil, errors.New("invalid TokenEndpoint given")
+	}
+}
+
+func peSdkClient(obj interface{}, authScopes []string, token TokenAuth) (*sdk.SDK, error) {
+	config, err := normalizeConfig(obj)
+	if err != nil {
+		return nil, err
+	}
+
+	// NOTE: The 'platformEndpoint' is sometimes referenced as 'host'
+	if strings.Count(config.TokenEndpoint, "http://") == 1 {
+		return sdk.New(config.PlatformEndpoint,
+			sdk.WithClientCredentials(config.ClientId, config.ClientSecret, authScopes),
+			sdk.WithTokenEndpoint(config.TokenEndpoint),
+			sdk.WithTokenExchange(token.AccessToken, []string{token.NpeClientId}),
+			sdk.WithInsecurePlaintextConn(),
+		)
+	} else if strings.Count(config.TokenEndpoint, "https://") == 1 {
+		return sdk.New(config.PlatformEndpoint,
+			sdk.WithClientCredentials(config.ClientId, config.ClientSecret, authScopes),
+			sdk.WithTokenEndpoint(config.TokenEndpoint),
+			sdk.WithTokenExchange(token.AccessToken, []string{token.NpeClientId}),
+			sdk.WithInsecureSkipVerifyConn(),
+		)
+	} else {
+		return nil, errors.New("invalid TokenEndpoint given")
+	}
+}
+
+func EncryptString(inputText string, config EncryptionConfig) (string, error) {
+	strReader := strings.NewReader(inputText)
+
+	// Scopes is related to OIDC, it's about what you're requesting
+	// and access control from the IdP
+	authScopes := []string{"email"}
+	// var authScopes []string
+
+	sdkClient, err := newSdkClient(config, authScopes)
+
+	if err != nil {
+		return "", err
+	}
+
+	tdfFile, err := os.Create("sensitive.txt.tdf")
+	if err != nil {
+		return "", err
+	}
+	defer tdfFile.Close()
+
+	if strings.Count(config.KasUrl, "http") != 1 {
+		return "", errors.New("invalid KAS Url, should contain single protocol")
+	}
+
+	tdf, err := sdkClient.CreateTDF(
+		tdfFile,
+		strReader,
+		// sdk.WithDataAttributes("https://example.com/attributes/1", "https://example.com/attributes/2"),
+		// sdk.WithDataAttributes("https://example.com/attr/attr1/value/value1"),
+		sdk.WithDataAttributes(config.DataAttributes...),
+		sdk.WithKasInformation(
+			sdk.KASInfo{
+				// examples assume insecure http
+				URL:       config.KasUrl,
+				PublicKey: "",
+			}),
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	manifestJSON, err := json.MarshalIndent(tdf.Manifest(), "", "  ")
+	if err != nil {
+		return "", err
+	}
+
+	// Print Manifest
+	fmt.Println(string(manifestJSON))
+	return string(manifestJSON), nil
+}
+
+/*
+Encrypts a string as a PE (Person Entity), returning a TDF manifest and the cipher text.
+*/
+func EncryptStringPE(inputText string, config EncryptionConfig, token TokenAuth) (string, string, error) {
+	// Scopes relate to OIDC, it's about what you're requesting
+	// and access control from the IdP
+	authScopes := []string{"email"}
+
+	sdkClient, err := peSdkClient(config, authScopes, token)
+
+	if err != nil {
+		return "", "", err
+	}
+
+	// tdfFile, err := os.Create("sensitive.txt.tdf")
+	// if err != nil {
+	// 	return "", err
+	// }
+	// defer tdfFile.Close()
+
+	if strings.Count(config.KasUrl, "http") != 1 {
+		return "", "", errors.New("invalid KAS Url, should contain single protocol")
+	}
+
+	plaintext := strings.NewReader(inputText)
+	ciphertext := new(bytes.Buffer)
+
+	tdf, err := sdkClient.CreateTDF(
+		// tdfFile,
+		ciphertext,
+		plaintext,
+		sdk.WithDataAttributes(config.DataAttributes...),
+		sdk.WithKasInformation(
+			sdk.KASInfo{
+				// examples assume insecure http
+				URL:       config.KasUrl,
+				PublicKey: "",
+			}),
+	)
+
+	if err != nil {
+		return "", "", err
+	}
+
+	manifestJSON, err := json.MarshalIndent(tdf.Manifest(), "", "  ")
+	if err != nil {
+		return "", "", err
+	}
+
+	// Print Manifest (maybe useful in debugging)
+	// fmt.Println(string(manifestJSON))
+	return string(manifestJSON), ciphertext.String(), nil
+}
+
+func DecryptStringPE(inputText string, config DecryptionConfig, token TokenAuth) (string, error) {
+
+	// Scopes relate to OIDC, it's about what you're requesting
+	// and access control from the IdP
+	authScopes := []string{"email"}
+
+	decrypted, err := decryptBytesPE([]byte(inputText), authScopes, config, token)
+	if err != nil {
+		return "", err
+	}
+
+	return decrypted.String(), nil
+}
+
+func readBytesFromFile(filePath string) ([]byte, error) {
+	if filePath == "" {
+		return nil, errors.New("invalid input file path given")
+	}
+	fileToEncrypt, err := os.Open(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open file at path: %s", filePath)
+	}
+	defer fileToEncrypt.Close()
+
+	bytes, err := io.ReadAll(fileToEncrypt)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read bytes from file at path: %s", filePath)
+	}
+	return bytes, err
+}
+
+/*
+The encryptBytesNPE function below is based on the 'EncryptBytes()' function
+provided by otdfctl.
+
+NOTE: the original 'EncryptBytes()' function has a parameter named
+'scopes', we've changed that variable name to 'authScopes' for more
+clarity.
+
+One noticeable difference is that rather than having state kept
+in the CLI, we provide our own input parameter EncryptionConfig.
+
+See:
+
+	https://github.com/opentdf/otdfctl/blob/46cfca1ba32c57f7264c320db27394c00412ca49/pkg/handlers/tdf.go#L10-L27
+*/
+func encryptBytesNPE(b []byte, authScopes []string, config EncryptionConfig) (*bytes.Buffer, error) {
+	sdkClient, err := newSdkClient(config, authScopes)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var encrypted []byte
+	enc := bytes.NewBuffer(encrypted)
+
+	// TODO: validate values are FQNs or return an error [https://github.com/opentdf/platform/issues/515]
+	_, err = sdkClient.CreateTDF(enc, bytes.NewReader(b),
+		sdk.WithDataAttributes(config.DataAttributes...),
+		sdk.WithKasInformation(sdk.KASInfo{
+			URL:       config.KasUrl,
+			PublicKey: "",
+		},
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return enc, nil
+}
+
+func encryptBytesPE(b []byte, authScopes []string, config EncryptionConfig, token TokenAuth) (*bytes.Buffer, error) {
+	sdkClient, err := peSdkClient(config, authScopes, token)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var encrypted []byte
+	enc := bytes.NewBuffer(encrypted)
+
+	// TODO: validate values are FQNs or return an error [https://github.com/opentdf/platform/issues/515]
+	_, err = sdkClient.CreateTDF(enc, bytes.NewReader(b),
+		sdk.WithDataAttributes(config.DataAttributes...),
+		sdk.WithKasInformation(sdk.KASInfo{
+			URL:       config.KasUrl,
+			PublicKey: "",
+		},
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return enc, nil
+}
+
+func EncryptFile(inputFilePath string, outputFilePath string, config EncryptionConfig) (string, error) {
+	authScopes := []string{"email"}
+
+	if outputFilePath == "" {
+		return "", errors.New("invalid output file path given")
+	}
+
+	bytes, err := readBytesFromFile(inputFilePath)
+
+	if err != nil {
+		return "", err
+	}
+
+	// If necessary, bytes can be printed for debugging
+	// fmt.Print(bytes)
+
+	// Do the encryption
+	encrypted, err := encryptBytesNPE(bytes, authScopes, config)
+	if err != nil {
+		return "", fmt.Errorf("failed to encrypt: %w", err)
+	}
+
+	// Find the destination as the output flag filename or stdout
+	var dest *os.File
+
+	// make sure output ends in .tdf extension
+	if !strings.HasSuffix(outputFilePath, ".tdf") {
+		outputFilePath += ".tdf"
+	}
+	tdfFile, err := os.Create(outputFilePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to write encrypted file %s", outputFilePath)
+	}
+	defer tdfFile.Close()
+	dest = tdfFile
+
+	_, e := io.Copy(dest, encrypted)
+	if e != nil {
+		return "", errors.New("failed to write encrypted data to destination")
+	}
+
+	return outputFilePath, nil
+}
+
+/*
+Encrypts a file as a PE (Person Entity), returning a TDF manifest and the cipher text.
+*/
+func EncryptFilePE(inputFilePath string, outputFilePath string, config EncryptionConfig, token TokenAuth) (string, error) {
+	authScopes := []string{"email"}
+
+	if outputFilePath == "" {
+		return "", errors.New("invalid output file path given")
+	}
+
+	bytes, err := readBytesFromFile(inputFilePath)
+
+	if err != nil {
+		return "", err
+	}
+
+	// If necessary, bytes can be printed for debugging
+	// fmt.Print(bytes)
+
+	// Do the encryption
+	encrypted, err := encryptBytesPE(bytes, authScopes, config, token)
+	if err != nil {
+		return "", fmt.Errorf("failed to encrypt: %w", err)
+	}
+
+	// Find the destination as the output flag filename or stdout
+	var dest *os.File
+
+	// make sure output ends in .tdf extension
+	if !strings.HasSuffix(outputFilePath, ".tdf") {
+		return "", fmt.Errorf("output file path '%s' should have .tdf extension", outputFilePath)
+	}
+	tdfFile, err := os.Create(outputFilePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to write encrypted file %s", outputFilePath)
+	}
+	defer tdfFile.Close()
+	dest = tdfFile
+
+	_, e := io.Copy(dest, encrypted)
+	if e != nil {
+		return "", errors.New("failed to write encrypted data to destination")
+	}
+
+	return outputFilePath, nil
+}
+
+/*
+TODO: Create a single global var for sdkClinet (global var)
+  - E.g. in an HTTP server, create an instance for each connection
+
+TODO: The platform knows about the IdP, therefore we don't need
+to specify the TOKEN_ENDPOINT.
+
+TODO: Research why the platform is hard-coding "email" for scope
+
+A non-Public decrypt function.
+
+Based on:
+- https://github.com/opentdf/otdfctl/blob/46cfca1ba32c57f7264c320db27394c00412ca49/pkg/handlers/tdf.go#L29-L41
+*/
+func decryptBytes(toDecrypt []byte, authScopes []string, config DecryptionConfig) (*bytes.Buffer, error) {
+	sdkClient, err := newSdkClient(config, authScopes)
+
+	if err != nil {
+		return nil, err
+	}
+
+	tdfreader, err := sdkClient.LoadTDF(bytes.NewReader(toDecrypt))
+	if err != nil {
+		return nil, err
+	}
+
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, tdfreader)
+	if err != nil && err != io.EOF {
+		return nil, err
+	}
+	return buf, nil
+}
+
+func decryptBytesPE(toDecrypt []byte, authScopes []string, config DecryptionConfig, token TokenAuth) (*bytes.Buffer, error) {
+
+	sdkClient, err := peSdkClient(config, authScopes, token)
+
+	if err != nil {
+		return nil, err
+	}
+
+	reader, err := sdkClient.LoadTDF(bytes.NewReader(toDecrypt))
+	if err != nil {
+		return nil, err
+	}
+
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, reader)
+	if err != nil && err != io.EOF {
+		return nil, err
+	}
+	return buf, nil
+}
+
+func DecryptFile(inputFilePath string, outputFilePath string, config DecryptionConfig) (string, error) {
+	bytes, err := readBytesFromFile(inputFilePath)
+	if err != nil {
+		return "", err
+	}
+
+	decrypted, err := decryptBytes(bytes, nil, config)
+	if err != nil {
+		return "", err
+	}
+
+	tdfFile, err := os.Create(outputFilePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to write decrypted file %s", outputFilePath)
+	}
+	defer tdfFile.Close()
+
+	_, e := io.Copy(tdfFile, decrypted)
+	if e != nil {
+		return "", errors.New("failed to write decrypted data to destination")
+	}
+
+	return outputFilePath, nil
+}
+
+func DecryptFilePE(inputFilePath string, outputFilePath string, config DecryptionConfig, token TokenAuth) (string, error) {
+	bytes, err := readBytesFromFile(inputFilePath)
+	if err != nil {
+		return "", err
+	}
+	authScopes := []string{"email"}
+	decrypted, err := decryptBytesPE(bytes, authScopes, config, token)
+	if err != nil {
+		return "", err
+	}
+
+	tdfFile, err := os.Create(outputFilePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to write decrypted file %s", outputFilePath)
+	}
+	defer tdfFile.Close()
+
+	_, e := io.Copy(tdfFile, decrypted)
+	if e != nil {
+		return "", errors.New("failed to write decrypted data to destination")
+	}
+
+	return outputFilePath, nil
+}

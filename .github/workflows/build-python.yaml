@@ -1,0 +1,45 @@
+---
+name: Build Python package(s)
+
+on:
+    push:
+        branches:
+            - disabled
+
+jobs:
+    build:
+
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                go-version: [1.22.x]
+        # go-version: [ '1.19', '1.20', '1.22.x' ]
+
+        steps:
+            - uses: actions/checkout@v4
+      # - name: Setup Go
+      #   uses: actions/setup-go@v4
+      #   with:
+      #     go-version: ${{ matrix.go-version }}
+      #     cache-dependency-path: go.sum
+      # - name: Install dependencies
+      #   run: go get .
+      # - name: Test with Go
+      #   run: go test
+
+            - name: Set up Python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: '3.11'
+            - name: Install dependencies
+              run: |
+                  pip install poetry
+            - name: Invoke pylint with all dependencies
+              run: |
+                  # Since we don't have our wheel build / install configured yet we use '--no-root'
+                  poetry install --no-root
+
+                  # poetry install
+
+                  # Bring this back later
+                  # poetry run pytest tests/

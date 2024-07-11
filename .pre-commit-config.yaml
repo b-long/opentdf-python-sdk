@@ -1,0 +1,39 @@
+---
+exclude: |
+    (?x)^(
+        otdf_python/.*
+    )$
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks#
+repos:
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.6.0
+      hooks:
+          - id: check-yaml
+          - id: end-of-file-fixer
+          - id: trailing-whitespace
+
+    # - repo: https://github.com/tekwizely/pre-commit-golang
+    #   rev: master
+    #   hooks:
+    #       - id: go-lint
+
+    - repo: https://github.com/dnephin/pre-commit-golang
+      rev: v0.5.1
+      hooks:
+          - id: go-fmt
+
+          - id: go-vet
+          # - id: golangci-lint
+            # timeout is needed for CI
+            # args: [-E, gosec, -E, goconst, -E, govet, --timeout, 300s]
+          # - id: go-imports
+          # - id: go-cyclo
+          #   args: [-over=15]
+          # - id: validate-toml
+          - id: no-go-testing
+    - repo: https://github.com/codespell-project/codespell
+      rev: v2.3.0
+      hooks:
+          - id: codespell
+            args: ["--ignore-words-list", "b-long, otdf_python", "--skip=go.sum,otdf_python/"]
