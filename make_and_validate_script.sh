@@ -34,7 +34,7 @@ go install golang.org/x/tools/cmd/goimports@latest
 go install github.com/go-python/gopy@v0.4.9
 
 # For every step below, 'which python' should return '.venv/bin/python'
-PATH="$PATH:$HOME/go/bin" gopy build -output=otdf_python -vm=python3 .
+PATH="$PATH:$HOME/go/bin" gopy build --output=otdf_python -vm=python3 .
 
 python3 -m pip install --upgrade setuptools wheel
 
