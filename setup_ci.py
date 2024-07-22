@@ -70,7 +70,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="otdf_python",
-    version="0.0.2",
+    version="0.0.3",
     author="b-long",
     long_description=long_description,
     description="Unofficial OpenTDF SDK for Python.",
