@@ -1,0 +1,223 @@
+name: Multiplatform -- Build Python wheel using cibuildwheel
+
+# Based on https://github.com/tuananh/py-event-ruler/blob/0129d15e17d0023863a4d0e0e25e5256988b5c5b/.github/workflows/publish.yml
+
+
+on:
+    push:
+        branches:
+            - develop
+            - multi-platform-cibuildwheel
+    workflow_dispatch:
+
+# on:
+#   # release:
+#   #   types: [created]
+#   push:
+#     tags:
+#       - '*'
+
+jobs:
+  build_macos:
+    # if: false
+    name: MacOS ${{ matrix.os_version }} 3${{ matrix.python3_version }} ${{ matrix.arch_cibw_go[0] }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os_version: [ 13 ]
+        python3_version: [ 11 ]
+        arch_cibw_go:
+          - [ "x86_64", "amd64" ]
+          - [ "arm64", "arm64" ]
+    runs-on: macos-${{ matrix.os_version }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.22.x"
+
+      - name: Setup project files
+        run: |
+            rm -rf poetry.lock pyproject.toml
+            cp setup_ci.py setup.py
+
+      - name: install gopy
+        run: go install github.com/go-python/gopy@v0.4.9
+
+      - name: install goimports
+        run: go install golang.org/x/tools/cmd/goimports@latest
+
+      - name: install python 3.${{ matrix.python3_version }}
+        run: |
+          brew install --force --overwrite python@3.${{ matrix.python3_version }}
+          ln -s /usr/local/opt/python@3.${{ matrix.python3_version }}/bin/python3.${{ matrix.python3_version }}  /usr/local/bin/python_for_build
+          /usr/local/bin/python_for_build --version
+
+      - name: install cibuildwheel and pybindgen
+        run: /usr/local/bin/python_for_build -m pip install cibuildwheel==2.19.2 pybindgen
+
+      - name: build wheels
+        run: /usr/local/bin/python_for_build -m cibuildwheel --output-dir wheelhouse
+        env:
+          CGO_ENABLED: 1  # build fails for arm if unset
+          CIBW_ARCHS: ${{ matrix.arch_cibw_go[0] }}
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
+          PYTHON_BINARY_PATH: /usr/local/bin/python_for_build
+          CIBW_BUILD: "cp3${{ matrix.python3_version }}-*"
+          CIBW_ENVIRONMENT: >
+            PATH=$PATH:/usr/local/go/bin
+            GOARCH=${{ matrix.arch_cibw_go[1] }}
+
+
+      # FIXME: Test before uploading
+      # - name: Test Python wheel
+      #   run: |
+      #       # Test wheel installation
+      #       /usr/local/bin/python_for_build -m pip install wheelhouse/*.whl
+
+      #       # Test wheel functionality
+      #       /usr/local/bin/python_for_build validate_otdf_python.py
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-macos${{ matrix.os_version }}-py3${{ matrix.python3_version }}-${{ matrix.arch_cibw_go[0] }}
+          path: ./wheelhouse/*.whl
+
+  build_linux_x86_64:
+    # if: false
+    name: Linux 311 x86_64
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup project files
+        run: |
+            rm -rf poetry.lock pyproject.toml
+            cp setup_ci.py setup.py
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.19.2
+        env:
+          CIBW_BUILD: "cp3*_x86_64"
+          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* cp312-* *-musllinux_x86_64"
+          CIBW_ARCHS: "native"
+          CIBW_ENVIRONMENT: >
+            PATH=$PATH:/usr/local/go/bin
+          CIBW_BEFORE_ALL_LINUX: |
+            curl -o go.tar.gz https://dl.google.com/go/go1.22.5.linux-amd64.tar.gz
+            tar -C /usr/local -xzf go.tar.gz
+            go install github.com/go-python/gopy@v0.4.9
+            go install golang.org/x/tools/cmd/goimports@latest
+
+
+      # FIXME: Test before uploading
+      # - name: Test Python wheel
+      #   run: |
+      #       # Test wheel installation
+      #       python3 -m pip install wheelhouse/*.whl
+
+      #       # Test wheel functionality
+      #       python3 validate_otdf_python.py
+
+      - name: Upload atifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-linux-amd64
+          path: ./wheelhouse/*.whl
+
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-linux-arm
+          path: /tmp/output/*.whl
+
+#   build_windows:
+#     if: false  # not working
+#     name: Windows 310,311 x86_64
+#     runs-on: windows-2019
+
+#     steps:
+#       - uses: actions/checkout@v3
+
+#       - name: Setup project files
+#         run: |
+#            rm -rf poetry.lock pyproject.toml
+#            cp setup_ci.py setup.py
+
+#       - name: set up Go
+#         uses: actions/setup-go@v3
+#         with:
+#           go-version: "1.22.x"
+
+#       - name: install gopy
+#         run: go install github.com/go-python/gopy@v0.4.9
+
+#       - name: install goimports
+#         run: go install golang.org/x/tools/cmd/goimports@latest
+
+#       - name: Build wheels
+#         uses: pypa/cibuildwheel@v2.19.2
+#         env:
+#           # CGO_ENABLED: 1
+#           CIBW_BUILD: "cp3*"
+#           CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-*"
+#           CIBW_ARCHS: "native"
+#           CIBW_ENVIRONMENT: >
+#             GOARCH=amd64
+
+#       - name: Upload artifacts
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: wheels-windows-amd64
+#           path: ./wheelhouse/*.whl
+
+
+  release:
+    permissions:
+      contents: write
+    needs: [build_macos, build_linux_x86_64]
+    runs-on: ubuntu-latest
+    # if: github.ref == 'refs/heads/main'
+
+    steps:
+        - uses: actions/checkout@v4
+        - uses: actions/download-artifact@v4
+
+        - name: Collect all wheels
+          run: |
+            # ls -R
+            mkdir dist
+            for f in $(find . -type f -name '*.whl'); do mv ${f} dist; done;
+            ls -R dist
+
+        - name: Store version
+          run: |
+              pip install poetry
+
+              PROJECT_VESION=$(poetry version -s)
+              echo "PROJECT_VESION=$PROJECT_VESION" >> $GITHUB_ENV
+
+        - name: Install twine
+          run: pip install twine
+
+        - name: Upload to PyPI
+          env:
+            TWINE_UPLOAD_URL: https://test.pypi.org/legacy/
+            PYPI_USERNAME: ${{ secrets.PYPI_TEST_USERNAME }}
+            PYPI_PASSWORD: ${{ secrets.PYPI_TEST_PASSWORD }}
+          run: |
+            twine upload --password "$PYPI_PASSWORD" --user "$PYPI_USERNAME" --repository-url "$TWINE_UPLOAD_URL" dist/*
+
+        - uses: ncipollo/release-action@v1
+          with:
+            artifacts: |
+                README.md,
+                dist/*.whl
+            body: otdf_python version ${{ env.PROJECT_VESION }}
+            # tag: "dev-${{ github.job }}-${{ env.PROJECT_VESION }}"
+            tag: v${{ env.PROJECT_VESION }}
