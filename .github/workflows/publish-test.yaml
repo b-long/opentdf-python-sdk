@@ -1,4 +1,4 @@
-name: Multiplatform -- Build Python wheel and publish to pypi.org
+name: Multiplatform -- Build Python wheel and publish to test.pypi.org
 
 # Based on https://github.com/tuananh/py-event-ruler/blob/0129d15e17d0023863a4d0e0e25e5256988b5c5b/.github/workflows/publish.yml
 
@@ -6,7 +6,7 @@ name: Multiplatform -- Build Python wheel and publish to pypi.org
 on:
     push:
         branches:
-            - main
+            - develop
     workflow_dispatch:
 
 # on:
@@ -206,9 +206,9 @@ jobs:
 
         - name: Upload to PyPI
           env:
-            TWINE_UPLOAD_URL: https://upload.pypi.org/legacy/
-            PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-            PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+            TWINE_UPLOAD_URL: https://test.pypi.org/legacy/
+            PYPI_USERNAME: ${{ secrets.PYPI_TEST_USERNAME }}
+            PYPI_PASSWORD: ${{ secrets.PYPI_TEST_PASSWORD }}
           run: |
             twine upload --password "$PYPI_PASSWORD" --user "$PYPI_USERNAME" --repository-url "$TWINE_UPLOAD_URL" dist/*
 
