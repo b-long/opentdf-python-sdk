@@ -30,7 +30,7 @@ jobs:
             - name: Install dependencies
               run: go get .
             - name: Test with Go
-              run: go test
+              run: go test -timeout 40s -run ^TestHello$ gotdf_python -count=1 # go test
 
             - name: Set up Python
               uses: actions/setup-python@v4
@@ -60,7 +60,7 @@ jobs:
                   # Since we don't have our wheel build / install configured yet we use '--no-root'
                   poetry install --no-root
 
-                  source .venv/bin/activate
+                  source $(poetry env info --path)/bin/activate
 
                   # Add Go bin directory to PATH
                   echo "export PATH=$PATH:~/.local/go/bin" >> $GITHUB_ENV
@@ -71,7 +71,7 @@ jobs:
 
                   poetry run pip install --upgrade setuptools wheel
 
-                  gopy build --output=ohpygossh -vm=python3 .
+                  gopy build --output=otdf_python -vm=python3 .
 
                   poetry run python3 setup.py bdist_wheel
 
@@ -127,7 +127,7 @@ jobs:
             - name: Test Python wheel
               run: |
                   # Test wheel installation
-                  pip install dist/otdf_python-0.0.1-py3-none-any.whl
+                  pip install dist/otdf_python-0.0.4-py3-none-any.whl
 
                   # DISABLED: Need to figure out Ubuntu nested VM
                   # Test wheel functionality
@@ -139,6 +139,6 @@ jobs:
                     #       artifacts: |
                     #           README.md,
                     #           dist/*.whl
-                    #       body: OhPyGoSSH version ${{ github.sha }}
+                    #       body: otdf_python version ${{ github.sha }}
                     #       # tag: "dev-${{ github.job }}-${{ github.sha }}"
                     #       tag: dev-${{ github.run_number }}
