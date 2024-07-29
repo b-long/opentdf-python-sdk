@@ -55,7 +55,7 @@ jobs:
           /usr/local/bin/python_for_build --version
 
       - name: install cibuildwheel and pybindgen
-        run: /usr/local/bin/python_for_build -m pip install --user cibuildwheel==2.19.2 pybindgen
+        run: /usr/local/bin/python_for_build -m pip install --break-system-packages cibuildwheel==2.19.2 pybindgen
 
       - name: build wheels
         run: /usr/local/bin/python_for_build -m cibuildwheel --output-dir wheelhouse
