@@ -128,12 +128,3 @@ jobs:
             PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
           run: |
             twine upload --password "$PYPI_PASSWORD" --user "$PYPI_USERNAME" --repository-url "$TWINE_UPLOAD_URL" dist/*
-
-        - uses: ncipollo/release-action@v1
-          with:
-            artifacts: |
-                README.md,
-                dist/*.whl
-            body: otdf_python version ${{ env.PROJECT_VESION }}
-            # tag: "dev-${{ github.job }}-${{ env.PROJECT_VESION }}"
-            tag: v${{ env.PROJECT_VESION }}

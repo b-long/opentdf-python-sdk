@@ -132,13 +132,3 @@ jobs:
                   # DISABLED: Need to figure out Ubuntu nested VM
                   # Test wheel functionality
                   # python3 validate_otdf_python.py
-
-                    # DISABLED: Only release from macOS build
-                    # - uses: ncipollo/release-action@v1
-                    #   with:
-                    #       artifacts: |
-                    #           README.md,
-                    #           dist/*.whl
-                    #       body: otdf_python version ${{ github.sha }}
-                    #       # tag: "dev-${{ github.job }}-${{ github.sha }}"
-                    #       tag: dev-${{ github.run_number }}
