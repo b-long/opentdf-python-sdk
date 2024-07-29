@@ -19,7 +19,7 @@ on:
 jobs:
   build_macos:
     # if: false
-    name: MacOS ${{ matrix.os_version }} 3${{ matrix.python3_version }} ${{ matrix.arch_cibw_go[0] }}
+    name: MacOS ${{ matrix.os_version }} Python 3${{ matrix.python3_version }} ${{ matrix.arch_cibw_go[0] }}
     strategy:
       fail-fast: false
       matrix:
@@ -87,7 +87,7 @@ jobs:
 
   build_linux_x86_64:
     # if: false
-    name: Linux 311 x86_64
+    name: Linux Python 3.x x86_64
     runs-on: ubuntu-latest
 
     steps:
