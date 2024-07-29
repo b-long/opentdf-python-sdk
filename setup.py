@@ -13,5 +13,6 @@ setuptools.setup(
     package_data={"otdf_python": ["*.so"]},
     # Should match 'pyproject.toml' version number
     version="0.0.5",
+    author_email="b-long@users.noreply.github.com",
     include_package_data=True,
 )
