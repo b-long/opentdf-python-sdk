@@ -24,7 +24,7 @@ jobs:
       fail-fast: false
       matrix:
         os_version: [ 13 ]
-        python3_version: [ 11 ]
+        python3_version: [ 11, 12 ]
         arch_cibw_go:
           - [ "x86_64", "amd64" ]
           - [ "arm64", "arm64" ]
@@ -102,7 +102,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.19.2
         env:
           CIBW_BUILD: "cp3*_x86_64"
-          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* cp312-* *-musllinux_x86_64"
+          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* *-musllinux_x86_64"
           CIBW_ARCHS: "native"
           CIBW_ENVIRONMENT: >
             PATH=$PATH:/usr/local/go/bin
