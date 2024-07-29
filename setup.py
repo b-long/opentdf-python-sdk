@@ -12,7 +12,7 @@ setuptools.setup(
     url="https://github.com/b-long/opentdf-python-sdk",
     package_data={"otdf_python": ["*.so"]},
     # Should match 'pyproject.toml' version number
-    version="0.0.6",
+    version="0.0.7",
     author_email="b-long@users.noreply.github.com",
     include_package_data=True,
 )
