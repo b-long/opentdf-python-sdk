@@ -1,4 +1,4 @@
-name: Multiplatform -- Build Python wheel and publish to pypi.org
+name: Multiplatform -- Build Python wheel and publish to test.pypi.org
 
 # Based on https://github.com/tuananh/py-event-ruler/blob/0129d15e17d0023863a4d0e0e25e5256988b5c5b/.github/workflows/publish.yml
 
@@ -19,12 +19,12 @@ on:
 jobs:
   build_macos:
     # if: false
-    name: MacOS ${{ matrix.os_version }} 3${{ matrix.python3_version }} ${{ matrix.arch_cibw_go[0] }}
+    name: MacOS ${{ matrix.os_version }} Python 3${{ matrix.python3_version }} ${{ matrix.arch_cibw_go[0] }}
     strategy:
       fail-fast: false
       matrix:
         os_version: [ 13 ]
-        python3_version: [ 11 ]
+        python3_version: [ 11, 12 ]
         arch_cibw_go:
           - [ "x86_64", "amd64" ]
           - [ "arm64", "arm64" ]
@@ -87,7 +87,7 @@ jobs:
 
   build_linux_x86_64:
     # if: false
-    name: Linux 311 x86_64
+    name: Linux Python 3.x x86_64
     runs-on: ubuntu-latest
 
     steps:
@@ -102,7 +102,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.19.2
         env:
           CIBW_BUILD: "cp3*_x86_64"
-          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* cp312-* *-musllinux_x86_64"
+          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* *-musllinux_x86_64"
           CIBW_ARCHS: "native"
           CIBW_ENVIRONMENT: >
             PATH=$PATH:/usr/local/go/bin
