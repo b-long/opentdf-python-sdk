@@ -218,5 +218,5 @@ jobs:
                 README.md,
                 dist/*.whl
             body: otdf_python version ${{ env.PROJECT_VESION }}
-            # tag: "dev-${{ github.job }}-${{ env.PROJECT_VESION }}"
-            tag: v${{ env.PROJECT_VESION }}
+            tag: "${{ env.PROJECT_VESION }}-dev-${{ github.sha }}"
+            # tag: v${{ env.PROJECT_VESION }}
