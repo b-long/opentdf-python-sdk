@@ -2,6 +2,9 @@
 
 Unofficial OpenTDF SDK for Python
 
+[![Tests](https://github.com/b-long/opentdf-python-sdk/workflows/PyPIBuild/badge.svg)](https://github.com/b-long/opentdf-python-sdk/actions?query=workflow%3APyPIBuild)
+
+
 ## Installation
 
 Install from PyPI.org:
