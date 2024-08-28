@@ -1,4 +1,4 @@
-name: Multiplatform -- Build Python wheel and publish to test.pypi.org
+name: PyPIBuild
 
 # Based on https://github.com/tuananh/py-event-ruler/blob/0129d15e17d0023863a4d0e0e25e5256988b5c5b/.github/workflows/publish.yml
 
