@@ -1,7 +1,19 @@
 import setuptools
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+
+from pathlib import Path
+
+"""
+NOTE: This project uses more than one version of a 'setup.py' file:
+* 'setup.py', and
+* 'setup_ci.py'
+
+Based on:
+    https://github.com/popatam/gopy_build_wheel_example/blob/main/setup_ci.py
+"""
+
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
 
 setuptools.setup(
     name="otdf_python",
