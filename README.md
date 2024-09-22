@@ -7,10 +7,17 @@ Unofficial OpenTDF SDK for Python
 
 ## Installation
 
-Install from PyPI.org:
+Install from the [Python Package Index (PyPI)](https://pypi.org):
 
 ```bash
+# Install the latest from pypi.org
 pip install otdf_python
+
+# Install a pinned version
+pip install otdf-python==0.0.9
+
+# Install a pinned version, from test.pypi.org
+pip install -i https://test.pypi.org/simple/ otdf-python==0.0.9
 ```
 
 ## Usage
