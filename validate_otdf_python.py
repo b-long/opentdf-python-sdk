@@ -19,7 +19,6 @@ def verify_hello():
 
 
 def _get_configuration() -> EncryptionConfig:
-
     platformEndpoint = "localhost:8080"
 
     config: EncryptionConfig = EncryptionConfig(
