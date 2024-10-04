@@ -78,11 +78,11 @@ def get_encrypt_config(data_attributes: list | None = None):
     else:
         # Create config without attributes
         config: EncryptionConfig = EncryptionConfig(
-            ClientId=testing_credentials.TDF_NPE_CLIENT,
-            ClientSecret=testing_credentials.TDF_NPE_CLIENT_SECRET,
-            PlatformEndpoint=testing_credentials.PLATFORM_ENDPOINT,
-            TokenEndpoint=testing_credentials.OIDC_AUTH_URL,
-            KasUrl=testing_credentials.KAS_URL,
+            ClientId="opentdf-sdk",
+            ClientSecret="secret",
+            PlatformEndpoint=platformEndpoint,
+            TokenEndpoint="http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token",
+            KasUrl=f"http://{platformEndpoint}/kas",
         )
 
     # NOTE: Structs from golang can be printed, like below
