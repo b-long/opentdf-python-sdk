@@ -2,7 +2,7 @@
 name = "otdf-python"
 # Should match 'setup.py' version number (used for gopy/pybindgen)
 version = "0.0.13"
-description = ""
+description = "Unofficial OpenTDF SDK for Python."
 authors = ["b-long <b-long@users.noreply.github.com>"]
 readme = "README.md"
 package-mode = false
