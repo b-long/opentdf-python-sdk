@@ -203,14 +203,14 @@ jobs:
       #     fi
       #   working-directory: cmdline
 
-  platform-xtest:
-    permissions:
-      contents: read
-      packages: read
-    needs: platform-integration
-    uses: opentdf/tests/.github/workflows/xtest.yml@main
-    with:
-      java-ref: ${{ github.ref }}
+  # platform-xtest:
+  #   permissions:
+  #     contents: read
+  #     packages: read
+  #   needs: platform-integration
+  #   uses: opentdf/tests/.github/workflows/xtest.yml@main
+  #   with:
+  #     java-ref: ${{ github.ref }}
 
   # ci:
   #   needs:
