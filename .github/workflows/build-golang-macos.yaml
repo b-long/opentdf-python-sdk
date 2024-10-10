@@ -102,6 +102,10 @@ jobs:
               # Test wheel functionality
               # python3 validate_otdf_python.py
 
+        - uses: ./.github/workflows/platform-integration-test.yaml
+          with:
+            wheel: dist/otdf_python-0.0.15-py3-none-any.whl
+
   # release:
   #   needs: build
   #   runs-on: macos-latest
