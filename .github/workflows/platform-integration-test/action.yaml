@@ -5,18 +5,11 @@ name: "Platform Integration testing"
 on:
   workflow_call:
     inputs:
-      wheel_to_test:
+      wheel:
         description: The Python wheel to test
         required: true
         type: string
 
-# on:
-#   pull_request:
-#     branches:
-#       - main
-#   push:
-#     branches:
-#       - main
 
 permissions:
   contents: read
@@ -32,8 +25,8 @@ jobs:
       - name: Prove that the input file is available
         run: |
           ls -la
-          ls -la ${{ inputs.wheel_to_test }}
-          du -sh ${{ inputs.wheel_to_test }}
+          ls -la "${{ inputs.wheel }}"
+          du -sh "${{ inputs.wheel }}"
 
       - uses: bufbuild/buf-setup-action@382440cdb8ec7bc25a68d7b4711163d95f7cc3aa
         with:

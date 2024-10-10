@@ -104,7 +104,7 @@ jobs:
 
         - uses: ./.github/workflows/platform-integration-test
           with:
-            wheel_to_test: dist/otdf_python-0.0.15-py3-none-any.whl
+            wheel: dist/otdf_python-0.0.15-py3-none-any.whl
 
   # release:
   #   needs: build
