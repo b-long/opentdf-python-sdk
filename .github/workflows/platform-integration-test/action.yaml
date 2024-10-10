@@ -3,26 +3,29 @@
 name: "Platform Integration testing"
 
 on:
-  pull_request:
+  workflow_call:
+    inputs:
+      wheel:
+        description: The Python wheel to test
+        required: true
+        type: string
 
-# on:
-#   pull_request:
-#     branches:
-#       - main
-#   push:
-#     branches:
-#       - main
 
 permissions:
   contents: read
 
-jobs:
-
-  platform-integration:
-    runs-on: ubuntu-22.04
+runs:
+    using: "composite"
     steps:
-      - name: Checkout Java SDK
+      - name: Checkout this repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+
+      - name: Prove that the input file is available
+        run: |
+          ls -la
+          ls -la "${{ inputs.wheel }}"
+          du -sh "${{ inputs.wheel }}"
+
       - uses: bufbuild/buf-setup-action@382440cdb8ec7bc25a68d7b4711163d95f7cc3aa
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
