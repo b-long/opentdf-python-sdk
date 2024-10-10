@@ -102,7 +102,7 @@ jobs:
               # Test wheel functionality
               # python3 validate_otdf_python.py
 
-        - uses: ./.github/workflows/platform-integration-test.yaml
+        - uses: ./.github/workflows/platform-integration-test
           with:
             wheel_to_test: dist/otdf_python-0.0.15-py3-none-any.whl
 
