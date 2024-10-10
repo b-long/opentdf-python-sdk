@@ -3,7 +3,12 @@
 name: "Platform Integration testing"
 
 on:
-  pull_request:
+  workflow_call:
+    inputs:
+      wheel_to_test:
+        description: The Python wheel to test
+        required: true
+        type: string
 
 # on:
 #   pull_request:
@@ -21,20 +26,27 @@ jobs:
   platform-integration:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout Java SDK
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - name: Checkout this repo
+        uses: actions/checkout
+
+      - name: Prove that the input file is available
+        run: |
+          ls -la
+          ls -la ${{ inputs.wheel_to_test }}
+          du -sh ${{ inputs.wheel_to_test }}
+
       - uses: bufbuild/buf-setup-action@382440cdb8ec7bc25a68d7b4711163d95f7cc3aa
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check out platform
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        uses: actions/checkout
         with:
           repository: opentdf/platform
           ref: main
           path: platform
       - name: Set up go
-        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491
+        uses: actions/setup-go
         with:
           go-version: "1.22.3"
           check-latest: false
