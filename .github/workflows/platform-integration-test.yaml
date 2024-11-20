@@ -109,6 +109,11 @@ jobs:
           grpcurl -plaintext localhost:8080 list && \
           grpcurl -plaintext localhost:8080 kas.AccessService/PublicKey
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+            python-version: '3.11'
+
       - name: Validate the Python SDK
         env:
           OPENTDF_CLIENT_ID: "opentdf-sdk"
