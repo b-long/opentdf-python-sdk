@@ -25,7 +25,7 @@ jobs:
 
       - uses: actions/cache/restore@v4
         with:
-          path: dist/otdf_python-0.0.15-py3-none-any.whl
+          path: dist/otdf_python-0.1.0-py3-none-any.whl
           key: ${{ runner.os }}-data-${{ github.sha }}
 
       - name: Prove that the input file is available
@@ -108,6 +108,29 @@ jobs:
         run: |
           grpcurl -plaintext localhost:8080 list && \
           grpcurl -plaintext localhost:8080 kas.AccessService/PublicKey
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+            python-version: '3.11'
+
+      - name: Validate the Python SDK
+        env:
+          OPENTDF_CLIENT_ID: "opentdf-sdk"
+          OPENTDF_CLIENT_SECRET: "secret"
+          OPENTDF_HOSTNAME: "localhost:8080"
+          OIDC_TOKEN_ENDPOINT: "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
+          OPENTDF_KAS_URL: "http://localhost:8080/kas"
+        run: |
+          mkdir validation
+          wheel="$(basename ${{ inputs.wheel }} )"
+          cp -v "${{ inputs.wheel }}" validation/
+          cp -v validate_otdf_python.py validation/
+          cd validation
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install ./"$wheel"
+          python validate_otdf_python.py
 
       # - name: Validate the SDK through the command line interface
       #   run: |

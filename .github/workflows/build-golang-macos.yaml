@@ -76,35 +76,19 @@ jobs:
         # FIXME: Add more caching
         - name: Add gopy dependencies and build wheel
           run: |
-              # Since we don't have our wheel build / install configured yet we use '--no-root'
-              poetry install --no-root
-
-              source $(poetry env info --path)/bin/activate
-
-              # Add Go bin directory to PATH
-              echo "export PATH=$PATH:~/.local/go/bin" >> $GITHUB_ENV
-
-              go install golang.org/x/tools/cmd/goimports@latest
-
-              go install github.com/go-python/gopy@latest
-
-              poetry run pip install --upgrade setuptools wheel
-
-              gopy build --output=otdf_python -vm=python3 .
-
-              poetry run python3 setup.py bdist_wheel
+            ./ci-build.sh
 
         - name: Test Python wheel
           run: |
               # Test wheel installation
-              pip install dist/otdf_python-0.0.15-py3-none-any.whl
+              pip install dist/otdf_python-0.1.0-py3-none-any.whl
 
               # Test wheel functionality
               # python3 validate_otdf_python.py
 
         - uses: ./.github/workflows/platform-integration-test.yaml
           with:
-            wheel: dist/otdf_python-0.0.15-py3-none-any.whl
+            wheel: dist/otdf_python-0.1.0-py3-none-any.whl
 
   # release:
   #   needs: build
