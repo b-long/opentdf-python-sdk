@@ -5,6 +5,7 @@ This file serves as a test of otdf_python.
 import tempfile
 from pathlib import Path
 from zipfile import is_zipfile
+from os import environ
 
 from otdf_python.gotdf_python import EncryptionConfig
 
@@ -22,11 +23,14 @@ def _get_configuration() -> EncryptionConfig:
     platformEndpoint = "localhost:8080"
 
     config: EncryptionConfig = EncryptionConfig(
-        ClientId="opentdf-sdk",
-        ClientSecret="secret",
-        PlatformEndpoint=platformEndpoint,
-        TokenEndpoint="http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token",
-        KasUrl=f"http://{platformEndpoint}/kas",
+        ClientId=environ.get("OPENTDF_CLIENT_ID", "opentdf-sdk"),
+        ClientSecret=environ.get("OPENTDF_CLIENT_SECRET", "secret"),
+        PlatformEndpoint=environ.get("OPENTDF_HOSTNAME", platformEndpoint),
+        TokenEndpoint=environ.get(
+            "OIDC_TOKEN_ENDPOINT",
+            "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token",
+        ),
+        KasUrl=environ.get("OPENTDF_KAS_URL", f"http://{platformEndpoint}/kas"),
         # FIXME: Be careful with binding the 'DataAttributes' field on this struct.
         #
         # In golang, this is initialized as []string , but passing
