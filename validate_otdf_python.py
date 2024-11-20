@@ -9,8 +9,6 @@ from os import environ
 
 from otdf_python.gotdf_python import EncryptionConfig
 
-SOME_PLAINTEXT_FILE = Path(__file__).parent / "go.mod"
-
 
 def verify_hello():
     from otdf_python.gotdf_python import Hello
@@ -81,6 +79,9 @@ def verify_encrypt_file() -> None:
                     "The output path should not exist before calling 'EncryptFile()'."
                 )
 
+            SOME_PLAINTEXT_FILE = Path(tmpDir) / "new-file.txt"
+            SOME_PLAINTEXT_FILE.write_text("Hello world")
+
             outputFilePath = EncryptFile(
                 inputFilePath=str(SOME_PLAINTEXT_FILE),
                 outputFilePath=str(SOME_ENCRYPTED_FILE),
@@ -91,10 +92,10 @@ def verify_encrypt_file() -> None:
             if not SOME_ENCRYPTED_FILE.exists():
                 raise ValueError("The output file does not exist!")
 
-            if not (
-                SOME_ENCRYPTED_FILE.stat().st_size > 2500
-                and is_zipfile(SOME_ENCRYPTED_FILE)
-            ):
+            encrypted_file_size = SOME_ENCRYPTED_FILE.stat().st_size
+            print(f"The encrypted file size is {encrypted_file_size}")
+
+            if not (encrypted_file_size > 1500 and is_zipfile(SOME_ENCRYPTED_FILE)):
                 raise ValueError("The output file has unexpected content!")
 
             # breakpoint()
