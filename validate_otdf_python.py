@@ -5,10 +5,9 @@ This file serves as a test of otdf_python.
 import tempfile
 from pathlib import Path
 from zipfile import is_zipfile
+from os import environ
 
 from otdf_python.gotdf_python import EncryptionConfig
-
-SOME_PLAINTEXT_FILE = Path(__file__).parent / "go.mod"
 
 
 def verify_hello():
@@ -22,11 +21,14 @@ def _get_configuration() -> EncryptionConfig:
     platformEndpoint = "localhost:8080"
 
     config: EncryptionConfig = EncryptionConfig(
-        ClientId="opentdf-sdk",
-        ClientSecret="secret",
-        PlatformEndpoint=platformEndpoint,
-        TokenEndpoint="http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token",
-        KasUrl=f"http://{platformEndpoint}/kas",
+        ClientId=environ.get("OPENTDF_CLIENT_ID", "opentdf-sdk"),
+        ClientSecret=environ.get("OPENTDF_CLIENT_SECRET", "secret"),
+        PlatformEndpoint=environ.get("OPENTDF_HOSTNAME", platformEndpoint),
+        TokenEndpoint=environ.get(
+            "OIDC_TOKEN_ENDPOINT",
+            "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token",
+        ),
+        KasUrl=environ.get("OPENTDF_KAS_URL", f"http://{platformEndpoint}/kas"),
         # FIXME: Be careful with binding the 'DataAttributes' field on this struct.
         #
         # In golang, this is initialized as []string , but passing
@@ -77,6 +79,9 @@ def verify_encrypt_file() -> None:
                     "The output path should not exist before calling 'EncryptFile()'."
                 )
 
+            SOME_PLAINTEXT_FILE = Path(tmpDir) / "new-file.txt"
+            SOME_PLAINTEXT_FILE.write_text("Hello world")
+
             outputFilePath = EncryptFile(
                 inputFilePath=str(SOME_PLAINTEXT_FILE),
                 outputFilePath=str(SOME_ENCRYPTED_FILE),
@@ -87,10 +92,10 @@ def verify_encrypt_file() -> None:
             if not SOME_ENCRYPTED_FILE.exists():
                 raise ValueError("The output file does not exist!")
 
-            if not (
-                SOME_ENCRYPTED_FILE.stat().st_size > 2500
-                and is_zipfile(SOME_ENCRYPTED_FILE)
-            ):
+            encrypted_file_size = SOME_ENCRYPTED_FILE.stat().st_size
+            print(f"The encrypted file size is {encrypted_file_size}")
+
+            if not (encrypted_file_size > 1500 and is_zipfile(SOME_ENCRYPTED_FILE)):
                 raise ValueError("The output file has unexpected content!")
 
             # breakpoint()
