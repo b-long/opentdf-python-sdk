@@ -109,6 +109,24 @@ jobs:
           grpcurl -plaintext localhost:8080 list && \
           grpcurl -plaintext localhost:8080 kas.AccessService/PublicKey
 
+      - name: Validate the Python SDK
+        env:
+          OPENTDF_CLIENT_ID: "opentdf-sdk"
+          OPENTDF_CLIENT_SECRET: "secret"
+          OPENTDF_HOSTNAME: "localhost:8080"
+          OIDC_TOKEN_ENDPOINT: "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
+          OPENTDF_KAS_URL: "http://localhost:8080/kas"
+        run: |
+          mkdir validation
+          wheel="$(basename ${{ inputs.wheel }} )"
+          cp -v "${{ inputs.wheel }}" validation/
+          cp -v validate_otdf_python.py validation/
+          cd validation
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install ./"$wheel"
+          python validate_otdf_python.py
+
       # - name: Validate the SDK through the command line interface
       #   run: |
       #     printf 'here is some data to encrypt' > data
