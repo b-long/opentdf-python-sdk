@@ -57,78 +57,36 @@ jobs:
             # FIXME: Add more caching
             - name: Add gopy dependencies and build wheel
               run: |
-                  # Since we don't have our wheel build / install configured yet we use '--no-root'
-                  poetry install --no-root
-
-                  source $(poetry env info --path)/bin/activate
-
-                  # Add Go bin directory to PATH
-                  echo "export PATH=$PATH:~/.local/go/bin" >> $GITHUB_ENV
-
-                  go install golang.org/x/tools/cmd/goimports@latest
-
-                  go install github.com/go-python/gopy@latest
-
-                  poetry run pip install --upgrade setuptools wheel
-
-                  gopy build --output=otdf_python -vm=python3 .
-
-                  poetry run python3 setup.py bdist_wheel
-
-    # TODO: Can this be a distinct job?
-    # exercise-ssh:
-    #     needs: build
-
-    #     runs-on: ubuntu-latest
-
-    #     steps:
-    #        - uses: actions/checkout@v4
+                ./ci-build.sh
 
             - name: Check existing workspace content
               run: |
                   ls -la
                   ls -la dist/
 
-            # - name: Set up Docker Buildx
-            #   uses: docker/setup-buildx-action@v3
-
-            # - name: Install Vagrant
-            #   run: sudo apt-get update && sudo apt-get install -y vagrant
-
-            # - name: Create Vagrantfile
-            #   run: |
-            #       cat << EOF > Vagrantfile
-            #       Vagrant.configure("2") do |config|
-            #         config.vm.provider "docker" do |d|
-            #           d.image = "ubuntu"
-            #           d.cmd = [ "/bin/bash", "-c", "echo 'Hello world'" ]
-            #           d.remains_running = false
-            #         end
-            #       end
-            #       EOF
-
-            # - name: Run vagrant up
-            #   run: vagrant up --provider=docker
-
-            # - name: Launch the Docker/Vagrant test machine
-            #   run: |
-            #       # Change directory
-            #       cd ssh-servers/docker-in-vagrant
-
-            #       # List content in the directory
-            #       ls -la
-
-            #       # Launch machine
-            #       vagrant up --provider=docker
-
-            #       # Connect to it with SSH
-            #       vagrant ssh -c "echo 'Hello Ubuntu'"
-
             - name: Test Python wheel
               run: |
                   # Test wheel installation
-                  pip install dist/otdf_python-0.0.15-py3-none-any.whl
+                  pip install dist/otdf_python-0.1.0-py3-none-any.whl
 
                   # DISABLED: Need to figure out Ubuntu nested VM
                   # Test wheel functionality
                   # python3 validate_otdf_python.py
+
+            - uses: actions/cache/restore@v4
+              with:
+                path: dist/otdf_python-0.1.0-py3-none-any.whl
+                key: ${{ runner.os }}-data-${{ github.sha }}
+
+            - uses: actions/cache/save@v4
+              with:
+                path: dist/otdf_python-0.1.0-py3-none-any.whl
+                key: ${{ runner.os }}-data-${{ github.sha }}
+                restore-keys: |
+                  ${{ runner.os }}-data-
+
+    integration-test:
+      needs: build
+      uses: ./.github/workflows/platform-integration-test.yaml
+      with:
+        wheel: dist/otdf_python-0.1.0-py3-none-any.whl
