@@ -31,7 +31,7 @@ source "$( poetry env info --path )/bin/activate"
 
 python3 -m pip install pybindgen
 go install golang.org/x/tools/cmd/goimports@latest
-go install github.com/go-python/gopy@v0.4.9
+go install github.com/go-python/gopy@v0.4.10
 
 # For every step below, 'which python' should return '.venv/bin/python'
 PATH="$PATH:$HOME/go/bin" gopy build --output=otdf_python -vm=python3 .
