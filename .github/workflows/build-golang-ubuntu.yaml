@@ -67,7 +67,7 @@ jobs:
             - name: Test Python wheel
               run: |
                   # Test wheel installation
-                  pip install dist/otdf_python-0.1.2-py3-none-any.whl
+                  pip install dist/otdf_python-0.1.3-py3-none-any.whl
 
                   # DISABLED: Need to figure out Ubuntu nested VM
                   # Test wheel functionality
@@ -75,12 +75,12 @@ jobs:
 
             - uses: actions/cache/restore@v4
               with:
-                path: dist/otdf_python-0.1.2-py3-none-any.whl
+                path: dist/otdf_python-0.1.3-py3-none-any.whl
                 key: ${{ runner.os }}-data-${{ github.sha }}
 
             - uses: actions/cache/save@v4
               with:
-                path: dist/otdf_python-0.1.2-py3-none-any.whl
+                path: dist/otdf_python-0.1.3-py3-none-any.whl
                 key: ${{ runner.os }}-data-${{ github.sha }}
                 restore-keys: |
                   ${{ runner.os }}-data-
@@ -89,4 +89,4 @@ jobs:
       needs: build
       uses: ./.github/workflows/platform-integration-test.yaml
       with:
-        wheel: dist/otdf_python-0.1.2-py3-none-any.whl
+        wheel: dist/otdf_python-0.1.3-py3-none-any.whl
