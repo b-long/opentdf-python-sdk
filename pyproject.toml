@@ -8,9 +8,9 @@ readme = "README.md"
 package-mode = false
 
 [tool.poetry.dependencies]
-python = ">3.11,<3.14"
+python = ">=3.11,<3.14"
+wheel = "^0.45.0"
 pybindgen = "^0.22.1"
-wheel = "^0.42.0"
 
 
 [tool.poetry.group.dev.dependencies]
