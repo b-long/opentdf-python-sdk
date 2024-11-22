@@ -43,7 +43,7 @@ jobs:
             cp setup_ci.py setup.py
 
       - name: install gopy
-        run: go install github.com/go-python/gopy@v0.4.9
+        run: go install github.com/go-python/gopy@v0.4.10
 
       - name: install goimports
         run: go install golang.org/x/tools/cmd/goimports@latest
@@ -55,7 +55,7 @@ jobs:
           /usr/local/bin/python_for_build --version
 
       - name: install cibuildwheel and pybindgen
-        run: /usr/local/bin/python_for_build -m pip install --break-system-packages cibuildwheel==2.19.2 pybindgen
+        run: /usr/local/bin/python_for_build -m pip install --break-system-packages cibuildwheel==2.21.3 pybindgen
 
       - name: build wheels
         run: /usr/local/bin/python_for_build -m cibuildwheel --output-dir wheelhouse
@@ -99,17 +99,17 @@ jobs:
             cp setup_ci.py setup.py
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.19.2
+        uses: pypa/cibuildwheel@v2.21.3
         env:
           CIBW_BUILD: "cp3*_x86_64"
-          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* *-musllinux_x86_64"
+          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* cp310-* *-musllinux_x86_64"
           CIBW_ARCHS: "native"
           CIBW_ENVIRONMENT: >
             PATH=$PATH:/usr/local/go/bin
           CIBW_BEFORE_ALL_LINUX: |
             curl -o go.tar.gz https://dl.google.com/go/go1.22.5.linux-amd64.tar.gz
             tar -C /usr/local -xzf go.tar.gz
-            go install github.com/go-python/gopy@v0.4.9
+            go install github.com/go-python/gopy@v0.4.10
             go install golang.org/x/tools/cmd/goimports@latest
 
 
@@ -154,17 +154,17 @@ jobs:
 #           go-version: "1.22.x"
 
 #       - name: install gopy
-#         run: go install github.com/go-python/gopy@v0.4.9
+#         run: go install github.com/go-python/gopy@v0.4.10
 
 #       - name: install goimports
 #         run: go install golang.org/x/tools/cmd/goimports@latest
 
 #       - name: Build wheels
-#         uses: pypa/cibuildwheel@v2.19.2
+#         uses: pypa/cibuildwheel@v2.21.3
 #         env:
 #           # CGO_ENABLED: 1
 #           CIBW_BUILD: "cp3*"
-#           CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-*"
+#           CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-*"
 #           CIBW_ARCHS: "native"
 #           CIBW_ENVIRONMENT: >
 #             GOARCH=amd64
