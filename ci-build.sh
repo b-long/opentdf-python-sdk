@@ -2,6 +2,37 @@
 
 set -eou pipefail
 
+printf """
+
+✨✨✨ Configure gopy / dependencies, and build wheel ✨✨✨
+
+"""
+
+echo "python -VV"
+python -VV
+
+echo 'python -c "import sys; print(sys.executable)"'
+python -c "import sys; print(sys.executable)"
+
+echo 'pip -V'
+pip -V
+
+echo 'pip install poetry'
+pip install poetry
+
+# Look for go/bin (skip, we know it exists)
+echo '$HOME/'
+ls -la "$HOME/"
+
+echo '$HOME/.local/'
+ls -la "$HOME/.local/"
+
+echo '$HOME/go/'
+ls -la "$HOME/go/"
+
+# Add Go bin directory to PATH
+echo "export PATH=$PATH:~/.local/go/bin" >> $GITHUB_ENV
+
 # Since we don't have our wheel build / install configured yet we use '--no-root'
 poetry install --no-root
 

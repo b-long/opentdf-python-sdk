@@ -56,25 +56,8 @@ jobs:
           with:
               python-version: '3.12'
 
-        - name: Install dependencies
-          run: |
-              pip install poetry
-
-              # Look for go/bin (skip, we know it exists)
-              echo '$HOME/'
-              ls -la "$HOME/"
-
-              echo '$HOME/.local/'
-              ls -la "$HOME/.local/"
-
-              echo '$HOME/go/'
-              ls -la "$HOME/go/"
-
-        - name: Add Go bin directory to PATH
-          run: echo "export PATH=$PATH:~/.local/go/bin" >> $GITHUB_ENV
-
         # FIXME: Add more caching
-        - name: Add gopy dependencies and build wheel
+        - name: Configure gopy / dependencies, and build wheel
           run: |
             ./ci-build.sh
 
