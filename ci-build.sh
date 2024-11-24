@@ -50,3 +50,5 @@ poetry run pip install --upgrade setuptools wheel
 gopy build --output=otdf_python -vm=python3 .
 
 poetry run python3 setup.py bdist_wheel
+
+pip install dist/otdf_python-0.1.10-py3-none-any.whl

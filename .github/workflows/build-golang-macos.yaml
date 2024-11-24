@@ -1,10 +1,7 @@
 ---
 name: macOS -- Build Python wheel using golang's gopy
 
-on:
-  push:
-      branches:
-          - main
+on: [push]
 
 defaults:
   run:
@@ -27,20 +24,6 @@ jobs:
     steps:
         - uses: actions/checkout@v4
 
-        # - name: Setup Docker on macOS using Colima, Lima-VM, and Homebrew
-        #   uses: douglascamata/setup-docker-macos-action@v1-alpha
-
-
-        # - name: Verify docker Installation
-        #   run: |
-        #     docker --version
-        #     docker ps
-
-        # - name: Setup vagrant
-        #   run: |
-        #       brew install vagrant
-        #       vagrant --version
-
         - name: Setup Go
           uses: actions/setup-go@v4
           with:
@@ -61,41 +44,6 @@ jobs:
           run: |
             ./ci-build.sh
 
-        - name: Test Python wheel
-          run: |
-              # Test wheel installation
-              pip install dist/otdf_python-0.1.10-py3-none-any.whl
-
-              # Test wheel functionality
-              # python3 validate_otdf_python.py
-
         # - uses: ./.github/workflows/platform-integration-test.yaml
         #   with:
         #     wheel: dist/otdf_python-0.1.10-py3-none-any.whl
-
-  # release:
-  #   needs: build
-  #   runs-on: macos-latest
-  #   if: github.ref == 'refs/heads/main'
-  #   permissions:
-  #       contents: write
-  #   steps:
-  #       - uses: actions/checkout@v4
-
-        - name: Store version
-          run: |
-              pip install poetry
-
-              PROJECT_VESION=$(poetry version -s)
-              echo "PROJECT_VESION=$PROJECT_VESION" >> $GITHUB_ENV
-
-        - name: Install twine
-          run: pip install twine
-
-        - name: Upload to PyPI
-          env:
-            TWINE_UPLOAD_URL: https://upload.pypi.org/legacy/
-            PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-            PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-          run: |
-            twine upload --password "$PYPI_PASSWORD" --user "$PYPI_USERNAME" --repository-url "$TWINE_UPLOAD_URL" dist/*

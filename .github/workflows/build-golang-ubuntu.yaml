@@ -16,11 +16,9 @@ jobs:
             fail-fast: true
             matrix:
                 go-version: [1.22.x]
-                # go-version: [ '1.19', '1.20', '1.22.x' ]
 
         steps:
             - uses: actions/checkout@v4
-
 
             - name: Setup Go
               uses: actions/setup-go@v4
@@ -41,20 +39,6 @@ jobs:
             - name: Configure gopy / dependencies, and build wheel
               run: |
                 ./ci-build.sh
-
-            - name: Check existing workspace content
-              run: |
-                  ls -la
-                  ls -la dist/
-
-            - name: Test Python wheel
-              run: |
-                  # Test wheel installation
-                  pip install dist/otdf_python-0.1.10-py3-none-any.whl
-
-                  # DISABLED: Need to figure out Ubuntu nested VM
-                  # Test wheel functionality
-                  # python3 validate_otdf_python.py
 
             - uses: actions/cache/restore@v4
               with:
