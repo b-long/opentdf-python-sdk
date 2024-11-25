@@ -54,7 +54,12 @@ jobs:
             ${{ runner.os }}-data-
 
   integration-test:
+    strategy:
+      fail-fast: true
+      matrix:
+        python3_version: [11, 12]
     needs: build
     uses: ./.github/workflows/platform-integration-test.yaml
     with:
       wheel: dist/otdf_python-0.1.10-py3-none-any.whl
+      python_version: "3.${{ matrix.python3_version }}"
