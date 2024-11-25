@@ -1,5 +1,5 @@
 ---
-name: macOS -- Build Python wheel using golang's gopy
+name: macOS build
 
 on: [push]
 
@@ -14,36 +14,37 @@ jobs:
   build:
     runs-on: macos-13
     permissions:
-        contents: write
+      contents: write
 
     strategy:
-        fail-fast: true
-        matrix:
-            go-version: [1.22.x]
+      fail-fast: true
+      matrix:
+        go-version: [1.22.x]
+        python3_version: [ "3.11", "3.12" ]
 
     steps:
-        - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-        - name: Setup Go
-          uses: actions/setup-go@v4
-          with:
-              go-version: ${{ matrix.go-version }}
-              cache-dependency-path: go.sum
-        - name: Install dependencies
-          run: go get .
-        - name: Test with Go
-          run: go test -timeout 40s -run ^TestHello$ gotdf_python -count=1 # go test
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache-dependency-path: go.sum
+      - name: Install dependencies
+        run: go get .
+      - name: Test with Go
+        run: go test -timeout 40s -run ^TestHello$ gotdf_python -count=1 # go test
 
-        - name: Set up Python
-          uses: actions/setup-python@v4
-          with:
-              python-version: '3.12'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python3_version }}
 
-        # FIXME: Add more caching
-        - name: Configure gopy / dependencies, and build wheel
-          run: |
-            ./ci-build.sh
+      # FIXME: Add more caching
+      - name: Configure gopy / dependencies, and build wheel
+        run: |
+          ./ci-build.sh
 
-        # - uses: ./.github/workflows/platform-integration-test.yaml
-        #   with:
-        #     wheel: dist/otdf_python-0.1.10-py3-none-any.whl
+      # - uses: ./.github/workflows/platform-integration-test.yaml
+      #   with:
+      #     wheel: dist/otdf_python-0.1.10-py3-none-any.whl
