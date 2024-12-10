@@ -1,10 +1,7 @@
 ---
-name: macOS -- Build Python wheel using golang's gopy
+name: macOS build
 
-on:
-  push:
-      branches:
-          - main
+on: [push]
 
 defaults:
   run:
@@ -17,102 +14,37 @@ jobs:
   build:
     runs-on: macos-13
     permissions:
-        contents: write
+      contents: write
 
     strategy:
-        fail-fast: true
-        matrix:
-            go-version: [1.22.x]
+      fail-fast: true
+      matrix:
+        go-version: [1.22.x]
+        python3_version: [ "3.11", "3.12" ]
 
     steps:
-        - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-        # - name: Setup Docker on macOS using Colima, Lima-VM, and Homebrew
-        #   uses: douglascamata/setup-docker-macos-action@v1-alpha
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache-dependency-path: go.sum
+      - name: Install dependencies
+        run: go get .
+      - name: Test with Go
+        run: go test -timeout 40s -run ^TestHello$ gotdf_python -count=1 # go test
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python3_version }}
 
-        # - name: Verify docker Installation
-        #   run: |
-        #     docker --version
-        #     docker ps
+      # FIXME: Add more caching
+      - name: Configure gopy / dependencies, and build wheel
+        run: |
+          ./ci-build.sh
 
-        # - name: Setup vagrant
-        #   run: |
-        #       brew install vagrant
-        #       vagrant --version
-
-        - name: Setup Go
-          uses: actions/setup-go@v4
-          with:
-              go-version: ${{ matrix.go-version }}
-              cache-dependency-path: go.sum
-        - name: Install dependencies
-          run: go get .
-        - name: Test with Go
-          run: go test -timeout 40s -run ^TestHello$ gotdf_python -count=1 # go test
-
-        - name: Set up Python
-          uses: actions/setup-python@v4
-          with:
-              python-version: '3.12'
-
-        - name: Install dependencies
-          run: |
-              pip install poetry
-
-              # Look for go/bin (skip, we know it exists)
-              echo '$HOME/'
-              ls -la "$HOME/"
-
-              echo '$HOME/.local/'
-              ls -la "$HOME/.local/"
-
-              echo '$HOME/go/'
-              ls -la "$HOME/go/"
-
-        - name: Add Go bin directory to PATH
-          run: echo "export PATH=$PATH:~/.local/go/bin" >> $GITHUB_ENV
-
-        # FIXME: Add more caching
-        - name: Add gopy dependencies and build wheel
-          run: |
-            ./ci-build.sh
-
-        - name: Test Python wheel
-          run: |
-              # Test wheel installation
-              pip install dist/otdf_python-0.1.10-py3-none-any.whl
-
-              # Test wheel functionality
-              # python3 validate_otdf_python.py
-
-        # - uses: ./.github/workflows/platform-integration-test.yaml
-        #   with:
-        #     wheel: dist/otdf_python-0.1.10-py3-none-any.whl
-
-  # release:
-  #   needs: build
-  #   runs-on: macos-latest
-  #   if: github.ref == 'refs/heads/main'
-  #   permissions:
-  #       contents: write
-  #   steps:
-  #       - uses: actions/checkout@v4
-
-        - name: Store version
-          run: |
-              pip install poetry
-
-              PROJECT_VESION=$(poetry version -s)
-              echo "PROJECT_VESION=$PROJECT_VESION" >> $GITHUB_ENV
-
-        - name: Install twine
-          run: pip install twine
-
-        - name: Upload to PyPI
-          env:
-            TWINE_UPLOAD_URL: https://upload.pypi.org/legacy/
-            PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-            PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-          run: |
-            twine upload --password "$PYPI_PASSWORD" --user "$PYPI_USERNAME" --repository-url "$TWINE_UPLOAD_URL" dist/*
+      # - uses: ./.github/workflows/platform-integration-test.yaml
+      #   with:
+      #     wheel: dist/otdf_python-0.1.11-py3-none-any.whl
