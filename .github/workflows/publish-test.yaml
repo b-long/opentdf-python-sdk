@@ -180,6 +180,8 @@ jobs:
   release:
     permissions:
       contents: write
+      # This permission is mandatory for PyPI's trusted publishing
+      id-token: write
     needs: [build_macos, build_linux_x86_64]
     runs-on: ubuntu-latest
     # if: github.ref == 'refs/heads/main'
@@ -201,17 +203,6 @@ jobs:
 
               PROJECT_VESION=$(poetry version -s)
               echo "PROJECT_VESION=$PROJECT_VESION" >> $GITHUB_ENV
-
-        - name: Install twine
-          run: pip install twine
-
-        # - name: Upload to PyPI
-        #   env:
-        #     TWINE_UPLOAD_URL: https://test.pypi.org/legacy/
-        #     PYPI_USERNAME: ${{ secrets.PYPI_TEST_USERNAME }}
-        #     PYPI_PASSWORD: ${{ secrets.PYPI_TEST_PASSWORD }}
-        #   run: |
-        #     twine upload --password "$PYPI_PASSWORD" --user "$PYPI_USERNAME" --repository-url "$TWINE_UPLOAD_URL" dist/* --verbose
 
         - name: Publish package distributions to PyPI
           uses: pypa/gh-action-pypi-publish@release/v1
