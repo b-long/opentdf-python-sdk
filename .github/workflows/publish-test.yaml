@@ -211,7 +211,7 @@ jobs:
             PYPI_USERNAME: ${{ secrets.PYPI_TEST_USERNAME }}
             PYPI_PASSWORD: ${{ secrets.PYPI_TEST_PASSWORD }}
           run: |
-            twine upload --password "$PYPI_PASSWORD" --user "$PYPI_USERNAME" --repository-url "$TWINE_UPLOAD_URL" dist/*
+            twine upload --password "$PYPI_PASSWORD" --user "$PYPI_USERNAME" --repository-url "$TWINE_UPLOAD_URL" dist/* --verbose
 
         - uses: ncipollo/release-action@v1
           with:
