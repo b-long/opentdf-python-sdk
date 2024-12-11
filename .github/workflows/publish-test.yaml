@@ -204,6 +204,11 @@ jobs:
               PROJECT_VESION=$(poetry version -s)
               echo "PROJECT_VESION=$PROJECT_VESION" >> $GITHUB_ENV
 
+        # Publish with "trusted publisher" mechanism:
+        # https://docs.pypi.org/trusted-publishers/
+        #
+        # Requires GHA token permission (above in YAML) and PyPI magement:
+        #   https://test.pypi.org/manage/project/otdf-python/settings/publishing/
         - name: Publish package distributions to PyPI
           uses: pypa/gh-action-pypi-publish@release/v1
           with:
@@ -216,5 +221,6 @@ jobs:
                 README.md,
                 dist/*.whl
             body: otdf_python version ${{ env.PROJECT_VESION }}
+            makeLatest: "false"
             tag: "${{ env.PROJECT_VESION }}-dev-${{ github.sha }}"
             # tag: v${{ env.PROJECT_VESION }}
