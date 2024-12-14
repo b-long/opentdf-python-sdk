@@ -12,6 +12,10 @@ on:
         description: The Python wheel to test
         required: true
         type: string
+      python_version:
+        description: The wheel's Python version (like "3.12" or "3.13")
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -25,8 +29,8 @@ jobs:
 
       - uses: actions/cache/restore@v4
         with:
-          path: dist/otdf_python-0.1.10-py3-none-any.whl
-          key: ${{ runner.os }}-data-${{ github.sha }}
+          path: dist/otdf_python-0.1.12-py3-none-any.whl
+          key: ${{ runner.os }}${{ inputs.python_version }}-data-${{ github.sha }}
 
       - name: Prove that the input file is available
         shell: bash
@@ -112,7 +116,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-            python-version: '3.12'
+            python-version: ${{ inputs.python_version }}
 
       - name: Validate the Python SDK
         env:

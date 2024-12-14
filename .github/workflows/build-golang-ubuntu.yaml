@@ -1,92 +1,65 @@
 ---
-name: Ubuntu -- Build Python wheel using golang's gopy
+name: Ubuntu build
 
 on: [push]
 
 jobs:
-    call-lint:
-      uses: ./.github/workflows/lint-on-ubuntu.yaml
+  call-lint:
+    uses: ./.github/workflows/lint-on-ubuntu.yaml
 
-    build:
-        runs-on: ubuntu-latest
-        permissions:
-            contents: write
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
-        strategy:
-            fail-fast: true
-            matrix:
-                go-version: [1.22.x]
-                # go-version: [ '1.19', '1.20', '1.22.x' ]
+    strategy:
+      fail-fast: true
+      matrix:
+        go-version: [1.22.x]
+        python3_version: [ "3.11", "3.12" ]
 
-        steps:
-            - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache-dependency-path: go.sum
+      - name: Install dependencies
+        run: go get .
+      - name: Test with Go
+        run: go test -timeout 40s -run ^TestHello$ gotdf_python -count=1 # go test
 
-            - name: Setup Go
-              uses: actions/setup-go@v4
-              with:
-                  go-version: ${{ matrix.go-version }}
-                  cache-dependency-path: go.sum
-            - name: Install dependencies
-              run: go get .
-            - name: Test with Go
-              run: go test -timeout 40s -run ^TestHello$ gotdf_python -count=1 # go test
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python3_version }}
 
-            - name: Set up Python
-              uses: actions/setup-python@v4
-              with:
-                  python-version: '3.12'
+      # FIXME: Add more caching
+      - name: Configure gopy / dependencies, and build wheel
+        run: |
+          ./ci-build.sh
 
-            - name: Install dependencies
-              run: |
-                  pip install poetry
+      - uses: actions/cache/restore@v4
+        with:
+          path: dist/otdf_python-0.1.12-py3-none-any.whl
+          key: ${{ runner.os }}${{ matrix.python3_version }}-data-${{ github.sha }}
 
-                  # Look for go/bin (skip, we know it exists)
-                  echo '$HOME/'
-                  ls -la "$HOME/"
+      - uses: actions/cache/save@v4
+        with:
+          path: dist/otdf_python-0.1.12-py3-none-any.whl
+          key: ${{ runner.os }}${{ matrix.python3_version }}-data-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}${{ matrix.python3_version }}-data-
 
-                  echo '$HOME/.local/'
-                  ls -la "$HOME/.local/"
-
-                  echo '$HOME/go/'
-                  ls -la "$HOME/go/"
-
-            - name: Add Go bin directory to PATH
-              run: echo "export PATH=$PATH:~/.local/go/bin" >> $GITHUB_ENV
-
-            # FIXME: Add more caching
-            - name: Add gopy dependencies and build wheel
-              run: |
-                ./ci-build.sh
-
-            - name: Check existing workspace content
-              run: |
-                  ls -la
-                  ls -la dist/
-
-            - name: Test Python wheel
-              run: |
-                  # Test wheel installation
-                  pip install dist/otdf_python-0.1.10-py3-none-any.whl
-
-                  # DISABLED: Need to figure out Ubuntu nested VM
-                  # Test wheel functionality
-                  # python3 validate_otdf_python.py
-
-            - uses: actions/cache/restore@v4
-              with:
-                path: dist/otdf_python-0.1.10-py3-none-any.whl
-                key: ${{ runner.os }}-data-${{ github.sha }}
-
-            - uses: actions/cache/save@v4
-              with:
-                path: dist/otdf_python-0.1.10-py3-none-any.whl
-                key: ${{ runner.os }}-data-${{ github.sha }}
-                restore-keys: |
-                  ${{ runner.os }}-data-
-
-    integration-test:
-      needs: build
-      uses: ./.github/workflows/platform-integration-test.yaml
-      with:
-        wheel: dist/otdf_python-0.1.10-py3-none-any.whl
+  integration-test:
+    strategy:
+      fail-fast: true
+      matrix:
+        python3_version: [ "3.11", "3.12" ]
+    needs: build
+    uses: ./.github/workflows/platform-integration-test.yaml
+    with:
+      wheel: dist/otdf_python-0.1.12-py3-none-any.whl
+      python_version: ${{ matrix.python3_version }}
