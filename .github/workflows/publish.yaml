@@ -64,7 +64,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.arch_cibw_go[0] }}
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
           PYTHON_BINARY_PATH: /usr/local/bin/python_for_build
-          CIBW_BUILD: "cp3${{ matrix.python3_version }}-*"
+          CIBW_BUILD: "cp3${{ matrix.python3_version }}-* cp3*_aarch64"
           CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* cp313-* *-musllinux_x86_64"
           CIBW_ENVIRONMENT: >
             PATH=$PATH:/usr/local/go/bin
@@ -102,7 +102,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
         env:
-          CIBW_BUILD: "cp3*_x86_64 cp3*_aarch64"
+          CIBW_BUILD: "cp3*_x86_64"
           CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* cp313-* *-musllinux_x86_64"
           CIBW_ARCHS: "native"
           CIBW_ENVIRONMENT: >
