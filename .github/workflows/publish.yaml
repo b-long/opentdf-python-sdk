@@ -55,7 +55,7 @@ jobs:
           /usr/local/bin/python_for_build --version
 
       - name: install cibuildwheel and pybindgen
-        run: /usr/local/bin/python_for_build -m pip install --break-system-packages cibuildwheel==2.22.0 pybindgen
+        run: /usr/local/bin/python_for_build -m pip install --break-system-packages cibuildwheel==2.21.3 pybindgen
 
       - name: build wheels
         run: /usr/local/bin/python_for_build -m cibuildwheel --output-dir wheelhouse
@@ -100,7 +100,7 @@ jobs:
             cp setup_ci.py setup.py
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.22.0
+        uses: pypa/cibuildwheel@v2.21.3
         env:
           CIBW_BUILD: "cp3*_x86_64"
           CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* cp313-* *-musllinux_x86_64"
@@ -161,7 +161,7 @@ jobs:
 #         run: go install golang.org/x/tools/cmd/goimports@latest
 
 #       - name: Build wheels
-#         uses: pypa/cibuildwheel@v2.22.0
+#         uses: pypa/cibuildwheel@v2.21.3
 #         env:
 #           # CGO_ENABLED: 1
 #           CIBW_BUILD: "cp3*"
