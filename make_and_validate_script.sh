@@ -42,7 +42,7 @@ python3 -m pip install --upgrade setuptools wheel
 python3 setup.py bdist_wheel
 
 # Prove that the wheel can be installed
-pip install dist/otdf_python-0.1.12-py3-none-any.whl
+pip install dist/otdf_python-0.1.13-py3-none-any.whl
 
 if [[ "$SKIP_TESTS" == "-s" || "$SKIP_TESTS" == "--skip-tests" ]]; then
     echo "Build is complete, skipping tests."
