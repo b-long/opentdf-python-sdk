@@ -30,7 +30,7 @@ jobs:
           - [ "arm64", "arm64" ]
     runs-on: macos-${{ matrix.os_version }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: set up Go
         uses: actions/setup-go@v3
@@ -92,7 +92,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup project files
         run: |
@@ -142,7 +142,7 @@ jobs:
 #     runs-on: windows-2019
 
 #     steps:
-#       - uses: actions/checkout@v3
+#       - uses: actions/checkout@v4
 
 #       - name: Setup project files
 #         run: |
