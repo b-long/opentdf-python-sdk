@@ -9,13 +9,6 @@ on:
             - main
     workflow_dispatch:
 
-# on:
-#   # release:
-#   #   types: [created]
-#   push:
-#     tags:
-#       - '*'
-
 jobs:
   build_macos:
     # if: false
@@ -86,9 +79,9 @@ jobs:
           name: wheels-macos${{ matrix.os_version }}-py3${{ matrix.python3_version }}-${{ matrix.arch_cibw_go[0] }}
           path: ./wheelhouse/*.whl
 
-  build_linux_x86_64:
+  build_linux:
     # if: false
-    name: Linux Python 3.x x86_64
+    name: Linux Python 3.x
     runs-on: ubuntu-latest
 
     steps:
@@ -98,6 +91,14 @@ jobs:
         run: |
             rm -rf poetry.lock pyproject.toml
             cp setup_ci.py setup.py
+
+      # QEMU is used by cibuildwheel to cross-compile wheels
+      # https://cibuildwheel.pypa.io/en/stable/faq/#emulation
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: all
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.21.3
