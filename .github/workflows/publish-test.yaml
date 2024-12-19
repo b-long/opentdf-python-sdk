@@ -183,7 +183,7 @@ jobs:
       contents: write
       # This permission is mandatory for PyPI's trusted publishing
       id-token: write
-    needs: [build_macos, build_linux_x86_64]
+    needs: [build_macos, build_linux]
     runs-on: ubuntu-latest
     # if: github.ref == 'refs/heads/main'
 
