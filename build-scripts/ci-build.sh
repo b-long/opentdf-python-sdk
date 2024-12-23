@@ -2,6 +2,11 @@
 
 set -eou pipefail
 
+# Based on: https://stackoverflow.com/a/246128
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+BUILD_ROOT="${SCRIPT_DIR}/.."
+cd "${BUILD_ROOT}" || { echo "Unable to change to build root directory" ; exit 1; }
+
 printf """
 
 ✨✨✨ Configure gopy / dependencies, and build wheel ✨✨✨
