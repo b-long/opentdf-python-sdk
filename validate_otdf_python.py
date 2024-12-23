@@ -29,11 +29,6 @@ def _get_configuration() -> EncryptionConfig:
             "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token",
         ),
         KasUrl=environ.get("OPENTDF_KAS_URL", f"http://{platformEndpoint}/kas"),
-        # FIXME: Be careful with binding the 'DataAttributes' field on this struct.
-        #
-        # In golang, this is initialized as []string , but passing
-        # DataAttributes=None, or DataAttributes=[] from Python will fail.
-        # DataAttributes=...
     )
 
     # NOTE: Structs from golang can be printed, like below
@@ -51,7 +46,21 @@ def verify_encrypt_str() -> None:
 
         config: EncryptionConfig = _get_configuration()
 
-        tdf_manifest_json = EncryptString(inputText="Hello from Python", config=config)
+        from otdf_python.go import Slice_string
+
+        # da = Slice_string(
+        #     [
+        #         "https://example.com/attr/attr1/value/value1",
+        #         "https://example.com/attr/attr1/value/value2",
+        #     ]
+        # )
+        da = Slice_string([])
+
+        tdf_manifest_json = EncryptString(
+            inputText="Hello from Python",
+            config=config,
+            dataAttributes=da,
+        )
 
         print(tdf_manifest_json)
         # breakpoint()
@@ -82,10 +91,20 @@ def verify_encrypt_file() -> None:
             SOME_PLAINTEXT_FILE = Path(tmpDir) / "new-file.txt"
             SOME_PLAINTEXT_FILE.write_text("Hello world")
 
+            from otdf_python.go import Slice_string
+
+            # da = Slice_string(
+            #     [
+            #         "https://example.com/attr/attr1/value/value1",
+            #         "https://example.com/attr/attr1/value/value2",
+            #     ]
+            # )
+            da = Slice_string([])
             outputFilePath = EncryptFile(
                 inputFilePath=str(SOME_PLAINTEXT_FILE),
                 outputFilePath=str(SOME_ENCRYPTED_FILE),
                 config=config,
+                dataAttributes=da,
             )
 
             print(f"The output file was written to destination path: {outputFilePath}")
