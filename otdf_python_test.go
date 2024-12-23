@@ -142,8 +142,7 @@ func doEncryptString(t *testing.T, dataAttributes []string) {
 		PlatformEndpoint: config.platformEndpoint,
 		TokenEndpoint:    config.tokenEndpoint,
 		KasUrl:           config.kasEndpoint,
-		DataAttributes:   dataAttributes,
-	})
+	}, dataAttributes)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -208,8 +207,7 @@ func encrypt_file_NPE(t *testing.T, dataAttributes []string) string {
 		PlatformEndpoint: config.platformEndpoint,
 		TokenEndpoint:    config.tokenEndpoint,
 		KasUrl:           config.kasEndpoint,
-		DataAttributes:   dataAttributes,
-	})
+	}, dataAttributes)
 	if err != nil {
 		t.Error("Failed to EncryptFile()!")
 	}
@@ -255,8 +253,7 @@ func encrypt_file_PE(t *testing.T, dataAttributes []string, tokenAuth gotdf_pyth
 		PlatformEndpoint: config.platformEndpoint,
 		TokenEndpoint:    config.tokenEndpoint,
 		KasUrl:           config.kasEndpoint,
-		DataAttributes:   dataAttributes,
-	}, tokenAuth)
+	}, tokenAuth, dataAttributes)
 	if err != nil {
 		t.Fatal("Failed to EncryptFilePE()!")
 	}
@@ -300,7 +297,7 @@ func e2e_test_as_NPE(t *testing.T, dataAttributes []string) {
 		t.Error(err)
 	}
 
-	got, err := gotdf_python.DecryptFilePE(tdfPath, tmpOutputFile.Name(), gotdf_python.DecryptionConfig{
+	got, err := gotdf_python.DecryptFilePE(tdfPath, tmpOutputFile.Name(), gotdf_python.EncryptionConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -337,7 +334,7 @@ func e2e_test_as_PE(t *testing.T, dataAttributes []string) {
 	if err != nil {
 		t.Error(err)
 	}
-	got, err := gotdf_python.DecryptFilePE(input_TDF_path, plaintext_output_path.Name(), gotdf_python.DecryptionConfig{
+	got, err := gotdf_python.DecryptFilePE(input_TDF_path, plaintext_output_path.Name(), gotdf_python.EncryptionConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,

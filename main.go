@@ -39,23 +39,7 @@ type TokenAuth struct {
 	NpeClientId string
 }
 
-/*
-In a pure golang library, we'd probably embed
-the 'DecryptionConfig' struct into the
-'EncryptionConfig' struct.  However, this makes
-usage from Python / Gopy difficult, so
-it's not worthwhile.
-*/
 type EncryptionConfig struct {
-	ClientId         string
-	ClientSecret     string
-	PlatformEndpoint string
-	TokenEndpoint    string
-	KasUrl           string
-	DataAttributes   []string
-}
-
-type DecryptionConfig struct {
 	ClientId         string
 	ClientSecret     string
 	PlatformEndpoint string
@@ -65,7 +49,6 @@ type DecryptionConfig struct {
 
 /*
 Based on: https://stackoverflow.com/a/42849112
-*/
 func inputValidation(normalConfig DecryptionConfig) (*DecryptionConfig, error) {
 	// Convert our Struct to a Map
 	var inInterface map[string]interface{}
@@ -82,37 +65,9 @@ func inputValidation(normalConfig DecryptionConfig) (*DecryptionConfig, error) {
 
 	return &normalConfig, nil
 }
+*/
 
-func normalizeConfig(obj interface{}) (*DecryptionConfig, error) {
-	var intermediateConfig DecryptionConfig
-
-	switch v := obj.(type) {
-
-	case DecryptionConfig:
-		fmt.Println("Caller passed DecryptionConfig, no need to trim fields")
-		intermediateConfig = v
-	case EncryptionConfig:
-		fmt.Println("Caller passed EncryptionConfig, trimming fields")
-		intermediateConfig = DecryptionConfig{
-			ClientId:         v.ClientId,
-			ClientSecret:     v.ClientSecret,
-			PlatformEndpoint: v.PlatformEndpoint,
-			TokenEndpoint:    v.TokenEndpoint,
-			KasUrl:           v.KasUrl,
-		}
-	default:
-		return nil, errors.New("invalid gotdf_python configuration type")
-	}
-
-	return inputValidation(intermediateConfig)
-}
-
-func newSdkClient(obj interface{}, authScopes []string) (*sdk.SDK, error) {
-	config, err := normalizeConfig(obj)
-	if err != nil {
-		return nil, err
-	}
-
+func newSdkClient(config EncryptionConfig, authScopes []string) (*sdk.SDK, error) {
 	// NOTE: The 'platformEndpoint' is sometimes referenced as 'host'
 	if strings.Count(config.TokenEndpoint, "http://") == 1 {
 		return sdk.New(config.PlatformEndpoint,
@@ -131,12 +86,7 @@ func newSdkClient(obj interface{}, authScopes []string) (*sdk.SDK, error) {
 	}
 }
 
-func peSdkClient(obj interface{}, authScopes []string, token TokenAuth) (*sdk.SDK, error) {
-	config, err := normalizeConfig(obj)
-	if err != nil {
-		return nil, err
-	}
-
+func peSdkClient(config EncryptionConfig, authScopes []string, token TokenAuth) (*sdk.SDK, error) {
 	// NOTE: The 'platformEndpoint' is sometimes referenced as 'host'
 	if strings.Count(config.TokenEndpoint, "http://") == 1 {
 		return sdk.New(config.PlatformEndpoint,
@@ -157,7 +107,7 @@ func peSdkClient(obj interface{}, authScopes []string, token TokenAuth) (*sdk.SD
 	}
 }
 
-func EncryptString(inputText string, config EncryptionConfig) (string, error) {
+func EncryptString(inputText string, config EncryptionConfig, dataAttributes []string) (string, error) {
 	strReader := strings.NewReader(inputText)
 
 	// Scopes is related to OIDC, it's about what you're requesting
@@ -186,7 +136,7 @@ func EncryptString(inputText string, config EncryptionConfig) (string, error) {
 		strReader,
 		// sdk.WithDataAttributes("https://example.com/attributes/1", "https://example.com/attributes/2"),
 		// sdk.WithDataAttributes("https://example.com/attr/attr1/value/value1"),
-		sdk.WithDataAttributes(config.DataAttributes...),
+		sdk.WithDataAttributes(dataAttributes...),
 		sdk.WithKasInformation(
 			sdk.KASInfo{
 				// examples assume insecure http
@@ -204,15 +154,15 @@ func EncryptString(inputText string, config EncryptionConfig) (string, error) {
 		return "", err
 	}
 
-	// Print Manifest
-	fmt.Println(string(manifestJSON))
+	// IF DEBUG: ... Print Manifest
+	// fmt.Println(string(manifestJSON))
 	return string(manifestJSON), nil
 }
 
 /*
 Encrypts a string as a PE (Person Entity), returning a TDF manifest and the cipher text.
 */
-func EncryptStringPE(inputText string, config EncryptionConfig, token TokenAuth) (string, string, error) {
+func EncryptStringPE(inputText string, config EncryptionConfig, token TokenAuth, dataAttributes []string) (string, string, error) {
 	// Scopes relate to OIDC, it's about what you're requesting
 	// and access control from the IdP
 	authScopes := []string{"email"}
@@ -240,7 +190,7 @@ func EncryptStringPE(inputText string, config EncryptionConfig, token TokenAuth)
 		// tdfFile,
 		ciphertext,
 		plaintext,
-		sdk.WithDataAttributes(config.DataAttributes...),
+		sdk.WithDataAttributes(dataAttributes...),
 		sdk.WithKasInformation(
 			sdk.KASInfo{
 				// examples assume insecure http
@@ -263,7 +213,7 @@ func EncryptStringPE(inputText string, config EncryptionConfig, token TokenAuth)
 	return string(manifestJSON), ciphertext.String(), nil
 }
 
-func DecryptStringPE(inputText string, config DecryptionConfig, token TokenAuth) (string, error) {
+func DecryptStringPE(inputText string, config EncryptionConfig, token TokenAuth) (string, error) {
 
 	// Scopes relate to OIDC, it's about what you're requesting
 	// and access control from the IdP
@@ -309,7 +259,7 @@ See:
 
 	https://github.com/opentdf/otdfctl/blob/46cfca1ba32c57f7264c320db27394c00412ca49/pkg/handlers/tdf.go#L10-L27
 */
-func encryptBytesNPE(b []byte, authScopes []string, config EncryptionConfig) (*bytes.Buffer, error) {
+func encryptBytesNPE(b []byte, authScopes []string, config EncryptionConfig, dataAttributes []string) (*bytes.Buffer, error) {
 	sdkClient, err := newSdkClient(config, authScopes)
 
 	if err != nil {
@@ -321,7 +271,7 @@ func encryptBytesNPE(b []byte, authScopes []string, config EncryptionConfig) (*b
 
 	// TODO: validate values are FQNs or return an error [https://github.com/opentdf/platform/issues/515]
 	_, err = sdkClient.CreateTDF(enc, bytes.NewReader(b),
-		sdk.WithDataAttributes(config.DataAttributes...),
+		sdk.WithDataAttributes(dataAttributes...),
 		sdk.WithKasInformation(sdk.KASInfo{
 			URL:       config.KasUrl,
 			PublicKey: "",
@@ -334,7 +284,7 @@ func encryptBytesNPE(b []byte, authScopes []string, config EncryptionConfig) (*b
 	return enc, nil
 }
 
-func encryptBytesPE(b []byte, authScopes []string, config EncryptionConfig, token TokenAuth) (*bytes.Buffer, error) {
+func encryptBytesPE(b []byte, authScopes []string, config EncryptionConfig, token TokenAuth, dataAttributes []string) (*bytes.Buffer, error) {
 	sdkClient, err := peSdkClient(config, authScopes, token)
 
 	if err != nil {
@@ -346,7 +296,7 @@ func encryptBytesPE(b []byte, authScopes []string, config EncryptionConfig, toke
 
 	// TODO: validate values are FQNs or return an error [https://github.com/opentdf/platform/issues/515]
 	_, err = sdkClient.CreateTDF(enc, bytes.NewReader(b),
-		sdk.WithDataAttributes(config.DataAttributes...),
+		sdk.WithDataAttributes(dataAttributes...),
 		sdk.WithKasInformation(sdk.KASInfo{
 			URL:       config.KasUrl,
 			PublicKey: "",
@@ -359,7 +309,7 @@ func encryptBytesPE(b []byte, authScopes []string, config EncryptionConfig, toke
 	return enc, nil
 }
 
-func EncryptFile(inputFilePath string, outputFilePath string, config EncryptionConfig) (string, error) {
+func EncryptFile(inputFilePath string, outputFilePath string, config EncryptionConfig, dataAttributes []string) (string, error) {
 	authScopes := []string{"email"}
 
 	if outputFilePath == "" {
@@ -376,7 +326,7 @@ func EncryptFile(inputFilePath string, outputFilePath string, config EncryptionC
 	// fmt.Print(bytes)
 
 	// Do the encryption
-	encrypted, err := encryptBytesNPE(bytes, authScopes, config)
+	encrypted, err := encryptBytesNPE(bytes, authScopes, config, dataAttributes)
 	if err != nil {
 		return "", fmt.Errorf("failed to encrypt: %w", err)
 	}
@@ -406,7 +356,7 @@ func EncryptFile(inputFilePath string, outputFilePath string, config EncryptionC
 /*
 Encrypts a file as a PE (Person Entity), returning a TDF manifest and the cipher text.
 */
-func EncryptFilePE(inputFilePath string, outputFilePath string, config EncryptionConfig, token TokenAuth) (string, error) {
+func EncryptFilePE(inputFilePath string, outputFilePath string, config EncryptionConfig, token TokenAuth, dataAttributes []string) (string, error) {
 	authScopes := []string{"email"}
 
 	if outputFilePath == "" {
@@ -423,7 +373,7 @@ func EncryptFilePE(inputFilePath string, outputFilePath string, config Encryptio
 	// fmt.Print(bytes)
 
 	// Do the encryption
-	encrypted, err := encryptBytesPE(bytes, authScopes, config, token)
+	encrypted, err := encryptBytesPE(bytes, authScopes, config, token, dataAttributes)
 	if err != nil {
 		return "", fmt.Errorf("failed to encrypt: %w", err)
 	}
@@ -464,7 +414,7 @@ A non-Public decrypt function.
 Based on:
 - https://github.com/opentdf/otdfctl/blob/46cfca1ba32c57f7264c320db27394c00412ca49/pkg/handlers/tdf.go#L29-L41
 */
-func decryptBytes(toDecrypt []byte, authScopes []string, config DecryptionConfig) (*bytes.Buffer, error) {
+func decryptBytes(toDecrypt []byte, authScopes []string, config EncryptionConfig) (*bytes.Buffer, error) {
 	sdkClient, err := newSdkClient(config, authScopes)
 
 	if err != nil {
@@ -484,7 +434,7 @@ func decryptBytes(toDecrypt []byte, authScopes []string, config DecryptionConfig
 	return buf, nil
 }
 
-func decryptBytesPE(toDecrypt []byte, authScopes []string, config DecryptionConfig, token TokenAuth) (*bytes.Buffer, error) {
+func decryptBytesPE(toDecrypt []byte, authScopes []string, config EncryptionConfig, token TokenAuth) (*bytes.Buffer, error) {
 
 	sdkClient, err := peSdkClient(config, authScopes, token)
 
@@ -505,7 +455,7 @@ func decryptBytesPE(toDecrypt []byte, authScopes []string, config DecryptionConf
 	return buf, nil
 }
 
-func DecryptFile(inputFilePath string, outputFilePath string, config DecryptionConfig) (string, error) {
+func DecryptFile(inputFilePath string, outputFilePath string, config EncryptionConfig) (string, error) {
 	bytes, err := readBytesFromFile(inputFilePath)
 	if err != nil {
 		return "", err
@@ -530,7 +480,7 @@ func DecryptFile(inputFilePath string, outputFilePath string, config DecryptionC
 	return outputFilePath, nil
 }
 
-func DecryptFilePE(inputFilePath string, outputFilePath string, config DecryptionConfig, token TokenAuth) (string, error) {
+func DecryptFilePE(inputFilePath string, outputFilePath string, config EncryptionConfig, token TokenAuth) (string, error) {
 	bytes, err := readBytesFromFile(inputFilePath)
 	if err != nil {
 		return "", err
