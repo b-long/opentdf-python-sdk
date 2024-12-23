@@ -6,6 +6,11 @@ set -eou pipefail
 # Ensure we aren't in a virtual environment
 deactivate || { echo "Not currently in a virtual environment" ; }
 
+# Based on: https://stackoverflow.com/a/246128
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+BUILD_ROOT="${SCRIPT_DIR}/.."
+cd "${BUILD_ROOT}" || { echo "Unable to change to build root directory" ; exit 1; }
+
 SKIP_TESTS="${1:-NO}"
 
 # Cleanup

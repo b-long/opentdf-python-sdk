@@ -43,7 +43,7 @@ jobs:
       # FIXME: Add more caching
       - name: Configure gopy / dependencies, and build wheel
         run: |
-          ./ci-build.sh
+          ./build-scripts/ci-build.sh
 
       # - uses: ./.github/workflows/platform-integration-test.yaml
       #   with:
