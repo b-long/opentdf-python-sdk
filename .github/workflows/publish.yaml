@@ -124,7 +124,7 @@ jobs:
       #       # Test wheel functionality
       #       python3 validate_otdf_python.py
 
-      - name: Upload atifacts
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: wheels-linux-amd64
