@@ -125,13 +125,6 @@ jobs:
           name: wheels-linux-amd64
           path: ./wheelhouse/*.whl
 
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-linux-arm
-          path: /tmp/output/*.whl
-
   build_linux_arm:
     name: Linux Python ARM
     runs-on: ubuntu-latest
@@ -165,14 +158,6 @@ jobs:
             tar -C /usr/local -xzf go.tar.gz
             go install github.com/go-python/gopy@v0.4.10
             go install golang.org/x/tools/cmd/goimports@latest
-
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-linux-amd64
-          path: ./wheelhouse/*.whl
-
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
