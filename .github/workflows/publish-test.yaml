@@ -1,6 +1,8 @@
 name: TestPyPIBuild
 
-# Based on https://github.com/tuananh/py-event-ruler/blob/0129d15e17d0023863a4d0e0e25e5256988b5c5b/.github/workflows/publish.yml
+# Based on:
+# - https://github.com/tuananh/py-event-ruler/blob/0129d15e17d0023863a4d0e0e25e5256988b5c5b/.github/workflows/publish.yml
+# - https://github.com/adhadse/excelFormExtractor/blob/1f82a97808b3cf3cdb25dcefdc1c6a1c74c5ad45/.github/workflows/build.yaml
 
 
 on:
@@ -79,9 +81,51 @@ jobs:
           name: wheels-macos${{ matrix.os_version }}-py3${{ matrix.python3_version }}-${{ matrix.arch_cibw_go[0] }}
           path: ./wheelhouse/*.whl
 
-  build_linux:
+  build_linux_x86_64:
     # if: false
-    name: Linux Python 3.x
+    name: Linux Python x86_64
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup project files
+        run: |
+            rm -rf poetry.lock pyproject.toml
+            cp setup_ci.py setup.py
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.21.3
+        env:
+          CIBW_BUILD: "cp3*_x86_64 cp3*_aarch64"
+          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* cp313-* *-musllinux_x86_64"
+          CIBW_ARCHS: "native"
+          CIBW_ENVIRONMENT: >
+            PATH=$PATH:/usr/local/go/bin
+          CIBW_BEFORE_ALL_LINUX: |
+            curl -o go.tar.gz https://dl.google.com/go/go1.22.7.linux-amd64.tar.gz
+            tar -C /usr/local -xzf go.tar.gz
+            go install github.com/go-python/gopy@v0.4.10
+            go install golang.org/x/tools/cmd/goimports@latest
+
+
+      # FIXME: Test before uploading
+      # - name: Test Python wheel
+      #   run: |
+      #       # Test wheel installation
+      #       python3 -m pip install wheelhouse/*.whl
+
+      #       # Test wheel functionality
+      #       python3 validate_otdf_python.py
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-linux-amd64
+          path: ./wheelhouse/*.whl
+
+  build_linux_arm:
+    name: Linux Python ARM
     runs-on: ubuntu-latest
 
     steps:
@@ -103,40 +147,22 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.21.3
         env:
-          CIBW_BUILD: "cp3*_x86_64 cp3*_aarch64"
+          CIBW_BUILD: "cp3*_aarch64"
           CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* cp313-* *-musllinux_x86_64"
-          CIBW_ARCHS: "native"
+          CIBW_ARCHS: "aarch64"
           CIBW_ENVIRONMENT: >
             PATH=$PATH:/usr/local/go/bin
           CIBW_BEFORE_ALL_LINUX: |
-            curl -o go.tar.gz https://dl.google.com/go/go1.22.5.linux-amd64.tar.gz
+            curl -o go.tar.gz https://dl.google.com/go/go1.22.7.linux-arm64.tar.gz
             tar -C /usr/local -xzf go.tar.gz
             go install github.com/go-python/gopy@v0.4.10
             go install golang.org/x/tools/cmd/goimports@latest
-
-
-      # FIXME: Test before uploading
-      # - name: Test Python wheel
-      #   run: |
-      #       # Test wheel installation
-      #       python3 -m pip install wheelhouse/*.whl
-
-      #       # Test wheel functionality
-      #       python3 validate_otdf_python.py
-
-      - name: Upload atifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-linux-amd64
-          path: ./wheelhouse/*.whl
-
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: wheels-linux-arm
           path: /tmp/output/*.whl
-
 #   build_windows:
 #     if: false  # not working
 #     name: Windows 310,311 x86_64
@@ -183,9 +209,10 @@ jobs:
       contents: write
       # This permission is mandatory for PyPI's trusted publishing
       id-token: write
-    needs: [build_macos, build_linux]
+    needs: [build_macos, build_linux_x86_64, build_linux_arm]
     runs-on: ubuntu-latest
-    # if: github.ref == 'refs/heads/main'
+    # If branch is 'develop'
+    if: github.ref == 'refs/heads/develop'
 
     steps:
         - uses: actions/checkout@v4
