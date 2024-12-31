@@ -9,7 +9,6 @@ on:
     push:
         branches:
             - develop
-            - feature/add-aarch64-linux-again
     workflow_dispatch:
 
 jobs:
