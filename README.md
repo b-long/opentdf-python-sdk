@@ -56,14 +56,14 @@ def get_encrypt_config(data_attributes: list | None = None):
      when used from Python.
 
     """
-    print("Preparing 'EncryptionConfig' object")
-    from otdf_python.gotdf_python import EncryptionConfig
+    print("Preparing 'OpentdfConfig' object")
+    from otdf_python.gotdf_python import OpentdfConfig
     from otdf_python.go import Slice_string
 
     if isinstance(data_attributes, list):
         # Create config using the attributes from the caller
         da = Slice_string(data_attributes)
-        config: EncryptionConfig = EncryptionConfig(
+        config: OpentdfConfig = OpentdfConfig(
             ClientId="opentdf-sdk",
             ClientSecret="secret",
             PlatformEndpoint=platformEndpoint,
@@ -77,7 +77,7 @@ def get_encrypt_config(data_attributes: list | None = None):
         )
     else:
         # Create config without attributes
-        config: EncryptionConfig = EncryptionConfig(
+        config: OpentdfConfig = OpentdfConfig(
             ClientId="opentdf-sdk",
             ClientSecret="secret",
             PlatformEndpoint=platformEndpoint,
@@ -87,7 +87,7 @@ def get_encrypt_config(data_attributes: list | None = None):
 
     # NOTE: Structs from golang can be printed, like below
     # print(config)
-    print("Returning 'EncryptionConfig'")
+    print("Returning 'OpentdfConfig'")
 
     return config
 ```
@@ -100,7 +100,7 @@ from otdf_python.gotdf_python import EncryptString
 
 # Depends on the 'get_encrypt_config()' given
 # in the README above
-config: EncryptionConfig = get_encrypt_config()
+config: OpentdfConfig = get_encrypt_config()
 
 tdf_manifest_json = EncryptString(inputText="Hello from Python", config=config)
 ```
@@ -113,7 +113,7 @@ from otdf_python.go import Slice_string
 
 # Depends on the 'get_encrypt_config()' given
 # in the README above
-config: EncryptionConfig = get_encrypt_config()
+config: OpentdfConfig = get_encrypt_config()
 
 with tempfile.TemporaryDirectory() as tmpDir:
     print("Created temporary directory", tmpDir)

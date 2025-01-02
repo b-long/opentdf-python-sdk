@@ -7,7 +7,7 @@ from pathlib import Path
 from zipfile import is_zipfile
 from os import environ
 
-from otdf_python.gotdf_python import EncryptionConfig
+from otdf_python.gotdf_python import OpentdfConfig
 
 
 def verify_hello():
@@ -17,10 +17,10 @@ def verify_hello():
     print(Hello())
 
 
-def _get_configuration() -> EncryptionConfig:
+def _get_configuration() -> OpentdfConfig:
     platformEndpoint = "localhost:8080"
 
-    config: EncryptionConfig = EncryptionConfig(
+    config: OpentdfConfig = OpentdfConfig(
         ClientId=environ.get("OPENTDF_CLIENT_ID", "opentdf-sdk"),
         ClientSecret=environ.get("OPENTDF_CLIENT_SECRET", "secret"),
         PlatformEndpoint=environ.get("OPENTDF_HOSTNAME", platformEndpoint),
@@ -33,7 +33,7 @@ def _get_configuration() -> EncryptionConfig:
 
     # NOTE: Structs from golang can be printed, like below
     # This should print a string like
-    #   gotdf_python.EncryptionConfig{ClientId=opentdf-sdk, ClientSecret=secret, KasUrl=http://localhost:8080/kas, PlatformEndpoint=localhost:8080, TokenEndpoint=http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token, handle=1}
+    #   gotdf_python.OpentdfConfig{ClientId=opentdf-sdk, ClientSecret=secret, KasUrl=http://localhost:8080/kas, PlatformEndpoint=localhost:8080, TokenEndpoint=http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token, handle=1}
     print(config)
 
     return config
@@ -44,7 +44,7 @@ def verify_encrypt_str() -> None:
     try:
         from otdf_python.gotdf_python import EncryptString
 
-        config: EncryptionConfig = _get_configuration()
+        config: OpentdfConfig = _get_configuration()
 
         from otdf_python.go import Slice_string
 
@@ -76,7 +76,7 @@ def verify_encrypt_file() -> None:
         with tempfile.TemporaryDirectory() as tmpDir:
             print("Created temporary directory", tmpDir)
 
-            config: EncryptionConfig = _get_configuration()
+            config: OpentdfConfig = _get_configuration()
 
             SOME_ENCRYPTED_FILE = Path(tmpDir) / "some-file.tdf"
 

@@ -136,7 +136,7 @@ func getMultiDataAttribute(config TestConfiguration) []string {
 
 func doEncryptString(t *testing.T, dataAttributes []string) {
 
-	got, err := gotdf_python.EncryptString("Hello, world", gotdf_python.EncryptionConfig{
+	got, err := gotdf_python.EncryptString("Hello, world", gotdf_python.OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -201,7 +201,7 @@ func encrypt_file_NPE(t *testing.T, dataAttributes []string) string {
 	}
 	defer tmpOutputFile.Close()
 
-	got, err := gotdf_python.EncryptFile(tmpInputFile.Name(), tmpOutputFile.Name(), gotdf_python.EncryptionConfig{
+	got, err := gotdf_python.EncryptFile(tmpInputFile.Name(), tmpOutputFile.Name(), gotdf_python.OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -247,7 +247,7 @@ func encrypt_file_PE(t *testing.T, dataAttributes []string, tokenAuth gotdf_pyth
 	}
 	defer tmpOutputFile.Close()
 
-	got, err := gotdf_python.EncryptFilePE(tmpInputFile.Name(), tmpOutputFile.Name(), gotdf_python.EncryptionConfig{
+	got, err := gotdf_python.EncryptFilePE(tmpInputFile.Name(), tmpOutputFile.Name(), gotdf_python.OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -297,7 +297,7 @@ func e2e_test_as_NPE(t *testing.T, dataAttributes []string) {
 		t.Error(err)
 	}
 
-	got, err := gotdf_python.DecryptFilePE(tdfPath, tmpOutputFile.Name(), gotdf_python.EncryptionConfig{
+	got, err := gotdf_python.DecryptFilePE(tdfPath, tmpOutputFile.Name(), gotdf_python.OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -334,7 +334,7 @@ func e2e_test_as_PE(t *testing.T, dataAttributes []string) {
 	if err != nil {
 		t.Error(err)
 	}
-	got, err := gotdf_python.DecryptFilePE(input_TDF_path, plaintext_output_path.Name(), gotdf_python.EncryptionConfig{
+	got, err := gotdf_python.DecryptFilePE(input_TDF_path, plaintext_output_path.Name(), gotdf_python.OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,

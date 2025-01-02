@@ -39,7 +39,7 @@ type TokenAuth struct {
 	NpeClientId string
 }
 
-type EncryptionConfig struct {
+type OpentdfConfig struct {
 	ClientId         string
 	ClientSecret     string
 	PlatformEndpoint string
@@ -67,7 +67,7 @@ func inputValidation(normalConfig DecryptionConfig) (*DecryptionConfig, error) {
 }
 */
 
-func newSdkClient(config EncryptionConfig, authScopes []string) (*sdk.SDK, error) {
+func newSdkClient(config OpentdfConfig, authScopes []string) (*sdk.SDK, error) {
 	// NOTE: The 'platformEndpoint' is sometimes referenced as 'host'
 	if strings.Count(config.TokenEndpoint, "http://") == 1 {
 		return sdk.New(config.PlatformEndpoint,
@@ -86,7 +86,7 @@ func newSdkClient(config EncryptionConfig, authScopes []string) (*sdk.SDK, error
 	}
 }
 
-func peSdkClient(config EncryptionConfig, authScopes []string, token TokenAuth) (*sdk.SDK, error) {
+func peSdkClient(config OpentdfConfig, authScopes []string, token TokenAuth) (*sdk.SDK, error) {
 	// NOTE: The 'platformEndpoint' is sometimes referenced as 'host'
 	if strings.Count(config.TokenEndpoint, "http://") == 1 {
 		return sdk.New(config.PlatformEndpoint,
@@ -107,7 +107,7 @@ func peSdkClient(config EncryptionConfig, authScopes []string, token TokenAuth) 
 	}
 }
 
-func EncryptString(inputText string, config EncryptionConfig, dataAttributes []string) (string, error) {
+func EncryptString(inputText string, config OpentdfConfig, dataAttributes []string) (string, error) {
 	strReader := strings.NewReader(inputText)
 
 	// Scopes is related to OIDC, it's about what you're requesting
@@ -162,7 +162,7 @@ func EncryptString(inputText string, config EncryptionConfig, dataAttributes []s
 /*
 Encrypts a string as a PE (Person Entity), returning a TDF manifest and the cipher text.
 */
-func EncryptStringPE(inputText string, config EncryptionConfig, token TokenAuth, dataAttributes []string) (string, string, error) {
+func EncryptStringPE(inputText string, config OpentdfConfig, token TokenAuth, dataAttributes []string) (string, string, error) {
 	// Scopes relate to OIDC, it's about what you're requesting
 	// and access control from the IdP
 	authScopes := []string{"email"}
@@ -213,7 +213,7 @@ func EncryptStringPE(inputText string, config EncryptionConfig, token TokenAuth,
 	return string(manifestJSON), ciphertext.String(), nil
 }
 
-func DecryptStringPE(inputText string, config EncryptionConfig, token TokenAuth) (string, error) {
+func DecryptStringPE(inputText string, config OpentdfConfig, token TokenAuth) (string, error) {
 
 	// Scopes relate to OIDC, it's about what you're requesting
 	// and access control from the IdP
@@ -253,13 +253,13 @@ NOTE: the original 'EncryptBytes()' function has a parameter named
 clarity.
 
 One noticeable difference is that rather than having state kept
-in the CLI, we provide our own input parameter EncryptionConfig.
+in the CLI, we provide our own input parameter OpentdfConfig.
 
 See:
 
 	https://github.com/opentdf/otdfctl/blob/46cfca1ba32c57f7264c320db27394c00412ca49/pkg/handlers/tdf.go#L10-L27
 */
-func encryptBytesNPE(b []byte, authScopes []string, config EncryptionConfig, dataAttributes []string) (*bytes.Buffer, error) {
+func encryptBytesNPE(b []byte, authScopes []string, config OpentdfConfig, dataAttributes []string) (*bytes.Buffer, error) {
 	sdkClient, err := newSdkClient(config, authScopes)
 
 	if err != nil {
@@ -284,7 +284,7 @@ func encryptBytesNPE(b []byte, authScopes []string, config EncryptionConfig, dat
 	return enc, nil
 }
 
-func encryptBytesPE(b []byte, authScopes []string, config EncryptionConfig, token TokenAuth, dataAttributes []string) (*bytes.Buffer, error) {
+func encryptBytesPE(b []byte, authScopes []string, config OpentdfConfig, token TokenAuth, dataAttributes []string) (*bytes.Buffer, error) {
 	sdkClient, err := peSdkClient(config, authScopes, token)
 
 	if err != nil {
@@ -309,7 +309,7 @@ func encryptBytesPE(b []byte, authScopes []string, config EncryptionConfig, toke
 	return enc, nil
 }
 
-func EncryptFile(inputFilePath string, outputFilePath string, config EncryptionConfig, dataAttributes []string) (string, error) {
+func EncryptFile(inputFilePath string, outputFilePath string, config OpentdfConfig, dataAttributes []string) (string, error) {
 	authScopes := []string{"email"}
 
 	if outputFilePath == "" {
@@ -356,7 +356,7 @@ func EncryptFile(inputFilePath string, outputFilePath string, config EncryptionC
 /*
 Encrypts a file as a PE (Person Entity), returning a TDF manifest and the cipher text.
 */
-func EncryptFilePE(inputFilePath string, outputFilePath string, config EncryptionConfig, token TokenAuth, dataAttributes []string) (string, error) {
+func EncryptFilePE(inputFilePath string, outputFilePath string, config OpentdfConfig, token TokenAuth, dataAttributes []string) (string, error) {
 	authScopes := []string{"email"}
 
 	if outputFilePath == "" {
@@ -414,7 +414,7 @@ A non-Public decrypt function.
 Based on:
 - https://github.com/opentdf/otdfctl/blob/46cfca1ba32c57f7264c320db27394c00412ca49/pkg/handlers/tdf.go#L29-L41
 */
-func decryptBytes(toDecrypt []byte, authScopes []string, config EncryptionConfig) (*bytes.Buffer, error) {
+func decryptBytes(toDecrypt []byte, authScopes []string, config OpentdfConfig) (*bytes.Buffer, error) {
 	sdkClient, err := newSdkClient(config, authScopes)
 
 	if err != nil {
@@ -434,7 +434,7 @@ func decryptBytes(toDecrypt []byte, authScopes []string, config EncryptionConfig
 	return buf, nil
 }
 
-func decryptBytesPE(toDecrypt []byte, authScopes []string, config EncryptionConfig, token TokenAuth) (*bytes.Buffer, error) {
+func decryptBytesPE(toDecrypt []byte, authScopes []string, config OpentdfConfig, token TokenAuth) (*bytes.Buffer, error) {
 
 	sdkClient, err := peSdkClient(config, authScopes, token)
 
@@ -455,7 +455,7 @@ func decryptBytesPE(toDecrypt []byte, authScopes []string, config EncryptionConf
 	return buf, nil
 }
 
-func DecryptFile(inputFilePath string, outputFilePath string, config EncryptionConfig) (string, error) {
+func DecryptFile(inputFilePath string, outputFilePath string, config OpentdfConfig) (string, error) {
 	bytes, err := readBytesFromFile(inputFilePath)
 	if err != nil {
 		return "", err
@@ -480,7 +480,7 @@ func DecryptFile(inputFilePath string, outputFilePath string, config EncryptionC
 	return outputFilePath, nil
 }
 
-func DecryptFilePE(inputFilePath string, outputFilePath string, config EncryptionConfig, token TokenAuth) (string, error) {
+func DecryptFilePE(inputFilePath string, outputFilePath string, config OpentdfConfig, token TokenAuth) (string, error) {
 	bytes, err := readBytesFromFile(inputFilePath)
 	if err != nil {
 		return "", err
