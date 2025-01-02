@@ -162,7 +162,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wheels-linux-arm
-          path: /tmp/output/*.whl
+          path: ./wheelhouse/*.whl
+
 #   build_windows:
 #     if: false  # not working
 #     name: Windows 310,311 x86_64
