@@ -1,10 +1,23 @@
-[tool.poetry]
+[project]
 name = "otdf-python"
 # Should match 'setup.py' version number (used for gopy/pybindgen)
-version = "0.1.13"
+version = "0.2.3"
 description = "Unofficial OpenTDF SDK for Python."
-authors = ["b-long <b-long@users.noreply.github.com>"]
+authors = [
+    {name="b-long", email="b-long@users.noreply.github.com"}
+]
 readme = "README.md"
+requires-python = ">=3.11"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependencies]
+wheel = "^0.45.0"
+pybindgen = "^0.22.1"
+
+[tool.poetry]
 package-mode = false
 
 [tool.poetry.dependencies]
@@ -12,10 +25,5 @@ python = ">=3.11,<3.14"
 wheel = "^0.45.0"
 pybindgen = "^0.22.1"
 
-
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0.0"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+pytest = ">=8.1"

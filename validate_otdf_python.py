@@ -7,7 +7,7 @@ from pathlib import Path
 from zipfile import is_zipfile
 from os import environ
 
-from otdf_python.gotdf_python import EncryptionConfig
+from otdf_python.gotdf_python import OpentdfConfig
 
 
 def verify_hello():
@@ -17,10 +17,10 @@ def verify_hello():
     print(Hello())
 
 
-def _get_configuration() -> EncryptionConfig:
+def _get_configuration() -> OpentdfConfig:
     platformEndpoint = "localhost:8080"
 
-    config: EncryptionConfig = EncryptionConfig(
+    config: OpentdfConfig = OpentdfConfig(
         ClientId=environ.get("OPENTDF_CLIENT_ID", "opentdf-sdk"),
         ClientSecret=environ.get("OPENTDF_CLIENT_SECRET", "secret"),
         PlatformEndpoint=environ.get("OPENTDF_HOSTNAME", platformEndpoint),
@@ -29,16 +29,11 @@ def _get_configuration() -> EncryptionConfig:
             "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token",
         ),
         KasUrl=environ.get("OPENTDF_KAS_URL", f"http://{platformEndpoint}/kas"),
-        # FIXME: Be careful with binding the 'DataAttributes' field on this struct.
-        #
-        # In golang, this is initialized as []string , but passing
-        # DataAttributes=None, or DataAttributes=[] from Python will fail.
-        # DataAttributes=...
     )
 
     # NOTE: Structs from golang can be printed, like below
     # This should print a string like
-    #   gotdf_python.EncryptionConfig{ClientId=opentdf-sdk, ClientSecret=secret, KasUrl=http://localhost:8080/kas, PlatformEndpoint=localhost:8080, TokenEndpoint=http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token, handle=1}
+    #   gotdf_python.OpentdfConfig{ClientId=opentdf-sdk, ClientSecret=secret, KasUrl=http://localhost:8080/kas, PlatformEndpoint=localhost:8080, TokenEndpoint=http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token, handle=1}
     print(config)
 
     return config
@@ -49,9 +44,23 @@ def verify_encrypt_str() -> None:
     try:
         from otdf_python.gotdf_python import EncryptString
 
-        config: EncryptionConfig = _get_configuration()
+        config: OpentdfConfig = _get_configuration()
 
-        tdf_manifest_json = EncryptString(inputText="Hello from Python", config=config)
+        from otdf_python.go import Slice_string
+
+        # da = Slice_string(
+        #     [
+        #         "https://example.com/attr/attr1/value/value1",
+        #         "https://example.com/attr/attr1/value/value2",
+        #     ]
+        # )
+        da = Slice_string([])
+
+        tdf_manifest_json = EncryptString(
+            inputText="Hello from Python",
+            config=config,
+            dataAttributes=da,
+        )
 
         print(tdf_manifest_json)
         # breakpoint()
@@ -67,7 +76,7 @@ def verify_encrypt_file() -> None:
         with tempfile.TemporaryDirectory() as tmpDir:
             print("Created temporary directory", tmpDir)
 
-            config: EncryptionConfig = _get_configuration()
+            config: OpentdfConfig = _get_configuration()
 
             SOME_ENCRYPTED_FILE = Path(tmpDir) / "some-file.tdf"
 
@@ -82,10 +91,20 @@ def verify_encrypt_file() -> None:
             SOME_PLAINTEXT_FILE = Path(tmpDir) / "new-file.txt"
             SOME_PLAINTEXT_FILE.write_text("Hello world")
 
+            from otdf_python.go import Slice_string
+
+            # da = Slice_string(
+            #     [
+            #         "https://example.com/attr/attr1/value/value1",
+            #         "https://example.com/attr/attr1/value/value2",
+            #     ]
+            # )
+            da = Slice_string([])
             outputFilePath = EncryptFile(
                 inputFilePath=str(SOME_PLAINTEXT_FILE),
                 outputFilePath=str(SOME_ENCRYPTED_FILE),
                 config=config,
+                dataAttributes=da,
             )
 
             print(f"The output file was written to destination path: {outputFilePath}")

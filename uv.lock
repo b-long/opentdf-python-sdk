@@ -1,0 +1,7 @@
+version = 1
+requires-python = ">=3.11"
+
+[[package]]
+name = "otdf-python"
+version = "0.2.3"
+source = { editable = "." }

@@ -1,6 +1,8 @@
 name: PyPIBuild
 
-# Based on https://github.com/tuananh/py-event-ruler/blob/0129d15e17d0023863a4d0e0e25e5256988b5c5b/.github/workflows/publish.yml
+# Based on:
+# - https://github.com/tuananh/py-event-ruler/blob/0129d15e17d0023863a4d0e0e25e5256988b5c5b/.github/workflows/publish.yml
+# - https://github.com/adhadse/excelFormExtractor/blob/1f82a97808b3cf3cdb25dcefdc1c6a1c74c5ad45/.github/workflows/build.yaml
 
 
 on:
@@ -8,13 +10,6 @@ on:
         branches:
             - main
     workflow_dispatch:
-
-# on:
-#   # release:
-#   #   types: [created]
-#   push:
-#     tags:
-#       - '*'
 
 jobs:
   build_macos:
@@ -30,7 +25,7 @@ jobs:
           - [ "arm64", "arm64" ]
     runs-on: macos-${{ matrix.os_version }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: set up Go
         uses: actions/setup-go@v3
@@ -88,11 +83,11 @@ jobs:
 
   build_linux_x86_64:
     # if: false
-    name: Linux Python 3.x x86_64
+    name: Linux Python x86_64
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup project files
         run: |
@@ -108,7 +103,7 @@ jobs:
           CIBW_ENVIRONMENT: >
             PATH=$PATH:/usr/local/go/bin
           CIBW_BEFORE_ALL_LINUX: |
-            curl -o go.tar.gz https://dl.google.com/go/go1.22.5.linux-amd64.tar.gz
+            curl -o go.tar.gz https://dl.google.com/go/go1.22.7.linux-amd64.tar.gz
             tar -C /usr/local -xzf go.tar.gz
             go install github.com/go-python/gopy@v0.4.10
             go install golang.org/x/tools/cmd/goimports@latest
@@ -123,18 +118,51 @@ jobs:
       #       # Test wheel functionality
       #       python3 validate_otdf_python.py
 
-      - name: Upload atifacts
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: wheels-linux-amd64
           path: ./wheelhouse/*.whl
 
+  build_linux_arm:
+    name: Linux Python ARM
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup project files
+        run: |
+            rm -rf poetry.lock pyproject.toml
+            cp setup_ci.py setup.py
+
+      # QEMU is used by cibuildwheel to cross-compile wheels
+      # https://cibuildwheel.pypa.io/en/stable/faq/#emulation
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: all
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.21.3
+        env:
+          CIBW_BUILD: "cp3*_aarch64"
+          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* cp313-* *-musllinux_x86_64"
+          CIBW_ARCHS: "aarch64"
+          CIBW_ENVIRONMENT: >
+            PATH=$PATH:/usr/local/go/bin
+          CIBW_BEFORE_ALL_LINUX: |
+            curl -o go.tar.gz https://dl.google.com/go/go1.22.7.linux-arm64.tar.gz
+            tar -C /usr/local -xzf go.tar.gz
+            go install github.com/go-python/gopy@v0.4.10
+            go install golang.org/x/tools/cmd/goimports@latest
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: wheels-linux-arm
-          path: /tmp/output/*.whl
+          path: ./wheelhouse/*.whl
 
 #   build_windows:
 #     if: false  # not working
@@ -142,7 +170,7 @@ jobs:
 #     runs-on: windows-2019
 
 #     steps:
-#       - uses: actions/checkout@v3
+#       - uses: actions/checkout@v4
 
 #       - name: Setup project files
 #         run: |
@@ -182,9 +210,10 @@ jobs:
       contents: write
       # This permission is mandatory for PyPI's trusted publishing
       id-token: write
-    needs: [build_macos, build_linux_x86_64]
+    needs: [build_macos, build_linux_x86_64, build_linux_arm]
     runs-on: ubuntu-latest
-    # if: github.ref == 'refs/heads/main'
+    # If branch is 'main'
+    if: github.ref == 'refs/heads/main'
 
     steps:
         - uses: actions/checkout@v4

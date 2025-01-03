@@ -2,6 +2,11 @@
 
 set -eou pipefail
 
+# Based on: https://stackoverflow.com/a/246128
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+BUILD_ROOT="${SCRIPT_DIR}/.."
+cd "${BUILD_ROOT}" || { echo "Unable to change to build root directory" ; exit 1; }
+
 printf """
 
 ✨✨✨ Configure gopy / dependencies, and build wheel ✨✨✨
@@ -51,4 +56,4 @@ gopy build --output=otdf_python -vm=python3 .
 
 poetry run python3 setup.py bdist_wheel
 
-pip install dist/otdf_python-0.1.13-py3-none-any.whl
+pip install dist/otdf_python-0.2.3-py3-none-any.whl

@@ -6,6 +6,11 @@ set -eou pipefail
 # Ensure we aren't in a virtual environment
 deactivate || { echo "Not currently in a virtual environment" ; }
 
+# Based on: https://stackoverflow.com/a/246128
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+BUILD_ROOT="${SCRIPT_DIR}/.."
+cd "${BUILD_ROOT}" || { echo "Unable to change to build root directory" ; exit 1; }
+
 SKIP_TESTS="${1:-NO}"
 
 # Cleanup
@@ -42,7 +47,7 @@ python3 -m pip install --upgrade setuptools wheel
 python3 setup.py bdist_wheel
 
 # Prove that the wheel can be installed
-pip install dist/otdf_python-0.1.13-py3-none-any.whl
+pip install dist/otdf_python-0.2.3-py3-none-any.whl
 
 if [[ "$SKIP_TESTS" == "-s" || "$SKIP_TESTS" == "--skip-tests" ]]; then
     echo "Build is complete, skipping tests."
