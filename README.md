@@ -47,43 +47,24 @@ Creating a helper function may simplify the usage of `otdf-python`.
 For example:
 
 ```python
-def get_encrypt_config(data_attributes: list | None = None):
+def _get_configuration() -> OpentdfConfig:
     """
-    The config object returned here can only be used for encryption.
-
-    While 'otdf_python.gotdf_python' internally can use golang interfaces,
-     to normalize config objects, that pattern causes a panic
-     when used from Python.
-
+    The config returned is used for both encryption and decryption.
     """
     print("Preparing 'OpentdfConfig' object")
     from otdf_python.gotdf_python import OpentdfConfig
-    from otdf_python.go import Slice_string
 
-    if isinstance(data_attributes, list):
-        # Create config using the attributes from the caller
-        da = Slice_string(data_attributes)
-        config: OpentdfConfig = OpentdfConfig(
-            ClientId="opentdf-sdk",
-            ClientSecret="secret",
-            PlatformEndpoint=platformEndpoint,
-            TokenEndpoint="http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token",
-            KasUrl=f"http://{platformEndpoint}/kas",
-            # FIXME: Be careful with binding the 'DataAttributes' field on this struct.
-            #
-            # In golang, this is initialized as []string , but passing
-            # DataAttributes=None, or DataAttributes=[] from Python will fail.
-            DataAttributes=da,
-        )
-    else:
-        # Create config without attributes
-        config: OpentdfConfig = OpentdfConfig(
-            ClientId="opentdf-sdk",
-            ClientSecret="secret",
-            PlatformEndpoint=platformEndpoint,
-            TokenEndpoint="http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token",
-            KasUrl=f"http://{platformEndpoint}/kas",
-        )
+    platformEndpoint = "platform.opentdf.local"
+    keycloakEndpoint = "keycloak.opentdf.local/auth
+
+    # Create config
+    config: OpentdfConfig = OpentdfConfig(
+        ClientId="opentdf-sdk",
+        ClientSecret="secret",
+        PlatformEndpoint=platformEndpoint,
+        TokenEndpoint=f"http://{keycloakEndpoint}/realms/opentdf/protocol/openid-connect/token",
+        KasUrl=f"http://{platformEndpoint}/kas",
+    )
 
     # NOTE: Structs from golang can be printed, like below
     # print(config)
@@ -97,12 +78,25 @@ def get_encrypt_config(data_attributes: list | None = None):
 
 ```python
 from otdf_python.gotdf_python import EncryptString
+from otdf_python.go import Slice_string
 
-# Depends on the 'get_encrypt_config()' given
+# Depends on the '_get_opentdf_config()' given
 # in the README above
-config: OpentdfConfig = get_encrypt_config()
+config: OpentdfConfig = _get_opentdf_config()
 
-tdf_manifest_json = EncryptString(inputText="Hello from Python", config=config)
+# da = Slice_string(
+#     [
+#         "https://example.com/attr/attr1/value/value1",
+#         "https://example.com/attr/attr1/value/value2",
+#     ]
+# )
+da = Slice_string([])
+
+tdf_manifest_json = EncryptString(
+    inputText="Hello from Python",
+    config=config,
+    dataAttributes=da,
+)
 ```
 
 ### Example: Encrypt a file
@@ -111,31 +105,76 @@ tdf_manifest_json = EncryptString(inputText="Hello from Python", config=config)
 from otdf_python.gotdf_python import EncryptFile
 from otdf_python.go import Slice_string
 
-# Depends on the 'get_encrypt_config()' given
+# Depends on the '_get_opentdf_config()' given
 # in the README above
-config: OpentdfConfig = get_encrypt_config()
+config: OpentdfConfig = _get_opentdf_config()
 
 with tempfile.TemporaryDirectory() as tmpDir:
     print("Created temporary directory", tmpDir)
 
-    da = Slice_string(["https://example.com/attr/attr1/value/value1", "https://example.com/attr/attr1/value/value2"])
+    config: OpentdfConfig = _get_configuration()
 
-    encrypted_file = Path(tmpDir) / "some-file.tdf"
+    SOME_ENCRYPTED_FILE = Path(tmpDir) / "some-file.tdf"
 
-    if encrypted_file.exists():
-        encrypted_file.unlink()
+    if SOME_ENCRYPTED_FILE.exists():
+        SOME_ENCRYPTED_FILE.unlink()
 
-    if encrypted_file.exists():
+    if SOME_ENCRYPTED_FILE.exists():
         raise ValueError(
             "The output path should not exist before calling 'EncryptFile()'."
         )
 
+    SOME_PLAINTEXT_FILE = Path(tmpDir) / "new-file.txt"
+    SOME_PLAINTEXT_FILE.write_text("Hello world")
+
+    from otdf_python.go import Slice_string
+
+    # da = Slice_string(
+    #     [
+    #         "https://example.com/attr/attr1/value/value1",
+    #         "https://example.com/attr/attr1/value/value2",
+    #     ]
+    # )
+    da = Slice_string([])
     outputFilePath = EncryptFile(
         inputFilePath=str(SOME_PLAINTEXT_FILE),
-        outputFilePath=str(encrypted_file),
+        outputFilePath=str(SOME_ENCRYPTED_FILE),
         config=config,
+        dataAttributes=da,
     )
 
     print(f"The output file was written to destination path: {outputFilePath}")
 
+```
+
+### Example: Decrypt a file
+
+```python
+from otdf_python.gotdf_python import EncryptFile
+from otdf_python.go import Slice_string
+
+# Depends on the '_get_opentdf_config()' given
+# in the README above
+config: OpentdfConfig = _get_opentdf_config()
+
+def decrypt_file(input_file_path: Path, output_file_path: Path) -> Path:
+    if output_file_path.exists():
+        output_file_path.unlink()
+
+    if output_file_path.exists():
+        raise ValueError(
+            "The output path should not exist before calling 'DecryptFile()'."
+        )
+
+    outputFilePath = DecryptFile(
+        inputFilePath=str(input_file_path),
+        outputFilePath=str(output_file_path),
+        config=config,
+    )
+
+    output = Path(outputFilePath)
+    if not output.exists():
+        raise ValueError("DecryptFile() did not create the output file")
+
+    return output
 ```
