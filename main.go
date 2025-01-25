@@ -16,7 +16,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"log"
 	"os"
+	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/opentdf/platform/sdk"
@@ -351,6 +355,61 @@ func EncryptFile(inputFilePath string, outputFilePath string, config OpentdfConf
 	}
 
 	return outputFilePath, nil
+}
+
+/*
+	EncryptFilesInDir encrypts all files in the specified directory
+
+Work is performed as an NPE (Non-Person Entity). Encrypted files are placed
+in the same directory as the input files, with a .tdf extension added to the file name.
+*/
+func EncryptFilesInDir(dirPath string, config OpentdfConfig, dataAttributes []string) ([]string, error) {
+	files, err := ioutil.ReadDir(dirPath)
+	if err != nil {
+		return nil, err
+	}
+
+	var outputPaths []string
+	for _, file := range files {
+		if !file.IsDir() {
+			inputFilePath := path.Join(dirPath, file.Name())
+			outputFilePath := inputFilePath + ".tdf"
+			got, err := EncryptFile(inputFilePath, outputFilePath, config, dataAttributes)
+			if err != nil {
+				log.Printf("Failed to encrypt file %s: %v", inputFilePath, err)
+				return nil, err
+			} else {
+				outputPaths = append(outputPaths, got)
+			}
+		}
+	}
+	return outputPaths, nil
+}
+
+/*
+	EncryptFilesGlob encrypts all files matching the specified glob pattern.
+
+Work is performed as an NPE (Non-Person Entity). Encrypted files are placed
+in the same directory as the input files, with a .tdf extension added to the file name.
+*/
+func EncryptFilesGlob(pattern string, config OpentdfConfig, dataAttributes []string) ([]string, error) {
+	files, err := filepath.Glob(pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	var outputPaths []string
+	for _, inputFilePath := range files {
+		outputFilePath := inputFilePath + ".tdf"
+		got, err := EncryptFile(inputFilePath, outputFilePath, config, dataAttributes)
+		if err != nil {
+			log.Printf("Failed to encrypt file %s: %v", inputFilePath, err)
+			return nil, err
+		} else {
+			outputPaths = append(outputPaths, got)
+		}
+	}
+	return outputPaths, nil
 }
 
 /*
