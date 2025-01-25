@@ -29,9 +29,6 @@ pip install poetry
 echo '$HOME/'
 ls -la "$HOME/"
 
-echo '$HOME/.local/'
-ls -la "$HOME/.local/"
-
 echo '$HOME/go/'
 ls -la "$HOME/go/"
 
