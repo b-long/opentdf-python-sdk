@@ -16,7 +16,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -358,13 +357,13 @@ func EncryptFile(inputFilePath string, outputFilePath string, config OpentdfConf
 }
 
 /*
-	EncryptFilesInDir encrypts all files in the specified directory
+	EncryptFilesInDirNPE encrypts all files in the specified directory
 
 Work is performed as an NPE (Non-Person Entity). Encrypted files are placed
 in the same directory as the input files, with a .tdf extension added to the file name.
 */
-func EncryptFilesInDir(dirPath string, config OpentdfConfig, dataAttributes []string) ([]string, error) {
-	files, err := ioutil.ReadDir(dirPath)
+func EncryptFilesInDirNPE(dirPath string, config OpentdfConfig, dataAttributes []string) ([]string, error) {
+	files, err := os.ReadDir(dirPath)
 	if err != nil {
 		return nil, err
 	}
@@ -387,12 +386,12 @@ func EncryptFilesInDir(dirPath string, config OpentdfConfig, dataAttributes []st
 }
 
 /*
-	EncryptFilesGlob encrypts all files matching the specified glob pattern.
+	EncryptFilesGlobNPE encrypts all files matching the specified glob pattern.
 
 Work is performed as an NPE (Non-Person Entity). Encrypted files are placed
 in the same directory as the input files, with a .tdf extension added to the file name.
 */
-func EncryptFilesGlob(pattern string, config OpentdfConfig, dataAttributes []string) ([]string, error) {
+func EncryptFilesGlobNPE(pattern string, config OpentdfConfig, dataAttributes []string) ([]string, error) {
 	files, err := filepath.Glob(pattern)
 	if err != nil {
 		return nil, err
