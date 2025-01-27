@@ -538,6 +538,61 @@ func DecryptFile(inputFilePath string, outputFilePath string, config OpentdfConf
 	return outputFilePath, nil
 }
 
+/*
+DecryptFilesInDirNPE decrypts all files in the specified directory
+Work is performed as an NPE (Non-Person Entity). Decrypted files are placed
+in the same directory as the input files, with the .tdf extension removed from the file name.
+*/
+func DecryptFilesInDirNPE(dirPath string, config OpentdfConfig) ([]string, error) {
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		return nil, err
+	}
+
+	var outputPaths []string
+	for _, file := range files {
+		if !file.IsDir() && strings.HasSuffix(file.Name(), ".tdf") {
+			inputFilePath := path.Join(dirPath, file.Name())
+			outputFilePath := strings.TrimSuffix(inputFilePath, ".tdf")
+			got, err := DecryptFile(inputFilePath, outputFilePath, config)
+			if err != nil {
+				log.Printf("Failed to decrypt file %s: %v", inputFilePath, err)
+				return nil, err
+			} else {
+				outputPaths = append(outputPaths, got)
+			}
+		}
+	}
+	return outputPaths, nil
+}
+
+/*
+DecryptFilesGlobNPE decrypts all files matching the specified glob pattern.
+Work is performed as an NPE (Non-Person Entity). Decrypted files are placed
+in the same directory as the input files, with the .tdf extension removed from the file name.
+*/
+func DecryptFilesGlobNPE(pattern string, config OpentdfConfig) ([]string, error) {
+	files, err := filepath.Glob(pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	var outputPaths []string
+	for _, inputFilePath := range files {
+		if strings.HasSuffix(inputFilePath, ".tdf") {
+			outputFilePath := strings.TrimSuffix(inputFilePath, ".tdf")
+			got, err := DecryptFile(inputFilePath, outputFilePath, config)
+			if err != nil {
+				log.Printf("Failed to decrypt file %s: %v", inputFilePath, err)
+				return nil, err
+			} else {
+				outputPaths = append(outputPaths, got)
+			}
+		}
+	}
+	return outputPaths, nil
+}
+
 func DecryptFilePE(inputFilePath string, outputFilePath string, config OpentdfConfig, token TokenAuth) (string, error) {
 	bytes, err := readBytesFromFile(inputFilePath)
 	if err != nil {
