@@ -72,4 +72,4 @@ echo "✨✨✨ Build wheel"
 poetry run python3 setup.py bdist_wheel
 
 echo "✨✨✨ Install wheel"
-pip install dist/otdf_python-0.2.3-py3-none-any.whl
+pip install dist/otdf_python-0.2.4-py3-none-any.whl
