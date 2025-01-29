@@ -16,7 +16,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
+	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/opentdf/platform/sdk"
@@ -354,6 +357,73 @@ func EncryptFile(inputFilePath string, outputFilePath string, config OpentdfConf
 }
 
 /*
+	EncryptFilesInDirNPE encrypts all files in the specified directory
+
+Work is performed as an NPE (Non-Person Entity). Encrypted files are placed
+in the same directory as the input files, with a .tdf extension added to the file name.
+*/
+func EncryptFilesInDirNPE(dirPath string, config OpentdfConfig, dataAttributes []string) ([]string, error) {
+	authScopes := []string{"email"}
+	sdkClient, err := newSdkClient(config, authScopes)
+	if err != nil {
+		return nil, err
+	}
+
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		return nil, err
+	}
+
+	var outputPaths []string
+	for _, file := range files {
+		if !file.IsDir() {
+			inputFilePath := path.Join(dirPath, file.Name())
+			outputFilePath := inputFilePath + ".tdf"
+			got, err := encryptFileWithClient(inputFilePath, outputFilePath, sdkClient, config, dataAttributes)
+			if err != nil {
+				log.Printf("Failed to encrypt file %s: %v", inputFilePath, err)
+				return nil, err
+			} else {
+				outputPaths = append(outputPaths, got)
+			}
+		}
+	}
+	return outputPaths, nil
+}
+
+/*
+	EncryptFilesGlobNPE encrypts all files matching the specified glob pattern.
+
+Work is performed as an NPE (Non-Person Entity). Encrypted files are placed
+in the same directory as the input files, with a .tdf extension added to the file name.
+*/
+func EncryptFilesGlobNPE(pattern string, config OpentdfConfig, dataAttributes []string) ([]string, error) {
+	authScopes := []string{"email"}
+	sdkClient, err := newSdkClient(config, authScopes)
+	if err != nil {
+		return nil, err
+	}
+
+	files, err := filepath.Glob(pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	var outputPaths []string
+	for _, inputFilePath := range files {
+		outputFilePath := inputFilePath + ".tdf"
+		got, err := encryptFileWithClient(inputFilePath, outputFilePath, sdkClient, config, dataAttributes)
+		if err != nil {
+			log.Printf("Failed to encrypt file %s: %v", inputFilePath, err)
+			return nil, err
+		} else {
+			outputPaths = append(outputPaths, got)
+		}
+	}
+	return outputPaths, nil
+}
+
+/*
 Encrypts a file as a PE (Person Entity), returning a TDF manifest and the cipher text.
 */
 func EncryptFilePE(inputFilePath string, outputFilePath string, config OpentdfConfig, token TokenAuth, dataAttributes []string) (string, error) {
@@ -480,6 +550,130 @@ func DecryptFile(inputFilePath string, outputFilePath string, config OpentdfConf
 	return outputFilePath, nil
 }
 
+/*
+DecryptFilesInDirNPE decrypts all files in the specified directory
+Work is performed as an NPE (Non-Person Entity). Decrypted files are placed
+in the same directory as the input files, with the .tdf extension removed from the file name.
+*/
+func DecryptFilesInDirNPE(dirPath string, config OpentdfConfig) ([]string, error) {
+	authScopes := []string{"email"}
+	sdkClient, err := newSdkClient(config, authScopes)
+	if err != nil {
+		return nil, err
+	}
+
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		return nil, err
+	}
+
+	var outputPaths []string
+	for _, file := range files {
+		if !file.IsDir() && strings.HasSuffix(file.Name(), ".tdf") {
+			inputFilePath := path.Join(dirPath, file.Name())
+			outputFilePath := strings.TrimSuffix(inputFilePath, ".tdf")
+
+			bytes, err := readBytesFromFile(inputFilePath)
+			if err != nil {
+				log.Printf("Failed to read file %s: %v", inputFilePath, err)
+				return nil, err
+			}
+
+			decrypted, err := decryptBytesWithClient(bytes, sdkClient)
+			if err != nil {
+				log.Printf("Failed to decrypt file %s: %v", inputFilePath, err)
+				return nil, err
+			}
+
+			tdfFile, err := os.Create(outputFilePath)
+			if err != nil {
+				log.Printf("Failed to write decrypted file %s: %v", outputFilePath, err)
+				return nil, err
+			}
+			defer tdfFile.Close()
+
+			_, e := io.Copy(tdfFile, decrypted)
+			if e != nil {
+				log.Printf("Failed to write decrypted data to destination %s: %v", outputFilePath, err)
+				return nil, err
+			}
+
+			outputPaths = append(outputPaths, outputFilePath)
+		}
+	}
+	return outputPaths, nil
+}
+
+/*
+DecryptFilesGlobNPE decrypts all files matching the specified glob pattern.
+Work is performed as an NPE (Non-Person Entity). Decrypted files are placed
+in the same directory as the input files, with the .tdf extension removed from the file name.
+*/
+func DecryptFilesGlobNPE(pattern string, config OpentdfConfig) ([]string, error) {
+	authScopes := []string{"email"}
+	sdkClient, err := newSdkClient(config, authScopes)
+	if err != nil {
+		return nil, err
+	}
+
+	files, err := filepath.Glob(pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	var outputPaths []string
+	for _, inputFilePath := range files {
+		if strings.HasSuffix(inputFilePath, ".tdf") {
+			outputFilePath := strings.TrimSuffix(inputFilePath, ".tdf")
+
+			bytes, err := readBytesFromFile(inputFilePath)
+			if err != nil {
+				log.Printf("Failed to read file %s: %v", inputFilePath, err)
+				return nil, err
+			}
+
+			decrypted, err := decryptBytesWithClient(bytes, sdkClient)
+			if err != nil {
+				log.Printf("Failed to decrypt file %s: %v", inputFilePath, err)
+				return nil, err
+			}
+
+			tdfFile, err := os.Create(outputFilePath)
+			if err != nil {
+				log.Printf("Failed to write decrypted file %s: %v", outputFilePath, err)
+				return nil, err
+			}
+			defer tdfFile.Close()
+
+			_, e := io.Copy(tdfFile, decrypted)
+			if e != nil {
+				log.Printf("Failed to write decrypted data to destination %s: %v", outputFilePath, err)
+				return nil, err
+			}
+
+			outputPaths = append(outputPaths, outputFilePath)
+		}
+	}
+	if len(outputPaths) == 0 {
+		return nil, fmt.Errorf("no files were decrypted")
+	}
+	return outputPaths, nil
+}
+
+func decryptBytesWithClient(toDecrypt []byte, sdkClient *sdk.SDK) (*bytes.Buffer, error) {
+	tdfreader, err := sdkClient.LoadTDF(bytes.NewReader(toDecrypt))
+	if err != nil {
+		return nil, err
+	}
+
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, tdfreader)
+	if err != nil && err != io.EOF {
+		return nil, err
+	}
+	return buf, nil
+}
+
 func DecryptFilePE(inputFilePath string, outputFilePath string, config OpentdfConfig, token TokenAuth) (string, error) {
 	bytes, err := readBytesFromFile(inputFilePath)
 	if err != nil {
@@ -503,4 +697,51 @@ func DecryptFilePE(inputFilePath string, outputFilePath string, config OpentdfCo
 	}
 
 	return outputFilePath, nil
+}
+
+func encryptFileWithClient(inputFilePath string, outputFilePath string, sdkClient *sdk.SDK, config OpentdfConfig, dataAttributes []string) (string, error) {
+	bytes, err := readBytesFromFile(inputFilePath)
+	if err != nil {
+		return "", err
+	}
+
+	encrypted, err := encryptBytesWithClient(bytes, sdkClient, config, dataAttributes)
+	if err != nil {
+		return "", fmt.Errorf("failed to encrypt: %w", err)
+	}
+
+	var dest *os.File
+	if !strings.HasSuffix(outputFilePath, ".tdf") {
+		outputFilePath += ".tdf"
+	}
+	tdfFile, err := os.Create(outputFilePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to write encrypted file %s", outputFilePath)
+	}
+	defer tdfFile.Close()
+	dest = tdfFile
+
+	_, e := io.Copy(dest, encrypted)
+	if e != nil {
+		return "", errors.New("failed to write encrypted data to destination")
+	}
+
+	return outputFilePath, nil
+}
+
+func encryptBytesWithClient(b []byte, sdkClient *sdk.SDK, config OpentdfConfig, dataAttributes []string) (*bytes.Buffer, error) {
+	var encrypted []byte
+	enc := bytes.NewBuffer(encrypted)
+
+	_, err := sdkClient.CreateTDF(enc, bytes.NewReader(b),
+		sdk.WithDataAttributes(dataAttributes...),
+		sdk.WithKasInformation(sdk.KASInfo{
+			URL:       config.KasUrl,
+			PublicKey: "",
+		}),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return enc, nil
 }
