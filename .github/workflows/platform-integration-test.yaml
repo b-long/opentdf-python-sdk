@@ -22,14 +22,14 @@ permissions:
 
 jobs:
   integration_test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout this repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
 
       - uses: actions/cache/restore@v4
         with:
-          path: dist/otdf_python-0.2.3-py3-none-any.whl
+          path: dist/otdf_python-0.2.4-py3-none-any.whl
           key: ${{ runner.os }}${{ inputs.python_version }}-data-${{ github.sha }}
 
       - name: Prove that the input file is available
@@ -265,7 +265,7 @@ jobs:
   #     - platform-xtest
   #     - mavenverify
   #     - pr
-  #   runs-on: ubuntu-latest
+  #   runs-on: ubuntu-22.04
   #   if: always()
   #   steps:
   #     - if: contains(needs.*.result, 'failure')

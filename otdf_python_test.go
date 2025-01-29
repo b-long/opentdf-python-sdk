@@ -16,6 +16,13 @@ import (
 	"time"
 )
 
+func getEnv(key, defaultValue string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return defaultValue
+}
+
 type TestConfiguration struct {
 	platformEndpoint string
 	tokenEndpoint    string
@@ -24,6 +31,8 @@ type TestConfiguration struct {
 	npeClientSecret  string
 	peUsername       string
 	pePassword       string
+	testAttribute1   string
+	testAttribute2   string
 }
 
 var config = TestConfiguration{
@@ -34,6 +43,9 @@ var config = TestConfiguration{
 	npeClientSecret:  os.Getenv("OPENTDF_CLIENT_SECRET"),
 	peUsername:       os.Getenv("TEST_OPENTDF_SECRET_USER_ID"),
 	pePassword:       os.Getenv("TEST_OPENTDF_SECRET_USER_PASSWORD"),
+	// For default values, we added a helper function
+	testAttribute1: getEnv("TEST_OPENTDF_ATTRIBUTE_1", "https://example.com/attr/attr1/value/value1"),
+	testAttribute2: getEnv("TEST_OPENTDF_ATTRIBUTE_2", "https://example.com/attr/attr1/value/value2"),
 }
 
 func TestHello(t *testing.T) {
@@ -127,11 +139,10 @@ func AuthenticateNPE() (gotdf_python.TokenAuth, error) {
 }
 
 func getSingleDataAttribute(config TestConfiguration) []string {
-	return []string{"https://example.com/attr/attr1/value/value1"}
+	return []string{config.testAttribute1}
 }
 func getMultiDataAttribute(config TestConfiguration) []string {
-	return []string{"https://example.com/attr/attr1/value/value1", "https://example.com/attr/attr1/value/value2"}
-
+	return []string{config.testAttribute1, config.testAttribute2}
 }
 
 func doEncryptString(t *testing.T, dataAttributes []string) {
@@ -285,36 +296,6 @@ func Test_NPE_Encrypt_File_Multi_Attributes(t *testing.T) {
 	encrypt_file_NPE(t, attrValues)
 }
 
-func e2e_test_as_NPE(t *testing.T, dataAttributes []string) {
-
-	tdfPath := encrypt_file_NPE(t, dataAttributes)
-	tmpOutputFile, err := os.CreateTemp("", "output-file-*.txt")
-	if err != nil {
-		t.Fatal(err)
-	}
-	tokenAuth, err := AuthenticatePE()
-	if err != nil {
-		t.Error(err)
-	}
-
-	got, err := gotdf_python.DecryptFilePE(tdfPath, tmpOutputFile.Name(), gotdf_python.OpentdfConfig{
-		ClientId:         config.npeClientId,
-		ClientSecret:     config.npeClientSecret,
-		PlatformEndpoint: config.platformEndpoint,
-		TokenEndpoint:    config.tokenEndpoint,
-		KasUrl:           config.kasEndpoint,
-	}, tokenAuth)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got == "" {
-		t.Error("Unexpected value")
-	} else {
-		fmt.Println("Successfully decrypted TDF")
-	}
-}
-
 func e2e_test_as_PE(t *testing.T, dataAttributes []string) {
 	token_for_encrypt, err := AuthenticatePE()
 	if err != nil {
@@ -363,4 +344,233 @@ func Test_PE_E2E_File_Single_Attributes(t *testing.T) {
 func Test_PE_E2E_File_Multi_Attributes(t *testing.T) {
 	attrValues := getMultiDataAttribute(config)
 	e2e_test_as_PE(t, attrValues)
+}
+
+func Test_NPE_Encrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
+	// Create a temporary directory
+	tmpDir, err := os.MkdirTemp("", "input-dir")
+	if err != nil {
+		t.Fatal("Could not create temporary directory", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Create a temporary file in the directory
+	tmpFile1, err := os.CreateTemp(tmpDir, "input-file1-*.txt")
+	if err != nil {
+		t.Fatal("Could not create input file", err)
+	}
+	defer tmpFile1.Close()
+
+	// Write some data to the file
+	if _, err = tmpFile1.WriteString("test data"); err != nil {
+		t.Fatal("Unable to write to temporary file", err)
+	}
+
+	// Create a temporary file in the directory
+	tmpFile2, err := os.CreateTemp(tmpDir, "input-file2-*.txt")
+	if err != nil {
+		t.Fatal("Could not create input file", err)
+	}
+	defer tmpFile2.Close()
+
+	// Write some data to the file
+	if _, err = tmpFile2.WriteString("test data"); err != nil {
+		t.Fatal("Unable to write to temporary file", err)
+	}
+
+	// Call the EncryptFilesInDirNPE function
+	got, err := gotdf_python.EncryptFilesInDirNPE(tmpDir, gotdf_python.OpentdfConfig{
+		ClientId:         config.npeClientId,
+		ClientSecret:     config.npeClientSecret,
+		PlatformEndpoint: config.platformEndpoint,
+		TokenEndpoint:    config.tokenEndpoint,
+		KasUrl:           config.kasEndpoint,
+	}, nil)
+	if err != nil {
+		t.Fatal("Failed to EncryptFilesInDirNPE()!", err)
+	}
+
+	if len(got) == 0 {
+		t.Fatal("EncryptFilesInDirNPE returned empty value, but didn't error!")
+	}
+
+	fmt.Println("Successfully encrypted files in directory")
+}
+
+func Test_NPE_Encrypt_Files_Glob_Nil_Attributes(t *testing.T) {
+	// Create a temporary directory
+	tmpDir, err := os.MkdirTemp("", "input-dir")
+	if err != nil {
+		t.Fatal("Could not create temporary directory", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Create a temporary file in the directory
+	tmpFile1, err := os.CreateTemp(tmpDir, "input-file1-*.txt")
+	if err != nil {
+		t.Fatal("Could not create input file", err)
+	}
+	defer tmpFile1.Close()
+
+	// Write some data to the file
+	if _, err = tmpFile1.WriteString("test data"); err != nil {
+		t.Fatal("Unable to write to temporary file", err)
+	}
+
+	// Create a temporary file in the directory
+	tmpFile2, err := os.CreateTemp(tmpDir, "input-file2-*.txt")
+	if err != nil {
+		t.Fatal("Could not create input file", err)
+	}
+	defer tmpFile2.Close()
+
+	// Write some data to the file
+	if _, err = tmpFile2.WriteString("test data"); err != nil {
+		t.Fatal("Unable to write to temporary file", err)
+	}
+
+	// Call the EncryptFilesGlobNPE function
+	got, err := gotdf_python.EncryptFilesGlobNPE(tmpDir+"/*.txt", gotdf_python.OpentdfConfig{
+		ClientId:         config.npeClientId,
+		ClientSecret:     config.npeClientSecret,
+		PlatformEndpoint: config.platformEndpoint,
+		TokenEndpoint:    config.tokenEndpoint,
+		KasUrl:           config.kasEndpoint,
+	}, nil)
+	if err != nil {
+		t.Fatal("Failed to EncryptFilesGlobNPE()!", err)
+	}
+
+	if len(got) == 0 {
+		t.Fatal("EncryptFilesGlobNPE returned empty value, but didn't error!")
+	}
+
+	fmt.Println("Successfully encrypted files using glob pattern")
+}
+
+// Call the DecryptFilesInDirNPE function
+func Test_NPE_Decrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
+	// Create a temporary directory
+	tmpDir, err := os.MkdirTemp("", "input-dir")
+	if err != nil {
+		t.Fatal("Could not create temporary directory", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Create a temporary file in the directory
+	tmpFile1, err := os.CreateTemp(tmpDir, "input-file1-*.txt")
+	if err != nil {
+		t.Fatal("Could not create input file", err)
+	}
+	defer tmpFile1.Close()
+
+	// Write some data to the file
+	if _, err = tmpFile1.WriteString("test data"); err != nil {
+		t.Fatal("Unable to write to temporary file", err)
+	}
+
+	// Create a temporary file in the directory
+	tmpFile2, err := os.CreateTemp(tmpDir, "input-file2-*.txt")
+	if err != nil {
+		t.Fatal("Could not create input file", err)
+	}
+	defer tmpFile2.Close()
+
+	// Write some data to the file
+	if _, err = tmpFile2.WriteString("test data"); err != nil {
+		t.Fatal("Unable to write to temporary file", err)
+	}
+
+	// Encrypt the file
+	_, err = gotdf_python.EncryptFilesInDirNPE(tmpDir, gotdf_python.OpentdfConfig{
+		ClientId:         config.npeClientId,
+		ClientSecret:     config.npeClientSecret,
+		PlatformEndpoint: config.platformEndpoint,
+		TokenEndpoint:    config.tokenEndpoint,
+		KasUrl:           config.kasEndpoint,
+	}, nil)
+	if err != nil {
+		t.Fatal("Failed to EncryptFilesInDirNPE()!", err)
+	}
+
+	// Call the DecryptFilesInDirNPE function
+	got, err := gotdf_python.DecryptFilesInDirNPE(tmpDir, gotdf_python.OpentdfConfig{
+		ClientId:         config.npeClientId,
+		ClientSecret:     config.npeClientSecret,
+		PlatformEndpoint: config.platformEndpoint,
+		TokenEndpoint:    config.tokenEndpoint,
+		KasUrl:           config.kasEndpoint,
+	})
+	if err != nil {
+		t.Fatal("Failed to DecryptFilesInDirNPE()!", err)
+	}
+
+	if len(got) == 0 {
+		t.Fatal("DecryptFilesInDirNPE returned empty value, but didn't error!")
+	}
+
+	fmt.Println("Successfully decrypted files in directory")
+}
+
+func Test_NPE_Decrypt_Files_Glob_Nil_Attributes(t *testing.T) {
+	// Create a temporary directory
+	tmpDir, err := os.MkdirTemp("", "input-dir")
+	if err != nil {
+		t.Fatal("Could not create temporary directory", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Create a temporary file in the directory
+	tmpFile1, err := os.CreateTemp(tmpDir, "input-file1-*.txt")
+	if err != nil {
+		t.Fatal("Could not create input file", err)
+	}
+	defer tmpFile1.Close()
+
+	// Write some data to the file
+	if _, err = tmpFile1.WriteString("test data"); err != nil {
+		t.Fatal("Unable to write to temporary file", err)
+	}
+
+	// Create a temporary file in the directory
+	tmpFile2, err := os.CreateTemp(tmpDir, "input-file2-*.txt")
+	if err != nil {
+		t.Fatal("Could not create input file", err)
+	}
+	defer tmpFile2.Close()
+
+	// Write some data to the file
+	if _, err = tmpFile2.WriteString("test data"); err != nil {
+		t.Fatal("Unable to write to temporary file", err)
+	}
+
+	// Encrypt the file
+	_, err = gotdf_python.EncryptFilesGlobNPE(tmpDir+"/*.txt", gotdf_python.OpentdfConfig{
+		ClientId:         config.npeClientId,
+		ClientSecret:     config.npeClientSecret,
+		PlatformEndpoint: config.platformEndpoint,
+		TokenEndpoint:    config.tokenEndpoint,
+		KasUrl:           config.kasEndpoint,
+	}, nil)
+	if err != nil {
+		t.Fatal("Failed to EncryptFilesGlobNPE()!", err)
+	}
+
+	// Call the DecryptFilesGlobNPE function
+	got, err := gotdf_python.DecryptFilesGlobNPE(tmpDir+"/*.tdf", gotdf_python.OpentdfConfig{
+		ClientId:         config.npeClientId,
+		ClientSecret:     config.npeClientSecret,
+		PlatformEndpoint: config.platformEndpoint,
+		TokenEndpoint:    config.tokenEndpoint,
+		KasUrl:           config.kasEndpoint,
+	})
+	if err != nil {
+		t.Fatal("Failed to DecryptFilesGlobNPE()!", err)
+	}
+
+	if len(got) == 0 {
+		t.Fatal("DecryptFilesGlobNPE returned empty value, but didn't error!")
+	}
+
+	fmt.Println("Successfully decrypted files using glob pattern")
 }
