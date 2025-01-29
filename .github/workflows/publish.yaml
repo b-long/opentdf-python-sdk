@@ -84,7 +84,7 @@ jobs:
   build_linux_x86_64:
     # if: false
     name: Linux Python x86_64
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
@@ -126,7 +126,7 @@ jobs:
 
   build_linux_arm:
     name: Linux Python ARM
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
@@ -211,7 +211,7 @@ jobs:
       # This permission is mandatory for PyPI's trusted publishing
       id-token: write
     needs: [build_macos, build_linux_x86_64, build_linux_arm]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     # If branch is 'main'
     if: github.ref == 'refs/heads/main'
 
