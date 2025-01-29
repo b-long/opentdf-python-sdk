@@ -19,6 +19,7 @@ pybindgen = "^0.22.1"
 
 [tool.poetry]
 package-mode = false
+version = "0.2.3"
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.14"
