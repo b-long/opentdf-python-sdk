@@ -16,7 +16,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -381,8 +380,7 @@ func EncryptFilesInDirNPE(dirPath string, config OpentdfConfig, dataAttributes [
 			outputFilePath := inputFilePath + ".tdf"
 			got, err := encryptFileWithClient(inputFilePath, outputFilePath, sdkClient, config, dataAttributes)
 			if err != nil {
-				log.Printf("Failed to encrypt file %s: %v", inputFilePath, err)
-				return nil, err
+				return nil, fmt.Errorf("failed to encrypt file %s: %v", inputFilePath, err)
 			} else {
 				outputPaths = append(outputPaths, got)
 			}
@@ -414,8 +412,8 @@ func EncryptFilesGlobNPE(pattern string, config OpentdfConfig, dataAttributes []
 		outputFilePath := inputFilePath + ".tdf"
 		got, err := encryptFileWithClient(inputFilePath, outputFilePath, sdkClient, config, dataAttributes)
 		if err != nil {
-			log.Printf("Failed to encrypt file %s: %v", inputFilePath, err)
-			return nil, err
+
+			return nil, fmt.Errorf("failed to encrypt file %s: %v", inputFilePath, err)
 		} else {
 			outputPaths = append(outputPaths, got)
 		}
@@ -575,27 +573,24 @@ func DecryptFilesInDirNPE(dirPath string, config OpentdfConfig) ([]string, error
 
 			bytes, err := readBytesFromFile(inputFilePath)
 			if err != nil {
-				log.Printf("Failed to read file %s: %v", inputFilePath, err)
-				return nil, err
+
+				return nil, fmt.Errorf("failed to read file %s: %v", inputFilePath, err)
 			}
 
 			decrypted, err := decryptBytesWithClient(bytes, sdkClient)
 			if err != nil {
-				log.Printf("Failed to decrypt file %s: %v", inputFilePath, err)
-				return nil, err
+				return nil, fmt.Errorf("failed to decrypt file %s: %v", inputFilePath, err)
 			}
 
 			tdfFile, err := os.Create(outputFilePath)
 			if err != nil {
-				log.Printf("Failed to write decrypted file %s: %v", outputFilePath, err)
-				return nil, err
+				return nil, fmt.Errorf("failed to write decrypted file %s: %v", outputFilePath, err)
 			}
 			defer tdfFile.Close()
 
 			_, e := io.Copy(tdfFile, decrypted)
 			if e != nil {
-				log.Printf("Failed to write decrypted data to destination %s: %v", outputFilePath, err)
-				return nil, err
+				return nil, fmt.Errorf("failed to write decrypted data to destination %s: %v", outputFilePath, err)
 			}
 
 			outputPaths = append(outputPaths, outputFilePath)
@@ -628,27 +623,23 @@ func DecryptFilesGlobNPE(pattern string, config OpentdfConfig) ([]string, error)
 
 			bytes, err := readBytesFromFile(inputFilePath)
 			if err != nil {
-				log.Printf("Failed to read file %s: %v", inputFilePath, err)
-				return nil, err
+				return nil, fmt.Errorf("failed to read file %s: %v", inputFilePath, err)
 			}
 
 			decrypted, err := decryptBytesWithClient(bytes, sdkClient)
 			if err != nil {
-				log.Printf("Failed to decrypt file %s: %v", inputFilePath, err)
-				return nil, err
+				return nil, fmt.Errorf("failed to decrypt file %s: %v", inputFilePath, err)
 			}
 
 			tdfFile, err := os.Create(outputFilePath)
 			if err != nil {
-				log.Printf("Failed to write decrypted file %s: %v", outputFilePath, err)
-				return nil, err
+				return nil, fmt.Errorf("failed to write decrypted file %s", outputFilePath)
 			}
 			defer tdfFile.Close()
 
 			_, e := io.Copy(tdfFile, decrypted)
 			if e != nil {
-				log.Printf("Failed to write decrypted data to destination %s: %v", outputFilePath, err)
-				return nil, err
+				return nil, fmt.Errorf("failed to write decrypted data to destination %s: %v", outputFilePath, err)
 			}
 
 			outputPaths = append(outputPaths, outputFilePath)
