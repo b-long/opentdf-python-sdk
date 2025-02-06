@@ -20,6 +20,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/opentdf/platform/sdk"
 )
@@ -374,18 +375,30 @@ func EncryptFilesInDirNPE(dirPath string, config OpentdfConfig, dataAttributes [
 	}
 
 	var outputPaths []string
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+
 	for _, file := range files {
 		if !file.IsDir() {
-			inputFilePath := path.Join(dirPath, file.Name())
-			outputFilePath := inputFilePath + ".tdf"
-			got, err := encryptFileWithClient(inputFilePath, outputFilePath, sdkClient, config, dataAttributes)
-			if err != nil {
-				return nil, fmt.Errorf("failed to encrypt file %s: %v", inputFilePath, err)
-			} else {
+			wg.Add(1)
+			go func(file os.DirEntry) {
+				defer wg.Done()
+				inputFilePath := path.Join(dirPath, file.Name())
+				outputFilePath := inputFilePath + ".tdf"
+				got, err := encryptFileWithClient(inputFilePath, outputFilePath, sdkClient, config, dataAttributes)
+				if err != nil {
+					fmt.Printf("failed to encrypt file %s: %v\n", inputFilePath, err)
+					return
+				}
+				mu.Lock()
 				outputPaths = append(outputPaths, got)
-			}
+				mu.Unlock()
+			}(file)
 		}
 	}
+
+	wg.Wait()
+
 	return outputPaths, nil
 }
 
@@ -565,37 +578,66 @@ func DecryptFilesInDirNPE(dirPath string, config OpentdfConfig) ([]string, error
 		return nil, err
 	}
 
-	var outputPaths []string
+	var wg sync.WaitGroup
+	outputPathsChan := make(chan string, len(files))
+	errChan := make(chan error, len(files))
+
 	for _, file := range files {
 		if !file.IsDir() && strings.HasSuffix(file.Name(), ".tdf") {
-			inputFilePath := path.Join(dirPath, file.Name())
-			outputFilePath := strings.TrimSuffix(inputFilePath, ".tdf")
+			wg.Add(1)
+			go func(file os.DirEntry) {
+				defer wg.Done()
+				fileInfo, err := file.Info()
+				if err != nil {
+					errChan <- fmt.Errorf("failed to get file info for %s: %v", file.Name(), err)
+					return
+				}
+				inputFilePath := path.Join(dirPath, fileInfo.Name())
+				outputFilePath := strings.TrimSuffix(inputFilePath, ".tdf")
 
-			bytes, err := readBytesFromFile(inputFilePath)
-			if err != nil {
+				bytes, err := readBytesFromFile(inputFilePath)
+				if err != nil {
+					errChan <- fmt.Errorf("failed to read file %s: %v", inputFilePath, err)
+					return
+				}
 
-				return nil, fmt.Errorf("failed to read file %s: %v", inputFilePath, err)
-			}
+				decrypted, err := decryptBytesWithClient(bytes, sdkClient)
+				if err != nil {
+					errChan <- fmt.Errorf("failed to decrypt file %s: %v", inputFilePath, err)
+					return
+				}
 
-			decrypted, err := decryptBytesWithClient(bytes, sdkClient)
-			if err != nil {
-				return nil, fmt.Errorf("failed to decrypt file %s: %v", inputFilePath, err)
-			}
+				tdfFile, err := os.Create(outputFilePath)
+				if err != nil {
+					errChan <- fmt.Errorf("failed to write decrypted file %s: %v", outputFilePath, err)
+					return
+				}
+				defer tdfFile.Close()
 
-			tdfFile, err := os.Create(outputFilePath)
-			if err != nil {
-				return nil, fmt.Errorf("failed to write decrypted file %s: %v", outputFilePath, err)
-			}
-			defer tdfFile.Close()
+				_, e := io.Copy(tdfFile, decrypted)
+				if e != nil {
+					errChan <- fmt.Errorf("failed to write decrypted data to destination %s: %v", outputFilePath, err)
+					return
+				}
 
-			_, e := io.Copy(tdfFile, decrypted)
-			if e != nil {
-				return nil, fmt.Errorf("failed to write decrypted data to destination %s: %v", outputFilePath, err)
-			}
-
-			outputPaths = append(outputPaths, outputFilePath)
+				outputPathsChan <- outputFilePath
+			}(file)
 		}
 	}
+
+	wg.Wait()
+	close(outputPathsChan)
+	close(errChan)
+
+	var outputPaths []string
+	for path := range outputPathsChan {
+		outputPaths = append(outputPaths, path)
+	}
+
+	if len(errChan) > 0 {
+		return nil, <-errChan
+	}
+
 	return outputPaths, nil
 }
 
