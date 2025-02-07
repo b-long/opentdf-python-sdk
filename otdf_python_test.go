@@ -346,7 +346,7 @@ func Test_PE_E2E_File_Multi_Attributes(t *testing.T) {
 	e2e_test_as_PE(t, attrValues)
 }
 
-func Test_NPE_Encrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
+func Test_Multifile_NPE_Encrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
 	// Create a temporary directory
 	tmpDir, err := os.MkdirTemp("", "input-dir")
 	if err != nil {
@@ -411,7 +411,7 @@ func Test_NPE_Encrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
 }
 
 // A new test of a new 'EncryptFilesWithExtensions' function
-func Test_NPE_Encrypt_Files_With_Extensions_Nil_Attributes(t *testing.T) {
+func Test_Multifile_NPE_Encrypt_Files_With_Extensions_Nil_Attributes(t *testing.T) {
 	// Create a temporary directory
 	tmpDir, err := os.MkdirTemp("", "input-dir")
 	if err != nil {
@@ -419,41 +419,8 @@ func Test_NPE_Encrypt_Files_With_Extensions_Nil_Attributes(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpDir)
 
-	// Create a temporary file in the directory
-	tmpFile1, err := os.CreateTemp(tmpDir, "input-file1-*.txt")
-	if err != nil {
-		t.Fatal("Could not create input file", err)
-	}
-	defer tmpFile1.Close()
-
-	// Write some data to the file
-	if _, err = tmpFile1.WriteString("test data"); err != nil {
-		t.Fatal("Unable to write to temporary file", err)
-	}
-
-	// Create a temporary file in the directory
-	tmpFile2, err := os.CreateTemp(tmpDir, "input-file2-*.txt")
-	if err != nil {
-		t.Fatal("Could not create input file", err)
-	}
-	defer tmpFile2.Close()
-
-	// Write some data to the file
-	if _, err = tmpFile2.WriteString("test data"); err != nil {
-		t.Fatal("Unable to write to temporary file", err)
-	}
-
-	// Create a temporary file in the directory
-	tmpFile3, err := os.CreateTemp(tmpDir, "input-file3-*.csv")
-	if err != nil {
-		t.Fatal("Could not create input file", err)
-	}
-	defer tmpFile3.Close()
-
-	// Write some data to the file
-	if _, err = tmpFile3.WriteString("test data"); err != nil {
-		t.Fatal("Unable to write to temporary file", err)
-	}
+	// Create test files
+	numFiles := createTestFiles(t, tmpDir)
 
 	// Call the EncryptFilesWithExtensionsNPE function
 	got, err := gotdf_python.EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv"}, gotdf_python.OpentdfConfig{
@@ -467,7 +434,7 @@ func Test_NPE_Encrypt_Files_With_Extensions_Nil_Attributes(t *testing.T) {
 		t.Fatal("Failed to EncryptFilesWithExtensionsNPE()!", err)
 	}
 
-	if len(got) != 3 {
+	if len(got) != numFiles {
 		t.Fatal("EncryptFilesWithExtensionsNPE returned incorrect got value, but didn't error!")
 	}
 
@@ -475,7 +442,7 @@ func Test_NPE_Encrypt_Files_With_Extensions_Nil_Attributes(t *testing.T) {
 }
 
 // Call the DecryptFilesInDirNPE function
-func Test_NPE_Decrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
+func Test_Multifile_NPE_Decrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
 	// Create a temporary directory
 	tmpDir, err := os.MkdirTemp("", "input-dir")
 	if err != nil {
@@ -483,29 +450,8 @@ func Test_NPE_Decrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpDir)
 
-	// Create a temporary file in the directory
-	tmpFile1, err := os.CreateTemp(tmpDir, "input-file1-*.txt")
-	if err != nil {
-		t.Fatal("Could not create input file", err)
-	}
-	defer tmpFile1.Close()
-
-	// Write some data to the file
-	if _, err = tmpFile1.WriteString("test data"); err != nil {
-		t.Fatal("Unable to write to temporary file", err)
-	}
-
-	// Create a temporary file in the directory
-	tmpFile2, err := os.CreateTemp(tmpDir, "input-file2-*.txt")
-	if err != nil {
-		t.Fatal("Could not create input file", err)
-	}
-	defer tmpFile2.Close()
-
-	// Write some data to the file
-	if _, err = tmpFile2.WriteString("test data"); err != nil {
-		t.Fatal("Unable to write to temporary file", err)
-	}
+	// Create test files
+	numFiles := createTestFiles(t, tmpDir)
 
 	// Encrypt the file
 	_, err = gotdf_python.EncryptFilesInDirNPE(tmpDir, gotdf_python.OpentdfConfig{
@@ -531,14 +477,14 @@ func Test_NPE_Decrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
 		t.Fatal("Failed to DecryptFilesInDirNPE()!", err)
 	}
 
-	if len(got) == 0 {
+	if len(got) != numFiles {
 		t.Fatal("DecryptFilesInDirNPE returned empty value, but didn't error!")
 	}
 
 	fmt.Println("Successfully decrypted files in directory")
 }
 
-func Test_NPE_Decrypt_Files_With_Extensions_Nil_Attributes(t *testing.T) {
+func Test_Multifile_NPE_Decrypt_Files_With_Extensions_Nil_Attributes(t *testing.T) {
 	// Create a temporary directory
 	tmpDir, err := os.MkdirTemp("", "input-dir")
 	if err != nil {
@@ -546,32 +492,11 @@ func Test_NPE_Decrypt_Files_With_Extensions_Nil_Attributes(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpDir)
 
-	// Create a temporary file in the directory
-	tmpFile1, err := os.CreateTemp(tmpDir, "input-file1-*.txt")
-	if err != nil {
-		t.Fatal("Could not create input file", err)
-	}
-	defer tmpFile1.Close()
+	// Create test files
+	numFiles := createTestFiles(t, tmpDir)
 
-	// Write some data to the file
-	if _, err = tmpFile1.WriteString("test data"); err != nil {
-		t.Fatal("Unable to write to temporary file", err)
-	}
-
-	// Create a temporary file in the directory
-	tmpFile2, err := os.CreateTemp(tmpDir, "input-file2-*.txt")
-	if err != nil {
-		t.Fatal("Could not create input file", err)
-	}
-	defer tmpFile2.Close()
-
-	// Write some data to the file
-	if _, err = tmpFile2.WriteString("test data"); err != nil {
-		t.Fatal("Unable to write to temporary file", err)
-	}
-
-	// Encrypt the file
-	_, err = gotdf_python.EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt"}, gotdf_python.OpentdfConfig{
+	// Encrypt the files
+	_, err = gotdf_python.EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv"}, gotdf_python.OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -594,9 +519,37 @@ func Test_NPE_Decrypt_Files_With_Extensions_Nil_Attributes(t *testing.T) {
 		t.Fatal("Failed to DecryptFilesWithExtensionsNPE()!", err)
 	}
 
-	if len(got) == 0 {
+	if len(got) != numFiles {
 		t.Fatal("DecryptFilesWithExtensionsNPE returned empty value, but didn't error!")
 	}
 
 	fmt.Println("Successfully decrypted files with extensions")
+}
+
+func createTestFiles(t *testing.T, tmpDir string) int {
+	// A number that corresponds to the hour of the day (between 0 and 23)
+	numFiles := time.Now().Hour()
+
+	if numFiles > 12 {
+		numFiles = numFiles - 12 // Limit the number of files to 12
+	}
+
+	for i := 0; i < numFiles; i++ {
+		ext := ".txt"
+		if i%2 == 0 {
+			ext = ".csv"
+		}
+		tmpFile, err := os.CreateTemp(tmpDir, fmt.Sprintf("input-file-%d-*%s", i, ext))
+		if err != nil {
+			t.Fatal("Could not create input file", err)
+		}
+		defer tmpFile.Close()
+
+		// Write some data to the file
+		if _, err = tmpFile.WriteString("test data"); err != nil {
+			t.Fatal("Unable to write to temporary file", err)
+		}
+	}
+
+	return numFiles
 }
