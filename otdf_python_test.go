@@ -378,26 +378,40 @@ func Test_NPE_Encrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
 		t.Fatal("Unable to write to temporary file", err)
 	}
 
-	// Call the EncryptFilesInDirNPE function
-	got, err := gotdf_python.EncryptFilesInDirNPE(tmpDir, gotdf_python.OpentdfConfig{
+	// Create a temporary file in the directory
+	tmpFile3, err := os.CreateTemp(tmpDir, "input-file3-*.csv")
+	if err != nil {
+		t.Fatal("Could not create input file", err)
+	}
+	defer tmpFile3.Close()
+
+	// Write some data to the file
+	if _, err = tmpFile3.WriteString("test data"); err != nil {
+		t.Fatal("Unable to write to temporary file", err)
+	}
+
+	cfg := gotdf_python.OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
 		TokenEndpoint:    config.tokenEndpoint,
 		KasUrl:           config.kasEndpoint,
-	}, nil)
+	}
+
+	got, err := gotdf_python.EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv"}, cfg, nil)
 	if err != nil {
-		t.Fatal("Failed to EncryptFilesInDirNPE()!", err)
+		t.Fatal("Failed to EncryptFilesWithExtensionsNPE()!", err)
 	}
 
-	if len(got) == 0 {
-		t.Fatal("EncryptFilesInDirNPE returned empty value, but didn't error!")
+	if len(got) != 3 {
+		t.Fatal("EncryptFilesWithExtensionsNPE returned incorrect got value, but didn't error!")
 	}
 
-	fmt.Println("Successfully encrypted files in directory")
+	fmt.Println("Successfully encrypted files using file extensions")
 }
 
-func Test_NPE_Encrypt_Files_Glob_Nil_Attributes(t *testing.T) {
+// A new test of a new 'EncryptFilesWithExtensions' function
+func Test_NPE_Encrypt_Files_With_Extensions_Nil_Attributes(t *testing.T) {
 	// Create a temporary directory
 	tmpDir, err := os.MkdirTemp("", "input-dir")
 	if err != nil {
@@ -429,8 +443,20 @@ func Test_NPE_Encrypt_Files_Glob_Nil_Attributes(t *testing.T) {
 		t.Fatal("Unable to write to temporary file", err)
 	}
 
-	// Call the EncryptFilesGlobNPE function
-	got, err := gotdf_python.EncryptFilesGlobNPE(tmpDir+"/*.txt", gotdf_python.OpentdfConfig{
+	// Create a temporary file in the directory
+	tmpFile3, err := os.CreateTemp(tmpDir, "input-file3-*.csv")
+	if err != nil {
+		t.Fatal("Could not create input file", err)
+	}
+	defer tmpFile3.Close()
+
+	// Write some data to the file
+	if _, err = tmpFile3.WriteString("test data"); err != nil {
+		t.Fatal("Unable to write to temporary file", err)
+	}
+
+	// Call the EncryptFilesWithExtensionsNPE function
+	got, err := gotdf_python.EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv"}, gotdf_python.OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -438,14 +464,14 @@ func Test_NPE_Encrypt_Files_Glob_Nil_Attributes(t *testing.T) {
 		KasUrl:           config.kasEndpoint,
 	}, nil)
 	if err != nil {
-		t.Fatal("Failed to EncryptFilesGlobNPE()!", err)
+		t.Fatal("Failed to EncryptFilesWithExtensionsNPE()!", err)
 	}
 
-	if len(got) == 0 {
-		t.Fatal("EncryptFilesGlobNPE returned empty value, but didn't error!")
+	if len(got) != 3 {
+		t.Fatal("EncryptFilesWithExtensionsNPE returned incorrect got value, but didn't error!")
 	}
 
-	fmt.Println("Successfully encrypted files using glob pattern")
+	fmt.Println("Successfully encrypted files with extensions")
 }
 
 // Call the DecryptFilesInDirNPE function
@@ -512,7 +538,7 @@ func Test_NPE_Decrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
 	fmt.Println("Successfully decrypted files in directory")
 }
 
-func Test_NPE_Decrypt_Files_Glob_Nil_Attributes(t *testing.T) {
+func Test_NPE_Decrypt_Files_With_Extensions_Nil_Attributes(t *testing.T) {
 	// Create a temporary directory
 	tmpDir, err := os.MkdirTemp("", "input-dir")
 	if err != nil {
@@ -545,7 +571,7 @@ func Test_NPE_Decrypt_Files_Glob_Nil_Attributes(t *testing.T) {
 	}
 
 	// Encrypt the file
-	_, err = gotdf_python.EncryptFilesGlobNPE(tmpDir+"/*.txt", gotdf_python.OpentdfConfig{
+	_, err = gotdf_python.EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt"}, gotdf_python.OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -553,11 +579,11 @@ func Test_NPE_Decrypt_Files_Glob_Nil_Attributes(t *testing.T) {
 		KasUrl:           config.kasEndpoint,
 	}, nil)
 	if err != nil {
-		t.Fatal("Failed to EncryptFilesGlobNPE()!", err)
+		t.Fatal("Failed to EncryptFilesWithExtensionsNPE()!", err)
 	}
 
-	// Call the DecryptFilesGlobNPE function
-	got, err := gotdf_python.DecryptFilesGlobNPE(tmpDir+"/*.tdf", gotdf_python.OpentdfConfig{
+	// Call the DecryptFilesWithExtensionsNPE function
+	got, err := gotdf_python.DecryptFilesWithExtensionsNPE(tmpDir, []string{".tdf"}, gotdf_python.OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -565,12 +591,12 @@ func Test_NPE_Decrypt_Files_Glob_Nil_Attributes(t *testing.T) {
 		KasUrl:           config.kasEndpoint,
 	})
 	if err != nil {
-		t.Fatal("Failed to DecryptFilesGlobNPE()!", err)
+		t.Fatal("Failed to DecryptFilesWithExtensionsNPE()!", err)
 	}
 
 	if len(got) == 0 {
-		t.Fatal("DecryptFilesGlobNPE returned empty value, but didn't error!")
+		t.Fatal("DecryptFilesWithExtensionsNPE returned empty value, but didn't error!")
 	}
 
-	fmt.Println("Successfully decrypted files using glob pattern")
+	fmt.Println("Successfully decrypted files with extensions")
 }
