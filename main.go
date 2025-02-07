@@ -364,10 +364,6 @@ in the same directory as the input files, with a .tdf extension added to the fil
 */
 func EncryptFilesInDirNPE(dirPath string, config OpentdfConfig, dataAttributes []string) ([]string, error) {
 	authScopes := []string{"email"}
-	sdkClient, err := newSdkClient(config, authScopes)
-	if err != nil {
-		return nil, err
-	}
 
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
@@ -383,6 +379,11 @@ func EncryptFilesInDirNPE(dirPath string, config OpentdfConfig, dataAttributes [
 			wg.Add(1)
 			go func(file os.DirEntry) {
 				defer wg.Done()
+				sdkClient, err := newSdkClient(config, authScopes)
+				if err != nil {
+					fmt.Printf("failed to create SDK client: %v\n", err)
+					return
+				}
 				inputFilePath := path.Join(dirPath, file.Name())
 				outputFilePath := inputFilePath + ".tdf"
 				got, err := encryptFileWithClient(inputFilePath, outputFilePath, sdkClient, config, dataAttributes)
