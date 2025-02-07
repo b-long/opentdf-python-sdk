@@ -423,7 +423,7 @@ func Test_Multifile_NPE_Encrypt_Files_With_Extensions_Nil_Attributes(t *testing.
 	numFiles := createTestFiles(t, tmpDir)
 
 	// Call the EncryptFilesWithExtensionsNPE function
-	got, err := gotdf_python.EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv"}, gotdf_python.OpentdfConfig{
+	got, err := gotdf_python.EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv", ".pdf"}, gotdf_python.OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -496,7 +496,7 @@ func Test_Multifile_NPE_Decrypt_Files_With_Extensions_Nil_Attributes(t *testing.
 	numFiles := createTestFiles(t, tmpDir)
 
 	// Encrypt the files
-	_, err = gotdf_python.EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv"}, gotdf_python.OpentdfConfig{
+	_, err = gotdf_python.EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv", ".pdf"}, gotdf_python.OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -538,7 +538,10 @@ func createTestFiles(t *testing.T, tmpDir string) int {
 		ext := ".txt"
 		if i%2 == 0 {
 			ext = ".csv"
+		} else if i%3 == 0 {
+			ext = ".pdf"
 		}
+
 		tmpFile, err := os.CreateTemp(tmpDir, fmt.Sprintf("input-file-%d-*%s", i, ext))
 		if err != nil {
 			t.Fatal("Could not create input file", err)

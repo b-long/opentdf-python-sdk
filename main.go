@@ -421,7 +421,7 @@ func EncryptFilesWithExtensionsNPE(dirPath string, extensions []string, config O
 		return nil, err
 	}
 
-	files, err := os.ReadDir(dirPath)
+	files, err := findFiles(dirPath, extensions)
 	if err != nil {
 		return nil, err
 	}
@@ -429,20 +429,14 @@ func EncryptFilesWithExtensionsNPE(dirPath string, extensions []string, config O
 	var outputPaths []string
 	var errors []error
 	for _, file := range files {
-		if !file.IsDir() {
-			for _, ext := range extensions {
-				if strings.HasSuffix(file.Name(), ext) {
-					inputFilePath := filepath.Join(dirPath, file.Name())
-					outputFilePath := inputFilePath + ".tdf"
-					got, err := encryptFileWithClient(inputFilePath, outputFilePath, sdkClient, config, dataAttributes)
-					if err != nil {
-						errors = append(errors, fmt.Errorf("failed to encrypt file %s: %v", inputFilePath, err))
-						continue
-					}
-					outputPaths = append(outputPaths, got)
-				}
-			}
+		inputFilePath := file
+		outputFilePath := inputFilePath + ".tdf"
+		got, err := encryptFileWithClient(inputFilePath, outputFilePath, sdkClient, config, dataAttributes)
+		if err != nil {
+			errors = append(errors, fmt.Errorf("failed to encrypt file %s: %v", inputFilePath, err))
+			continue
 		}
+		outputPaths = append(outputPaths, got)
 	}
 
 	if len(errors) > 0 {
@@ -575,10 +569,6 @@ in the same directory as the input files, with the .tdf extension removed from t
 */
 func DecryptFilesInDirNPE(dirPath string, config OpentdfConfig) ([]string, error) {
 	authScopes := []string{"email"}
-	sdkClient, err := newSdkClient(config, authScopes)
-	if err != nil {
-		return nil, err
-	}
 
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
@@ -594,6 +584,12 @@ func DecryptFilesInDirNPE(dirPath string, config OpentdfConfig) ([]string, error
 			wg.Add(1)
 			go func(file os.DirEntry) {
 				defer wg.Done()
+				sdkClient, err := newSdkClient(config, authScopes)
+				if err != nil {
+					errChan <- fmt.Errorf("failed to create SDK client: %v", err)
+					return
+				}
+
 				fileInfo, err := file.Info()
 				if err != nil {
 					errChan <- fmt.Errorf("failed to get file info for %s: %v", file.Name(), err)
@@ -795,4 +791,30 @@ func encryptBytesWithClient(b []byte, sdkClient *sdk.SDK, config OpentdfConfig, 
 		return nil, err
 	}
 	return enc, nil
+}
+
+// Function to find all files recursively in a directory matching the given extensions
+func findFiles(dir string, extensions []string) ([]string, error) {
+	var files []string
+
+	// Use filepath.Walk to walk through the directory recursively
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			// If there's an error reading the file, skip it
+			return err
+		}
+
+		// Check if the file extension matches 'extensions' parameter
+		if !info.IsDir() && strings.Contains(strings.Join(extensions, ","), filepath.Ext(path)) {
+			files = append(files, path) // Add the file to the list
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
 }
