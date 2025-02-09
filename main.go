@@ -2,12 +2,17 @@ package gotdf_python
 
 /*
 All public (upper-case) functions here should be available to Python.
+* E.g. imported & tested via 'validate_otdf_python.py'
 
-As a result, all public functions should be imported & tested.
+TODO: Consider testing against attributes that are returned by some listing.
+* See: https://github.com/orgs/opentdf/discussions/947
 
-Currently, testing is performed via 'validate_otdf_python.py'
+TODO: Consider exposing an sdkClient that can be returned to the caller
+* Note, previously this failed in a 'gopy' compiled context
 
-FIXME: Expand test coverage, with known good attributes.  See: https://github.com/orgs/opentdf/discussions/947
+TODO: Platform knows about the IdP, perhaps we don't need to specify the TOKEN_ENDPOINT ?
+
+TODO: Expose authScopes []string (such as []string{"email"}) parameter to various functions
 
 */
 import (
@@ -404,33 +409,38 @@ func EncryptFilesInDirNPE(dirPath string, config OpentdfConfig, dataAttributes [
 }
 
 /*
-	EncryptFilesGlobNPE encrypts all files matching the specified glob pattern.
+	EncryptFilesWithExtensionsNPE encrypts all files in 'dirPath' with given file 'extensions'.
 
 Work is performed as an NPE (Non-Person Entity). Encrypted files are placed
 in the same directory as the input files, with a .tdf extension added to the file name.
 */
-func EncryptFilesGlobNPE(pattern string, config OpentdfConfig, dataAttributes []string) ([]string, error) {
+func EncryptFilesWithExtensionsNPE(dirPath string, extensions []string, config OpentdfConfig, dataAttributes []string) ([]string, error) {
 	authScopes := []string{"email"}
 	sdkClient, err := newSdkClient(config, authScopes)
 	if err != nil {
 		return nil, err
 	}
 
-	files, err := filepath.Glob(pattern)
+	files, err := findFiles(dirPath, extensions)
 	if err != nil {
 		return nil, err
 	}
 
 	var outputPaths []string
-	for _, inputFilePath := range files {
+	var errors []error
+	for _, file := range files {
+		inputFilePath := file
 		outputFilePath := inputFilePath + ".tdf"
 		got, err := encryptFileWithClient(inputFilePath, outputFilePath, sdkClient, config, dataAttributes)
 		if err != nil {
-
-			return nil, fmt.Errorf("failed to encrypt file %s: %v", inputFilePath, err)
-		} else {
-			outputPaths = append(outputPaths, got)
+			errors = append(errors, fmt.Errorf("failed to encrypt file %s: %v", inputFilePath, err))
+			continue
 		}
+		outputPaths = append(outputPaths, got)
+	}
+
+	if len(errors) > 0 {
+		return outputPaths, fmt.Errorf("encountered errors during encryption: %v", errors)
 	}
 	return outputPaths, nil
 }
@@ -483,17 +493,7 @@ func EncryptFilePE(inputFilePath string, outputFilePath string, config OpentdfCo
 }
 
 /*
-TODO: Create a single global var for sdkClinet (global var)
-  - E.g. in an HTTP server, create an instance for each connection
-
-TODO: The platform knows about the IdP, therefore we don't need
-to specify the TOKEN_ENDPOINT.
-
-TODO: Research why the platform is hard-coding "email" for scope
-
-A non-Public decrypt function.
-
-Based on:
+A non-Public decrypt function, based on:
 - https://github.com/opentdf/otdfctl/blob/46cfca1ba32c57f7264c320db27394c00412ca49/pkg/handlers/tdf.go#L29-L41
 */
 func decryptBytes(toDecrypt []byte, authScopes []string, config OpentdfConfig) (*bytes.Buffer, error) {
@@ -569,10 +569,6 @@ in the same directory as the input files, with the .tdf extension removed from t
 */
 func DecryptFilesInDirNPE(dirPath string, config OpentdfConfig) ([]string, error) {
 	authScopes := []string{"email"}
-	sdkClient, err := newSdkClient(config, authScopes)
-	if err != nil {
-		return nil, err
-	}
 
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
@@ -588,6 +584,12 @@ func DecryptFilesInDirNPE(dirPath string, config OpentdfConfig) ([]string, error
 			wg.Add(1)
 			go func(file os.DirEntry) {
 				defer wg.Done()
+				sdkClient, err := newSdkClient(config, authScopes)
+				if err != nil {
+					errChan <- fmt.Errorf("failed to create SDK client: %v", err)
+					return
+				}
+
 				fileInfo, err := file.Info()
 				if err != nil {
 					errChan <- fmt.Errorf("failed to get file info for %s: %v", file.Name(), err)
@@ -643,53 +645,64 @@ func DecryptFilesInDirNPE(dirPath string, config OpentdfConfig) ([]string, error
 }
 
 /*
-DecryptFilesGlobNPE decrypts all files matching the specified glob pattern.
+DecryptFilesWithExtensionsNPE decrypts all files matching the file 'extensions' in 'dirPath'.
 Work is performed as an NPE (Non-Person Entity). Decrypted files are placed
 in the same directory as the input files, with the .tdf extension removed from the file name.
 */
-func DecryptFilesGlobNPE(pattern string, config OpentdfConfig) ([]string, error) {
+func DecryptFilesWithExtensionsNPE(dirPath string, extensions []string, config OpentdfConfig) ([]string, error) {
 	authScopes := []string{"email"}
 	sdkClient, err := newSdkClient(config, authScopes)
 	if err != nil {
 		return nil, err
 	}
 
-	files, err := filepath.Glob(pattern)
+	files, err := os.ReadDir(dirPath)
 	if err != nil {
 		return nil, err
 	}
 
 	var outputPaths []string
-	for _, inputFilePath := range files {
-		if strings.HasSuffix(inputFilePath, ".tdf") {
-			outputFilePath := strings.TrimSuffix(inputFilePath, ".tdf")
+	var errors []error
+	for _, file := range files {
+		if !file.IsDir() {
+			for _, ext := range extensions {
+				if strings.HasSuffix(file.Name(), ext) {
+					inputFilePath := filepath.Join(dirPath, file.Name())
+					outputFilePath := strings.TrimSuffix(inputFilePath, ext)
 
-			bytes, err := readBytesFromFile(inputFilePath)
-			if err != nil {
-				return nil, fmt.Errorf("failed to read file %s: %v", inputFilePath, err)
+					bytes, err := readBytesFromFile(inputFilePath)
+					if err != nil {
+						errors = append(errors, fmt.Errorf("failed to read file %s: %v", inputFilePath, err))
+						continue
+					}
+
+					decrypted, err := decryptBytesWithClient(bytes, sdkClient)
+					if err != nil {
+						errors = append(errors, fmt.Errorf("failed to decrypt file %s: %v", inputFilePath, err))
+						continue
+					}
+
+					tdfFile, err := os.Create(outputFilePath)
+					if err != nil {
+						errors = append(errors, fmt.Errorf("failed to write decrypted file %s: %v", outputFilePath, err))
+						continue
+					}
+					defer tdfFile.Close()
+
+					_, e := io.Copy(tdfFile, decrypted)
+					if e != nil {
+						errors = append(errors, fmt.Errorf("failed to write decrypted data to destination %s: %v", outputFilePath, err))
+						continue
+					}
+
+					outputPaths = append(outputPaths, outputFilePath)
+				}
 			}
-
-			decrypted, err := decryptBytesWithClient(bytes, sdkClient)
-			if err != nil {
-				return nil, fmt.Errorf("failed to decrypt file %s: %v", inputFilePath, err)
-			}
-
-			tdfFile, err := os.Create(outputFilePath)
-			if err != nil {
-				return nil, fmt.Errorf("failed to write decrypted file %s", outputFilePath)
-			}
-			defer tdfFile.Close()
-
-			_, e := io.Copy(tdfFile, decrypted)
-			if e != nil {
-				return nil, fmt.Errorf("failed to write decrypted data to destination %s: %v", outputFilePath, err)
-			}
-
-			outputPaths = append(outputPaths, outputFilePath)
 		}
 	}
-	if len(outputPaths) == 0 {
-		return nil, fmt.Errorf("no files were decrypted")
+
+	if len(errors) > 0 {
+		return outputPaths, fmt.Errorf("encountered errors during decryption: %v", errors)
 	}
 	return outputPaths, nil
 }
@@ -778,4 +791,30 @@ func encryptBytesWithClient(b []byte, sdkClient *sdk.SDK, config OpentdfConfig, 
 		return nil, err
 	}
 	return enc, nil
+}
+
+// Function to find all files recursively in a directory matching the given extensions
+func findFiles(dir string, extensions []string) ([]string, error) {
+	var files []string
+
+	// Use filepath.Walk to walk through the directory recursively
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			// If there's an error reading the file, skip it
+			return err
+		}
+
+		// Check if the file extension matches 'extensions' parameter
+		if !info.IsDir() && strings.Contains(strings.Join(extensions, ","), filepath.Ext(path)) {
+			files = append(files, path) // Add the file to the list
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
 }
