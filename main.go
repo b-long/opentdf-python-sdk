@@ -439,8 +439,8 @@ func EncryptFilesWithExtensionsNPE(dirPath string, extensions []string, config O
 		return nil, err
 	}
 
-	var outputPaths []string
-	var errors []error
+	var outputPaths = make([]string, 0, len(files))
+	var errors = make([]error, 0, len(files))
 	for _, file := range files {
 		inputFilePath := file
 		outputFilePath := inputFilePath + ".tdf"
