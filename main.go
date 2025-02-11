@@ -673,55 +673,77 @@ in the same directory as the input files, with the .tdf extension removed from t
 */
 func DecryptFilesWithExtensionsNPE(dirPath string, extensions []string, config OpentdfConfig) ([]string, error) {
 	authScopes := []string{"email"}
-	sdkClient, err := newSdkClient(config, authScopes)
-	if err != nil {
-		return nil, err
-	}
 
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
 		return nil, err
 	}
 
-	var outputPaths = make([]string, 0, len(files))
-	var errors = make([]error, 0, len(files))
+	outputPathsChan := make(chan string, len(files))
+	errChan := make(chan error, len(files))
+
+	var wg sync.WaitGroup
 
 	for _, file := range files {
 		if !file.IsDir() {
 			for _, ext := range extensions {
 				if strings.HasSuffix(file.Name(), ext) {
-					inputFilePath := filepath.Join(dirPath, file.Name())
-					outputFilePath := strings.TrimSuffix(inputFilePath, ext)
+					wg.Add(1)
+					go func(file os.DirEntry, ext string) {
+						defer wg.Done()
+						sdkClient, err := newSdkClient(config, authScopes)
+						if err != nil {
+							errChan <- fmt.Errorf("failed to create SDK client: %v", err)
+							return
+						}
 
-					bytes, err := readBytesFromFile(inputFilePath)
-					if err != nil {
-						errors = append(errors, fmt.Errorf("failed to read file %s: %v", inputFilePath, err))
-						continue
-					}
+						inputFilePath := filepath.Join(dirPath, file.Name())
+						outputFilePath := strings.TrimSuffix(inputFilePath, ext)
 
-					decrypted, err := decryptBytesWithClient(bytes, sdkClient)
-					if err != nil {
-						errors = append(errors, fmt.Errorf("failed to decrypt file %s: %v", inputFilePath, err))
-						continue
-					}
+						bytes, err := readBytesFromFile(inputFilePath)
+						if err != nil {
+							errChan <- fmt.Errorf("failed to read file %s: %v", inputFilePath, err)
+							return
+						}
 
-					tdfFile, err := os.Create(outputFilePath)
-					if err != nil {
-						errors = append(errors, fmt.Errorf("failed to write decrypted file %s: %v", outputFilePath, err))
-						continue
-					}
-					defer tdfFile.Close()
+						decrypted, err := decryptBytesWithClient(bytes, sdkClient)
+						if err != nil {
+							errChan <- fmt.Errorf("failed to decrypt file %s: %v", inputFilePath, err)
+							return
+						}
 
-					_, e := io.Copy(tdfFile, decrypted)
-					if e != nil {
-						errors = append(errors, fmt.Errorf("failed to write decrypted data to destination %s: %v", outputFilePath, err))
-						continue
-					}
+						tdfFile, err := os.Create(outputFilePath)
+						if err != nil {
+							errChan <- fmt.Errorf("failed to write decrypted file %s: %v", outputFilePath, err)
+							return
+						}
+						defer tdfFile.Close()
 
-					outputPaths = append(outputPaths, outputFilePath)
+						_, e := io.Copy(tdfFile, decrypted)
+						if e != nil {
+							errChan <- fmt.Errorf("failed to write decrypted data to destination %s: %v", outputFilePath, err)
+							return
+						}
+
+						outputPathsChan <- outputFilePath
+					}(file, ext)
 				}
 			}
 		}
+	}
+
+	wg.Wait()
+	close(outputPathsChan)
+	close(errChan)
+
+	var outputPaths []string
+	for path := range outputPathsChan {
+		outputPaths = append(outputPaths, path)
+	}
+
+	var errors []error
+	for err := range errChan {
+		errors = append(errors, err)
 	}
 
 	logOutputPaths(outputPaths, errors)
