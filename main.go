@@ -683,8 +683,9 @@ func DecryptFilesWithExtensionsNPE(dirPath string, extensions []string, config O
 		return nil, err
 	}
 
-	var outputPaths []string
-	var errors []error
+	var outputPaths = make([]string, 0, len(files))
+	var errors = make([]error, 0, len(files))
+
 	for _, file := range files {
 		if !file.IsDir() {
 			for _, ext := range extensions {
