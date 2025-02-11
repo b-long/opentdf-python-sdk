@@ -843,6 +843,7 @@ func findFiles(dir string, extensions []string) ([]string, error) {
 	return files, nil
 }
 
+// logOutputPaths logs the output paths and any errors that occurred during processing
 func logOutputPaths(outputPaths []string, errors []error) {
 	if len(errors) > 0 {
 		log.Println("Errors occurred during processing:")
