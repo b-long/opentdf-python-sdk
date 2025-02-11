@@ -725,8 +725,11 @@ func DecryptFilesWithExtensionsNPE(dirPath string, extensions []string, config O
 
 	logOutputPaths(outputPaths, errors)
 
-	if len(errors) > 0 {
-		return outputPaths, fmt.Errorf("encountered errors during decryption of files in directory %s: %v", dirPath, errors)
+	if len(outputPaths) == 0 {
+		if len(errors) == 0 {
+			return nil, fmt.Errorf("no files with extensions %v found in directory %s", extensions, dirPath)
+		}
+		return nil, fmt.Errorf("encountered errors during decryption of files in directory %s: %v", dirPath, errors)
 	}
 	return outputPaths, nil
 }
