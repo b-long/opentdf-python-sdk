@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -374,6 +375,7 @@ func EncryptFilesInDirNPE(dirPath string, config OpentdfConfig, dataAttributes [
 	if err != nil {
 		return nil, err
 	}
+	errChan := make(chan error, len(files))
 
 	var outputPaths []string
 	var mu sync.Mutex
@@ -386,14 +388,14 @@ func EncryptFilesInDirNPE(dirPath string, config OpentdfConfig, dataAttributes [
 				defer wg.Done()
 				sdkClient, err := newSdkClient(config, authScopes)
 				if err != nil {
-					fmt.Printf("failed to create SDK client: %v\n", err)
+					errChan <- fmt.Errorf("failed to create SDK client: %v", err)
 					return
 				}
 				inputFilePath := path.Join(dirPath, file.Name())
 				outputFilePath := inputFilePath + ".tdf"
 				got, err := encryptFileWithClient(inputFilePath, outputFilePath, sdkClient, config, dataAttributes)
 				if err != nil {
-					fmt.Printf("failed to encrypt file %s: %v\n", inputFilePath, err)
+					errChan <- fmt.Errorf("failed to encrypt file %s: %v", inputFilePath, err)
 					return
 				}
 				mu.Lock()
@@ -404,7 +406,18 @@ func EncryptFilesInDirNPE(dirPath string, config OpentdfConfig, dataAttributes [
 	}
 
 	wg.Wait()
+	close(errChan)
 
+	var errors []error
+	for err := range errChan {
+		errors = append(errors, err)
+	}
+
+	logOutputPaths(outputPaths, errors)
+
+	if len(errors) > 0 {
+		return outputPaths, fmt.Errorf("encountered errors during encryption: %v", errors)
+	}
 	return outputPaths, nil
 }
 
@@ -438,6 +451,8 @@ func EncryptFilesWithExtensionsNPE(dirPath string, extensions []string, config O
 		}
 		outputPaths = append(outputPaths, got)
 	}
+
+	logOutputPaths(outputPaths, errors)
 
 	if len(errors) > 0 {
 		return outputPaths, fmt.Errorf("encountered errors during encryption: %v", errors)
@@ -637,8 +652,15 @@ func DecryptFilesInDirNPE(dirPath string, config OpentdfConfig) ([]string, error
 		outputPaths = append(outputPaths, path)
 	}
 
-	if len(errChan) > 0 {
-		return nil, <-errChan
+	var errors []error
+	for err := range errChan {
+		errors = append(errors, err)
+	}
+
+	logOutputPaths(outputPaths, errors)
+
+	if len(errors) > 0 {
+		return nil, fmt.Errorf("encountered errors during decryption: %v", errors)
 	}
 
 	return outputPaths, nil
@@ -700,6 +722,8 @@ func DecryptFilesWithExtensionsNPE(dirPath string, extensions []string, config O
 			}
 		}
 	}
+
+	logOutputPaths(outputPaths, errors)
 
 	if len(errors) > 0 {
 		return outputPaths, fmt.Errorf("encountered errors during decryption: %v", errors)
@@ -817,4 +841,17 @@ func findFiles(dir string, extensions []string) ([]string, error) {
 	}
 
 	return files, nil
+}
+
+func logOutputPaths(outputPaths []string, errors []error) {
+	if len(errors) > 0 {
+		log.Println("Errors occurred during processing:")
+		for _, err := range errors {
+			log.Printf("\t%s\n", err)
+		}
+	}
+	log.Println("Output Paths:")
+	for _, path := range outputPaths {
+		log.Printf("\t%s\n", path)
+	}
 }
