@@ -439,8 +439,8 @@ func EncryptFilesWithExtensionsNPE(dirPath string, extensions []string, config O
 		return nil, err
 	}
 
-	var outputPaths []string
-	var errors []error
+	var outputPaths = make([]string, 0, len(files))
+	var errors = make([]error, 0, len(files))
 	for _, file := range files {
 		inputFilePath := file
 		outputFilePath := inputFilePath + ".tdf"
@@ -673,60 +673,86 @@ in the same directory as the input files, with the .tdf extension removed from t
 */
 func DecryptFilesWithExtensionsNPE(dirPath string, extensions []string, config OpentdfConfig) ([]string, error) {
 	authScopes := []string{"email"}
-	sdkClient, err := newSdkClient(config, authScopes)
-	if err != nil {
-		return nil, err
-	}
 
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
 		return nil, err
 	}
 
-	var outputPaths []string
-	var errors []error
+	outputPathsChan := make(chan string, len(files))
+	errChan := make(chan error, len(files))
+
+	var wg sync.WaitGroup
+
 	for _, file := range files {
 		if !file.IsDir() {
 			for _, ext := range extensions {
 				if strings.HasSuffix(file.Name(), ext) {
-					inputFilePath := filepath.Join(dirPath, file.Name())
-					outputFilePath := strings.TrimSuffix(inputFilePath, ext)
+					wg.Add(1)
+					go func(file os.DirEntry, ext string) {
+						defer wg.Done()
+						sdkClient, err := newSdkClient(config, authScopes)
+						if err != nil {
+							errChan <- fmt.Errorf("failed to create SDK client: %v", err)
+							return
+						}
 
-					bytes, err := readBytesFromFile(inputFilePath)
-					if err != nil {
-						errors = append(errors, fmt.Errorf("failed to read file %s: %v", inputFilePath, err))
-						continue
-					}
+						inputFilePath := filepath.Join(dirPath, file.Name())
+						outputFilePath := strings.TrimSuffix(inputFilePath, ext)
 
-					decrypted, err := decryptBytesWithClient(bytes, sdkClient)
-					if err != nil {
-						errors = append(errors, fmt.Errorf("failed to decrypt file %s: %v", inputFilePath, err))
-						continue
-					}
+						bytes, err := readBytesFromFile(inputFilePath)
+						if err != nil {
+							errChan <- fmt.Errorf("failed to read file %s: %v", inputFilePath, err)
+							return
+						}
 
-					tdfFile, err := os.Create(outputFilePath)
-					if err != nil {
-						errors = append(errors, fmt.Errorf("failed to write decrypted file %s: %v", outputFilePath, err))
-						continue
-					}
-					defer tdfFile.Close()
+						decrypted, err := decryptBytesWithClient(bytes, sdkClient)
+						if err != nil {
+							errChan <- fmt.Errorf("failed to decrypt file %s: %v", inputFilePath, err)
+							return
+						}
 
-					_, e := io.Copy(tdfFile, decrypted)
-					if e != nil {
-						errors = append(errors, fmt.Errorf("failed to write decrypted data to destination %s: %v", outputFilePath, err))
-						continue
-					}
+						tdfFile, err := os.Create(outputFilePath)
+						if err != nil {
+							errChan <- fmt.Errorf("failed to write decrypted file %s: %v", outputFilePath, err)
+							return
+						}
+						defer tdfFile.Close()
 
-					outputPaths = append(outputPaths, outputFilePath)
+						_, e := io.Copy(tdfFile, decrypted)
+						if e != nil {
+							errChan <- fmt.Errorf("failed to write decrypted data to destination %s: %v", outputFilePath, err)
+							return
+						}
+
+						outputPathsChan <- outputFilePath
+					}(file, ext)
 				}
 			}
 		}
 	}
 
+	wg.Wait()
+	close(outputPathsChan)
+	close(errChan)
+
+	var outputPaths []string
+	for path := range outputPathsChan {
+		outputPaths = append(outputPaths, path)
+	}
+
+	var errors []error
+	for err := range errChan {
+		errors = append(errors, err)
+	}
+
 	logOutputPaths(outputPaths, errors)
 
-	if len(errors) > 0 {
-		return outputPaths, fmt.Errorf("encountered errors during decryption: %v", errors)
+	if len(outputPaths) == 0 {
+		if len(errors) == 0 {
+			return nil, fmt.Errorf("no files with extensions %v found in directory %s", extensions, dirPath)
+		}
+		return nil, fmt.Errorf("encountered errors during decryption of files in directory %s: %v", dirPath, errors)
 	}
 	return outputPaths, nil
 }
@@ -843,6 +869,7 @@ func findFiles(dir string, extensions []string) ([]string, error) {
 	return files, nil
 }
 
+// logOutputPaths logs the output paths and any errors that occurred during processing
 func logOutputPaths(outputPaths []string, errors []error) {
 	if len(errors) > 0 {
 		log.Println("Errors occurred during processing:")
