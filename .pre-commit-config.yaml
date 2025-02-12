@@ -33,7 +33,7 @@ repos:
           # - id: validate-toml
           - id: no-go-testing
     - repo: https://github.com/codespell-project/codespell
-      rev: v2.3.0
+      rev: v2.4.1
       hooks:
           - id: codespell
             args: ["--ignore-words-list", "b-long, otdf_python", "--skip=go.sum,otdf_python/"]
