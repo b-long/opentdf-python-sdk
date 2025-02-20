@@ -127,6 +127,7 @@ jobs:
   build_linux_arm:
     name: Linux Python ARM
     runs-on: ubuntu-22.04
+    timeout-minutes: 60
 
     steps:
       - uses: actions/checkout@v4
