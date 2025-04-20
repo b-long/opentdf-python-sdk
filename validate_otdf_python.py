@@ -10,13 +10,6 @@ from os import environ
 from otdf_python.gotdf_python import OpentdfConfig
 
 
-def verify_hello():
-    from otdf_python.gotdf_python import Hello
-
-    # Prints a basic str value: 'Hello, world'
-    print(Hello())
-
-
 def _get_configuration() -> OpentdfConfig:
     platformEndpoint = "localhost:8080"
 
@@ -123,9 +116,6 @@ def verify_encrypt_file() -> None:
 
 
 if __name__ == "__main__":
-    print("Attempting 'Hello, world'")
-    verify_hello()
-
     print("Attempting string encryption")
     verify_encrypt_str()
 

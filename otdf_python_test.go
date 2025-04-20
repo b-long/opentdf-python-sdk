@@ -48,15 +48,6 @@ var config = TestConfiguration{
 	testAttribute2: getEnv("TEST_OPENTDF_ATTRIBUTE_2", "https://example.com/attr/attr1/value/value2"),
 }
 
-func TestHello(t *testing.T) {
-	got := gotdf_python.Hello()
-	want := "Hello, world"
-	if got != want {
-		t.Error("Unexpected value")
-	}
-
-}
-
 /*
 Parse a JSON string into a map
 

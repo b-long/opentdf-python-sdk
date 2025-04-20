@@ -31,18 +31,6 @@ import (
 	"github.com/opentdf/platform/sdk"
 )
 
-/*
-A simple "Hello, world" function, used for learning golang (e.g. unit testing),
-as well as validating the necessary mechanisms to compile this library
-into a Python wheel.
-
-In the future, this function might be removed or replaced with a more
-conventional & useful function like GetVersion()
-*/
-func Hello() string {
-	return "Hello, world"
-}
-
 type TokenAuth struct {
 	AccessToken string
 	NpeClientId string
