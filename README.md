@@ -27,10 +27,10 @@ Install from the [Python Package Index (PyPI)](https://pypi.org):
 pip install otdf_python
 
 # Install a pinned version
-pip install otdf-python==0.2.10
+pip install otdf-python==0.2.11
 
 # Install a pinned version, from test.pypi.org
-pip install -i https://test.pypi.org/simple/ otdf-python==0.2.10
+pip install -i https://test.pypi.org/simple/ otdf-python==0.2.11
 ```
 
 ## Usage
@@ -96,6 +96,7 @@ tdf_manifest_json = EncryptString(
     inputText="Hello from Python",
     config=config,
     dataAttributes=da,
+    authScopes=Slice_string(["email"]),
 )
 ```
 
@@ -141,6 +142,7 @@ with tempfile.TemporaryDirectory() as tmpDir:
         outputFilePath=str(SOME_ENCRYPTED_FILE),
         config=config,
         dataAttributes=da,
+        authScopes=Slice_string(["email"]),
     )
 
     print(f"The output file was written to destination path: {outputFilePath}")
