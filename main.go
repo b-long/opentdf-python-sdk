@@ -12,8 +12,6 @@ TODO: Consider exposing an sdkClient that can be returned to the caller
 
 TODO: Platform knows about the IdP, perhaps we don't need to specify the TOKEN_ENDPOINT ?
 
-TODO: Expose authScopes []string (such as []string{"email"}) parameter to various functions
-
 */
 import (
 	"bytes"
@@ -104,14 +102,8 @@ func peSdkClient(config OpentdfConfig, authScopes []string, token TokenAuth) (*s
 	}
 }
 
-func EncryptString(inputText string, config OpentdfConfig, dataAttributes []string) (string, error) {
+func EncryptString(inputText string, config OpentdfConfig, dataAttributes []string, authScopes []string) (string, error) {
 	strReader := strings.NewReader(inputText)
-
-	// Scopes is related to OIDC, it's about what you're requesting
-	// and access control from the IdP
-	authScopes := []string{"email"}
-	// var authScopes []string
-
 	sdkClient, err := newSdkClient(config, authScopes)
 
 	if err != nil {
@@ -159,11 +151,7 @@ func EncryptString(inputText string, config OpentdfConfig, dataAttributes []stri
 /*
 Encrypts a string as a PE (Person Entity), returning a TDF manifest and the cipher text.
 */
-func EncryptStringPE(inputText string, config OpentdfConfig, token TokenAuth, dataAttributes []string) (string, string, error) {
-	// Scopes relate to OIDC, it's about what you're requesting
-	// and access control from the IdP
-	authScopes := []string{"email"}
-
+func EncryptStringPE(inputText string, config OpentdfConfig, token TokenAuth, dataAttributes []string, authScopes []string) (string, string, error) {
 	sdkClient, err := peSdkClient(config, authScopes, token)
 
 	if err != nil {
@@ -210,12 +198,7 @@ func EncryptStringPE(inputText string, config OpentdfConfig, token TokenAuth, da
 	return string(manifestJSON), ciphertext.String(), nil
 }
 
-func DecryptStringPE(inputText string, config OpentdfConfig, token TokenAuth) (string, error) {
-
-	// Scopes relate to OIDC, it's about what you're requesting
-	// and access control from the IdP
-	authScopes := []string{"email"}
-
+func DecryptStringPE(inputText string, config OpentdfConfig, token TokenAuth, authScopes []string) (string, error) {
 	decrypted, err := decryptBytesPE([]byte(inputText), authScopes, config, token)
 	if err != nil {
 		return "", err
@@ -306,9 +289,7 @@ func encryptBytesPE(b []byte, authScopes []string, config OpentdfConfig, token T
 	return enc, nil
 }
 
-func EncryptFile(inputFilePath string, outputFilePath string, config OpentdfConfig, dataAttributes []string) (string, error) {
-	authScopes := []string{"email"}
-
+func EncryptFile(inputFilePath string, outputFilePath string, config OpentdfConfig, dataAttributes []string, authScopes []string) (string, error) {
 	if outputFilePath == "" {
 		return "", errors.New("invalid output file path given")
 	}
@@ -356,9 +337,7 @@ func EncryptFile(inputFilePath string, outputFilePath string, config OpentdfConf
 Work is performed as an NPE (Non-Person Entity). Encrypted files are placed
 in the same directory as the input files, with a .tdf extension added to the file name.
 */
-func EncryptFilesInDirNPE(dirPath string, config OpentdfConfig, dataAttributes []string) ([]string, error) {
-	authScopes := []string{"email"}
-
+func EncryptFilesInDirNPE(dirPath string, config OpentdfConfig, dataAttributes []string, authScopes []string) ([]string, error) {
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
 		return nil, err
@@ -415,8 +394,7 @@ func EncryptFilesInDirNPE(dirPath string, config OpentdfConfig, dataAttributes [
 Work is performed as an NPE (Non-Person Entity). Encrypted files are placed
 in the same directory as the input files, with a .tdf extension added to the file name.
 */
-func EncryptFilesWithExtensionsNPE(dirPath string, extensions []string, config OpentdfConfig, dataAttributes []string) ([]string, error) {
-	authScopes := []string{"email"}
+func EncryptFilesWithExtensionsNPE(dirPath string, extensions []string, config OpentdfConfig, dataAttributes []string, authScopes []string) ([]string, error) {
 	sdkClient, err := newSdkClient(config, authScopes)
 	if err != nil {
 		return nil, err
@@ -451,9 +429,7 @@ func EncryptFilesWithExtensionsNPE(dirPath string, extensions []string, config O
 /*
 Encrypts a file as a PE (Person Entity), returning a TDF manifest and the cipher text.
 */
-func EncryptFilePE(inputFilePath string, outputFilePath string, config OpentdfConfig, token TokenAuth, dataAttributes []string) (string, error) {
-	authScopes := []string{"email"}
-
+func EncryptFilePE(inputFilePath string, outputFilePath string, config OpentdfConfig, token TokenAuth, dataAttributes []string, authScopes []string) (string, error) {
 	if outputFilePath == "" {
 		return "", errors.New("invalid output file path given")
 	}
@@ -570,9 +546,7 @@ DecryptFilesInDirNPE decrypts all files in the specified directory
 Work is performed as an NPE (Non-Person Entity). Decrypted files are placed
 in the same directory as the input files, with the .tdf extension removed from the file name.
 */
-func DecryptFilesInDirNPE(dirPath string, config OpentdfConfig) ([]string, error) {
-	authScopes := []string{"email"}
-
+func DecryptFilesInDirNPE(dirPath string, config OpentdfConfig, authScopes []string) ([]string, error) {
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
 		return nil, err
@@ -659,9 +633,7 @@ DecryptFilesWithExtensionsNPE decrypts all files matching the file 'extensions' 
 Work is performed as an NPE (Non-Person Entity). Decrypted files are placed
 in the same directory as the input files, with the .tdf extension removed from the file name.
 */
-func DecryptFilesWithExtensionsNPE(dirPath string, extensions []string, config OpentdfConfig) ([]string, error) {
-	authScopes := []string{"email"}
-
+func DecryptFilesWithExtensionsNPE(dirPath string, extensions []string, config OpentdfConfig, authScopes []string) ([]string, error) {
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
 		return nil, err
@@ -759,12 +731,11 @@ func decryptBytesWithClient(toDecrypt []byte, sdkClient *sdk.SDK) (*bytes.Buffer
 	return buf, nil
 }
 
-func DecryptFilePE(inputFilePath string, outputFilePath string, config OpentdfConfig, token TokenAuth) (string, error) {
+func DecryptFilePE(inputFilePath string, outputFilePath string, config OpentdfConfig, token TokenAuth, authScopes []string) (string, error) {
 	bytes, err := readBytesFromFile(inputFilePath)
 	if err != nil {
 		return "", err
 	}
-	authScopes := []string{"email"}
 	decrypted, err := decryptBytesPE(bytes, authScopes, config, token)
 	if err != nil {
 		return "", err

@@ -16,6 +16,8 @@ import (
 	"time"
 )
 
+var defaultAuthScopes = []string{"email"}
+
 func getEnv(key, defaultValue string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
@@ -144,7 +146,7 @@ func doEncryptString(t *testing.T, dataAttributes []string) {
 		PlatformEndpoint: config.platformEndpoint,
 		TokenEndpoint:    config.tokenEndpoint,
 		KasUrl:           config.kasEndpoint,
-	}, dataAttributes)
+	}, dataAttributes, defaultAuthScopes)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -209,7 +211,7 @@ func encrypt_file_NPE(t *testing.T, dataAttributes []string) string {
 		PlatformEndpoint: config.platformEndpoint,
 		TokenEndpoint:    config.tokenEndpoint,
 		KasUrl:           config.kasEndpoint,
-	}, dataAttributes)
+	}, dataAttributes, defaultAuthScopes)
 	if err != nil {
 		t.Error("Failed to EncryptFile()!")
 	}
@@ -255,7 +257,7 @@ func encrypt_file_PE(t *testing.T, dataAttributes []string, tokenAuth gotdf_pyth
 		PlatformEndpoint: config.platformEndpoint,
 		TokenEndpoint:    config.tokenEndpoint,
 		KasUrl:           config.kasEndpoint,
-	}, tokenAuth, dataAttributes)
+	}, tokenAuth, dataAttributes, defaultAuthScopes)
 	if err != nil {
 		t.Fatal("Failed to EncryptFilePE()!")
 	}
@@ -312,7 +314,7 @@ func e2e_test_as_PE(t *testing.T, dataAttributes []string) {
 		PlatformEndpoint: config.platformEndpoint,
 		TokenEndpoint:    config.tokenEndpoint,
 		KasUrl:           config.kasEndpoint,
-	}, token_for_decrypt)
+	}, token_for_decrypt, defaultAuthScopes)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -389,7 +391,7 @@ func Test_Multifile_NPE_Encrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
 		KasUrl:           config.kasEndpoint,
 	}
 
-	got, err := gotdf_python.EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv"}, cfg, nil)
+	got, err := gotdf_python.EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv"}, cfg, nil, defaultAuthScopes)
 	if err != nil {
 		t.Fatal("Failed to EncryptFilesWithExtensionsNPE()!", err)
 	}
@@ -420,7 +422,7 @@ func Test_Multifile_NPE_Encrypt_Files_With_Extensions_Nil_Attributes(t *testing.
 		PlatformEndpoint: config.platformEndpoint,
 		TokenEndpoint:    config.tokenEndpoint,
 		KasUrl:           config.kasEndpoint,
-	}, nil)
+	}, nil, defaultAuthScopes)
 	if err != nil {
 		t.Fatal("Failed to EncryptFilesWithExtensionsNPE()!", err)
 	}
@@ -451,7 +453,7 @@ func Test_Multifile_NPE_Decrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
 		PlatformEndpoint: config.platformEndpoint,
 		TokenEndpoint:    config.tokenEndpoint,
 		KasUrl:           config.kasEndpoint,
-	}, nil)
+	}, nil, defaultAuthScopes)
 	if err != nil {
 		t.Fatal("Failed to EncryptFilesInDirNPE()!", err)
 	}
@@ -463,7 +465,7 @@ func Test_Multifile_NPE_Decrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
 		PlatformEndpoint: config.platformEndpoint,
 		TokenEndpoint:    config.tokenEndpoint,
 		KasUrl:           config.kasEndpoint,
-	})
+	}, defaultAuthScopes)
 	if err != nil {
 		t.Fatal("Failed to DecryptFilesInDirNPE()!", err)
 	}
@@ -493,7 +495,7 @@ func Test_Multifile_NPE_Decrypt_Files_With_Extensions_Nil_Attributes(t *testing.
 		PlatformEndpoint: config.platformEndpoint,
 		TokenEndpoint:    config.tokenEndpoint,
 		KasUrl:           config.kasEndpoint,
-	}, nil)
+	}, nil, defaultAuthScopes)
 	if err != nil {
 		t.Fatal("Failed to EncryptFilesWithExtensionsNPE()!", err)
 	}
@@ -505,7 +507,7 @@ func Test_Multifile_NPE_Decrypt_Files_With_Extensions_Nil_Attributes(t *testing.
 		PlatformEndpoint: config.platformEndpoint,
 		TokenEndpoint:    config.tokenEndpoint,
 		KasUrl:           config.kasEndpoint,
-	})
+	}, defaultAuthScopes)
 	if err != nil {
 		t.Fatal("Failed to DecryptFilesWithExtensionsNPE()!", err)
 	}

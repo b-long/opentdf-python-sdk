@@ -53,6 +53,7 @@ def verify_encrypt_str() -> None:
             inputText="Hello from Python",
             config=config,
             dataAttributes=da,
+            authScopes=Slice_string(["email"]),
         )
 
         print(tdf_manifest_json)
@@ -98,6 +99,7 @@ def verify_encrypt_file() -> None:
                 outputFilePath=str(SOME_ENCRYPTED_FILE),
                 config=config,
                 dataAttributes=da,
+                authScopes=Slice_string(["email"]),
             )
 
             print(f"The output file was written to destination path: {outputFilePath}")

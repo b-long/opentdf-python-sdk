@@ -96,6 +96,7 @@ tdf_manifest_json = EncryptString(
     inputText="Hello from Python",
     config=config,
     dataAttributes=da,
+    authScopes=Slice_string(["email"]),
 )
 ```
 
@@ -141,6 +142,7 @@ with tempfile.TemporaryDirectory() as tmpDir:
         outputFilePath=str(SOME_ENCRYPTED_FILE),
         config=config,
         dataAttributes=da,
+        authScopes=Slice_string(["email"]),
     )
 
     print(f"The output file was written to destination path: {outputFilePath}")
