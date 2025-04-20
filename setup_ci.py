@@ -40,7 +40,7 @@ else:
 
 def _generate_path_with_gopath() -> str:
     go_path = subprocess.check_output(["go", "env", "GOPATH"]).decode("utf-8").strip()
-    path_val = f'{os.getenv("PATH")}:{go_path}/bin'
+    path_val = f"{os.getenv('PATH')}:{go_path}/bin"
     return path_val
 
 
@@ -81,7 +81,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setuptools.setup(
     name="otdf_python",
-    version="0.2.10",
+    version="0.2.11",
     author="b-long",
     description="Unofficial OpenTDF SDK for Python.",
     long_description_content_type="text/markdown",
