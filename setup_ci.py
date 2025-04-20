@@ -40,7 +40,7 @@ else:
 
 def _generate_path_with_gopath() -> str:
     go_path = subprocess.check_output(["go", "env", "GOPATH"]).decode("utf-8").strip()
-    path_val = f'{os.getenv("PATH")}:{go_path}/bin'
+    path_val = f"{os.getenv('PATH')}:{go_path}/bin"
     return path_val
 
 
