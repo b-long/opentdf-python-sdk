@@ -96,4 +96,9 @@ mkdir -p "${TEST_ROOT}" || { echo "Unable to create test root directory" ; exit 
 cd "${TEST_ROOT}" || { echo "Unable to change to test root directory" ; exit 1; }
 uv venv .venv-wheel
 source "${TEST_ROOT}/.venv-wheel/bin/activate"
+
+echo "Ensuring wheel can be installed"
 uv pip install ${BUILD_ROOT}/dist/*.whl || { echo "Failed to install wheel" ; exit 1; }
+
+loud_print "Listing all wheel modules"
+uvx python list_wheel_modules.py ${BUILD_ROOT}/dist/*.whl || { echo "Failed to list wheel modules" ; exit 1; }
