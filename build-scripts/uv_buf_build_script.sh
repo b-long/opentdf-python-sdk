@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Based on the excellent work of the sift-stack team:
+#   https://github.com/sift-stack/sift/blob/main/docs/python.md
 set -x
 set -eou pipefail
 
@@ -43,12 +45,29 @@ if ! command -v go &> /dev/null; then
 fi
 
 
+# Shallow clone the 'https://github.com/opentdf/platform.git' repo
+git clone --depth 1 https://github.com/opentdf/platform.git
+
+cd platform || { echo "Unable to change to platform directory" ; exit 1; }
+buf export --output=$BUILD_ROOT/protos --config buf.yaml
+
+cd $SCRIPT_DIR || { echo "Unable to change to script directory" ; exit 1; }
+cp buf.gen.python.yaml $BUILD_ROOT/buf.gen.yaml
+cp setup.py $BUILD_ROOT/setup.py
+
+cd "${BUILD_ROOT}" || { echo "Unable to change to build root directory" ; exit 1; }
+buf generate protos || { echo "buf generate failed" ; exit 1; }
+
+for dir in $(find gen -type d); do
+  touch $dir/__init__.py
+done
+
 # PY_TYPE="--python-preference=only-system"
 PY_TYPE="--python-preference=only-managed"
 
 loud_print "Creating virtual environment"
 # Install python deps
-uv venv .venv --python 3.12 "$PY_TYPE"
+uv venv .venv "$PY_TYPE"
 
 if ! [ -d "${BUILD_ROOT}/.venv" ]; then
     echo "Unable to locate virtual environment directory"
@@ -58,9 +77,12 @@ fi
 loud_print "Activating virtual environment"
 source "${BUILD_ROOT}/.venv/bin/activate"
 
+uv pip install build protobuf grpcio
+python -m build --sdist || { echo "Failed to build source distribution" ; exit 1; }
+python -m build --wheel || { echo "Failed to build wheel distribution" ; exit 1; }
 
-# Shallow clone the 'https://github.com/opentdf/platform.git' repo
-git clone --depth 1 https://github.com/opentdf/platform.git
-
-cd platform || { echo "Unable to change to platform directory" ; exit 1; }
-buf export --output=$BUILD_ROOT/protos --config buf.yaml
+echo "Build completed successfully."
+echo "Directory contents:"
+ls -lart
+echo "Dist directory contents:"
+ls -lart dist/
