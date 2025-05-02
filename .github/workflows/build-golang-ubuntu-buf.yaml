@@ -53,3 +53,8 @@ jobs:
           cd buf-build/
           chmod +x ./uv_buf_build_script.sh
           ./uv_buf_build_script.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: otdf_python_${{ matrix.python3_version }}
+          path: buf-build/buf-build-generated/dist/*.whl
