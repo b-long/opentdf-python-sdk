@@ -1,5 +1,6 @@
 #### Start project specific git exclusions
 otdf_python/
+build-scripts/buf-build/
 
 #### End project specific git exclusions
 
