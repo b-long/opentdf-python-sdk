@@ -1,10 +1,14 @@
 ---
-name: Ubuntu build - buf edition
+name: macOS build - buf edition
 on: [push]
-jobs:
+defaults:
+  run:
+    shell: bash
 
+jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: macos-13
+
     permissions:
       contents: write
 
@@ -38,7 +42,7 @@ jobs:
       - name: Install buf
         run: |
           BUF_VERSION="1.53.0"
-          BUF_URL="https://github.com/bufbuild/buf/releases/download/v1.53.0/buf-Linux-x86_64"
+          BUF_URL="https://github.com/bufbuild/buf/releases/download/v1.53.0/buf-Darwin-x86_64"
           curl -sSL "$BUF_URL" -o /usr/local/bin/buf
           chmod +x /usr/local/bin/buf
 
@@ -56,5 +60,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: otdf_python_${{ matrix.python3_version }}_ubuntu
+          name: otdf_python_${{ matrix.python3_version }}_macos
           path: buf-build/buf-build-generated/dist/*.whl
