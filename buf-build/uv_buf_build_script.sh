@@ -19,13 +19,15 @@ loud_print(){
 
 # Based on: https://stackoverflow.com/a/246128
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-BUILD_ROOT="${SCRIPT_DIR}/buf-build"
+BUILD_ROOT="${SCRIPT_DIR}/buf-build-generated"
+TEST_ROOT="${SCRIPT_DIR}/buf-build-test"
 
 # Cleanup previous builds
 rm -rf .venv-wheel/
 rm -rf .venv/
 rm -rf dist/
 rm -rf "${BUILD_ROOT}"
+rm -rf "${TEST_ROOT}"
 
 mkdir -p "${BUILD_ROOT}" || { echo "Unable to create build root directory" ; exit 1; }
 cd "${BUILD_ROOT}" || { echo "Unable to change to build root directory" ; exit 1; }
@@ -86,3 +88,12 @@ echo "Directory contents:"
 ls -lart
 echo "Dist directory contents:"
 ls -lart dist/
+
+
+loud_print "Testing new wheel"
+
+mkdir -p "${TEST_ROOT}" || { echo "Unable to create test root directory" ; exit 1; }
+cd "${TEST_ROOT}" || { echo "Unable to change to test root directory" ; exit 1; }
+uv venv .venv-wheel
+source "${TEST_ROOT}/.venv-wheel/bin/activate"
+uv pip install ${BUILD_ROOT}/dist/*.whl || { echo "Failed to install wheel" ; exit 1; }
