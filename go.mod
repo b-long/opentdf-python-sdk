@@ -1,8 +1,8 @@
 module gotdf_python
 
-go 1.24.0
+go 1.23
 
-toolchain go1.24.2
+toolchain go1.23
 
 require github.com/opentdf/platform/sdk v0.4.4
 
