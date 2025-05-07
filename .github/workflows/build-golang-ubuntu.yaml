@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        go-version: [1.23.x]
+        go-version: [1.24.x]
         python3_version: [ "3.11", "3.12" ]
 
     steps:
