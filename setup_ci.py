@@ -81,7 +81,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setuptools.setup(
     name="otdf_python",
-    version="0.2.12",
+    version="0.2.14",
     author="b-long",
     description="Unofficial OpenTDF SDK for Python.",
     long_description_content_type="text/markdown",

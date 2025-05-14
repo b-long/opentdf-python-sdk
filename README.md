@@ -27,10 +27,10 @@ Install from the [Python Package Index (PyPI)](https://pypi.org):
 pip install otdf_python
 
 # Install a pinned version
-pip install otdf-python==0.2.12
+pip install otdf-python==0.2.14
 
 # Install a pinned version, from test.pypi.org
-pip install -i https://test.pypi.org/simple/ otdf-python==0.2.12
+pip install -i https://test.pypi.org/simple/ otdf-python==0.2.14
 ```
 
 ## Usage
