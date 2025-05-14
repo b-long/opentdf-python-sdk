@@ -18,13 +18,6 @@ import (
 
 var defaultAuthScopes = []string{"email"}
 
-func getEnv(key, defaultValue string) string {
-	if value, ok := os.LookupEnv(key); ok {
-		return value
-	}
-	return defaultValue
-}
-
 type TestConfiguration struct {
 	platformEndpoint string
 	tokenEndpoint    string
