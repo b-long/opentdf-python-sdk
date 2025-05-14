@@ -42,26 +42,17 @@ type OpentdfConfig struct {
 	KasUrl           string
 }
 
-/*
-Based on: https://stackoverflow.com/a/42849112
-func inputValidation(normalConfig DecryptionConfig) (*DecryptionConfig, error) {
-	// Convert our Struct to a Map
-	var inInterface map[string]interface{}
-	inrec, _ := json.Marshal(normalConfig)
-	json.Unmarshal(inrec, &inInterface)
-
-	// Iterate through fields in the map and fail if empty value found
-	for field, val := range inInterface {
-		if val == nil || val == "" {
-			// fmt.Println("KV Pair: ", field, val)
-			return nil, errors.New("Missing configuration value for field " + field)
-		}
+func getEnv(key, defaultValue string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
 	}
-
-	return &normalConfig, nil
+	return defaultValue
 }
-*/
 
+/*
+NOTE: When the environment variable 'INSECURE_SKIP_VERIFY' is set to 'TRUE',
+this option for the OpenTDF SDK will be set.
+*/
 func newSdkClient(config OpentdfConfig, authScopes []string) (*sdk.SDK, error) {
 	// NOTE: The 'platformEndpoint' is sometimes referenced as 'host'
 	if strings.Count(config.TokenEndpoint, "http://") == 1 {
@@ -71,16 +62,25 @@ func newSdkClient(config OpentdfConfig, authScopes []string) (*sdk.SDK, error) {
 			sdk.WithInsecurePlaintextConn(),
 		)
 	} else if strings.Count(config.TokenEndpoint, "https://") == 1 {
-		return sdk.New(config.PlatformEndpoint,
+		opts := []sdk.Option{
 			sdk.WithClientCredentials(config.ClientId, config.ClientSecret, authScopes),
 			sdk.WithTokenEndpoint(config.TokenEndpoint),
-			sdk.WithInsecureSkipVerifyConn(),
-		)
+		}
+
+		if getEnv("INSECURE_SKIP_VERIFY", "FALSE") == "TRUE" {
+			opts = append(opts, sdk.WithInsecureSkipVerifyConn())
+		}
+
+		return sdk.New(config.PlatformEndpoint, opts...)
 	} else {
 		return nil, errors.New("invalid TokenEndpoint given")
 	}
 }
 
+/*
+NOTE: When the environment variable 'INSECURE_SKIP_VERIFY' is set to 'TRUE',
+this option for the OpenTDF SDK will be set.
+*/
 func peSdkClient(config OpentdfConfig, authScopes []string, token TokenAuth) (*sdk.SDK, error) {
 	// NOTE: The 'platformEndpoint' is sometimes referenced as 'host'
 	if strings.Count(config.TokenEndpoint, "http://") == 1 {
@@ -91,12 +91,17 @@ func peSdkClient(config OpentdfConfig, authScopes []string, token TokenAuth) (*s
 			sdk.WithInsecurePlaintextConn(),
 		)
 	} else if strings.Count(config.TokenEndpoint, "https://") == 1 {
-		return sdk.New(config.PlatformEndpoint,
+		opts := []sdk.Option{
 			sdk.WithClientCredentials(config.ClientId, config.ClientSecret, authScopes),
 			sdk.WithTokenEndpoint(config.TokenEndpoint),
 			sdk.WithTokenExchange(token.AccessToken, []string{token.NpeClientId}),
-			sdk.WithInsecureSkipVerifyConn(),
-		)
+		}
+
+		if getEnv("INSECURE_SKIP_VERIFY", "FALSE") == "TRUE" {
+			opts = append(opts, sdk.WithInsecureSkipVerifyConn())
+		}
+
+		return sdk.New(config.PlatformEndpoint, opts...)
 	} else {
 		return nil, errors.New("invalid TokenEndpoint given")
 	}
