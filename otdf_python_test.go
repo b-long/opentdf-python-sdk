@@ -1,11 +1,10 @@
-package gotdf_python_test
+package gotdf_python
 
 import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gotdf_python"
 	"io"
 	"log"
 	"net/http"
@@ -60,7 +59,7 @@ A basic HTTP request
 Based on:
 https://stackoverflow.com/q/24493116
 */
-func authHelper(form url.Values, isPEAuth bool) (gotdf_python.TokenAuth, error) {
+func authHelper(form url.Values, isPEAuth bool) (TokenAuth, error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -87,26 +86,26 @@ func authHelper(form url.Values, isPEAuth bool) (gotdf_python.TokenAuth, error) 
 	val, ok := jsonMap["access_token"].(string)
 	// If the key exists
 	if !ok {
-		return gotdf_python.TokenAuth{}, errors.New("Unable to obtain 'access_token', cannot continue")
+		return TokenAuth{}, errors.New("Unable to obtain 'access_token', cannot continue")
 	}
 
 	if isPEAuth {
 		fmt.Println("Successfully auth'd PE", config.peUsername)
 
-		return gotdf_python.TokenAuth{
+		return TokenAuth{
 			AccessToken: val,
 			NpeClientId: config.npeClientId,
 		}, nil
 	} else {
 		fmt.Println("Successfully auth'd NPE", config.npeClientId)
 
-		return gotdf_python.TokenAuth{
+		return TokenAuth{
 			AccessToken: val,
 		}, nil
 	}
 }
 
-func AuthenticatePE() (gotdf_python.TokenAuth, error) {
+func AuthenticatePE() (TokenAuth, error) {
 	form := url.Values{}
 	form.Add("grant_type", "password")
 	form.Add("client_id", config.npeClientId)
@@ -116,7 +115,7 @@ func AuthenticatePE() (gotdf_python.TokenAuth, error) {
 	return authHelper(form, true)
 }
 
-func AuthenticateNPE() (gotdf_python.TokenAuth, error) {
+func AuthenticateNPE() (TokenAuth, error) {
 	form := url.Values{}
 	form.Add("grant_type", "client_credentials")
 	form.Add("client_id", config.npeClientId)
@@ -133,7 +132,7 @@ func getMultiDataAttribute(config TestConfiguration) []string {
 
 func doEncryptString(t *testing.T, dataAttributes []string) {
 
-	got, err := gotdf_python.EncryptString("Hello, world", gotdf_python.OpentdfConfig{
+	got, err := EncryptString("Hello, world", OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -198,7 +197,7 @@ func encrypt_file_NPE(t *testing.T, dataAttributes []string) string {
 	}
 	defer tmpOutputFile.Close()
 
-	got, err := gotdf_python.EncryptFile(tmpInputFile.Name(), tmpOutputFile.Name(), gotdf_python.OpentdfConfig{
+	got, err := EncryptFile(tmpInputFile.Name(), tmpOutputFile.Name(), OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -221,7 +220,7 @@ func encrypt_file_NPE(t *testing.T, dataAttributes []string) string {
 	return got
 }
 
-func encrypt_file_PE(t *testing.T, dataAttributes []string, tokenAuth gotdf_python.TokenAuth) string {
+func encrypt_file_PE(t *testing.T, dataAttributes []string, tokenAuth TokenAuth) string {
 	tmpInputFile, err := os.CreateTemp("", "input-file-*.txt")
 	if err != nil {
 		log.Fatal("Could not create input file", err)
@@ -244,7 +243,7 @@ func encrypt_file_PE(t *testing.T, dataAttributes []string, tokenAuth gotdf_pyth
 	}
 	defer tmpOutputFile.Close()
 
-	got, err := gotdf_python.EncryptFilePE(tmpInputFile.Name(), tmpOutputFile.Name(), gotdf_python.OpentdfConfig{
+	got, err := EncryptFilePE(tmpInputFile.Name(), tmpOutputFile.Name(), OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -301,7 +300,7 @@ func e2e_test_as_PE(t *testing.T, dataAttributes []string) {
 	if err != nil {
 		t.Error(err)
 	}
-	got, err := gotdf_python.DecryptFilePE(input_TDF_path, plaintext_output_path.Name(), gotdf_python.OpentdfConfig{
+	got, err := DecryptFilePE(input_TDF_path, plaintext_output_path.Name(), OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -376,7 +375,7 @@ func Test_Multifile_NPE_Encrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
 		t.Fatal("Unable to write to temporary file", err)
 	}
 
-	cfg := gotdf_python.OpentdfConfig{
+	cfg := OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -384,7 +383,7 @@ func Test_Multifile_NPE_Encrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
 		KasUrl:           config.kasEndpoint,
 	}
 
-	got, err := gotdf_python.EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv"}, cfg, nil, defaultAuthScopes)
+	got, err := EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv"}, cfg, nil, defaultAuthScopes)
 	if err != nil {
 		t.Fatal("Failed to EncryptFilesWithExtensionsNPE()!", err)
 	}
@@ -409,7 +408,7 @@ func Test_Multifile_NPE_Encrypt_Files_With_Extensions_Nil_Attributes(t *testing.
 	numFiles := createTestFiles(t, tmpDir)
 
 	// Call the EncryptFilesWithExtensionsNPE function
-	got, err := gotdf_python.EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv", ".pdf"}, gotdf_python.OpentdfConfig{
+	got, err := EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv", ".pdf"}, OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -440,7 +439,7 @@ func Test_Multifile_NPE_Decrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
 	numFiles := createTestFiles(t, tmpDir)
 
 	// Encrypt the file
-	_, err = gotdf_python.EncryptFilesInDirNPE(tmpDir, gotdf_python.OpentdfConfig{
+	_, err = EncryptFilesInDirNPE(tmpDir, OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -452,7 +451,7 @@ func Test_Multifile_NPE_Decrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
 	}
 
 	// Call the DecryptFilesInDirNPE function
-	got, err := gotdf_python.DecryptFilesInDirNPE(tmpDir, gotdf_python.OpentdfConfig{
+	got, err := DecryptFilesInDirNPE(tmpDir, OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -482,7 +481,7 @@ func Test_Multifile_NPE_Decrypt_Files_With_Extensions_Nil_Attributes(t *testing.
 	numFiles := createTestFiles(t, tmpDir)
 
 	// Encrypt the files
-	_, err = gotdf_python.EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv", ".pdf"}, gotdf_python.OpentdfConfig{
+	_, err = EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv", ".pdf"}, OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
@@ -494,7 +493,7 @@ func Test_Multifile_NPE_Decrypt_Files_With_Extensions_Nil_Attributes(t *testing.
 	}
 
 	// Call the DecryptFilesWithExtensionsNPE function
-	got, err := gotdf_python.DecryptFilesWithExtensionsNPE(tmpDir, []string{".tdf"}, gotdf_python.OpentdfConfig{
+	got, err := DecryptFilesWithExtensionsNPE(tmpDir, []string{".tdf"}, OpentdfConfig{
 		ClientId:         config.npeClientId,
 		ClientSecret:     config.npeClientSecret,
 		PlatformEndpoint: config.platformEndpoint,
