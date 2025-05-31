@@ -11,7 +11,7 @@ from otdf_python.gotdf_python import OpentdfConfig
 
 
 def _get_configuration() -> OpentdfConfig:
-    platformEndpoint = "localhost:8080"
+    platformEndpoint = "http://localhost:8080"
 
     config: OpentdfConfig = OpentdfConfig(
         ClientId=environ.get("OPENTDF_CLIENT_ID", "opentdf-sdk"),
@@ -21,7 +21,7 @@ def _get_configuration() -> OpentdfConfig:
             "OIDC_TOKEN_ENDPOINT",
             "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token",
         ),
-        KasUrl=environ.get("OPENTDF_KAS_URL", f"http://{platformEndpoint}/kas"),
+        KasUrl=environ.get("OPENTDF_KAS_URL", f"{platformEndpoint}/kas"),
     )
 
     # NOTE: Structs from golang can be printed, like below
