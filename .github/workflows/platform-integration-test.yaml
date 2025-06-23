@@ -27,17 +27,21 @@ jobs:
       - name: Checkout this repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
 
-      - uses: actions/cache/restore@v4
-        with:
-          path: dist/otdf_python-0.2.14-py3-none-any.whl
-          key: ${{ runner.os }}${{ inputs.python_version }}-data-${{ github.sha }}
-
       - name: Prove that the input file is available
         shell: bash
         run: |
           ls -la
-          ls -la "${{ inputs.wheel }}"
-          du -sh "${{ inputs.wheel }}"
+          if [ -n "${{ inputs.wheel }}" ]; then
+            if [ -f "${{ inputs.wheel }}" ]; then
+              ls -la "${{ inputs.wheel }}"
+              du -sh "${{ inputs.wheel }}"
+            else
+              echo "Warning: Input wheel path provided but file not found at ${{ inputs.wheel }}"
+              echo "This is expected when running as a standalone workflow without inputs"
+            fi
+          else
+            echo "No input wheel path provided, will download from artifacts later"
+          fi
 
       # - uses: bufbuild/buf-setup-action@382440cdb8ec7bc25a68d7b4711163d95f7cc3aa
       #   with:
@@ -118,6 +122,43 @@ jobs:
         with:
             python-version: ${{ inputs.python_version }}
 
+      - name: Install uv
+        run: pip install uv
+        shell: bash
+
+
+      - name: Download wheel artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: python-wheel
+          path: ./wheel-artifacts/
+
+      - name: Find wheel file
+        id: find_wheel
+        shell: bash
+        run: |
+          wheel_path=$(ls ./wheel-artifacts/*.whl)
+          echo "Found wheel at: $wheel_path"
+          echo "wheel_path=$wheel_path" >> $GITHUB_ENV
+      
+      - name: Install otdfctl
+        run: go install github.com/opentdf/otdfctl@latest
+        shell: bash
+
+      - name: Create creds.json for otdfctl
+        run: echo -n '{"clientId":"opentdf-sdk","clientSecret":"secret"}' > creds.json
+        shell: bash
+
+      - name: Create a plaintext file
+        run: echo "integration test secret" > secret.txt
+        shell: bash
+
+      - name: Encrypt file with otdfctl (no attributes)
+        run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
+          otdfctl encrypt -o secret.txt.tdf --host http://localhost:8080 --tls-no-verify --with-client-creds-file creds.json secret.txt
+        shell: bash
+
       - name: Validate the Python SDK
         env:
           OPENTDF_CLIENT_ID: "opentdf-sdk"
@@ -128,15 +169,15 @@ jobs:
           INSECURE_SKIP_VERIFY: "TRUE"
         run: |
           mkdir validation
-          wheel="$(basename ${{ inputs.wheel }} )"
-          cp -v "${{ inputs.wheel }}" validation/
-          cp -v validate_otdf_python.py validation/
+          cp "$wheel_path" validation/
+          cp validate_otdf_python.py validation/
           cd validation
           python -m venv .venv
           source .venv/bin/activate
-          pip install ./"$wheel"
+          pip install ./*.whl
           python validate_otdf_python.py
-
+          python validate_otdf_python.py ../secret.txt.tdf
+        shell: bash
 
 
   # platform-xtest:
