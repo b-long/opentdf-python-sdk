@@ -1,44 +1,57 @@
----
-name: Build Python package(s)
-
+# Build otdf-python wheel using uv and output the wheel path for downstream workflows
+name: "Build Python Wheel"
 on:
-    push:
-        branches:
-            - disabled
+  push:
+    branches:
+      - chore/rewrite
+  pull_request:
+    branches:
+      - chore/rewrite
 
 jobs:
-    build:
+  build:
+    runs-on: ubuntu-22.04
+    outputs:
+      wheel: ${{ steps.find_wheel.outputs.wheel_path }}
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
 
-        runs-on: ubuntu-22.04
-        strategy:
-            matrix:
-                go-version: [1.24.x]
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
 
-        steps:
-            - uses: actions/checkout@v4
-      # - name: Setup Go
-      #   uses: actions/setup-go@v4
-      #   with:
-      #     go-version: ${{ matrix.go-version }}
-      #     cache-dependency-path: go.sum
-      # - name: Install dependencies
-      #   run: go get .
-      # - name: Test with Go
-      #   run: go test -timeout 40s -run ^TestHello$ gotdf_python -count=1 # go test
+      - name: Install uv
+        run: pip install uv
+        shell: bash
 
-            - name: Set up Python
-              uses: actions/setup-python@v4
-              with:
-                  python-version: '3.12'
-            - name: Install dependencies
-              run: |
-                  pip install poetry
-            - name: Invoke pylint with all dependencies
-              run: |
-                  # Since we don't have our wheel build / install configured yet we use '--no-root'
-                  poetry install --no-root
+      - name: Build otdf-python wheel using uv
+        run: |
+          uv pip install --system build
+          python -m build --wheel
+        shell: bash
 
-                  # poetry install
+      - name: Find built wheel
+        id: find_wheel
+        run: |
+          wheel_path=$(ls dist/*.whl | head -n1)
+          echo "wheel_path=$wheel_path" >> $GITHUB_OUTPUT
+        shell: bash
 
-                  # Bring this back later
-                  # poetry run pytest tests/
+      - name: Upload wheel as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-wheel
+          path: dist/*.whl
+
+  integration-test:
+    strategy:
+      fail-fast: true
+      matrix:
+        python3_version: ["3.12", "3.13"]
+    needs: build
+    uses: ./.github/workflows/platform-integration-test.yaml
+    with:
+      wheel: ${{ needs.build.outputs.wheel }}
+      python_version: ${{ matrix.python3_version }}
