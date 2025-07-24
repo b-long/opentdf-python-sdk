@@ -7,7 +7,7 @@ authors = [
     {name="b-long", email="b-long@users.noreply.github.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 
 [build-system]
 requires = ["hatchling"]
@@ -22,7 +22,7 @@ package-mode = false
 version = "0.2.16"
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.14"
+python = ">=3.10,<3.14"
 wheel = "^0.45.0"
 pybindgen = "^0.22.1"
 
