@@ -20,7 +20,7 @@ jobs:
       fail-fast: true
       matrix:
         go-version: [1.24.x]
-        python3_version: [ "3.11", "3.12" ]
+        python3_version: [ "3.10", "3.11", "3.12" ]
 
     steps:
       - uses: actions/checkout@v4
