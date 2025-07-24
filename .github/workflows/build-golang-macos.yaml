@@ -20,7 +20,7 @@ jobs:
       fail-fast: true
       matrix:
         go-version: [1.24.x]
-        python3_version: [ "3.11", "3.12" ]
+        python3_version: [ "3.10", "3.11", "3.12" ]
 
     steps:
       - uses: actions/checkout@v4
@@ -47,4 +47,4 @@ jobs:
 
       # - uses: ./.github/workflows/platform-integration-test.yaml
       #   with:
-      #     wheel: dist/otdf_python-0.2.15-py3-none-any.whl
+      #     wheel: dist/otdf_python-0.2.16-py3-none-any.whl
