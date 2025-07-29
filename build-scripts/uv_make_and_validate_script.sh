@@ -70,7 +70,7 @@ loud_print "Installing wheel"
 uv venv .venv-wheel --python 3.12 "$PY_TYPE"
 source "${BUILD_ROOT}/.venv-wheel/bin/activate"
 pip install pybindgen
-pip install dist/otdf_python-0.2.16-py3-none-any.whl
+pip install dist/otdf_python-0.2.17-py3-none-any.whl
 
 if [[ "$SKIP_TESTS" == "-s" || "$SKIP_TESTS" == "--skip-tests" ]]; then
     echo "Build is complete, skipping tests."

@@ -18,15 +18,16 @@ import (
 var defaultAuthScopes = []string{"email"}
 
 type TestConfiguration struct {
-	platformEndpoint string
-	tokenEndpoint    string
-	kasEndpoint      string
-	npeClientId      string
-	npeClientSecret  string
-	peUsername       string
-	pePassword       string
-	testAttribute1   string
-	testAttribute2   string
+	platformEndpoint   string
+	tokenEndpoint      string
+	kasEndpoint        string
+	npeClientId        string
+	npeClientSecret    string
+	peUsername         string
+	pePassword         string
+	testAttribute1     string
+	testAttribute2     string
+	insecureSkipVerify bool
 }
 
 var config = TestConfiguration{
@@ -38,8 +39,9 @@ var config = TestConfiguration{
 	peUsername:       os.Getenv("TEST_OPENTDF_SECRET_USER_ID"),
 	pePassword:       os.Getenv("TEST_OPENTDF_SECRET_USER_PASSWORD"),
 	// For default values, we added a helper function
-	testAttribute1: getEnv("TEST_OPENTDF_ATTRIBUTE_1", "https://example.com/attr/attr1/value/value1"),
-	testAttribute2: getEnv("TEST_OPENTDF_ATTRIBUTE_2", "https://example.com/attr/attr1/value/value2"),
+	testAttribute1:     getEnv("TEST_OPENTDF_ATTRIBUTE_1", "https://example.com/attr/attr1/value/value1"),
+	testAttribute2:     getEnv("TEST_OPENTDF_ATTRIBUTE_2", "https://example.com/attr/attr1/value/value2"),
+	insecureSkipVerify: getEnv("INSECURE_SKIP_VERIFY", "FALSE") == "TRUE",
 }
 
 /*
@@ -61,7 +63,7 @@ https://stackoverflow.com/q/24493116
 */
 func authHelper(form url.Values, isPEAuth bool) (TokenAuth, error) {
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: config.insecureSkipVerify},
 	}
 	// FIXME: Use a client with TLS verification
 	// client := http.Client{}
@@ -133,11 +135,12 @@ func getMultiDataAttribute(config TestConfiguration) []string {
 func doEncryptString(t *testing.T, dataAttributes []string) {
 
 	got, err := EncryptString("Hello, world", OpentdfConfig{
-		ClientId:         config.npeClientId,
-		ClientSecret:     config.npeClientSecret,
-		PlatformEndpoint: config.platformEndpoint,
-		TokenEndpoint:    config.tokenEndpoint,
-		KasUrl:           config.kasEndpoint,
+		ClientId:           config.npeClientId,
+		ClientSecret:       config.npeClientSecret,
+		PlatformEndpoint:   config.platformEndpoint,
+		TokenEndpoint:      config.tokenEndpoint,
+		KasUrl:             config.kasEndpoint,
+		InsecureSkipVerify: config.insecureSkipVerify,
 	}, dataAttributes, defaultAuthScopes)
 	if err != nil {
 		t.Fatal(err)
@@ -198,11 +201,12 @@ func encrypt_file_NPE(t *testing.T, dataAttributes []string) string {
 	defer tmpOutputFile.Close()
 
 	got, err := EncryptFile(tmpInputFile.Name(), tmpOutputFile.Name(), OpentdfConfig{
-		ClientId:         config.npeClientId,
-		ClientSecret:     config.npeClientSecret,
-		PlatformEndpoint: config.platformEndpoint,
-		TokenEndpoint:    config.tokenEndpoint,
-		KasUrl:           config.kasEndpoint,
+		ClientId:           config.npeClientId,
+		ClientSecret:       config.npeClientSecret,
+		PlatformEndpoint:   config.platformEndpoint,
+		TokenEndpoint:      config.tokenEndpoint,
+		KasUrl:             config.kasEndpoint,
+		InsecureSkipVerify: config.insecureSkipVerify,
 	}, dataAttributes, defaultAuthScopes)
 	if err != nil {
 		t.Error("Failed to EncryptFile()!")
@@ -244,11 +248,12 @@ func encrypt_file_PE(t *testing.T, dataAttributes []string, tokenAuth TokenAuth)
 	defer tmpOutputFile.Close()
 
 	got, err := EncryptFilePE(tmpInputFile.Name(), tmpOutputFile.Name(), OpentdfConfig{
-		ClientId:         config.npeClientId,
-		ClientSecret:     config.npeClientSecret,
-		PlatformEndpoint: config.platformEndpoint,
-		TokenEndpoint:    config.tokenEndpoint,
-		KasUrl:           config.kasEndpoint,
+		ClientId:           config.npeClientId,
+		ClientSecret:       config.npeClientSecret,
+		PlatformEndpoint:   config.platformEndpoint,
+		TokenEndpoint:      config.tokenEndpoint,
+		KasUrl:             config.kasEndpoint,
+		InsecureSkipVerify: config.insecureSkipVerify,
 	}, tokenAuth, dataAttributes, defaultAuthScopes)
 	if err != nil {
 		t.Fatal("Failed to EncryptFilePE()!")
@@ -301,11 +306,12 @@ func e2e_test_as_PE(t *testing.T, dataAttributes []string) {
 		t.Error(err)
 	}
 	got, err := DecryptFilePE(input_TDF_path, plaintext_output_path.Name(), OpentdfConfig{
-		ClientId:         config.npeClientId,
-		ClientSecret:     config.npeClientSecret,
-		PlatformEndpoint: config.platformEndpoint,
-		TokenEndpoint:    config.tokenEndpoint,
-		KasUrl:           config.kasEndpoint,
+		ClientId:           config.npeClientId,
+		ClientSecret:       config.npeClientSecret,
+		PlatformEndpoint:   config.platformEndpoint,
+		TokenEndpoint:      config.tokenEndpoint,
+		KasUrl:             config.kasEndpoint,
+		InsecureSkipVerify: config.insecureSkipVerify,
 	}, token_for_decrypt, defaultAuthScopes)
 	if err != nil {
 		t.Fatal(err)
@@ -376,11 +382,12 @@ func Test_Multifile_NPE_Encrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
 	}
 
 	cfg := OpentdfConfig{
-		ClientId:         config.npeClientId,
-		ClientSecret:     config.npeClientSecret,
-		PlatformEndpoint: config.platformEndpoint,
-		TokenEndpoint:    config.tokenEndpoint,
-		KasUrl:           config.kasEndpoint,
+		ClientId:           config.npeClientId,
+		ClientSecret:       config.npeClientSecret,
+		PlatformEndpoint:   config.platformEndpoint,
+		TokenEndpoint:      config.tokenEndpoint,
+		KasUrl:             config.kasEndpoint,
+		InsecureSkipVerify: config.insecureSkipVerify,
 	}
 
 	got, err := EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv"}, cfg, nil, defaultAuthScopes)
@@ -409,11 +416,12 @@ func Test_Multifile_NPE_Encrypt_Files_With_Extensions_Nil_Attributes(t *testing.
 
 	// Call the EncryptFilesWithExtensionsNPE function
 	got, err := EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv", ".pdf"}, OpentdfConfig{
-		ClientId:         config.npeClientId,
-		ClientSecret:     config.npeClientSecret,
-		PlatformEndpoint: config.platformEndpoint,
-		TokenEndpoint:    config.tokenEndpoint,
-		KasUrl:           config.kasEndpoint,
+		ClientId:           config.npeClientId,
+		ClientSecret:       config.npeClientSecret,
+		PlatformEndpoint:   config.platformEndpoint,
+		TokenEndpoint:      config.tokenEndpoint,
+		KasUrl:             config.kasEndpoint,
+		InsecureSkipVerify: config.insecureSkipVerify,
 	}, nil, defaultAuthScopes)
 	if err != nil {
 		t.Fatal("Failed to EncryptFilesWithExtensionsNPE()!", err)
@@ -440,11 +448,12 @@ func Test_Multifile_NPE_Decrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
 
 	// Encrypt the file
 	_, err = EncryptFilesInDirNPE(tmpDir, OpentdfConfig{
-		ClientId:         config.npeClientId,
-		ClientSecret:     config.npeClientSecret,
-		PlatformEndpoint: config.platformEndpoint,
-		TokenEndpoint:    config.tokenEndpoint,
-		KasUrl:           config.kasEndpoint,
+		ClientId:           config.npeClientId,
+		ClientSecret:       config.npeClientSecret,
+		PlatformEndpoint:   config.platformEndpoint,
+		TokenEndpoint:      config.tokenEndpoint,
+		KasUrl:             config.kasEndpoint,
+		InsecureSkipVerify: config.insecureSkipVerify,
 	}, nil, defaultAuthScopes)
 	if err != nil {
 		t.Fatal("Failed to EncryptFilesInDirNPE()!", err)
@@ -452,11 +461,12 @@ func Test_Multifile_NPE_Decrypt_Files_In_Dir_Nil_Attributes(t *testing.T) {
 
 	// Call the DecryptFilesInDirNPE function
 	got, err := DecryptFilesInDirNPE(tmpDir, OpentdfConfig{
-		ClientId:         config.npeClientId,
-		ClientSecret:     config.npeClientSecret,
-		PlatformEndpoint: config.platformEndpoint,
-		TokenEndpoint:    config.tokenEndpoint,
-		KasUrl:           config.kasEndpoint,
+		ClientId:           config.npeClientId,
+		ClientSecret:       config.npeClientSecret,
+		PlatformEndpoint:   config.platformEndpoint,
+		TokenEndpoint:      config.tokenEndpoint,
+		KasUrl:             config.kasEndpoint,
+		InsecureSkipVerify: config.insecureSkipVerify,
 	}, defaultAuthScopes)
 	if err != nil {
 		t.Fatal("Failed to DecryptFilesInDirNPE()!", err)
@@ -482,11 +492,12 @@ func Test_Multifile_NPE_Decrypt_Files_With_Extensions_Nil_Attributes(t *testing.
 
 	// Encrypt the files
 	_, err = EncryptFilesWithExtensionsNPE(tmpDir, []string{".txt", ".csv", ".pdf"}, OpentdfConfig{
-		ClientId:         config.npeClientId,
-		ClientSecret:     config.npeClientSecret,
-		PlatformEndpoint: config.platformEndpoint,
-		TokenEndpoint:    config.tokenEndpoint,
-		KasUrl:           config.kasEndpoint,
+		ClientId:           config.npeClientId,
+		ClientSecret:       config.npeClientSecret,
+		PlatformEndpoint:   config.platformEndpoint,
+		TokenEndpoint:      config.tokenEndpoint,
+		KasUrl:             config.kasEndpoint,
+		InsecureSkipVerify: config.insecureSkipVerify,
 	}, nil, defaultAuthScopes)
 	if err != nil {
 		t.Fatal("Failed to EncryptFilesWithExtensionsNPE()!", err)
@@ -494,11 +505,12 @@ func Test_Multifile_NPE_Decrypt_Files_With_Extensions_Nil_Attributes(t *testing.
 
 	// Call the DecryptFilesWithExtensionsNPE function
 	got, err := DecryptFilesWithExtensionsNPE(tmpDir, []string{".tdf"}, OpentdfConfig{
-		ClientId:         config.npeClientId,
-		ClientSecret:     config.npeClientSecret,
-		PlatformEndpoint: config.platformEndpoint,
-		TokenEndpoint:    config.tokenEndpoint,
-		KasUrl:           config.kasEndpoint,
+		ClientId:           config.npeClientId,
+		ClientSecret:       config.npeClientSecret,
+		PlatformEndpoint:   config.platformEndpoint,
+		TokenEndpoint:      config.tokenEndpoint,
+		KasUrl:             config.kasEndpoint,
+		InsecureSkipVerify: config.insecureSkipVerify,
 	}, defaultAuthScopes)
 	if err != nil {
 		t.Fatal("Failed to DecryptFilesWithExtensionsNPE()!", err)
