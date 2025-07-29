@@ -11,7 +11,7 @@ from otdf_python.gotdf_python import OpentdfConfig
 
 
 def _get_configuration() -> OpentdfConfig:
-    platformEndpoint = "localhost:8080"
+    platformEndpoint = "http://localhost:8080"
 
     config: OpentdfConfig = OpentdfConfig(
         ClientId=environ.get("OPENTDF_CLIENT_ID", "opentdf-sdk"),
