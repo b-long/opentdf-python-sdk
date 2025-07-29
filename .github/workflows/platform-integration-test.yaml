@@ -122,7 +122,7 @@ jobs:
         env:
           OPENTDF_CLIENT_ID: "opentdf-sdk"
           OPENTDF_CLIENT_SECRET: "secret"
-          OPENTDF_HOSTNAME: "localhost:8080"
+          OPENTDF_HOSTNAME: "http://localhost:8080"
           OIDC_TOKEN_ENDPOINT: "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
           OPENTDF_KAS_URL: "http://localhost:8080/kas"
           INSECURE_SKIP_VERIFY: "TRUE"
