@@ -10,8 +10,6 @@ TODO: Consider testing against attributes that are returned by some listing.
 TODO: Consider exposing an sdkClient that can be returned to the caller
 * Note, previously this failed in a 'gopy' compiled context
 
-TODO: Platform knows about the IdP, perhaps we don't need to specify the TOKEN_ENDPOINT ?
-
 */
 import (
 	"bytes"
@@ -35,11 +33,12 @@ type TokenAuth struct {
 }
 
 type OpentdfConfig struct {
-	ClientId         string
-	ClientSecret     string
-	PlatformEndpoint string
-	TokenEndpoint    string
-	KasUrl           string
+	ClientId           string
+	ClientSecret       string
+	PlatformEndpoint   string
+	TokenEndpoint      string
+	KasUrl             string
+	InsecureSkipVerify bool
 }
 
 func getEnv(key, defaultValue string) string {
@@ -49,10 +48,6 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
-/*
-NOTE: When the environment variable 'INSECURE_SKIP_VERIFY' is set to 'TRUE',
-this option for the OpenTDF SDK will be set.
-*/
 func newSdkClient(config OpentdfConfig, authScopes []string) (*sdk.SDK, error) {
 	// NOTE: The 'platformEndpoint' is sometimes referenced as 'host'
 	if strings.Count(config.TokenEndpoint, "http://") == 1 {
@@ -67,7 +62,7 @@ func newSdkClient(config OpentdfConfig, authScopes []string) (*sdk.SDK, error) {
 			sdk.WithTokenEndpoint(config.TokenEndpoint),
 		}
 
-		if getEnv("INSECURE_SKIP_VERIFY", "FALSE") == "TRUE" {
+		if config.InsecureSkipVerify {
 			opts = append(opts, sdk.WithInsecureSkipVerifyConn())
 		}
 
@@ -97,7 +92,7 @@ func peSdkClient(config OpentdfConfig, authScopes []string, token TokenAuth) (*s
 			sdk.WithTokenExchange(token.AccessToken, []string{token.NpeClientId}),
 		}
 
-		if getEnv("INSECURE_SKIP_VERIFY", "FALSE") == "TRUE" {
+		if config.InsecureSkipVerify {
 			opts = append(opts, sdk.WithInsecureSkipVerifyConn())
 		}
 
