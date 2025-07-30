@@ -1,18 +1,25 @@
 """
-This file serves as a test of otdf_python.
+This file is effectively the same test coverage as:
+https://github.com/b-long/opentdf-python-sdk/blob/v0.2.17/validate_otdf_python.py
+
+Execute using:
+    uv run vop
 """
 
 import os
 import sys
 import tempfile
 from pathlib import Path
+
+
 # Add the local otdf_python source directory to sys.path
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+# sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from otdf_python.tdf import TDFConfig
 from otdf_python.kas_info import KASInfo
 from otdf_python.sdk_builder import SDKBuilder
 from otdf_python.tdf import TDFReaderConfig
+from otdf_python.config_pydantic import CONFIG_TDF
 
 
 def get_kas_public_key() -> str:
@@ -42,6 +49,7 @@ pQIDAQAB
 # Helper to build TDFConfig safely, using environment variables for defaults
 def build_tdf_config() -> TDFConfig:
     config = {}
+
     # Helper to build a KASInfo from dict or env
     def build_kasinfo_from_env_or_dict(kas):
         if isinstance(kas, KASInfo):
@@ -54,7 +62,7 @@ def build_tdf_config() -> TDFConfig:
             public_key=os.environ.get("OPENTDF_KAS_PUBLIC_KEY", None),
             kid=os.environ.get("OPENTDF_KAS_KID", None),
             default=None,
-            algorithm=None
+            algorithm=None,
         )
 
     kas_info = config.get("kas_info")
@@ -66,7 +74,13 @@ def build_tdf_config() -> TDFConfig:
         kas_info = build_kasinfo_from_env_or_dict(kas_info)
 
     # Only pass valid fields for TDFConfig
-    valid_keys = {"kas_info", "kas_private_key", "policy_object", "attributes", "segment_size"}
+    valid_keys = {
+        "kas_info",
+        "kas_private_key",
+        "policy_object",
+        "attributes",
+        "segment_size",
+    }
     filtered = {k: v for k, v in config.items() if k in valid_keys}
     filtered["kas_info"] = kas_info
 
@@ -76,7 +90,15 @@ def build_tdf_config() -> TDFConfig:
 
     # Use the new builder pattern if available
     from otdf_python.sdk_builder import SDKBuilder
-    sdk = SDKBuilder().set_platform_endpoint(os.environ.get("OPENTDF_KAS_URL", "https://default.kas.example.com")).use_insecure_plaintext_connection(True).build()
+
+    sdk = (
+        SDKBuilder()
+        .set_platform_endpoint(
+            os.environ.get("OPENTDF_KAS_URL", "https://default.kas.example.com")
+        )
+        .use_insecure_plaintext_connection(True)
+        .build()
+    )
     return sdk.new_tdf_config(**filtered)
 
 
@@ -84,10 +106,16 @@ def encrypt_file(input_path: Path, sdk=None) -> Path:
     """Encrypt a file and return the path to the encrypted file."""
     if sdk is None:
         from otdf_python.kas_info import KASInfo
+
         kas_url = os.environ.get("OPENTDF_KAS_URL", "https://default.kas.example.com")
 
         # Build the SDK
-        sdk = SDKBuilder().set_platform_endpoint(kas_url).use_insecure_plaintext_connection(True).build()
+        sdk = (
+            SDKBuilder()
+            .set_platform_endpoint(kas_url)
+            .use_insecure_plaintext_connection(True)
+            .build()
+        )
 
         # Get or generate a public key
         kas_public_key = get_kas_public_key()
@@ -96,7 +124,9 @@ def encrypt_file(input_path: Path, sdk=None) -> Path:
         kas_info = KASInfo(url=kas_url, public_key=kas_public_key)
 
         # Create config with the KASInfo
-        config = sdk.new_tdf_config(attributes=["attr1", "attr2"], kas_info_list=[kas_info])
+        config = sdk.new_tdf_config(
+            attributes=["attr1", "attr2"], kas_info_list=[kas_info]
+        )
     else:
         # If SDK is provided, we need to create a config with attributes and KASInfo
         # Get the platform URL from the SDK
@@ -107,20 +137,31 @@ def encrypt_file(input_path: Path, sdk=None) -> Path:
 
         # Create KASInfo
         from otdf_python.kas_info import KASInfo
+
         kas_info = KASInfo(url=kas_url, public_key=kas_public_key)
 
         # Create config with attributes and KASInfo
-        config = sdk.new_tdf_config(attributes=["attr1", "attr2"], kas_info_list=[kas_info])
+        config = sdk.new_tdf_config(
+            attributes=["attr1", "attr2"], kas_info_list=[kas_info]
+        )
 
     output_path = input_path.with_suffix(input_path.suffix + ".tdf")
     with open(input_path, "rb") as infile, open(output_path, "wb") as outfile:
         sdk.create_tdf(infile.read(), config, output_stream=outfile)
     return output_path
 
+
 def decrypt_file(encrypted_path: Path, sdk=None) -> Path:
     """Decrypt a file and return the path to the decrypted file."""
     if sdk is None:
-        sdk = SDKBuilder().set_platform_endpoint(os.environ.get("OPENTDF_HOSTNAME", "https://your.cluster/")).use_insecure_plaintext_connection(True).build()
+        sdk = (
+            SDKBuilder()
+            .set_platform_endpoint(
+                os.environ.get("OPENTDF_HOSTNAME", "https://your.cluster/")
+            )
+            .use_insecure_plaintext_connection(True)
+            .build()
+        )
 
     output_path = encrypted_path.with_suffix(".decrypted")
     with open(encrypted_path, "rb") as infile, open(output_path, "wb") as outfile:
@@ -141,24 +182,35 @@ def decrypt_file(encrypted_path: Path, sdk=None) -> Path:
             outfile.write(reader.payload)
     return output_path
 
+
 def verify_encrypt_str() -> None:
     print("Validating string encryption (local TDF)")
     try:
         # Get KAS URL from environment or use default
         kas_url = os.environ.get("OPENTDF_KAS_URL", "https://default.kas.example.com")
-        sdk = SDKBuilder().set_platform_endpoint(kas_url).use_insecure_plaintext_connection(True).build()
+        platform_endpoint = CONFIG_TDF.OPENTDF_PLATFORM_URL
+        sdk = (
+            SDKBuilder()
+            .set_platform_endpoint(platform_endpoint)
+            .use_insecure_plaintext_connection(True)
+            .build()
+        )
 
         # Get KAS public key
         kas_public_key = get_kas_public_key()
 
         # Create a KASInfo with the public key
         from otdf_python.kas_info import KASInfo
+
         kas_info = KASInfo(url=kas_url, public_key=kas_public_key)
 
         payload = b"Hello from Python"
-        config = sdk.new_tdf_config(attributes=["attr1", "attr2"], kas_info_list=[kas_info])
+        config = sdk.new_tdf_config(
+            attributes=["attr1", "attr2"], kas_info_list=[kas_info]
+        )
         # Use BytesIO to mimic file-like API
         from io import BytesIO
+
         output = BytesIO()
         sdk.create_tdf(payload, config, output_stream=output)
         manifest_bytes = output.getvalue()
@@ -166,6 +218,7 @@ def verify_encrypt_str() -> None:
         assert manifest_bytes and len(manifest_bytes) > 0
     except Exception as e:
         import traceback
+
         traceback.print_exc()
         raise RuntimeError(
             f"An unexpected error occurred testing otdf_python string encryption: {e}"
@@ -199,7 +252,12 @@ def verify_encrypt_decrypt_file() -> None:
 
             # Build the SDK
             kas_url = os.environ.get("OPENTDF_HOSTNAME", "https://your.cluster/")
-            sdk = SDKBuilder().set_platform_endpoint(kas_url).use_insecure_plaintext_connection(True).build()
+            sdk = (
+                SDKBuilder()
+                .set_platform_endpoint(kas_url)
+                .use_insecure_plaintext_connection(True)
+                .build()
+            )
 
             # Get public key from KAS
             try:
@@ -223,6 +281,7 @@ def verify_encrypt_decrypt_file() -> None:
 
             except Exception as e:
                 import traceback
+
                 traceback.print_exc()
                 print(f"Error during encryption/decryption test: {e}")
                 raise
