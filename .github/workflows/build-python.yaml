@@ -51,7 +51,7 @@ jobs:
       matrix:
         python3_version: ["3.12", "3.13"]
     needs: build
-    uses: ./.github/workflows/platform-integration-test.yaml
+    uses: ./.github/workflows/platform-integration-test-new.yaml
     with:
       wheel: ${{ needs.build.outputs.wheel }}
       python_version: ${{ matrix.python3_version }}
