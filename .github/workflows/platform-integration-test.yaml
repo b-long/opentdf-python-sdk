@@ -140,7 +140,7 @@ jobs:
           wheel_path=$(ls ./wheel-artifacts/*.whl)
           echo "Found wheel at: $wheel_path"
           echo "wheel_path=$wheel_path" >> $GITHUB_ENV
-      
+
       - name: Install otdfctl
         run: go install github.com/opentdf/otdfctl@latest
         shell: bash
