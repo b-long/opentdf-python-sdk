@@ -4,6 +4,7 @@ from otdf_python.symmetric_and_payload_config import SymmetricAndPayloadConfig
 from otdf_python.policy_info import PolicyInfo
 from otdf_python.constants import MAGIC_NUMBER_AND_VERSION
 
+
 class Header:
     def __init__(self):
         self.kas_locator: ResourceLocator | None = None
@@ -16,7 +17,7 @@ class Header:
     def from_bytes(cls, buffer: bytes):
         # Parse header from bytes, validate magic/version
         offset = 0
-        magic = buffer[offset:offset+3]
+        magic = buffer[offset : offset + 3]
         if magic != MAGIC_NUMBER_AND_VERSION:
             raise ValueError("Invalid magic number and version in nano tdf.")
         offset += 3
@@ -26,10 +27,14 @@ class Header:
         offset += 1
         payload_config = SymmetricAndPayloadConfig(buffer[offset])
         offset += 1
-        policy_info, policy_size = PolicyInfo.from_bytes_with_size(buffer[offset:], ecc_mode)
+        policy_info, policy_size = PolicyInfo.from_bytes_with_size(
+            buffer[offset:], ecc_mode
+        )
         offset += policy_size
-        compressed_pubkey_size = ECCMode.get_ec_compressed_pubkey_size(ecc_mode.get_elliptic_curve_type())
-        ephemeral_key = buffer[offset:offset+compressed_pubkey_size]
+        compressed_pubkey_size = ECCMode.get_ec_compressed_pubkey_size(
+            ecc_mode.get_elliptic_curve_type()
+        )
+        ephemeral_key = buffer[offset : offset + compressed_pubkey_size]
         if len(ephemeral_key) != compressed_pubkey_size:
             raise ValueError("Failed to read ephemeral key - invalid buffer size.")
         obj = cls()
@@ -54,10 +59,14 @@ class Header:
         # Payload config (1 byte)
         offset += 1
         # PolicyInfo
-        policy_info, policy_size = PolicyInfo.from_bytes_with_size(buffer[offset:], ecc_mode)
+        policy_info, policy_size = PolicyInfo.from_bytes_with_size(
+            buffer[offset:], ecc_mode
+        )
         offset += policy_size
         # Ephemeral key (size depends on curve)
-        compressed_pubkey_size = ECCMode.get_ec_compressed_pubkey_size(ecc_mode.get_elliptic_curve_type())
+        compressed_pubkey_size = ECCMode.get_ec_compressed_pubkey_size(
+            ecc_mode.get_elliptic_curve_type()
+        )
         offset += compressed_pubkey_size
         return offset
 
@@ -87,7 +96,9 @@ class Header:
 
     def set_ephemeral_key(self, ephemeral_key: bytes):
         if self.ecc_mode is not None:
-            expected_size = ECCMode.get_ec_compressed_pubkey_size(self.ecc_mode.get_elliptic_curve_type())
+            expected_size = ECCMode.get_ec_compressed_pubkey_size(
+                self.ecc_mode.get_elliptic_curve_type()
+            )
             if len(ephemeral_key) != expected_size:
                 raise ValueError("Failed to read ephemeral key - invalid buffer size.")
         self.ephemeral_key = ephemeral_key
@@ -122,7 +133,7 @@ class Header:
         n = self.policy_info.write_into_buffer(buffer, offset)
         offset += n
         # Ephemeral key
-        buffer[offset:offset+len(self.ephemeral_key)] = self.ephemeral_key
+        buffer[offset : offset + len(self.ephemeral_key)] = self.ephemeral_key
         offset += len(self.ephemeral_key)
         return offset
 

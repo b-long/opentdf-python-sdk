@@ -3,6 +3,7 @@ from threading import RLock
 
 MAX_SIZE_STORE = 500
 
+
 class CollectionStoreImpl(OrderedDict):
     def __init__(self):
         super().__init__()

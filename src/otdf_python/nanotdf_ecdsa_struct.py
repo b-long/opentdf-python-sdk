@@ -1,11 +1,15 @@
 """
 NanoTDF ECDSA Signature Structure.
 """
+
 from dataclasses import dataclass, field
+
 
 class IncorrectNanoTDFECDSASignatureSize(Exception):
     """Exception raised when the signature size is incorrect."""
+
     pass
+
 
 @dataclass
 class NanoTDFECDSAStruct:
@@ -15,13 +19,16 @@ class NanoTDFECDSAStruct:
     This structure represents an ECDSA signature as required by the NanoTDF format.
     It consists of r and s values along with their lengths.
     """
+
     r_length: bytearray = field(default_factory=lambda: bytearray(1))
     r_value: bytearray = None
     s_length: bytearray = field(default_factory=lambda: bytearray(1))
     s_value: bytearray = None
 
     @classmethod
-    def from_bytes(cls, ecdsa_signature_value: bytes, key_size: int) -> 'NanoTDFECDSAStruct':
+    def from_bytes(
+        cls, ecdsa_signature_value: bytes, key_size: int
+    ) -> "NanoTDFECDSAStruct":
         """
         Create a NanoTDFECDSAStruct from a byte array.
 
@@ -50,7 +57,7 @@ class NanoTDFECDSAStruct:
         index += 1
         r_len = struct_obj.r_length[0]
         struct_obj.r_value = bytearray(key_size)
-        struct_obj.r_value[:r_len] = ecdsa_signature_value[index:index+r_len]
+        struct_obj.r_value[:r_len] = ecdsa_signature_value[index : index + r_len]
 
         # Copy value of s_length to signature struct
         index += key_size
@@ -60,7 +67,7 @@ class NanoTDFECDSAStruct:
         index += 1
         s_len = struct_obj.s_length[0]
         struct_obj.s_value = bytearray(key_size)
-        struct_obj.s_value[:s_len] = ecdsa_signature_value[index:index+s_len]
+        struct_obj.s_value[:s_len] = ecdsa_signature_value[index : index + s_len]
 
         return struct_obj
 
@@ -80,7 +87,7 @@ class NanoTDFECDSAStruct:
 
         # Copy the contents of r_value
         index += 1
-        signature[index:index+len(self.r_value)] = self.r_value
+        signature[index : index + len(self.r_value)] = self.r_value
 
         # Copy value of s_length
         index += len(self.r_value)
@@ -88,7 +95,7 @@ class NanoTDFECDSAStruct:
 
         # Copy value of s_value
         index += 1
-        signature[index:index+len(self.s_value)] = self.s_value
+        signature[index : index + len(self.s_value)] = self.s_value
 
         return bytes(signature)
 

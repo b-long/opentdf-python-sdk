@@ -1,5 +1,15 @@
 import unittest
-from otdf_python.assertion_config import Type, Scope, AssertionKeyAlg, AppliesToState, BindingMethod, AssertionKey, Statement, AssertionConfig
+from otdf_python.assertion_config import (
+    Type,
+    Scope,
+    AssertionKeyAlg,
+    AppliesToState,
+    BindingMethod,
+    AssertionKey,
+    Statement,
+    AssertionConfig,
+)
+
 
 class TestAssertionConfig(unittest.TestCase):
     def test_enums(self):
@@ -31,7 +41,7 @@ class TestAssertionConfig(unittest.TestCase):
             scope=Scope.TRUSTED_DATA_OBJ,
             applies_to_state=AppliesToState.UNENCRYPTED,
             statement=statement,
-            signing_key=key
+            signing_key=key,
         )
         self.assertEqual(config.id, "id1")
         self.assertEqual(config.type, Type.BASE_ASSERTION)
@@ -39,6 +49,7 @@ class TestAssertionConfig(unittest.TestCase):
         self.assertEqual(config.applies_to_state, AppliesToState.UNENCRYPTED)
         self.assertEqual(config.statement, statement)
         self.assertEqual(config.signing_key, key)
+
 
 if __name__ == "__main__":
     unittest.main()

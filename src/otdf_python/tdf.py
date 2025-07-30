@@ -5,8 +5,14 @@ import hashlib
 import base64
 import zipfile
 from otdf_python.manifest import (
-    Manifest, ManifestSegment, ManifestIntegrityInformation, ManifestRootSignature,
-    ManifestEncryptionInformation, ManifestPayload, ManifestMethod, ManifestKeyAccess
+    Manifest,
+    ManifestSegment,
+    ManifestIntegrityInformation,
+    ManifestRootSignature,
+    ManifestEncryptionInformation,
+    ManifestPayload,
+    ManifestMethod,
+    ManifestKeyAccess,
 )
 from otdf_python.tdf_writer import TDFWriter
 from otdf_python.aesgcm import AesGcm
@@ -14,15 +20,18 @@ from dataclasses import dataclass
 from otdf_python.kas_info import KASInfo
 from otdf_python.key_type_constants import RSA_KEY_TYPE
 
+
 @dataclass
 class TDFReader:
     payload: bytes
     manifest: Manifest
 
+
 @dataclass
 class TDFReaderConfig:
     kas_private_key: str | None = None
     attributes: list[str] | None = None
+
 
 @dataclass
 class TDFConfig:
@@ -31,6 +40,7 @@ class TDFConfig:
     policy_object: Any | None = None
     attributes: list[str] | None = None
     segment_size: int | None = None
+
 
 class TDF:
     MAX_TDF_INPUT_SIZE = 68719476736
@@ -59,18 +69,21 @@ class TDF:
 
     def _wrap_key_for_kas(self, key, kas_infos):
         from otdf_python.asym_crypto import AsymEncryption
+
         key_access_objs = []
         for kas in kas_infos:
             asym = AsymEncryption(kas.public_key)
             wrapped_key = base64.b64encode(asym.encrypt(key)).decode()
-            key_access_objs.append(ManifestKeyAccess(
-                key_type="rsa",
-                url=kas.url,
-                protocol="https",
-                wrapped_key=wrapped_key,
-                policy_binding=None,
-                kid=kas.kid,
-            ))
+            key_access_objs.append(
+                ManifestKeyAccess(
+                    key_type="rsa",
+                    url=kas.url,
+                    protocol="https",
+                    wrapped_key=wrapped_key,
+                    policy_binding=None,
+                    kid=kas.kid,
+                )
+            )
         return key_access_objs
 
     def _build_policy_json(self, config):
@@ -78,10 +91,16 @@ class TDF:
         attributes = config.get("attributes")
         import uuid
         import json as _json
+
         if policy_obj:
             return _json.dumps(policy_obj, default=lambda o: o.__dict__)
         elif attributes:
-            from otdf_python.policy_object import AttributeObject, PolicyBody, PolicyObject
+            from otdf_python.policy_object import (
+                AttributeObject,
+                PolicyBody,
+                PolicyObject,
+            )
+
             attr_objs = [AttributeObject(attribute=a) for a in attributes]
             body = PolicyBody(data_attributes=attr_objs, dissem=[])
             policy = PolicyObject(uuid=str(uuid.uuid4()), body=body)
@@ -91,6 +110,7 @@ class TDF:
 
     def _enforce_policy(self, manifest, config):
         import json as _json
+
         policy_json = manifest.encryption_information.policy
         if policy_json and policy_json != "{}":
             try:
@@ -106,10 +126,14 @@ class TDF:
                     attrs = config.get("attributes")
                     user_attrs = set(attrs if attrs is not None else [])
                     if not user_attrs:
-                        raise ValueError("ABAC policy enforcement: user attributes required but not provided")
+                        raise ValueError(
+                            "ABAC policy enforcement: user attributes required but not provided"
+                        )
                     missing = required_attrs - user_attrs
                     if missing:
-                        raise ValueError(f"ABAC policy enforcement: missing required attributes: {missing}")
+                        raise ValueError(
+                            f"ABAC policy enforcement: missing required attributes: {missing}"
+                        )
             except Exception as e:
                 raise ValueError(f"Failed to parse/enforce policy: {e}")
 
@@ -118,6 +142,7 @@ class TDF:
         Unwraps the key locally using a provided private key (used for testing)
         """
         from otdf_python.asym_decryption import AsymDecryption
+
         key = None
         for ka in key_access_objs:
             try:
@@ -143,10 +168,11 @@ class TDF:
             try:
                 # Create KeyAccess object for KAS client
                 from .kas_client import KeyAccess
+
                 key_access = KeyAccess(
                     url=ka.url,
                     wrapped_key=ka.wrapped_key,
-                    ephemeral_public_key=getattr(ka, "ephemeral_public_key", None)
+                    ephemeral_public_key=getattr(ka, "ephemeral_public_key", None),
                 )
 
                 # Determine session key type from key_access properties
@@ -157,6 +183,7 @@ class TDF:
                 # to determine the exact curve type (P-256, P-384, P-521)
                 if hasattr(ka, "type") and ka.type and "ec" in ka.type.lower():
                     from .key_type_constants import EC_KEY_TYPE
+
                     session_key_type = EC_KEY_TYPE
 
                 # Unwrap key with KAS client
@@ -166,34 +193,43 @@ class TDF:
 
             except Exception as e:
                 import logging
+
                 logging.warning(f"Error unwrapping key with KAS: {e}")
                 # Continue to try next key access
                 continue
 
-        raise ValueError("Unable to unwrap the key with any available key access objects")
+        raise ValueError(
+            "Unable to unwrap the key with any available key access objects"
+        )
 
     def _decrypt_segments(self, aesgcm, segments, encrypted_payload):
         decrypted = b""
         offset = 0
         for seg in segments:
             enc_len = seg.encrypted_segment_size
-            enc_bytes = encrypted_payload[offset:offset+enc_len]
+            enc_bytes = encrypted_payload[offset : offset + enc_len]
 
             # Handle empty or invalid encrypted payload in test scenarios
             if not enc_bytes or len(enc_bytes) < AesGcm.GCM_NONCE_LENGTH:
                 # For testing, generate mock data when real data is unavailable
                 import os
+
                 iv = os.urandom(AesGcm.GCM_NONCE_LENGTH)
                 ct = os.urandom(16)
             else:
-                iv = enc_bytes[:AesGcm.GCM_NONCE_LENGTH]
-                ct = enc_bytes[AesGcm.GCM_NONCE_LENGTH:]
+                iv = enc_bytes[: AesGcm.GCM_NONCE_LENGTH]
+                ct = enc_bytes[AesGcm.GCM_NONCE_LENGTH :]
 
             decrypted += aesgcm.decrypt(aesgcm.Encrypted(iv, ct))
             offset += enc_len
         return decrypted
 
-    def create_tdf(self, payload: bytes | BinaryIO, config: TDFConfig, output_stream: BinaryIO | None = None):
+    def create_tdf(
+        self,
+        payload: bytes | BinaryIO,
+        config: TDFConfig,
+        output_stream: BinaryIO | None = None,
+    ):
         if output_stream is None:
             output_stream = io.BytesIO()
         writer = TDFWriter(output_stream)
@@ -215,12 +251,16 @@ class TDF:
                     break
                 encrypted = aesgcm.encrypt(chunk)
                 f.write(encrypted.as_bytes())
-                seg_hash = base64.b64encode(hashlib.sha256(encrypted.as_bytes()).digest()).decode()
-                segments.append(ManifestSegment(
-                    hash=seg_hash,
-                    segment_size=len(chunk),
-                    encrypted_segment_size=len(encrypted.as_bytes()),
-                ))
+                seg_hash = base64.b64encode(
+                    hashlib.sha256(encrypted.as_bytes()).digest()
+                ).decode()
+                segments.append(
+                    ManifestSegment(
+                        hash=seg_hash,
+                        segment_size=len(chunk),
+                        encrypted_segment_size=len(encrypted.as_bytes()),
+                    )
+                )
                 hasher.update(encrypted.as_bytes())
                 total += len(chunk)
         # Use config fields for policy
@@ -273,9 +313,13 @@ class TDF:
             else:
                 # Use KAS client to unwrap the key
                 if not self.services or not hasattr(self.services, "kas"):
-                    raise ValueError("SDK services with KAS client required for remote key unwrapping")
+                    raise ValueError(
+                        "SDK services with KAS client required for remote key unwrapping"
+                    )
 
-                key = self._unwrap_key_with_kas(key_access_objs, manifest.encryption_information.policy)
+                key = self._unwrap_key_with_kas(
+                    key_access_objs, manifest.encryption_information.policy
+                )
 
             aesgcm = AesGcm(key)
             segments = manifest.encryption_information.integrity_information.segments
@@ -283,7 +327,9 @@ class TDF:
             payload = self._decrypt_segments(aesgcm, segments, encrypted_payload)
             return TDFReader(payload=payload, manifest=manifest)
 
-    def read_payload(self, tdf_bytes: bytes, config: dict, output_stream: BinaryIO) -> None:
+    def read_payload(
+        self, tdf_bytes: bytes, config: dict, output_stream: BinaryIO
+    ) -> None:
         """
         Reads and verifies TDF segments, decrypts if needed, and writes the payload to output_stream.
         """
@@ -292,10 +338,13 @@ class TDF:
         from otdf_python.asym_crypto import AsymDecryption
         import base64
         import hashlib
+
         with zipfile.ZipFile(io.BytesIO(tdf_bytes), "r") as z:
             manifest_json = z.read("0.manifest.json").decode()
             manifest = Manifest.from_json(manifest_json)
-            wrapped_key = base64.b64decode(manifest.encryption_information.key_access_obj[0].wrapped_key)
+            wrapped_key = base64.b64decode(
+                manifest.encryption_information.key_access_obj[0].wrapped_key
+            )
             private_key_pem = config.get("kas_private_key")
             if not private_key_pem:
                 raise ValueError("kas_private_key required in config for unwrap")
@@ -307,13 +356,13 @@ class TDF:
             offset = 0
             for seg in segments:
                 enc_len = seg.encrypted_segment_size
-                enc_bytes = encrypted_payload[offset:offset+enc_len]
+                enc_bytes = encrypted_payload[offset : offset + enc_len]
                 # Integrity check (SHA256 HMAC)
                 seg_hash = base64.b64encode(hashlib.sha256(enc_bytes).digest()).decode()
                 if seg.hash != seg_hash:
                     raise ValueError("Segment signature mismatch")
-                iv = enc_bytes[:AesGcm.GCM_NONCE_LENGTH]
-                ct = enc_bytes[AesGcm.GCM_NONCE_LENGTH:]
+                iv = enc_bytes[: AesGcm.GCM_NONCE_LENGTH]
+                ct = enc_bytes[AesGcm.GCM_NONCE_LENGTH :]
                 pt = aesgcm.decrypt(aesgcm.Encrypted(iv, ct))
                 output_stream.write(pt)
                 offset += enc_len

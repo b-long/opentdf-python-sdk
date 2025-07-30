@@ -21,7 +21,13 @@ class TestKASInfo(unittest.TestCase):
         assert clone is not kas_info
 
     def test_string_representation(self):
-        kas_info = KASInfo(url="https://kas.example.com", public_key="pubkey", kid="kid1", default=True, algorithm="RSA")
+        kas_info = KASInfo(
+            url="https://kas.example.com",
+            public_key="pubkey",
+            kid="kid1",
+            default=True,
+            algorithm="RSA",
+        )
         s = str(kas_info)
         assert "KASInfo" in s
         assert "url=https://kas.example.com" in s

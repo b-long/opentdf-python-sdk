@@ -1,6 +1,7 @@
 """
 Address normalization utilities for OpenTDF.
 """
+
 import logging
 import re
 from urllib.parse import urlparse
@@ -27,7 +28,7 @@ def normalize_address(url_string: str, use_plaintext: bool) -> str:
     scheme = "http" if use_plaintext else "https"
 
     # Check if we have a host:port format without scheme (with non-digit port)
-    host_port_pattern = re.match(r'^([^/:]+):([^/]+)$', url_string)
+    host_port_pattern = re.match(r"^([^/:]+):([^/]+)$", url_string)
     if host_port_pattern:
         host = host_port_pattern.group(1)
         port_str = host_port_pattern.group(2)
@@ -57,12 +58,12 @@ def normalize_address(url_string: str, use_plaintext: bool) -> str:
             parsed_url = urlparse(url_string)
 
         # Extract host and port
-        host = parsed_url.netloc.split(':')[0] if parsed_url.netloc else parsed_url.path
+        host = parsed_url.netloc.split(":")[0] if parsed_url.netloc else parsed_url.path
 
         # If there's a port in the URL, try to extract it
         port = None
-        if ':' in parsed_url.netloc:
-            _, port_str = parsed_url.netloc.split(':', 1)
+        if ":" in parsed_url.netloc:
+            _, port_str = parsed_url.netloc.split(":", 1)
             try:
                 port = int(port_str)
             except ValueError:

@@ -1,7 +1,15 @@
 from otdf_python.manifest import (
-    Manifest, ManifestEncryptionInformation, ManifestPayload, ManifestAssertion,
-    ManifestMethod, ManifestKeyAccess, ManifestIntegrityInformation, ManifestRootSignature, ManifestSegment
+    Manifest,
+    ManifestEncryptionInformation,
+    ManifestPayload,
+    ManifestAssertion,
+    ManifestMethod,
+    ManifestKeyAccess,
+    ManifestIntegrityInformation,
+    ManifestRootSignature,
+    ManifestSegment,
 )
+
 
 def test_manifest_serialization():
     # Create a minimal manifest
@@ -16,7 +24,11 @@ def test_manifest_serialization():
     )
     method = ManifestMethod(algorithm="AES", iv="iv123", is_streamable=True)
     key_access = ManifestKeyAccess(
-        key_type="split", url="https://kas", protocol="kas", wrapped_key="key", policy_binding=None
+        key_type="split",
+        url="https://kas",
+        protocol="kas",
+        wrapped_key="key",
+        policy_binding=None,
     )
     enc_info = ManifestEncryptionInformation(
         key_access_type="split",
@@ -26,7 +38,11 @@ def test_manifest_serialization():
         integrity_information=integrity,
     )
     payload = ManifestPayload(
-        type="file", url="https://file", protocol="https", mime_type="text/plain", is_encrypted=True
+        type="file",
+        url="https://file",
+        protocol="https",
+        mime_type="text/plain",
+        is_encrypted=True,
     )
     assertion = ManifestAssertion(
         id="id1", type="type1", scope="scope1", applies_to_state="state1", statement={}
@@ -41,5 +57,8 @@ def test_manifest_serialization():
     loaded = Manifest.from_json(js)
     assert loaded.tdf_version == manifest.tdf_version
     assert loaded.payload.type == manifest.payload.type
-    assert loaded.encryption_information.key_access_type == manifest.encryption_information.key_access_type
+    assert (
+        loaded.encryption_information.key_access_type
+        == manifest.encryption_information.key_access_type
+    )
     assert loaded.assertions[0].id == manifest.assertions[0].id

@@ -1,6 +1,7 @@
 """
 Tests for the SDKBuilder class.
 """
+
 import os
 import pytest
 import respx
@@ -101,9 +102,11 @@ def test_ssl_context_from_directory():
     # Create temporary directory with cert files
     with tempfile.TemporaryDirectory() as tmpdirname:
         # Create dummy cert files
-        with open(os.path.join(tmpdirname, "cert1.pem"), "w") as f1, \
-             open(os.path.join(tmpdirname, "cert2.crt"), "w") as f2, \
-             open(os.path.join(tmpdirname, "not_a_cert.txt"), "w") as f3:
+        with (
+            open(os.path.join(tmpdirname, "cert1.pem"), "w") as f1,
+            open(os.path.join(tmpdirname, "cert2.crt"), "w") as f2,
+            open(os.path.join(tmpdirname, "not_a_cert.txt"), "w") as f3,
+        ):
             f1.write("dummy cert")
             f2.write("dummy cert")
             f3.write("not a cert")
@@ -123,7 +126,6 @@ def test_ssl_context_from_directory():
             assert any("cert1.pem" in path for path in builder.cert_paths)
             assert any("cert2.crt" in path for path in builder.cert_paths)
             assert not any("not_a_cert.txt" in path for path in builder.cert_paths)
-
 
 
 @respx.mock
@@ -146,7 +148,6 @@ def test_get_token_from_client_credentials():
     # Test the method
     token = builder._get_token_from_client_credentials()
     assert token == "test-token-123"
-
 
 
 @respx.mock
@@ -190,7 +191,7 @@ def test_build_success():
     builder.bearer_token("test-token")
 
     # Mock _create_services to avoid actual service creation
-    with patch.object(SDKBuilder, '_create_services') as mock_create_services:
+    with patch.object(SDKBuilder, "_create_services") as mock_create_services:
         mock_services = MagicMock(spec=SDK.Services)
         mock_create_services.return_value = mock_services
 

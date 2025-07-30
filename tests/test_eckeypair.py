@@ -1,6 +1,7 @@
 import unittest
 from otdf_python.eckeypair import ECKeyPair
 
+
 class TestECKeyPair(unittest.TestCase):
     def test_keypair_generation_and_pem(self):
         kp = ECKeyPair()
@@ -26,6 +27,7 @@ class TestECKeyPair(unittest.TestCase):
         sig = ECKeyPair.sign_ecdsa(data, kp.private_key)
         self.assertTrue(ECKeyPair.verify_ecdsa(data, sig, kp.public_key))
         self.assertFalse(ECKeyPair.verify_ecdsa(b"bad data", sig, kp.public_key))
+
 
 if __name__ == "__main__":
     unittest.main()

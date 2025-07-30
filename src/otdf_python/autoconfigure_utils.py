@@ -3,6 +3,7 @@ import urllib.parse
 from dataclasses import dataclass
 from typing import Any
 
+
 # RuleType constants
 class RuleType:
     HIERARCHY = "hierarchy"
@@ -10,6 +11,7 @@ class RuleType:
     ANY_OF = "anyOf"
     UNSPECIFIED = "unspecified"
     EMPTY_TERM = "DEFAULT"
+
 
 @dataclass(frozen=True)
 class KeySplitStep:
@@ -27,8 +29,10 @@ class KeySplitStep:
     def __hash__(self):
         return hash((self.kas, self.splitID))
 
+
 class AutoConfigureException(Exception):
     pass
+
 
 class AttributeNameFQN:
     def __init__(self, url: str):
@@ -39,7 +43,9 @@ class AttributeNameFQN:
         try:
             urllib.parse.unquote(matcher.group(2))
         except Exception:
-            raise AutoConfigureException(f"invalid type: error in attribute name [{matcher.group(2)}]")
+            raise AutoConfigureException(
+                f"invalid type: error in attribute name [{matcher.group(2)}]"
+            )
         self.url = url
         self.key = url.lower()
 
@@ -73,12 +79,20 @@ class AttributeNameFQN:
         except Exception:
             raise AutoConfigureException("invalid type")
 
+
 class AttributeValueFQN:
     def __init__(self, url: str):
         pattern = re.compile(r"^(https?://[\w./-]+)/attr/(\S*)/value/(\S*)$")
         matcher = pattern.match(url)
-        if not matcher or not matcher.group(1) or not matcher.group(2) or not matcher.group(3):
-            raise AutoConfigureException(f"invalid type: attribute regex fail for [{url}]")
+        if (
+            not matcher
+            or not matcher.group(1)
+            or not matcher.group(2)
+            or not matcher.group(3)
+        ):
+            raise AutoConfigureException(
+                f"invalid type: attribute regex fail for [{url}]"
+            )
         try:
             urllib.parse.unquote(matcher.group(2))
             urllib.parse.unquote(matcher.group(3))

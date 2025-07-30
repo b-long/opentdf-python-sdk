@@ -1,6 +1,7 @@
 """
 TDFReader is responsible for reading and processing Trusted Data Format (TDF) files.
 """
+
 import io
 
 from .zip_reader import ZipReader
@@ -60,7 +61,7 @@ class TDFReader:
         """
         try:
             manifest_data = self._zip_reader.read(self._manifest_name)
-            return manifest_data.decode('utf-8')
+            return manifest_data.decode("utf-8")
         except Exception as e:
             raise SDKException("Error retrieving manifest from zip file") from e
 

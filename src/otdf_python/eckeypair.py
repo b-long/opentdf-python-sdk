@@ -1,9 +1,15 @@
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat, PrivateFormat, NoEncryption
+from cryptography.hazmat.primitives.serialization import (
+    Encoding,
+    PublicFormat,
+    PrivateFormat,
+    NoEncryption,
+)
 from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
+
 
 class ECKeyPair:
     def __init__(self, curve=None):
@@ -31,11 +37,15 @@ class ECKeyPair:
 
     @staticmethod
     def public_key_from_pem(pem):
-        return serialization.load_pem_public_key(pem.encode(), backend=default_backend())
+        return serialization.load_pem_public_key(
+            pem.encode(), backend=default_backend()
+        )
 
     @staticmethod
     def private_key_from_pem(pem):
-        return serialization.load_pem_private_key(pem.encode(), password=None, backend=default_backend())
+        return serialization.load_pem_private_key(
+            pem.encode(), password=None, backend=default_backend()
+        )
 
     @staticmethod
     def compute_ecdh_key(public_key, private_key):
@@ -48,7 +58,7 @@ class ECKeyPair:
             length=length,
             salt=salt,
             info=None,
-            backend=default_backend()
+            backend=default_backend(),
         )
         return hkdf.derive(secret)
 

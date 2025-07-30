@@ -1,6 +1,7 @@
 import io
 from otdf_python.zip_writer import ZipWriter
 
+
 class TDFWriter:
     TDF_PAYLOAD_FILE_NAME = "0.payload"
     TDF_MANIFEST_FILE_NAME = "0.manifest.json"

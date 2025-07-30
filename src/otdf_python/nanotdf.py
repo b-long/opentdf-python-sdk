@@ -15,17 +15,22 @@ import hashlib
 from otdf_python.policy_info import PolicyInfo
 from otdf_python.config import NanoTDFConfig, KASInfo
 
+
 class NanoTDFException(SDKException):
     pass
+
 
 class NanoTDFMaxSizeLimit(NanoTDFException):
     pass
 
+
 class UnsupportedNanoTDFFeature(NanoTDFException):
     pass
 
+
 class InvalidNanoTDFConfig(NanoTDFException):
     pass
+
 
 class NanoTDF:
     MAGIC_NUMBER_AND_VERSION = MAGIC_NUMBER_AND_VERSION
@@ -76,8 +81,12 @@ class NanoTDF:
         """
         attributes = config.attributes if config.attributes else []
         policy_object = self._create_policy_object(attributes)
-        policy_json = json.dumps(policy_object, default=lambda o: o.__dict__).encode("utf-8")
-        policy_type = config.policy_type if config.policy_type else "EMBEDDED_POLICY_PLAIN_TEXT"
+        policy_json = json.dumps(policy_object, default=lambda o: o.__dict__).encode(
+            "utf-8"
+        )
+        policy_type = (
+            config.policy_type if config.policy_type else "EMBEDDED_POLICY_PLAIN_TEXT"
+        )
 
         if policy_type == "EMBEDDED_POLICY_PLAIN_TEXT":
             policy_body = policy_json
@@ -93,13 +102,19 @@ class NanoTDF:
     def _prepare_encryption_key(self, config: NanoTDFConfig) -> bytes:
         """Get encryption key from config or generate a new one."""
         key = None
-        if config.cipher and isinstance(config.cipher, str) and all(c in '0123456789abcdefABCDEF' for c in config.cipher):
+        if (
+            config.cipher
+            and isinstance(config.cipher, str)
+            and all(c in "0123456789abcdefABCDEF" for c in config.cipher)
+        ):
             key = bytes.fromhex(config.cipher)
         if not key:
             key = secrets.token_bytes(32)
         return key
 
-    def _create_header(self, policy_body: bytes, policy_type: str, config: NanoTDFConfig) -> bytes:
+    def _create_header(
+        self, policy_body: bytes, policy_type: str, config: NanoTDFConfig
+    ) -> bytes:
         """
         Create the NanoTDF header.
 
@@ -138,7 +153,9 @@ class NanoTDF:
             policy_info.set_embedded_plain_text_policy(policy_body)
         else:
             policy_info.set_embedded_encrypted_text_policy(policy_body)
-        policy_info.set_policy_binding(hashlib.sha256(policy_body).digest()[-self.K_NANOTDF_GMAC_LENGTH:])
+        policy_info.set_policy_binding(
+            hashlib.sha256(policy_body).digest()[-self.K_NANOTDF_GMAC_LENGTH :]
+        )
 
         # Build the header
         header = Header()
@@ -146,13 +163,21 @@ class NanoTDF:
         header.set_ecc_mode(ecc_mode)
         header.set_payload_config(payload_config)
         header.set_policy_info(policy_info)
-        header.set_ephemeral_key(secrets.token_bytes(ECCMode.get_ec_compressed_pubkey_size(ecc_mode.get_elliptic_curve_type())))
+        header.set_ephemeral_key(
+            secrets.token_bytes(
+                ECCMode.get_ec_compressed_pubkey_size(
+                    ecc_mode.get_elliptic_curve_type()
+                )
+            )
+        )
 
         # Generate and return the header bytes with magic number
         header_bytes = header.to_bytes()
         return self.MAGIC_NUMBER_AND_VERSION + header_bytes
 
-    def _wrap_key_if_needed(self, key: bytes, config: NanoTDFConfig) -> tuple[bytes, bytes | None]:
+    def _wrap_key_if_needed(
+        self, key: bytes, config: NanoTDFConfig
+    ) -> tuple[bytes, bytes | None]:
         """
         Wrap encryption key if KAS public key is provided.
 
@@ -187,8 +212,8 @@ class NanoTDF:
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     algorithm=hashes.SHA1(),
-                    label=None
-                )
+                    label=None,
+                ),
             )
 
         return wrapped_key, kas_public_key
@@ -205,12 +230,14 @@ class NanoTDF:
             tuple: (iv, ciphertext)
         """
         iv = secrets.token_bytes(self.K_NANOTDF_IV_SIZE)
-        iv_padded = self.K_EMPTY_IV[:self.K_IV_PADDING] + iv
+        iv_padded = self.K_EMPTY_IV[: self.K_IV_PADDING] + iv
         aesgcm = AESGCM(key)
         ciphertext = aesgcm.encrypt(iv_padded, payload, None)
         return iv, ciphertext
 
-    def create_nano_tdf(self, payload: bytes | BytesIO, output_stream: BinaryIO, config: NanoTDFConfig) -> int:
+    def create_nano_tdf(
+        self, payload: bytes | BytesIO, output_stream: BinaryIO, config: NanoTDFConfig
+    ) -> int:
         """
         Creates a NanoTDF with the provided payload and writes it to the output stream.
         Supports KAS key wrapping if KAS info with public key is provided in config.
@@ -251,14 +278,22 @@ class NanoTDF:
 
         # Compose the complete NanoTDF: [IV][CIPHERTEXT][WRAPPED_KEY][WRAPPED_KEY_LEN]
         if wrapped_key:
-            nano_tdf_data = iv + ciphertext + wrapped_key + len(wrapped_key).to_bytes(2, 'big')
+            nano_tdf_data = (
+                iv + ciphertext + wrapped_key + len(wrapped_key).to_bytes(2, "big")
+            )
         else:
-            nano_tdf_data = iv + ciphertext + (0).to_bytes(2, 'big')
+            nano_tdf_data = iv + ciphertext + (0).to_bytes(2, "big")
 
         output_stream.write(nano_tdf_data)
         return len(header_bytes) + len(nano_tdf_data)
 
-    def read_nano_tdf(self, nano_tdf_data: bytes | BytesIO, output_stream: BinaryIO, config: NanoTDFConfig, platform_url: str | None = None) -> None:
+    def read_nano_tdf(
+        self,
+        nano_tdf_data: bytes | BytesIO,
+        output_stream: BinaryIO,
+        config: NanoTDFConfig,
+        platform_url: str | None = None,
+    ) -> None:
         """
         Reads a NanoTDF and writes the payload to the output stream.
         Supports KAS key unwrapping if kas_private_key is provided in config.
@@ -278,6 +313,7 @@ class NanoTDF:
             nano_tdf_data = nano_tdf_data.getvalue()
 
         from otdf_python.header import Header  # Local import to avoid circular import
+
         try:
             header_len = Header.peek_length(nano_tdf_data)
         except Exception:
@@ -286,16 +322,20 @@ class NanoTDF:
         payload = nano_tdf_data[payload_start:]
         # Do not check for magic/version in payload; it is only at the start of the header
         iv = payload[0:3]
-        iv_padded = self.K_EMPTY_IV[:self.K_IV_PADDING] + iv
+        iv_padded = self.K_EMPTY_IV[: self.K_IV_PADDING] + iv
         # Find wrapped key
-        wrapped_key_len = int.from_bytes(payload[-2:], 'big')
+        wrapped_key_len = int.from_bytes(payload[-2:], "big")
         if wrapped_key_len > 0:
-            wrapped_key = payload[-(2+wrapped_key_len):-2]
+            wrapped_key = payload[-(2 + wrapped_key_len) : -2]
 
             # Get private key and mock unwrap config
             kas_private_key = None
             # Try to get from cipher field if it looks like a PEM key
-            if config.cipher and isinstance(config.cipher, str) and "-----BEGIN" in config.cipher:
+            if (
+                config.cipher
+                and isinstance(config.cipher, str)
+                and "-----BEGIN" in config.cipher
+            ):
                 kas_private_key = config.cipher
 
             # Check if mock unwrap is enabled in config string
@@ -308,18 +348,19 @@ class NanoTDF:
             if kas_mock_unwrap:
                 # Use the SDK.KAS mock unwrap_nanotdf logic
                 from otdf_python.sdk import SDK
+
                 key = SDK.KAS().unwrap_nanotdf(
                     curve=None,
                     header=None,
                     kas_url=None,
                     wrapped_key=wrapped_key,
                     kas_private_key=kas_private_key,
-                    mock=True
+                    mock=True,
                 )
             else:
                 asym = AsymDecryption(kas_private_key)
                 key = asym.decrypt(wrapped_key)
-            ciphertext = payload[3:-(2+wrapped_key_len)]
+            ciphertext = payload[3 : -(2 + wrapped_key_len)]
         else:
             key = config.get("key")
             if not key:
@@ -336,20 +377,33 @@ class NanoTDF:
         if "attributes" in config:
             converted_config.attributes = config["attributes"]
         if "key" in config:
-            converted_config.cipher = config["key"].hex() if isinstance(config["key"], bytes) else config["key"]
+            converted_config.cipher = (
+                config["key"].hex()
+                if isinstance(config["key"], bytes)
+                else config["key"]
+            )
         if "kas_public_key" in config:
-            kas_info = KASInfo(url="https://kas.example.com", public_key=config["kas_public_key"])
+            kas_info = KASInfo(
+                url="https://kas.example.com", public_key=config["kas_public_key"]
+            )
             converted_config.kas_info_list = [kas_info]
         if "policy_type" in config:
             converted_config.policy_type = config["policy_type"]
         return converted_config
 
-    def _handle_legacy_key_config(self, config: dict | NanoTDFConfig) -> tuple[bytes, dict | NanoTDFConfig]:
+    def _handle_legacy_key_config(
+        self, config: dict | NanoTDFConfig
+    ) -> tuple[bytes, dict | NanoTDFConfig]:
         """Handle key configuration for legacy method."""
         key = None
         if isinstance(config, dict) and "key" in config:
             key = config["key"]
-        elif hasattr(config, "cipher") and config.cipher and isinstance(config.cipher, str) and all(c in '0123456789abcdefABCDEF' for c in config.cipher):
+        elif (
+            hasattr(config, "cipher")
+            and config.cipher
+            and isinstance(config.cipher, str)
+            and all(c in "0123456789abcdefABCDEF" for c in config.cipher)
+        ):
             key = bytes.fromhex(config.cipher)
 
         if not key:
@@ -385,19 +439,30 @@ class NanoTDF:
         """Convert a dictionary config to a NanoTDFConfig object for reading."""
         converted_config = NanoTDFConfig()
         if "key" in config:
-            converted_config.cipher = config["key"].hex() if isinstance(config["key"], bytes) else config["key"]
+            converted_config.cipher = (
+                config["key"].hex()
+                if isinstance(config["key"], bytes)
+                else config["key"]
+            )
         if "kas_private_key" in config:
             converted_config.cipher = config["kas_private_key"]
         return converted_config
 
-    def _extract_key_for_reading(self, config: dict | NanoTDFConfig | None, wrapped_key: bytes | None) -> bytes:
+    def _extract_key_for_reading(
+        self, config: dict | NanoTDFConfig | None, wrapped_key: bytes | None
+    ) -> bytes:
         """Extract the decryption key from config or unwrap it."""
         # For wrapped key case
         if wrapped_key:
             kas_private_key = None
             if isinstance(config, dict):
                 kas_private_key = config.get("kas_private_key")
-            elif config and config.cipher and isinstance(config.cipher, str) and "-----BEGIN" in config.cipher:
+            elif (
+                config
+                and config.cipher
+                and isinstance(config.cipher, str)
+                and "-----BEGIN" in config.cipher
+            ):
                 kas_private_key = config.cipher
 
             if not kas_private_key:
@@ -410,13 +475,20 @@ class NanoTDF:
         key = None
         if isinstance(config, dict):
             key = config.get("key")
-        elif config and config.cipher and isinstance(config.cipher, str) and all(c in '0123456789abcdefABCDEF' for c in config.cipher):
+        elif (
+            config
+            and config.cipher
+            and isinstance(config.cipher, str)
+            and all(c in "0123456789abcdefABCDEF" for c in config.cipher)
+        ):
             key = bytes.fromhex(config.cipher)
         if not key:
             raise InvalidNanoTDFConfig("Missing decryption key in config.")
         return key
 
-    def read_nanotdf(self, nanotdf_bytes: bytes, config: dict | NanoTDFConfig | None = None) -> bytes:
+    def read_nanotdf(
+        self, nanotdf_bytes: bytes, config: dict | NanoTDFConfig | None = None
+    ) -> bytes:
         """Legacy method for backwards compatibility with existing tests"""
         output = BytesIO()
         from otdf_python.header import Header  # Local import to avoid circular import
@@ -431,13 +503,13 @@ class NanoTDF:
 
             # Extract components
             iv = payload[0:3]
-            iv_padded = self.K_EMPTY_IV[:self.K_IV_PADDING] + iv
-            wrapped_key_len = int.from_bytes(payload[-2:], 'big')
+            iv_padded = self.K_EMPTY_IV[: self.K_IV_PADDING] + iv
+            wrapped_key_len = int.from_bytes(payload[-2:], "big")
 
             wrapped_key = None
             if wrapped_key_len > 0:
-                wrapped_key = payload[-(2+wrapped_key_len):-2]
-                ciphertext = payload[3:-(2+wrapped_key_len)]
+                wrapped_key = payload[-(2 + wrapped_key_len) : -2]
+                ciphertext = payload[3 : -(2 + wrapped_key_len)]
             else:
                 ciphertext = payload[3:-2]
 

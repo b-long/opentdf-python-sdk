@@ -2,6 +2,7 @@
 Python port of the SDKBuilder class for OpenTDF platform interaction.
 Provides methods to configure and build SDK instances.
 """
+
 from typing import Any
 import os
 import logging
@@ -30,6 +31,7 @@ class SDKBuilder:
     """
     A builder class for creating instances of the SDK class.
     """
+
     PLATFORM_ISSUER = "platform_issuer"
 
     # Class variable to store the latest platform URL
@@ -44,7 +46,7 @@ class SDKBuilder:
         self.cert_paths: list[str] = []
 
     @staticmethod
-    def new_builder() -> 'SDKBuilder':
+    def new_builder() -> "SDKBuilder":
         """
         Creates a new SDKBuilder instance.
         Returns:
@@ -61,7 +63,7 @@ class SDKBuilder:
         """
         return SDKBuilder._platform_url
 
-    def ssl_context_from_directory(self, certs_dir_path: str) -> 'SDKBuilder':
+    def ssl_context_from_directory(self, certs_dir_path: str) -> "SDKBuilder":
         """
         Add SSL Context with trusted certs from certDirPath
         Args:
@@ -85,7 +87,7 @@ class SDKBuilder:
 
         return self
 
-    def client_secret(self, client_id: str, client_secret: str) -> 'SDKBuilder':
+    def client_secret(self, client_id: str, client_secret: str) -> "SDKBuilder":
         """
         Sets client credentials for OAuth 2.0 client_credentials grant.
         Args:
@@ -95,12 +97,11 @@ class SDKBuilder:
             self: The builder instance for chaining
         """
         self.oauth_config = OAuthConfig(
-            client_id=client_id,
-            client_secret=client_secret
+            client_id=client_id, client_secret=client_secret
         )
         return self
 
-    def set_platform_endpoint(self, endpoint: str) -> 'SDKBuilder':
+    def set_platform_endpoint(self, endpoint: str) -> "SDKBuilder":
         """
         Sets the OpenTDF platform endpoint URL.
         Args:
@@ -109,7 +110,9 @@ class SDKBuilder:
             self: The builder instance for chaining
         """
         # Normalize the endpoint URL
-        if endpoint and not (endpoint.startswith("http://") or endpoint.startswith("https://")):
+        if endpoint and not (
+            endpoint.startswith("http://") or endpoint.startswith("https://")
+        ):
             if self.use_plain_text:
                 endpoint = f"http://{endpoint}"
             else:
@@ -120,7 +123,9 @@ class SDKBuilder:
         SDKBuilder._platform_url = endpoint
         return self
 
-    def use_insecure_plaintext_connection(self, use_plain_text: bool = True) -> 'SDKBuilder':
+    def use_insecure_plaintext_connection(
+        self, use_plain_text: bool = True
+    ) -> "SDKBuilder":
         """
         Configures whether to use plain text (HTTP) connection instead of HTTPS.
         Args:
@@ -139,7 +144,7 @@ class SDKBuilder:
 
         return self
 
-    def bearer_token(self, token: str) -> 'SDKBuilder':
+    def bearer_token(self, token: str) -> "SDKBuilder":
         """
         Sets a bearer token to use for authorization.
         Args:
@@ -165,42 +170,51 @@ class SDKBuilder:
             # Auto-discover the token endpoint
             try:
                 # Default location for OpenID Connect discovery document
-                well_known_url = f"{self.platform_endpoint}/.well-known/openid-configuration"
-                response = httpx.get(
-                    well_known_url,
-                    verify=not self.use_plain_text
+                well_known_url = (
+                    f"{self.platform_endpoint}/.well-known/openid-configuration"
                 )
+                response = httpx.get(well_known_url, verify=not self.use_plain_text)
 
                 if response.status_code == 200:
                     discovery_doc = response.json()
-                    self.oauth_config.token_endpoint = discovery_doc.get("token_endpoint")
+                    self.oauth_config.token_endpoint = discovery_doc.get(
+                        "token_endpoint"
+                    )
                     if not self.oauth_config.token_endpoint:
-                        raise AutoConfigureException("Token endpoint not found in discovery document")
+                        raise AutoConfigureException(
+                            "Token endpoint not found in discovery document"
+                        )
                 else:
-                    raise AutoConfigureException(f"Failed to retrieve OpenID configuration: {response.status_code}")
+                    raise AutoConfigureException(
+                        f"Failed to retrieve OpenID configuration: {response.status_code}"
+                    )
             except Exception as e:
-                raise AutoConfigureException(f"Error during token endpoint discovery: {e!s}")
+                raise AutoConfigureException(
+                    f"Error during token endpoint discovery: {e!s}"
+                )
 
         # Request the token
         try:
             token_data = {
-                'grant_type': self.oauth_config.grant_type,
-                'client_id': self.oauth_config.client_id,
-                'client_secret': self.oauth_config.client_secret,
-                'scope': self.oauth_config.scope
+                "grant_type": self.oauth_config.grant_type,
+                "client_id": self.oauth_config.client_id,
+                "client_secret": self.oauth_config.client_secret,
+                "scope": self.oauth_config.scope,
             }
 
             response = httpx.post(
                 self.oauth_config.token_endpoint,
                 data=token_data,
-                verify=not self.use_plain_text
+                verify=not self.use_plain_text,
             )
 
             if response.status_code == 200:
                 token_response = response.json()
-                return token_response.get('access_token')
+                return token_response.get("access_token")
             else:
-                raise AutoConfigureException(f"Token request failed: {response.status_code} - {response.text}")
+                raise AutoConfigureException(
+                    f"Token request failed: {response.status_code} - {response.text}"
+                )
 
         except Exception as e:
             raise AutoConfigureException(f"Error during token acquisition: {e!s}")
@@ -276,5 +290,5 @@ class SDKBuilder:
         return SDK(
             services=services,
             auth_interceptor=auth_interceptor,
-            platform_url=self.platform_endpoint
+            platform_url=self.platform_endpoint,
         )

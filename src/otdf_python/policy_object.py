@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class AttributeObject:
     attribute: str
@@ -8,10 +9,12 @@ class AttributeObject:
     pub_key: str | None = None
     kas_url: str | None = None
 
+
 @dataclass
 class PolicyBody:
     data_attributes: list[AttributeObject]
     dissem: list[str]
+
 
 @dataclass
 class PolicyObject:

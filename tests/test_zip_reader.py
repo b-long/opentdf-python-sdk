@@ -4,6 +4,7 @@ import random
 from otdf_python.zip_writer import ZipWriter
 from otdf_python.zip_reader import ZipReader
 
+
 class TestZipReader(unittest.TestCase):
     def test_read_and_namelist(self):
         # Create a zip in memory
@@ -23,6 +24,7 @@ class TestZipReader(unittest.TestCase):
 
     def test_extract(self):
         import tempfile
+
         writer = ZipWriter()
         writer.data("baz.txt", b"baz")
         writer.finish()
@@ -40,7 +42,9 @@ class TestZipReader(unittest.TestCase):
         num_entries = r.randint(10, 20)  # Use a smaller number for test speed
         test_data = []
         for _ in range(num_entries):
-            file_name = ''.join(r.choices('abcdefghijklmnopqrstuvwxyz0123456789', k=r.randint(5, 15)))
+            file_name = "".join(
+                r.choices("abcdefghijklmnopqrstuvwxyz0123456789", k=r.randint(5, 15))
+            )
             file_content = bytes(r.getrandbits(8) for _ in range(r.randint(10, 100)))
             test_data.append((file_name, file_content))
         writer = ZipWriter()
@@ -59,6 +63,7 @@ class TestZipReader(unittest.TestCase):
             found_names.add(name)
         self.assertEqual(found_names, set(names_to_data.keys()))
         reader.close()
+
 
 if __name__ == "__main__":
     unittest.main()

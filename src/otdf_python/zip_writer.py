@@ -2,6 +2,7 @@ import zipfile
 import io
 import zlib
 
+
 class FileInfo:
     def __init__(self, name: str, crc: int, size: int, offset: int):
         self.name = name
@@ -9,10 +10,13 @@ class FileInfo:
         self.size = size
         self.offset = offset
 
+
 class ZipWriter:
     def __init__(self, out_stream: io.BytesIO | None = None):
         self.out_stream = out_stream or io.BytesIO()
-        self.zipfile = zipfile.ZipFile(self.out_stream, mode="w", compression=zipfile.ZIP_DEFLATED)
+        self.zipfile = zipfile.ZipFile(
+            self.out_stream, mode="w", compression=zipfile.ZIP_DEFLATED
+        )
         self._file_infos: list[FileInfo] = []
         self._offsets: dict[str, int] = {}
 
@@ -39,6 +43,7 @@ class ZipWriter:
     def get_file_infos(self) -> list[FileInfo]:
         return self._file_infos
 
+
 class _TrackingWriter(io.RawIOBase):
     def __init__(self, zip_writer: ZipWriter, name: str, offset: int):
         self._zip_writer = zip_writer
@@ -55,7 +60,9 @@ class _TrackingWriter(io.RawIOBase):
             data = self._buffer.getvalue()
             crc = zlib.crc32(data)
             self._zip_writer.zipfile.writestr(self._name, data)
-            self._zip_writer._file_infos.append(FileInfo(self._name, crc, len(data), self._offset))
+            self._zip_writer._file_infos.append(
+                FileInfo(self._name, crc, len(data), self._offset)
+            )
             self._closed = True
         super().close()
 

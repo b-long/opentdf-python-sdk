@@ -8,10 +8,12 @@ import re
 
 from .sdk_exceptions import SDKException
 
+
 class AsymEncryption:
     """
     Provides methods for asymmetric encryption and handling public keys in PEM format.
     """
+
     PUBLIC_KEY_HEADER = "-----BEGIN PUBLIC KEY-----"
     PUBLIC_KEY_FOOTER = "-----END PUBLIC KEY-----"
     CIPHER_TRANSFORM = "RSA/ECB/OAEPWithSHA-1AndMGF1Padding"
@@ -22,7 +24,9 @@ class AsymEncryption:
         elif public_key_pem is not None:
             try:
                 if "BEGIN CERTIFICATE" in public_key_pem:
-                    cert = load_pem_x509_certificate(public_key_pem.encode(), default_backend())
+                    cert = load_pem_x509_certificate(
+                        public_key_pem.encode(), default_backend()
+                    )
                     self.public_key = cert.public_key()
                 else:
                     # Remove PEM headers/footers and whitespace
@@ -30,14 +34,19 @@ class AsymEncryption:
                     pem_body = re.sub(r"-----END (.*)-----", "", pem_body)
                     pem_body = re.sub(r"\s", "", pem_body)
                     decoded = base64.b64decode(pem_body)
-                    self.public_key = serialization.load_der_public_key(decoded, backend=default_backend())
+                    self.public_key = serialization.load_der_public_key(
+                        decoded, backend=default_backend()
+                    )
             except Exception as e:
                 raise SDKException(f"Failed to load public key: {e}")
         else:
             self.public_key = None
 
         from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
-        if self.public_key is not None and not isinstance(self.public_key, RSAPublicKey):
+
+        if self.public_key is not None and not isinstance(
+            self.public_key, RSAPublicKey
+        ):
             raise SDKException("Not an RSA PEM formatted public key")
 
     def encrypt(self, data: bytes) -> bytes:
@@ -49,8 +58,8 @@ class AsymEncryption:
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     algorithm=hashes.SHA1(),
-                    label=None
-                )
+                    label=None,
+                ),
             )
         except Exception as e:
             raise SDKException(f"Error performing encryption: {e}")
@@ -59,7 +68,7 @@ class AsymEncryption:
         try:
             pem = self.public_key.public_bytes(
                 encoding=serialization.Encoding.PEM,
-                format=serialization.PublicFormat.SubjectPublicKeyInfo
+                format=serialization.PublicFormat.SubjectPublicKeyInfo,
             )
             return pem.decode()
         except Exception as e:

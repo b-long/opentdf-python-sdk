@@ -5,6 +5,7 @@ from cryptography.hazmat.primitives import serialization
 import io
 from otdf_python.config import NanoTDFConfig, KASInfo
 
+
 @pytest.mark.integration
 def test_nanotdf_kas_roundtrip():
     # Generate RSA keypair
@@ -14,10 +15,14 @@ def test_nanotdf_kas_roundtrip():
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.NoEncryption(),
     ).decode()
-    public_pem = private_key.public_key().public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    ).decode()
+    public_pem = (
+        private_key.public_key()
+        .public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+        .decode()
+    )
     # Prepare NanoTDF
     nanotdf = NanoTDF()
     payload = b"nano test payload"

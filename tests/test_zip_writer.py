@@ -3,6 +3,7 @@ import io
 from otdf_python.zip_writer import ZipWriter
 import zipfile
 
+
 class TestZipWriter(unittest.TestCase):
     def test_data_and_stream(self):
         out = io.BytesIO()
@@ -27,6 +28,7 @@ class TestZipWriter(unittest.TestCase):
         data = writer.getvalue()
         with zipfile.ZipFile(io.BytesIO(data), "r") as z:
             self.assertEqual(z.read("a.txt"), b"A")
+
 
 if __name__ == "__main__":
     unittest.main()

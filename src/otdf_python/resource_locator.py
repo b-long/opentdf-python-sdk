@@ -22,7 +22,7 @@ class ResourceLocator:
 
     def write_into_buffer(self, buffer: bytearray, offset: int = 0) -> int:
         data = self.to_bytes()
-        buffer[offset:offset+len(data)] = data
+        buffer[offset : offset + len(data)] = data
         return len(data)
 
     @staticmethod
@@ -33,11 +33,11 @@ class ResourceLocator:
         url_len = buffer[0]
         if len(buffer) < 1 + url_len + 1:
             raise ValueError("Buffer too short for ResourceLocator url")
-        url_bytes = buffer[1:1+url_len]
-        id_len = buffer[1+url_len]
+        url_bytes = buffer[1 : 1 + url_len]
+        id_len = buffer[1 + url_len]
         if len(buffer) < 1 + url_len + 1 + id_len:
             raise ValueError("Buffer too short for ResourceLocator id")
-        id_bytes = buffer[1+url_len+1:1+url_len+1+id_len]
+        id_bytes = buffer[1 + url_len + 1 : 1 + url_len + 1 + id_len]
         resource_url = url_bytes.decode()
         identifier = id_bytes.decode()
         size = 1 + url_len + 1 + id_len

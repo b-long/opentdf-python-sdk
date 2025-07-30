@@ -3,6 +3,7 @@ import io
 import zipfile
 from otdf_python.tdf_writer import TDFWriter
 
+
 class TestTDFWriter(unittest.TestCase):
     def test_append_manifest_and_payload(self):
         out = io.BytesIO()
@@ -52,6 +53,7 @@ class TestTDFWriter(unittest.TestCase):
         # After finish, writing should raise ValueError
         with self.assertRaises(ValueError), writer.payload() as f:
             f.write(b"should fail")
+
 
 if __name__ == "__main__":
     unittest.main()

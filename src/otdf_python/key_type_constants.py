@@ -5,10 +5,12 @@ This matches the Java SDK's KeyType enum pattern.
 
 from enum import Enum, auto
 
+
 class KeyType(Enum):
     """
     Enum for key types used in the KAS client.
     """
+
     RSA2048 = auto()
     EC_P256 = auto()
     EC_P384 = auto()
@@ -34,6 +36,7 @@ class KeyType(Enum):
             return "P-521"
         else:
             return None
+
 
 # Constants for backward compatibility with string literals
 RSA_KEY_TYPE = KeyType.RSA2048

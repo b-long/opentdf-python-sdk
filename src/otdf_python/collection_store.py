@@ -1,8 +1,10 @@
 from collections import OrderedDict
 
+
 class CollectionKey:
     def __init__(self, key: bytes | None):
         self.key = key
+
 
 class CollectionStore:
     NO_PRIVATE_KEY = CollectionKey(None)
@@ -13,12 +15,14 @@ class CollectionStore:
     def get_key(self, header) -> CollectionKey:
         raise NotImplementedError
 
+
 class NoOpCollectionStore(CollectionStore):
     def store(self, header, key: CollectionKey):
         pass
 
     def get_key(self, header) -> CollectionKey:
         return self.NO_PRIVATE_KEY
+
 
 class CollectionStoreImpl(OrderedDict, CollectionStore):
     MAX_SIZE_STORE = 500

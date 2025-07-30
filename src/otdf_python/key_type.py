@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class KeyType(Enum):
     RSA2048Key = "rsa:2048"
     EC256Key = "ec:secp256r1"

@@ -1,6 +1,7 @@
 import unittest
 from otdf_python.key_type import KeyType
 
+
 class TestKeyType(unittest.TestCase):
     def test_str(self):
         self.assertEqual(str(KeyType.RSA2048Key), "rsa:2048")
@@ -22,6 +23,7 @@ class TestKeyType(unittest.TestCase):
     def test_is_ec(self):
         self.assertTrue(KeyType.EC256Key.is_ec())
         self.assertFalse(KeyType.RSA2048Key.is_ec())
+
 
 if __name__ == "__main__":
     unittest.main()

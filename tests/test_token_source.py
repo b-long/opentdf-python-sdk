@@ -1,12 +1,14 @@
 """
 Unit tests for TokenSource.
 """
+
 import time
 from unittest.mock import patch, MagicMock
 from otdf_python.token_source import TokenSource
 
+
 def test_token_source_returns_token_and_caches():
-    with patch('httpx.post') as mock_post:
+    with patch("httpx.post") as mock_post:
         mock_resp = MagicMock()
         mock_resp.json.return_value = {"access_token": "abc", "expires_in": 100}
         mock_resp.raise_for_status.return_value = None
@@ -20,7 +22,8 @@ def test_token_source_returns_token_and_caches():
         assert token2 == "abc"
         assert mock_post.call_count == 1
 
-@patch('httpx.post')
+
+@patch("httpx.post")
 def test_token_source_refreshes_token(mock_post):
     mock_resp1 = MagicMock()
     mock_resp1.json.return_value = {"access_token": "abc", "expires_in": 1}

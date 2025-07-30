@@ -1,6 +1,7 @@
 import unittest
 from otdf_python.sdk_exceptions import SDKException, AutoConfigureException
 
+
 class TestSDKExceptions(unittest.TestCase):
     def test_sdk_exception(self):
         e = SDKException("msg", Exception("reason"))
@@ -14,6 +15,7 @@ class TestSDKExceptions(unittest.TestCase):
         e2 = AutoConfigureException("fail2")
         self.assertEqual(str(e2), "fail2")
         self.assertIsNone(e2.reason)
+
 
 if __name__ == "__main__":
     unittest.main()

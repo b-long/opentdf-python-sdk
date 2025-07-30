@@ -1,8 +1,10 @@
 """
 KASKeyCache: In-memory cache for KAS (Key Access Service) public keys and info.
 """
+
 import threading
 from typing import Any
+
 
 class KASKeyCache:
     def __init__(self):
@@ -31,7 +33,7 @@ class KASKeyCache:
         Args:
             kas_info: The KASInfo object to store
         """
-        cache_key = self._make_key(kas_info.url, getattr(kas_info, 'algorithm', None))
+        cache_key = self._make_key(kas_info.url, getattr(kas_info, "algorithm", None))
         with self._lock:
             self._cache[cache_key] = kas_info
 

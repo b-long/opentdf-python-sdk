@@ -1,6 +1,7 @@
 """
 Tests for address_normalizer module.
 """
+
 import pytest
 
 from otdf_python.address_normalizer import normalize_address

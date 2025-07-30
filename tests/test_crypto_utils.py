@@ -2,6 +2,7 @@ import unittest
 from otdf_python.crypto_utils import CryptoUtils
 from cryptography.hazmat.primitives.asymmetric import ec
 
+
 class TestCryptoUtils(unittest.TestCase):
     def test_hmac(self):
         key = b"key"
@@ -29,6 +30,7 @@ class TestCryptoUtils(unittest.TestCase):
             CryptoUtils.get_rsa_public_key_pem("notakey")
         with self.assertRaises(ValueError):
             CryptoUtils.get_rsa_private_key_pem("notakey")
+
 
 if __name__ == "__main__":
     unittest.main()

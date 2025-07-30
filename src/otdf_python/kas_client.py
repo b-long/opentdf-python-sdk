@@ -1,6 +1,7 @@
 """
 KASClient: Handles communication with the Key Access Service (KAS).
 """
+
 import json
 import time
 import logging
@@ -15,14 +16,18 @@ from .asym_decryption import AsymDecryption
 from .kas_info import KASInfo
 from .key_type_constants import RSA_KEY_TYPE, EC_KEY_TYPE
 
+
 @dataclass
 class KeyAccess:
     url: str
     wrapped_key: str
     ephemeral_public_key: str = None
 
+
 class KASClient:
-    def __init__(self, kas_url=None, token_source=None, cache=None, use_plaintext=False):
+    def __init__(
+        self, kas_url=None, token_source=None, cache=None, use_plaintext=False
+    ):
         self.kas_url = kas_url
         self.token_source = token_source
         self.cache = cache or KASKeyCache()
@@ -57,8 +62,8 @@ class KASClient:
 
             response_data = resp.json()
             kas_info_copy = kas_info.clone()
-            kas_info_copy.kid = response_data.get('kid')
-            kas_info_copy.public_key = response_data.get('publicKey')
+            kas_info_copy.kid = response_data.get("kid")
+            kas_info_copy.public_key = response_data.get("publicKey")
 
             self.cache.store(kas_info_copy)
             return kas_info_copy
@@ -81,7 +86,9 @@ class KASClient:
             elif session_key_type.upper() == "EC":
                 return EC_KEY_TYPE
             else:
-                logging.warning(f"Unknown session key type: {session_key_type}, defaulting to RSA")
+                logging.warning(
+                    f"Unknown session key type: {session_key_type}, defaulting to RSA"
+                )
                 return RSA_KEY_TYPE
         elif session_key_type is None:
             # Default to RSA
@@ -99,6 +106,7 @@ class KASClient:
             ECKeyPair instance and client public key
         """
         from .eckeypair import ECKeyPair
+
         curve_name = session_key_type.curve_name
         ec_key_pair = ECKeyPair(curve_name=curve_name)
         client_public_key = ec_key_pair.public_key_in_pem_format()
@@ -130,7 +138,9 @@ class KASClient:
             Unwrapped key as bytes
         """
         if ec_key_pair is None:
-            raise SDKException("ECKeyPair is null. Unable to proceed with the unwrap operation.")
+            raise SDKException(
+                "ECKeyPair is null. Unable to proceed with the unwrap operation."
+            )
 
         # Get the KAS ephemeral public key
         kas_ephemeral_public_key = response_data.get("sessionPublicKey")
@@ -139,14 +149,17 @@ class KASClient:
 
         # Generate symmetric key using ECDH
         from .eckeypair import ECKeyPair
+
         public_key = ECKeyPair.public_key_from_pem(kas_ephemeral_public_key)
         sym_key = ECKeyPair.compute_ecdh_key(public_key, ec_key_pair.get_private_key())
 
         # Calculate HKDF and decrypt
         from otdf_python.tdf import TDF
+
         session_key = ECKeyPair.calculate_hkdf(TDF.GLOBAL_KEY_SALT, sym_key)
 
         from .aesgcm import AesGcm
+
         gcm = AesGcm(session_key)
         return gcm.decrypt(wrapped_key)
 
@@ -167,7 +180,9 @@ class KASClient:
 
         # Handle key generation based on session key type
         if session_key_type.is_ec:
-            ec_key_pair, self.client_public_key = self._prepare_ec_keypair(session_key_type)
+            ec_key_pair, self.client_public_key = self._prepare_ec_keypair(
+                session_key_type
+            )
         else:
             self.client_public_key = self._prepare_rsa_keypair()
 
@@ -178,15 +193,15 @@ class KASClient:
             "keyAccess": {
                 "url": key_access.url,
                 "wrappedKey": key_access.wrapped_key,
-                "ephemeralPublicKey": key_access.ephemeral_public_key
-            }
+                "ephemeralPublicKey": key_access.ephemeral_public_key,
+            },
         }
 
         # Add JWT claims similar to Java implementation
         claims = {
             "requestBody": json.dumps(request_body),
             "iat": int(time.time()),
-            "exp": int(time.time() + 60)  # 1 minute expiration
+            "exp": int(time.time() + 60),  # 1 minute expiration
         }
 
         try:

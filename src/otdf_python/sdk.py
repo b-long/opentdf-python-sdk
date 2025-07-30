@@ -1,6 +1,7 @@
 """
 Python port of the main SDK class for OpenTDF platform interaction.
 """
+
 from typing import Any, BinaryIO
 from io import BytesIO
 from contextlib import AbstractContextManager
@@ -11,28 +12,47 @@ from otdf_python.nanotdf import NanoTDF
 from otdf_python.sdk_exceptions import SDKException
 from otdf_python.config import NanoTDFConfig
 
+
 # Stubs for service client interfaces (to be implemented)
 class AttributesServiceClientInterface: ...
+
+
 class NamespaceServiceClientInterface: ...
+
+
 class SubjectMappingServiceClientInterface: ...
+
+
 class ResourceMappingServiceClientInterface: ...
+
+
 class AuthorizationServiceClientInterface: ...
+
+
 class KeyAccessServerRegistryServiceClientInterface: ...
+
 
 # Placeholder for ProtocolClient and Interceptor
 class ProtocolClient: ...
+
+
 class Interceptor: ...  # Can be dict in Python implementation
+
 
 # Placeholder for TrustManager
 class TrustManager: ...
 
+
 class SDK(AbstractContextManager):
-    def new_tdf_config(self, attributes: list[str] | None = None, **kwargs) -> 'TDFConfig':
+    def new_tdf_config(
+        self, attributes: list[str] | None = None, **kwargs
+    ) -> "TDFConfig":
         """
         Create a TDFConfig with default kas_info_list from the SDK's platform_url.
         Based on Java implementation.
         """
         from otdf_python.config import TDFConfig, KASInfo
+
         kas_url = self.platform_url or "https://default.kas.example.com"
         kas_info = KASInfo(url=kas_url, default=True)
         # Accept user override for kas_info_list if provided
@@ -40,9 +60,7 @@ class SDK(AbstractContextManager):
         if kas_info_list is None:
             kas_info_list = [kas_info]
         return TDFConfig(
-            kas_info_list=kas_info_list,
-            attributes=attributes or [],
-            **kwargs
+            kas_info_list=kas_info_list, attributes=attributes or [], **kwargs
         )
 
     def _adapt_tdf_config(self, config):
@@ -59,6 +77,7 @@ class SDK(AbstractContextManager):
         """
         # If it's already a tdf.py TDFConfig, just return it
         from otdf_python.tdf import TDFConfig as TDFTDFConfig
+
         if isinstance(config, TDFTDFConfig):
             return config
 
@@ -67,7 +86,10 @@ class SDK(AbstractContextManager):
         if kas_info is None or not kas_info:
             # Try to use platform_url to create a KASInfo
             from otdf_python.kas_info import KASInfo
-            kas_info = KASInfo(url=self.platform_url or "https://default.kas.example.com")
+
+            kas_info = KASInfo(
+                url=self.platform_url or "https://default.kas.example.com"
+            )
         else:
             # Take the first KAS info from the list
             kas_info = kas_info[0] if isinstance(kas_info, list) else kas_info
@@ -77,7 +99,7 @@ class SDK(AbstractContextManager):
             kas_private_key=getattr(config, "tdf_private_key", None),
             policy_object=getattr(config, "policy_object", None),
             attributes=getattr(config, "attributes", None),
-            segment_size=getattr(config, "default_segment_size", None)
+            segment_size=getattr(config, "default_segment_size", None),
         )
 
     """
@@ -89,6 +111,7 @@ class SDK(AbstractContextManager):
         """
         KAS (Key Access Service) interface to define methods related to key access and management.
         """
+
         def get_public_key(self, kas_info: Any) -> Any:
             """
             Retrieves the public key from the KAS for RSA operations.
@@ -113,7 +136,6 @@ class SDK(AbstractContextManager):
 
             # Make request to KAS
             try:
-
                 # Build request based on algorithm
                 request_data = {}
                 if kas_info.algorithm:
@@ -125,17 +147,20 @@ class SDK(AbstractContextManager):
                 response = httpx.post(url, json=request_data, headers=headers)
 
                 if response.status_code != 200:
-                    raise SDKException(f"Error getting public key: HTTP {response.status_code} - {response.text}")
+                    raise SDKException(
+                        f"Error getting public key: HTTP {response.status_code} - {response.text}"
+                    )
 
                 resp_data = response.json()
 
                 # Create updated KASInfo
                 from otdf_python.kas_info import KASInfo
+
                 updated_kas_info = KASInfo(
                     url=kas_info.url,
                     kid=resp_data.get("kid"),
                     public_key=resp_data.get("publicKey"),
-                    algorithm=kas_info.algorithm
+                    algorithm=kas_info.algorithm,
                 )
 
                 # Store in cache
@@ -156,7 +181,10 @@ class SDK(AbstractContextManager):
                 token_source: Function that returns an authentication token
             """
             from .kas_client import KASClient
-            self._kas_client = KASClient(kas_url=platform_url, token_source=token_source)
+
+            self._kas_client = KASClient(
+                kas_url=platform_url, token_source=token_source
+            )
 
         def get_ec_public_key(self, kas_info: Any, curve: Any) -> Any:
             """
@@ -171,6 +199,7 @@ class SDK(AbstractContextManager):
             """
             # Set algorithm to "ec:<curve>"
             from copy import copy
+
             kas_info_copy = copy(kas_info)
             kas_info_copy.algorithm = f"ec:{curve}"
             return self.get_public_key_from_kas(kas_info_copy)
@@ -202,7 +231,15 @@ class SDK(AbstractContextManager):
             """
             return self._kas_client.unwrap(key_access, policy, session_key_type)
 
-        def unwrap_nanotdf(self, curve: Any, header: str, kas_url: str, wrapped_key: bytes | None = None, kas_private_key: str | None = None, mock: bool = False) -> bytes:
+        def unwrap_nanotdf(
+            self,
+            curve: Any,
+            header: str,
+            kas_url: str,
+            wrapped_key: bytes | None = None,
+            kas_private_key: str | None = None,
+            mock: bool = False,
+        ) -> bytes:
             """
             Unwraps the NanoTDF key using the KAS. If mock=True, performs local unwrap using the private key (for tests).
 
@@ -219,6 +256,7 @@ class SDK(AbstractContextManager):
             """
             if mock and wrapped_key and kas_private_key:
                 from .asym_decryption import AsymDecryption
+
                 asym = AsymDecryption(private_key_pem=kas_private_key)
                 return asym.decrypt(wrapped_key)
 
@@ -245,6 +283,7 @@ class SDK(AbstractContextManager):
         """
         The Services interface provides access to various platform service clients and KAS.
         """
+
         def attributes(self) -> AttributesServiceClientInterface:
             """Returns the attributes service client"""
             raise NotImplementedError
@@ -269,7 +308,7 @@ class SDK(AbstractContextManager):
             """Returns the KAS registry service client"""
             raise NotImplementedError
 
-        def kas(self) -> 'SDK.KAS':
+        def kas(self) -> "SDK.KAS":
             """
             Returns the KAS interface.
 
@@ -279,6 +318,7 @@ class SDK(AbstractContextManager):
             # Return a KAS implementation with the SDK's platform URL
             # This is where we would get the platform URL and token source from the SDK
             from .sdk_builder import SDKBuilder
+
             platform_url = SDKBuilder.get_platform_url()
 
             # Create the KAS implementation with the platform URL
@@ -292,10 +332,14 @@ class SDK(AbstractContextManager):
         def __exit__(self, exc_type, exc_val, exc_tb):
             self.close()
 
-    def __init__(self, services: 'SDK.Services', trust_manager: TrustManager | None = None,
-                 auth_interceptor: Interceptor | dict[str, str] | None = None,
-                 platform_services_client: ProtocolClient | None = None,
-                 platform_url: str | None = None):
+    def __init__(
+        self,
+        services: "SDK.Services",
+        trust_manager: TrustManager | None = None,
+        auth_interceptor: Interceptor | dict[str, str] | None = None,
+        platform_services_client: ProtocolClient | None = None,
+        platform_url: str | None = None,
+    ):
         """
         Initializes a new SDK instance.
 
@@ -316,7 +360,7 @@ class SDK(AbstractContextManager):
         """Clean up resources when exiting context manager"""
         self.services.close()
 
-    def get_services(self) -> 'SDK.Services':
+    def get_services(self) -> "SDK.Services":
         """Returns the services interface"""
         return self.services
 
@@ -336,7 +380,9 @@ class SDK(AbstractContextManager):
         """Returns the platform URL if set"""
         return self.platform_url
 
-    def load_tdf(self, tdf_data: bytes | BinaryIO | BytesIO, config: TDFReaderConfig) -> TDFReader:
+    def load_tdf(
+        self, tdf_data: bytes | BinaryIO | BytesIO, config: TDFReaderConfig
+    ) -> TDFReader:
         """
         Loads a TDF from the provided data.
 
@@ -353,7 +399,12 @@ class SDK(AbstractContextManager):
         tdf = TDF(self.services)
         return tdf.load_tdf(tdf_data, config)
 
-    def create_tdf(self, payload: bytes | BinaryIO | BytesIO, config, output_stream: BinaryIO | None = None):
+    def create_tdf(
+        self,
+        payload: bytes | BinaryIO | BytesIO,
+        config,
+        output_stream: BinaryIO | None = None,
+    ):
         """
         Creates a TDF with the provided payload.
 
@@ -373,7 +424,9 @@ class SDK(AbstractContextManager):
         tdf = TDF(self.services)
         return tdf.create_tdf(payload, adapted_config, output_stream)
 
-    def create_nano_tdf(self, payload: bytes | BytesIO, output_stream: BinaryIO, config: 'NanoTDFConfig') -> int:
+    def create_nano_tdf(
+        self, payload: bytes | BytesIO, output_stream: BinaryIO, config: "NanoTDFConfig"
+    ) -> int:
         """
         Creates a NanoTDF with the provided payload.
 
@@ -391,7 +444,12 @@ class SDK(AbstractContextManager):
         nano_tdf = NanoTDF(self.services)
         return nano_tdf.create_nano_tdf(payload, output_stream, config)
 
-    def read_nano_tdf(self, nano_tdf_data: bytes | BytesIO, output_stream: BinaryIO, config: NanoTDFConfig) -> None:
+    def read_nano_tdf(
+        self,
+        nano_tdf_data: bytes | BytesIO,
+        output_stream: BinaryIO,
+        config: NanoTDFConfig,
+    ) -> None:
         """
         Reads a NanoTDF and writes the payload to the output stream.
 
@@ -424,50 +482,62 @@ class SDK(AbstractContextManager):
             file_like = BytesIO(data) if isinstance(data, bytes | bytearray) else data
             with zipfile.ZipFile(file_like) as zf:
                 names = set(zf.namelist())
-                return {"0.manifest.json", "0.payload"}.issubset(names) and len(names) == 2
+                return {"0.manifest.json", "0.payload"}.issubset(names) and len(
+                    names
+                ) == 2
         except Exception:
             return False
 
     # Exception classes - SDK-specific exceptions that can occur during operations
     class SplitKeyException(SDKException):
         """Thrown when the SDK encounters an error related to split key operations"""
+
         pass
 
     class DataSizeNotSupported(SDKException):
         """Thrown when the user attempts to create a TDF with a size larger than the maximum size"""
+
         pass
 
     class KasInfoMissing(SDKException):
         """Thrown during TDF creation when no KAS information is present"""
+
         pass
 
     class KasPublicKeyMissing(SDKException):
         """Thrown during encryption when the SDK cannot retrieve the public key for a KAS"""
+
         pass
 
     class TamperException(SDKException):
         """Base class for exceptions related to signature mismatches"""
+
         def __init__(self, error_message: str):
             super().__init__(f"[tamper detected] {error_message}")
 
     class RootSignatureValidationException(TamperException):
         """Thrown when the root signature validation fails"""
+
         pass
 
     class SegmentSignatureMismatch(TamperException):
         """Thrown when a segment signature does not match the expected value"""
+
         pass
 
     class KasBadRequestException(SDKException):
         """Thrown when the KAS returns a bad request response"""
+
         pass
 
     class KasAllowlistException(SDKException):
         """Thrown when the KAS allowlist check fails"""
+
         pass
 
     class AssertionException(SDKException):
         """Thrown when an assertion validation fails"""
+
         def __init__(self, error_message: str, assertion_id: str):
             super().__init__(error_message)
             self.assertion_id = assertion_id

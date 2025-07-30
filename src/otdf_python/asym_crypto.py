@@ -1,6 +1,7 @@
 """
 Asymmetric encryption and decryption utilities for RSA keys in PEM format.
 """
+
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import hashes
@@ -9,10 +10,12 @@ from cryptography.x509 import load_pem_x509_certificate
 
 from .sdk_exceptions import SDKException
 
+
 class AsymDecryption:
     """
     Provides functionality for asymmetric decryption using an RSA private key.
     """
+
     def __init__(self, private_key_pem: str):
         try:
             self.private_key = serialization.load_pem_private_key(
@@ -30,20 +33,24 @@ class AsymDecryption:
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     algorithm=hashes.SHA1(),
-                    label=None
-                )
+                    label=None,
+                ),
             )
         except Exception as e:
             raise SDKException(f"Error performing decryption: {e}")
+
 
 class AsymEncryption:
     """
     Provides functionality for asymmetric encryption using an RSA public key or certificate in PEM format.
     """
+
     def __init__(self, public_key_pem: str):
         try:
             if "BEGIN CERTIFICATE" in public_key_pem:
-                cert = load_pem_x509_certificate(public_key_pem.encode(), default_backend())
+                cert = load_pem_x509_certificate(
+                    public_key_pem.encode(), default_backend()
+                )
                 self.public_key = cert.public_key()
             else:
                 self.public_key = serialization.load_pem_public_key(
@@ -62,8 +69,8 @@ class AsymEncryption:
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     algorithm=hashes.SHA1(),
-                    label=None
-                )
+                    label=None,
+                ),
             )
         except Exception as e:
             raise SDKException(f"Error performing encryption: {e}")
@@ -72,7 +79,7 @@ class AsymEncryption:
         try:
             pem = self.public_key.public_bytes(
                 encoding=serialization.Encoding.PEM,
-                format=serialization.PublicFormat.SubjectPublicKeyInfo
+                format=serialization.PublicFormat.SubjectPublicKeyInfo,
             )
             return pem.decode()
         except Exception as e:

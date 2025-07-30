@@ -6,10 +6,12 @@ import base64
 
 from .sdk_exceptions import SDKException
 
+
 class AsymDecryption:
     """
     Class providing functionality for asymmetric decryption using an RSA private key.
     """
+
     CIPHER_TRANSFORM = "RSA/ECB/OAEPWithSHA-1AndMGF1Padding"
     PRIVATE_KEY_HEADER = "-----BEGIN PRIVATE KEY-----"
     PRIVATE_KEY_FOOTER = "-----END PRIVATE KEY-----"
@@ -19,11 +21,13 @@ class AsymDecryption:
             self.private_key = private_key_obj
         elif private_key_pem is not None:
             try:
-                private_key_pem = private_key_pem.replace(self.PRIVATE_KEY_HEADER, "") \
-                    .replace(self.PRIVATE_KEY_FOOTER, "") \
-                    .replace("\n", "") \
-                    .replace("\r", "") \
+                private_key_pem = (
+                    private_key_pem.replace(self.PRIVATE_KEY_HEADER, "")
+                    .replace(self.PRIVATE_KEY_FOOTER, "")
+                    .replace("\n", "")
+                    .replace("\r", "")
                     .replace(" ", "")
+                )
                 decoded = base64.b64decode(private_key_pem)
                 self.private_key = serialization.load_der_private_key(
                     decoded, password=None, backend=default_backend()
@@ -42,8 +46,8 @@ class AsymDecryption:
                 padding.OAEP(
                     mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     algorithm=hashes.SHA1(),
-                    label=None
-                )
+                    label=None,
+                ),
             )
         except Exception as e:
             raise SDKException(f"Error performing decryption: {e}")

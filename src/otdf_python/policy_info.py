@@ -1,5 +1,11 @@
 class PolicyInfo:
-    def __init__(self, policy_type: int = 0, has_ecdsa_binding: bool = False, body: bytes | None = None, binding: bytes | None = None):
+    def __init__(
+        self,
+        policy_type: int = 0,
+        has_ecdsa_binding: bool = False,
+        body: bytes | None = None,
+        binding: bytes | None = None,
+    ):
         self.policy_type = policy_type
         self.has_ecdsa_binding = has_ecdsa_binding
         self.body = body
@@ -35,16 +41,16 @@ class PolicyInfo:
         buffer[offset] = self.policy_type
         offset += 1
         body_len = len(self.body) if self.body else 0
-        buffer[offset:offset+2] = body_len.to_bytes(2, 'big')
+        buffer[offset : offset + 2] = body_len.to_bytes(2, "big")
         offset += 2
         if self.body:
-            buffer[offset:offset+body_len] = self.body
+            buffer[offset : offset + body_len] = self.body
             offset += body_len
         binding_len = len(self.binding) if self.binding else 0
         buffer[offset] = binding_len
         offset += 1
         if self.binding:
-            buffer[offset:offset+binding_len] = self.binding
+            buffer[offset : offset + binding_len] = self.binding
             offset += binding_len
         return offset - start
 
@@ -56,17 +62,17 @@ class PolicyInfo:
             raise ValueError("Buffer too short for PolicyInfo header")
         policy_type = buffer[offset]
         offset += 1
-        body_len = int.from_bytes(buffer[offset:offset+2], 'big')
+        body_len = int.from_bytes(buffer[offset : offset + 2], "big")
         offset += 2
         if len(buffer) < offset + body_len + 1:
             raise ValueError("Buffer too short for PolicyInfo body")
-        body = buffer[offset:offset+body_len]
+        body = buffer[offset : offset + body_len]
         offset += body_len
         binding_len = buffer[offset]
         offset += 1
         if len(buffer) < offset + binding_len:
             raise ValueError("Buffer too short for PolicyInfo binding")
-        binding = buffer[offset:offset+binding_len]
+        binding = buffer[offset : offset + binding_len]
         offset += binding_len
         pi = PolicyInfo(policy_type=policy_type, body=body, binding=binding)
         return pi, offset

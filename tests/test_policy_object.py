@@ -1,6 +1,7 @@
 import unittest
 from otdf_python.policy_object import AttributeObject, PolicyBody, PolicyObject
 
+
 class TestPolicyObject(unittest.TestCase):
     def test_attribute_object(self):
         attr = AttributeObject(
@@ -8,7 +9,7 @@ class TestPolicyObject(unittest.TestCase):
             display_name="Attribute 1",
             is_default=True,
             pub_key="pubkey123",
-            kas_url="https://kas.example.com"
+            kas_url="https://kas.example.com",
         )
         self.assertEqual(attr.attribute, "attr1")
         self.assertEqual(attr.display_name, "Attribute 1")
@@ -30,6 +31,7 @@ class TestPolicyObject(unittest.TestCase):
         policy = PolicyObject(uuid="uuid-1234", body=body)
         self.assertEqual(policy.uuid, "uuid-1234")
         self.assertEqual(policy.body, body)
+
 
 if __name__ == "__main__":
     unittest.main()

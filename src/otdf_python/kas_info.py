@@ -8,6 +8,7 @@ class KASInfo:
     This class stores details about a Key Access Server including its URL,
     public key, key ID, default status, and cryptographic algorithm.
     """
+
     url: str
     public_key: str
     kid: str | None = None

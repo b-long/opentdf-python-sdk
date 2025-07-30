@@ -21,7 +21,9 @@ class PolicyBindingSerializer:
     """
 
     @staticmethod
-    def deserialize(json_data: Any, typeofT: type | None = None, context: Any = None) -> Any:
+    def deserialize(
+        json_data: Any, typeofT: type | None = None, context: Any = None
+    ) -> Any:
         if isinstance(json_data, dict):
             return PolicyBinding(**json_data)
         if isinstance(json_data, str):

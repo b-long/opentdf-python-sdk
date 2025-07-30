@@ -1,11 +1,14 @@
 """
 Basic tests for the Python SDK class port.
 """
+
 from otdf_python.sdk import SDK
+
 
 class DummyServices(SDK.Services):
     def close(self):
         self.closed = True
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
@@ -23,62 +26,72 @@ def test_sdk_init_and_close():
         pass
     # Optionally, check if close was called if you want
 
+
 def test_split_key_exception():
     try:
-        raise SDK.SplitKeyException('split key error')
+        raise SDK.SplitKeyException("split key error")
     except SDK.SplitKeyException:
         pass
 
+
 def test_data_size_not_supported():
     try:
-        raise SDK.DataSizeNotSupported('too large')
+        raise SDK.DataSizeNotSupported("too large")
     except SDK.DataSizeNotSupported:
         pass
 
+
 def test_kas_info_missing():
     try:
-        raise SDK.KasInfoMissing('kas info missing')
+        raise SDK.KasInfoMissing("kas info missing")
     except SDK.KasInfoMissing:
         pass
 
+
 def test_kas_public_key_missing():
     try:
-        raise SDK.KasPublicKeyMissing('kas pubkey missing')
+        raise SDK.KasPublicKeyMissing("kas pubkey missing")
     except SDK.KasPublicKeyMissing:
         pass
 
+
 def test_tamper_exception():
     try:
-        raise SDK.TamperException('tamper')
+        raise SDK.TamperException("tamper")
     except SDK.TamperException:
         pass
 
+
 def test_root_signature_validation_exception():
     try:
-        raise SDK.RootSignatureValidationException('root sig')
+        raise SDK.RootSignatureValidationException("root sig")
     except SDK.RootSignatureValidationException:
         pass
 
+
 def test_segment_signature_mismatch():
     try:
-        raise SDK.SegmentSignatureMismatch('seg sig')
+        raise SDK.SegmentSignatureMismatch("seg sig")
     except SDK.SegmentSignatureMismatch:
         pass
 
+
 def test_kas_bad_request_exception():
     try:
-        raise SDK.KasBadRequestException('kas bad req')
+        raise SDK.KasBadRequestException("kas bad req")
     except SDK.KasBadRequestException:
         pass
 
+
 def test_kas_allowlist_exception():
     try:
-        raise SDK.KasAllowlistException('kas allowlist')
+        raise SDK.KasAllowlistException("kas allowlist")
     except SDK.KasAllowlistException:
         pass
 
+
 def test_assertion_exception():
     try:
-        raise SDK.AssertionException('assertion', 'id123')
+        raise SDK.AssertionException("assertion", "id123")
     except SDK.AssertionException:
         pass

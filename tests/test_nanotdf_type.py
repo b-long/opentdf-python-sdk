@@ -1,5 +1,12 @@
 import unittest
-from otdf_python.nanotdf_type import ECCurve, Protocol, IdentifierType, PolicyType, Cipher
+from otdf_python.nanotdf_type import (
+    ECCurve,
+    Protocol,
+    IdentifierType,
+    PolicyType,
+    Cipher,
+)
+
 
 class TestNanoTDFType(unittest.TestCase):
     def test_eccurve(self):
@@ -22,12 +29,15 @@ class TestNanoTDFType(unittest.TestCase):
         self.assertEqual(PolicyType.REMOTE_POLICY.value, 0)
         self.assertEqual(PolicyType.EMBEDDED_POLICY_PLAIN_TEXT.value, 1)
         self.assertEqual(PolicyType.EMBEDDED_POLICY_ENCRYPTED.value, 2)
-        self.assertEqual(PolicyType.EMBEDDED_POLICY_ENCRYPTED_POLICY_KEY_ACCESS.value, 3)
+        self.assertEqual(
+            PolicyType.EMBEDDED_POLICY_ENCRYPTED_POLICY_KEY_ACCESS.value, 3
+        )
 
     def test_cipher(self):
         self.assertEqual(Cipher.AES_256_GCM_64_TAG.value, 0)
         self.assertEqual(Cipher.AES_256_GCM_128_TAG.value, 5)
         self.assertEqual(Cipher.EAD_AES_256_HMAC_SHA_256.value, 6)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,8 +1,10 @@
 """
 TokenSource: Handles OAuth2 token acquisition and caching.
 """
+
 import time
 import httpx
+
 
 class TokenSource:
     def __init__(self, token_url, client_id, client_secret):

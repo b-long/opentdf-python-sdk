@@ -2,6 +2,7 @@ import zipfile
 import io
 from otdf_python.invalid_zip_exception import InvalidZipException
 
+
 class ZipReader:
     class Entry:
         def __init__(self, zipfile_obj, zipinfo):
@@ -23,7 +24,9 @@ class ZipReader:
                 in_stream = io.BytesIO(in_stream)
             self.in_stream = in_stream or io.BytesIO()
             self.zipfile = zipfile.ZipFile(self.in_stream, mode="r")
-            self.entries = [self.Entry(self.zipfile, zi) for zi in self.zipfile.infolist()]
+            self.entries = [
+                self.Entry(self.zipfile, zi) for zi in self.zipfile.infolist()
+            ]
         except zipfile.BadZipFile as e:
             raise InvalidZipException(f"Invalid ZIP file: {e}")
 

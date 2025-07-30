@@ -1,11 +1,20 @@
 import re
 from functools import total_ordering
 
+
 @total_ordering
 class Version:
-    SEMVER_PATTERN = re.compile(r"^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?P<prereleaseAndMetadata>\D.*)?$")
+    SEMVER_PATTERN = re.compile(
+        r"^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?P<prereleaseAndMetadata>\D.*)?$"
+    )
 
-    def __init__(self, semver_or_major, minor=None, patch=None, prerelease_and_metadata: str | None = None):
+    def __init__(
+        self,
+        semver_or_major,
+        minor=None,
+        patch=None,
+        prerelease_and_metadata: str | None = None,
+    ):
         if minor is None and patch is None:
             # Parse from string
             m = self.SEMVER_PATTERN.match(semver_or_major)
@@ -27,7 +36,11 @@ class Version:
     def __eq__(self, other):
         if not isinstance(other, Version):
             return False
-        return (self.major, self.minor, self.patch) == (other.major, other.minor, other.patch)
+        return (self.major, self.minor, self.patch) == (
+            other.major,
+            other.minor,
+            other.patch,
+        )
 
     def __lt__(self, other):
         if not isinstance(other, Version):

@@ -1,6 +1,7 @@
 import unittest
 from otdf_python.version import Version
 
+
 class TestVersion(unittest.TestCase):
     def test_parse_and_str(self):
         v = Version("1.2.3-alpha")
@@ -31,6 +32,7 @@ class TestVersion(unittest.TestCase):
     def test_invalid(self):
         with self.assertRaises(ValueError):
             Version("not.a.version")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,5 +1,6 @@
 from otdf_python.config import TDFConfig, KASInfo, get_kas_address
 
+
 def test_tdf_config_defaults():
     cfg = TDFConfig()
     assert cfg.autoconfigure is True
@@ -12,11 +13,22 @@ def test_tdf_config_defaults():
     assert cfg.split_plan == []
     assert cfg.render_version_info_in_manifest is True
 
+
 def test_kas_info_str():
-    kas = KASInfo(url="https://kas.example.com", public_key="pubkey", kid="kid1", default=True, algorithm="alg")
+    kas = KASInfo(
+        url="https://kas.example.com",
+        public_key="pubkey",
+        kid="kid1",
+        default=True,
+        algorithm="alg",
+    )
     s = str(kas)
     assert "KASInfo{" in s and "kas.example.com" in s
 
+
 def test_get_kas_address():
     assert get_kas_address("kas.example.com") == "https://kas.example.com:443"
-    assert get_kas_address("https://kas.example.com:8443") == "https://kas.example.com:8443"
+    assert (
+        get_kas_address("https://kas.example.com:8443")
+        == "https://kas.example.com:8443"
+    )

@@ -1,5 +1,12 @@
 import unittest
-from otdf_python.autoconfigure_utils import RuleType, KeySplitStep, AttributeNameFQN, AttributeValueFQN, AutoConfigureException
+from otdf_python.autoconfigure_utils import (
+    RuleType,
+    KeySplitStep,
+    AttributeNameFQN,
+    AttributeValueFQN,
+    AutoConfigureException,
+)
+
 
 class TestAutoconfigureUtils(unittest.TestCase):
     def test_rule_type(self):
@@ -36,6 +43,7 @@ class TestAutoconfigureUtils(unittest.TestCase):
         self.assertEqual(len({fqn, AttributeValueFQN(url)}), 1)
         with self.assertRaises(AutoConfigureException):
             AttributeValueFQN("badurl")
+
 
 if __name__ == "__main__":
     unittest.main()
