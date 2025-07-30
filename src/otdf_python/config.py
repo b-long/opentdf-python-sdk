@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from enum import Enum
 from urllib.parse import urlparse, urlunparse
+from typing import Any
 
 
 class TDFFormat(Enum):
@@ -43,6 +44,7 @@ class TDFConfig:
     wrapping_key_type: str | None = None
     hex_encode_root_and_segment_hashes: bool = False
     render_version_info_in_manifest: bool = True
+    policy_object: Any | None = None
 
 
 @dataclass

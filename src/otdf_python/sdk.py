@@ -7,10 +7,10 @@ from io import BytesIO
 from contextlib import AbstractContextManager
 import httpx
 
-from otdf_python.tdf import TDF, TDFConfig, TDFReaderConfig, TDFReader
+from otdf_python.tdf import TDF, TDFReaderConfig, TDFReader
 from otdf_python.nanotdf import NanoTDF
 from otdf_python.sdk_exceptions import SDKException
-from otdf_python.config import NanoTDFConfig
+from otdf_python.config import NanoTDFConfig, TDFConfig
 
 
 # Stubs for service client interfaces (to be implemented)
@@ -61,45 +61,6 @@ class SDK(AbstractContextManager):
             kas_info_list = [kas_info]
         return TDFConfig(
             kas_info_list=kas_info_list, attributes=attributes or [], **kwargs
-        )
-
-    def _adapt_tdf_config(self, config):
-        """
-        Adapts between TDFConfig implementations in config.py and tdf.py.
-        This is necessary because the TDF class expects config.kas_info, but the SDK creates a TDFConfig
-        with config.kas_info_list from config.py.
-
-        Args:
-            config: A TDFConfig object from config.py
-
-        Returns:
-            A TDFConfig object compatible with tdf.py
-        """
-        # If it's already a tdf.py TDFConfig, just return it
-        from otdf_python.tdf import TDFConfig as TDFTDFConfig
-
-        if isinstance(config, TDFTDFConfig):
-            return config
-
-        # Otherwise, adapt it
-        kas_info = getattr(config, "kas_info_list", None)
-        if kas_info is None or not kas_info:
-            # Try to use platform_url to create a KASInfo
-            from otdf_python.kas_info import KASInfo
-
-            kas_info = KASInfo(
-                url=self.platform_url or "https://default.kas.example.com"
-            )
-        else:
-            # Take the first KAS info from the list
-            kas_info = kas_info[0] if isinstance(kas_info, list) else kas_info
-
-        return TDFTDFConfig(
-            kas_info=kas_info,
-            kas_private_key=getattr(config, "tdf_private_key", None),
-            policy_object=getattr(config, "policy_object", None),
-            attributes=getattr(config, "attributes", None),
-            segment_size=getattr(config, "default_segment_size", None),
         )
 
     """
@@ -410,7 +371,7 @@ class SDK(AbstractContextManager):
 
         Args:
             payload: The payload data as bytes, file object, or BytesIO
-            config: TDFConfig dataclass from either config.py or tdf.py
+            config: TDFConfig dataclass from config.py
             output_stream: The output stream to write the TDF to
 
         Returns:
@@ -419,10 +380,8 @@ class SDK(AbstractContextManager):
         Raises:
             SDKException: If there's an error creating the TDF
         """
-        # Adapt the config if needed
-        adapted_config = self._adapt_tdf_config(config)
         tdf = TDF(self.services)
-        return tdf.create_tdf(payload, adapted_config, output_stream)
+        return tdf.create_tdf(payload, config, output_stream)
 
     def create_nano_tdf(
         self, payload: bytes | BytesIO, output_stream: BinaryIO, config: "NanoTDFConfig"

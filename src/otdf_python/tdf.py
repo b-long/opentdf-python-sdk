@@ -1,4 +1,4 @@
-from typing import BinaryIO, Any
+from typing import BinaryIO
 import io
 import os
 import hashlib
@@ -17,8 +17,8 @@ from otdf_python.manifest import (
 from otdf_python.tdf_writer import TDFWriter
 from otdf_python.aesgcm import AesGcm
 from dataclasses import dataclass
-from otdf_python.kas_info import KASInfo
 from otdf_python.key_type_constants import RSA_KEY_TYPE
+from otdf_python.config import TDFConfig
 
 
 @dataclass
@@ -31,15 +31,6 @@ class TDFReader:
 class TDFReaderConfig:
     kas_private_key: str | None = None
     attributes: list[str] | None = None
-
-
-@dataclass
-class TDFConfig:
-    kas_info: KASInfo | list[KASInfo]
-    kas_private_key: str | None = None
-    policy_object: Any | None = None
-    attributes: list[str] | None = None
-    segment_size: int | None = None
 
 
 class TDF:
@@ -86,9 +77,9 @@ class TDF:
             )
         return key_access_objs
 
-    def _build_policy_json(self, config):
-        policy_obj = config.get("policy_object")
-        attributes = config.get("attributes")
+    def _build_policy_json(self, config: TDFConfig) -> str:
+        policy_obj = config.policy_object
+        attributes = config.attributes
         import uuid
         import json as _json
 
@@ -108,7 +99,7 @@ class TDF:
         else:
             return "{}"
 
-    def _enforce_policy(self, manifest, config):
+    def _enforce_policy(self, manifest: Manifest, config: TDFReaderConfig):
         import json as _json
 
         policy_json = manifest.encryption_information.policy
@@ -123,7 +114,7 @@ class TDF:
                         elif isinstance(attr, str):
                             required_attrs.add(attr)
                 if required_attrs:
-                    attrs = config.get("attributes")
+                    attrs = config.attributes
                     user_attrs = set(attrs if attrs is not None else [])
                     if not user_attrs:
                         raise ValueError(
@@ -233,12 +224,14 @@ class TDF:
         if output_stream is None:
             output_stream = io.BytesIO()
         writer = TDFWriter(output_stream)
-        kas_infos = self._validate_kas_infos(config.kas_info)
+        kas_infos = self._validate_kas_infos(config.kas_info_list)
         key = os.urandom(self.GCM_KEY_SIZE)
         key_access_objs = self._wrap_key_for_kas(key, kas_infos)
         aesgcm = AesGcm(key)
         segments = []
-        segment_size = config.segment_size or self.SEGMENT_SIZE
+        segment_size = (
+            getattr(config, "default_segment_size", None) or self.SEGMENT_SIZE
+        )
         hasher = hashlib.sha256()
         total = 0
         # Write encrypted payload in segments
@@ -264,7 +257,7 @@ class TDF:
                 hasher.update(encrypted.as_bytes())
                 total += len(chunk)
         # Use config fields for policy
-        policy_json = self._build_policy_json(config.__dict__)
+        policy_json = self._build_policy_json(config)
         root_sig = base64.b64encode(hasher.digest()).decode()
         integrity_info = ManifestIntegrityInformation(
             root_signature=ManifestRootSignature(algorithm="HS256", signature=root_sig),
@@ -304,7 +297,7 @@ class TDF:
         with zipfile.ZipFile(io.BytesIO(tdf_bytes), "r") as z:
             manifest_json = z.read("0.manifest.json").decode()
             manifest = Manifest.from_json(manifest_json)
-            self._enforce_policy(manifest, config.__dict__)
+            self._enforce_policy(manifest, config)
             key_access_objs = manifest.encryption_information.key_access_obj
 
             # If a private key is provided, use local unwrapping (for testing)
