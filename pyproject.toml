@@ -19,6 +19,7 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
+    "pydantic-settings>=2.10.1",
     "pytest>=8.4.1",
     "respx>=0.21.1",
 ]
