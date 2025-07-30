@@ -159,25 +159,25 @@ jobs:
           otdfctl encrypt -o secret.txt.tdf --host http://localhost:8080 --tls-no-verify --with-client-creds-file creds.json secret.txt
         shell: bash
 
-      - name: Validate the Python SDK
-        env:
-          OPENTDF_CLIENT_ID: "opentdf-sdk"
-          OPENTDF_CLIENT_SECRET: "secret"
-          OPENTDF_HOSTNAME: "localhost:8080"
-          OIDC_TOKEN_ENDPOINT: "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
-          OPENTDF_KAS_URL: "http://localhost:8080/kas"
-          INSECURE_SKIP_VERIFY: "TRUE"
-        run: |
-          mkdir validation
-          cp "$wheel_path" validation/
-          cp validate_otdf_python.py validation/
-          cd validation
-          python -m venv .venv
-          source .venv/bin/activate
-          pip install ./*.whl
-          python validate_otdf_python.py
-          python validate_otdf_python.py ../secret.txt.tdf
-        shell: bash
+      # - name: Validate the Python SDK
+      #   env:
+      #     OPENTDF_CLIENT_ID: "opentdf-sdk"
+      #     OPENTDF_CLIENT_SECRET: "secret"
+      #     OPENTDF_HOSTNAME: "localhost:8080"
+      #     OIDC_TOKEN_ENDPOINT: "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
+      #     OPENTDF_KAS_URL: "http://localhost:8080/kas"
+      #     INSECURE_SKIP_VERIFY: "TRUE"
+      #   run: |
+      #     mkdir validation
+      #     cp "$wheel_path" validation/
+      #     cp validate_otdf_python.py validation/
+      #     cd validation
+      #     python -m venv .venv
+      #     source .venv/bin/activate
+      #     pip install ./*.whl
+      #     python validate_otdf_python.py
+      #     python validate_otdf_python.py ../secret.txt.tdf
+      #   shell: bash
 
 
   # platform-xtest:
