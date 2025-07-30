@@ -168,7 +168,7 @@ wheels = [
 
 [[package]]
 name = "otdf-python"
-version = "0.1.0"
+version = "0.3.0a1"
 source = { editable = "." }
 dependencies = [
     { name = "cryptography" },
