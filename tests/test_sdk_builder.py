@@ -133,15 +133,19 @@ def test_get_token_from_client_credentials():
     """Test getting OAuth token from client credentials."""
     builder = SDKBuilder()
     builder.set_platform_endpoint("example.com")
+    builder.set_issuer_endpoint("https://keycloak.example.com")
     builder.client_secret("client123", "secret456")
 
-    # Mock the discovery endpoint
-    respx.get("https://example.com/.well-known/openid-configuration").respond(
-        json={"token_endpoint": "https://example.com/oauth/token"}, status_code=200
+    # Mock the discovery endpoint (Keycloak format)
+    respx.get(
+        "https://keycloak.example.com/realms/opentdf/.well-known/openid-configuration"
+    ).respond(
+        json={"token_endpoint": "https://keycloak.example.com/oauth/token"},
+        status_code=200,
     )
 
     # Mock the token endpoint
-    respx.post("https://example.com/oauth/token").respond(
+    respx.post("https://keycloak.example.com/oauth/token").respond(
         json={"access_token": "test-token-123", "token_type": "Bearer"}, status_code=200
     )
 
@@ -155,15 +159,19 @@ def test_get_token_failure():
     """Test handling of token acquisition failure."""
     builder = SDKBuilder()
     builder.set_platform_endpoint("example.com")
+    builder.set_issuer_endpoint("https://keycloak.example.com")
     builder.client_secret("client123", "secret456")
 
-    # Mock the discovery endpoint
-    respx.get("https://example.com/.well-known/openid-configuration").respond(
-        json={"token_endpoint": "https://example.com/oauth/token"}, status_code=200
+    # Mock the discovery endpoint (Keycloak format)
+    respx.get(
+        "https://keycloak.example.com/realms/opentdf/.well-known/openid-configuration"
+    ).respond(
+        json={"token_endpoint": "https://keycloak.example.com/oauth/token"},
+        status_code=200,
     )
 
     # Mock the token endpoint with error
-    respx.post("https://example.com/oauth/token").respond(
+    respx.post("https://keycloak.example.com/oauth/token").respond(
         json={"error": "invalid_client"}, status_code=401
     )
 

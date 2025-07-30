@@ -39,8 +39,10 @@ class SDKBuilder:
 
     def __init__(self):
         self.platform_endpoint: str | None = None
+        self.issuer_endpoint: str | None = None
         self.oauth_config: OAuthConfig | None = None
         self.use_plain_text: bool = False
+        self.insecure_skip_verify: bool = False
         self.ssl_context: ssl.SSLContext | None = None
         self.auth_token: str | None = None
         self.cert_paths: list[str] = []
@@ -123,6 +125,23 @@ class SDKBuilder:
         SDKBuilder._platform_url = endpoint
         return self
 
+    def set_issuer_endpoint(self, issuer: str) -> "SDKBuilder":
+        """
+        Sets the OpenID Connect issuer endpoint URL.
+        Args:
+            issuer: The issuer endpoint URL
+        Returns:
+            self: The builder instance for chaining
+        """
+        # Normalize the issuer URL
+        if issuer and not (
+            issuer.startswith("http://") or issuer.startswith("https://")
+        ):
+            issuer = f"https://{issuer}"
+
+        self.issuer_endpoint = issuer
+        return self
+
     def use_insecure_plaintext_connection(
         self, use_plain_text: bool = True
     ) -> "SDKBuilder":
@@ -141,6 +160,22 @@ class SDKBuilder:
                 self.platform_endpoint = f"http://{self.platform_endpoint[8:]}"
             elif not use_plain_text and self.platform_endpoint.startswith("http://"):
                 self.platform_endpoint = f"https://{self.platform_endpoint[7:]}"
+
+        return self
+
+    def use_insecure_skip_verify(self, skip_verify: bool = True) -> "SDKBuilder":
+        """
+        Configures whether to skip SSL verification.
+        Args:
+            skip_verify: Whether to skip SSL verification
+        Returns:
+            self: The builder instance for chaining
+        """
+        self.insecure_skip_verify = skip_verify
+
+        # If skipping verification, create a default SSL context that does not verify
+        if skip_verify:
+            self.ssl_context = ssl._create_unverified_context()
 
         return self
 
@@ -169,11 +204,13 @@ class SDKBuilder:
         if not self.oauth_config.token_endpoint:
             # Auto-discover the token endpoint
             try:
+                realm_name = "opentdf"  # Default realm name
+
                 # Default location for OpenID Connect discovery document
-                well_known_url = (
-                    f"{self.platform_endpoint}/.well-known/openid-configuration"
+                well_known_url = f"{self.issuer_endpoint}/realms/{realm_name}/.well-known/openid-configuration"
+                response = httpx.get(
+                    well_known_url, verify=not self.insecure_skip_verify
                 )
-                response = httpx.get(well_known_url, verify=not self.use_plain_text)
 
                 if response.status_code == 200:
                     discovery_doc = response.json()
@@ -205,7 +242,7 @@ class SDKBuilder:
             response = httpx.post(
                 self.oauth_config.token_endpoint,
                 data=token_data,
-                verify=not self.use_plain_text,
+                verify=not self.insecure_skip_verify,
             )
 
             if response.status_code == 200:

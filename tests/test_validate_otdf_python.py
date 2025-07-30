@@ -3,7 +3,7 @@ This file is effectively the same test coverage as:
 https://github.com/b-long/opentdf-python-sdk/blob/v0.2.17/validate_otdf_python.py
 
 Execute using:
-    uv run vop
+    uv run pytest tests/test_validate_otdf_python.py
 """
 
 import os
@@ -15,11 +15,12 @@ from pathlib import Path
 # Add the local otdf_python source directory to sys.path
 # sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from otdf_python.tdf import TDFConfig
+from otdf_python.config import TDFConfig
 from otdf_python.kas_info import KASInfo
 from otdf_python.sdk_builder import SDKBuilder
+from otdf_python.sdk import SDK
 from otdf_python.tdf import TDFReaderConfig
-from otdf_python.config_pydantic import CONFIG_TDF
+from .config_pydantic import CONFIG_TDF
 
 
 def get_kas_public_key() -> str:
@@ -46,6 +47,27 @@ pQIDAQAB
 -----END PUBLIC KEY-----"""
 
 
+def _get_configuration() -> SDK:
+    return (
+        SDKBuilder()
+        .set_platform_endpoint(
+            # os.environ.get("OPENTDF_KAS_URL", "https://default.kas.example.com")
+            # f"https://{CONFIG_TDF.OPENTDF_PLATFORM_URL}"
+            CONFIG_TDF.OPENTDF_PLATFORM_URL
+        )
+        .set_issuer_endpoint(CONFIG_TDF.OPENTDF_KEYCLOAK_HOST)
+        .client_secret(
+            # os.environ.get("OPENTDF_CLIENT_ID", "default_client_id"),
+            CONFIG_TDF.OPENTDF_CLIENT_ID,
+            # os.environ.get("OPENTDF_CLIENT_SECRET", "default_client_secret"),
+            CONFIG_TDF.OPENTDF_CLIENT_SECRET,
+        )
+        .use_insecure_plaintext_connection(False)
+        .use_insecure_skip_verify(CONFIG_TDF.INSECURE_SKIP_VERIFY)
+        .build()
+    )
+
+
 # Helper to build TDFConfig safely, using environment variables for defaults
 def build_tdf_config() -> TDFConfig:
     config = {}
@@ -59,7 +81,7 @@ def build_tdf_config() -> TDFConfig:
         # Use environment variables for defaults
         return KASInfo(
             url=os.environ.get("OPENTDF_KAS_URL", "https://default.kas.example.com"),
-            public_key=os.environ.get("OPENTDF_KAS_PUBLIC_KEY", None),
+            public_key=get_kas_public_key(),
             kid=os.environ.get("OPENTDF_KAS_KID", None),
             default=None,
             algorithm=None,
@@ -89,16 +111,8 @@ def build_tdf_config() -> TDFConfig:
         filtered["kas_private_key"] = os.environ.get("OPENTDF_KAS_PRIVATE_KEY", None)
 
     # Use the new builder pattern if available
-    from otdf_python.sdk_builder import SDKBuilder
 
-    sdk = (
-        SDKBuilder()
-        .set_platform_endpoint(
-            os.environ.get("OPENTDF_KAS_URL", "https://default.kas.example.com")
-        )
-        .use_insecure_plaintext_connection(True)
-        .build()
-    )
+    sdk = _get_configuration()
     return sdk.new_tdf_config(**filtered)
 
 
@@ -110,12 +124,7 @@ def encrypt_file(input_path: Path, sdk=None) -> Path:
         kas_url = os.environ.get("OPENTDF_KAS_URL", "https://default.kas.example.com")
 
         # Build the SDK
-        sdk = (
-            SDKBuilder()
-            .set_platform_endpoint(kas_url)
-            .use_insecure_plaintext_connection(True)
-            .build()
-        )
+        sdk = _get_configuration()
 
         # Get or generate a public key
         kas_public_key = get_kas_public_key()
@@ -154,14 +163,7 @@ def encrypt_file(input_path: Path, sdk=None) -> Path:
 def decrypt_file(encrypted_path: Path, sdk=None) -> Path:
     """Decrypt a file and return the path to the decrypted file."""
     if sdk is None:
-        sdk = (
-            SDKBuilder()
-            .set_platform_endpoint(
-                os.environ.get("OPENTDF_HOSTNAME", "https://your.cluster/")
-            )
-            .use_insecure_plaintext_connection(True)
-            .build()
-        )
+        sdk = _get_configuration()
 
     output_path = encrypted_path.with_suffix(".decrypted")
     with open(encrypted_path, "rb") as infile, open(output_path, "wb") as outfile:
@@ -186,28 +188,10 @@ def decrypt_file(encrypted_path: Path, sdk=None) -> Path:
 def verify_encrypt_str() -> None:
     print("Validating string encryption (local TDF)")
     try:
-        # Get KAS URL from environment or use default
-        kas_url = os.environ.get("OPENTDF_KAS_URL", "https://default.kas.example.com")
-        platform_endpoint = CONFIG_TDF.OPENTDF_PLATFORM_URL
-        sdk = (
-            SDKBuilder()
-            .set_platform_endpoint(platform_endpoint)
-            .use_insecure_plaintext_connection(True)
-            .build()
-        )
-
-        # Get KAS public key
-        kas_public_key = get_kas_public_key()
-
-        # Create a KASInfo with the public key
-        from otdf_python.kas_info import KASInfo
-
-        kas_info = KASInfo(url=kas_url, public_key=kas_public_key)
+        sdk = _get_configuration()
 
         payload = b"Hello from Python"
-        config = sdk.new_tdf_config(
-            attributes=["attr1", "attr2"], kas_info_list=[kas_info]
-        )
+        config = sdk.new_tdf_config(attributes=["attr1", "attr2"])
         # Use BytesIO to mimic file-like API
         from io import BytesIO
 
@@ -223,6 +207,11 @@ def verify_encrypt_str() -> None:
         raise RuntimeError(
             f"An unexpected error occurred testing otdf_python string encryption: {e}"
         ) from e
+
+
+def test_verify_encrypt_str():
+    """Run the string encryption verification test."""
+    verify_encrypt_str()
 
 
 def verify_encrypt_file() -> None:
@@ -251,13 +240,7 @@ def verify_encrypt_decrypt_file() -> None:
             input_file.write_text("Secret message")
 
             # Build the SDK
-            kas_url = os.environ.get("OPENTDF_HOSTNAME", "https://your.cluster/")
-            sdk = (
-                SDKBuilder()
-                .set_platform_endpoint(kas_url)
-                .use_insecure_plaintext_connection(True)
-                .build()
-            )
+            sdk = _get_configuration()
 
             # Get public key from KAS
             try:
@@ -290,6 +273,10 @@ def verify_encrypt_decrypt_file() -> None:
             f"An unexpected error occurred testing otdf_python encrypt/decrypt: {e}"
         ) from e
 
+
+# def test_verify_encrypt_decrypt_file():
+#     """Run the encrypt/decrypt verification test."""
+#     verify_encrypt_decrypt_file()
 
 if __name__ == "__main__":
     import sys
