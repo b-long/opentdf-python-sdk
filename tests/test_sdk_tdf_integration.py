@@ -3,7 +3,6 @@ Tests for the integration between SDK and TDF classes.
 """
 
 import io
-import pytest
 
 from otdf_python.sdk_builder import SDKBuilder
 
