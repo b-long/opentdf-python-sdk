@@ -20,7 +20,8 @@ from otdf_python.kas_info import KASInfo
 from otdf_python.sdk_builder import SDKBuilder
 from otdf_python.sdk import SDK
 from otdf_python.tdf import TDFReaderConfig
-from .config_pydantic import CONFIG_TDF
+
+from tests.config_pydantic import CONFIG_TDF
 
 
 def get_kas_public_key() -> str:
