@@ -6,16 +6,9 @@
 name: "NEW: Platform Integration testing"
 
 on:
-  workflow_call:
-    inputs:
-      wheel:
-        description: The Python wheel to test
-        required: true
-        type: string
-      python_version:
-        description: The wheel's Python version (like "3.12" or "3.13")
-        required: true
-        type: string
+  push:
+    branches:
+      - chore/rewrite
 
 permissions:
   contents: read
@@ -26,22 +19,6 @@ jobs:
     steps:
       - name: Checkout this repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
-
-      - name: Prove that the input file is available
-        shell: bash
-        run: |
-          ls -la
-          if [ -n "${{ inputs.wheel }}" ]; then
-            if [ -f "${{ inputs.wheel }}" ]; then
-              ls -la "${{ inputs.wheel }}"
-              du -sh "${{ inputs.wheel }}"
-            else
-              echo "Warning: Input wheel path provided but file not found at ${{ inputs.wheel }}"
-              echo "This is expected when running as a standalone workflow without inputs"
-            fi
-          else
-            echo "No input wheel path provided, will download from artifacts later"
-          fi
 
       # - uses: bufbuild/buf-setup-action@382440cdb8ec7bc25a68d7b4711163d95f7cc3aa
       #   with:
@@ -117,19 +94,6 @@ jobs:
           grpcurl -plaintext localhost:8080 list && \
           grpcurl -plaintext localhost:8080 kas.AccessService/PublicKey
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-            python-version: ${{ inputs.python_version }}
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-        with:
-          enable-cache: true
-          python-version: ${{ inputs.python_version }}
-
-      - run: uv sync
-
       - name: Install otdfctl
         run: go install github.com/opentdf/otdfctl@latest
         shell: bash
@@ -148,6 +112,13 @@ jobs:
           otdfctl encrypt -o secret.txt.tdf --host http://localhost:8080 --tls-no-verify --with-client-creds-file creds.json secret.txt
         shell: bash
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: "3.13"
+
+
       - name: Validate the Python SDK
         env:
           OPENTDF_CLIENT_ID: "opentdf-sdk"
@@ -156,16 +127,6 @@ jobs:
           OIDC_TOKEN_ENDPOINT: "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
           OPENTDF_KAS_URL: "http://localhost:8080/kas"
           INSECURE_SKIP_VERIFY: "TRUE"
-
-# mkdir validation
-# cp "$wheel_path" validation/
-# cp validate_otdf_python.py validation/
-# cd validation
-# python -m venv .venv
-# source .venv/bin/activate
-# pip install ./*.whl
-# python validate_otdf_python.py
-# python validate_otdf_python.py ../secret.txt.tdf
         run: |
           uv sync
           uv run pytest --ignore=tests/test_validate_otdf_python.py
