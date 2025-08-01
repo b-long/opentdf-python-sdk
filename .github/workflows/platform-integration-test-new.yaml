@@ -9,6 +9,15 @@ on:
   push:
     branches:
       - chore/rewrite
+  pull_request:
+  workflow_call:
+    inputs:
+      wheel:
+        required: true
+        type: string
+      python_version:
+        required: true
+        type: string
 
 permissions:
   contents: read

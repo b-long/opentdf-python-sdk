@@ -5,8 +5,6 @@ on:
     branches:
       - chore/rewrite
   pull_request:
-    branches:
-      - chore/rewrite
 
 jobs:
   build:
