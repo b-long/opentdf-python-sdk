@@ -10,7 +10,7 @@ class KASInfo:
     """
 
     url: str
-    public_key: str
+    public_key: str | None = None
     kid: str | None = None
     default: bool | None = None
     algorithm: str | None = None

@@ -26,12 +26,18 @@ class KeyAccess:
 
 class KASClient:
     def __init__(
-        self, kas_url=None, token_source=None, cache=None, use_plaintext=False
+        self,
+        kas_url=None,
+        token_source=None,
+        cache=None,
+        use_plaintext=False,
+        verify_ssl=True,
     ):
         self.kas_url = kas_url
         self.token_source = token_source
         self.cache = cache or KASKeyCache()
         self.use_plaintext = use_plaintext
+        self.verify_ssl = verify_ssl
         self.decryptor = None
         self.client_public_key = None
 
@@ -50,14 +56,14 @@ class KASClient:
             return cached_value
 
         try:
-            url = f"{kas_info.url}/public-key"
+            url = f"{kas_info.url}/kas/v2/kas_public_key"
             if kas_info.algorithm:
                 url += f"?algorithm={kas_info.algorithm}"
 
             token = self.token_source() if self.token_source else None
             headers = {"Authorization": f"Bearer {token}"} if token else {}
 
-            resp = httpx.get(url, headers=headers)
+            resp = httpx.get(url, headers=headers, verify=self.verify_ssl)
             resp.raise_for_status()
 
             response_data = resp.json()

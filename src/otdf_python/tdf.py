@@ -53,10 +53,27 @@ class TDF:
             raise ValueError("kas_info (or list of KAS info) required in config")
         if not isinstance(kas_infos, list):
             kas_infos = [kas_infos]
+
+        validated_kas_infos = []
         for kas in kas_infos:
+            # If public key is missing, try to fetch it from the KAS service
             if not hasattr(kas, "public_key") or not kas.public_key:
-                raise ValueError("Each KAS info must have a public_key")
-        return kas_infos
+                if self.services and hasattr(self.services, "kas"):
+                    try:
+                        # Fetch public key from KAS service
+                        updated_kas = self.services.kas().get_public_key(kas)
+                        validated_kas_infos.append(updated_kas)
+                    except Exception as e:
+                        raise ValueError(
+                            f"Failed to fetch public key for KAS {kas.url}: {e}"
+                        )
+                else:
+                    raise ValueError(
+                        "Each KAS info must have a public_key, or SDK services must be available to fetch it"
+                    )
+            else:
+                validated_kas_infos.append(kas)
+        return validated_kas_infos
 
     def _wrap_key_for_kas(self, key, kas_infos):
         from otdf_python.asym_crypto import AsymEncryption

@@ -5,7 +5,6 @@ Python port of the main SDK class for OpenTDF platform interaction.
 from typing import Any, BinaryIO
 from io import BytesIO
 from contextlib import AbstractContextManager
-import httpx
 
 from otdf_python.tdf import TDF, TDFReaderConfig, TDFReader
 from otdf_python.nanotdf import NanoTDF
@@ -88,64 +87,35 @@ class SDK(AbstractContextManager):
             Raises:
                 SDKException: If there's an error retrieving the public key
             """
-            # Check cache first
-            key_cache = self.get_key_cache()
-            if key_cache:
-                cached_value = key_cache.get(kas_info.url, kas_info.algorithm)
-                if cached_value:
-                    return cached_value
+            # Delegate to the underlying KAS client which handles authentication properly
+            return self._kas_client.get_public_key(kas_info)
 
-            # Make request to KAS
-            try:
-                # Build request based on algorithm
-                request_data = {}
-                if kas_info.algorithm:
-                    request_data["algorithm"] = kas_info.algorithm
-
-                # Make request to KAS
-                headers = {"Content-Type": "application/json"}
-                url = f"{kas_info.url}/kas/v2/public_key"
-                response = httpx.post(url, json=request_data, headers=headers)
-
-                if response.status_code != 200:
-                    raise SDKException(
-                        f"Error getting public key: HTTP {response.status_code} - {response.text}"
-                    )
-
-                resp_data = response.json()
-
-                # Create updated KASInfo
-                from otdf_python.kas_info import KASInfo
-
-                updated_kas_info = KASInfo(
-                    url=kas_info.url,
-                    kid=resp_data.get("kid"),
-                    public_key=resp_data.get("publicKey"),
-                    algorithm=kas_info.algorithm,
-                )
-
-                # Store in cache
-                if key_cache:
-                    key_cache.store(updated_kas_info)
-
-                return updated_kas_info
-
-            except Exception as e:
-                raise SDKException(f"Error getting public key: {e}")
-
-        def __init__(self, platform_url=None, token_source=None):
+        def __init__(
+            self,
+            platform_url=None,
+            token_source=None,
+            sdk_ssl_verify=True,
+            auth_headers: dict | None = None,
+        ):
             """
             Initialize the KAS client
 
             Args:
                 platform_url: URL of the platform
                 token_source: Function that returns an authentication token
+                sdk_ssl_verify: Whether to verify SSL certificates
+                auth_headers: Dictionary of authentication headers to include in requests
             """
             from .kas_client import KASClient
 
             self._kas_client = KASClient(
-                kas_url=platform_url, token_source=token_source
+                kas_url=platform_url,
+                token_source=token_source,
+                verify_ssl=sdk_ssl_verify,
             )
+            # Store the parameters for potential use (though delegating to KASClient)
+            self._sdk_ssl_verify = sdk_ssl_verify
+            self._auth_headers = auth_headers
 
         def get_ec_public_key(self, kas_info: Any, curve: Any) -> Any:
             """
@@ -300,6 +270,7 @@ class SDK(AbstractContextManager):
         auth_interceptor: Interceptor | dict[str, str] | None = None,
         platform_services_client: ProtocolClient | None = None,
         platform_url: str | None = None,
+        ssl_verify: bool = True,
     ):
         """
         Initializes a new SDK instance.
@@ -310,12 +281,14 @@ class SDK(AbstractContextManager):
             auth_interceptor: Optional auth interceptor for API requests
             platform_services_client: Optional client for platform services
             platform_url: Optional platform base URL
+            ssl_verify: Whether to verify SSL certificates (default: True)
         """
         self.services = services
         self.trust_manager = trust_manager
         self.auth_interceptor = auth_interceptor
         self.platform_services_client = platform_services_client
         self.platform_url = platform_url
+        self.ssl_verify = ssl_verify
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Clean up resources when exiting context manager"""

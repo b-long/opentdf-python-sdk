@@ -24,7 +24,7 @@ from otdf_python.tdf import TDFReaderConfig
 from tests.config_pydantic import CONFIG_TDF
 
 
-def get_kas_public_key() -> str:
+def get_fallback_kas_public_key() -> str:
     """
     Get the KAS public key from environment variables or use a fallback.
 
@@ -82,7 +82,7 @@ def build_tdf_config() -> TDFConfig:
         # Use environment variables for defaults
         return KASInfo(
             url=os.environ.get("OPENTDF_KAS_URL", "https://default.kas.example.com"),
-            public_key=get_kas_public_key(),
+            public_key=get_fallback_kas_public_key(),
             kid=os.environ.get("OPENTDF_KAS_KID", None),
             default=None,
             algorithm=None,
@@ -120,18 +120,13 @@ def build_tdf_config() -> TDFConfig:
 def encrypt_file(input_path: Path, sdk=None) -> Path:
     """Encrypt a file and return the path to the encrypted file."""
     if sdk is None:
-        from otdf_python.kas_info import KASInfo
-
         kas_url = os.environ.get("OPENTDF_KAS_URL", "https://default.kas.example.com")
 
         # Build the SDK
         sdk = _get_configuration()
 
-        # Get or generate a public key
-        kas_public_key = get_kas_public_key()
-
-        # Create KASInfo with public key
-        kas_info = KASInfo(url=kas_url, public_key=kas_public_key)
+        # Create KASInfo without public key - let the SDK fetch it
+        kas_info = KASInfo(url=kas_url)
 
         # Create config with the KASInfo
         config = sdk.new_tdf_config(
@@ -142,13 +137,8 @@ def encrypt_file(input_path: Path, sdk=None) -> Path:
         # Get the platform URL from the SDK
         kas_url = sdk.get_platform_url() or "https://default.kas.example.com"
 
-        # Get or generate a public key
-        kas_public_key = get_kas_public_key()
-
-        # Create KASInfo
-        from otdf_python.kas_info import KASInfo
-
-        kas_info = KASInfo(url=kas_url, public_key=kas_public_key)
+        # Create KASInfo without public key - let the SDK fetch it
+        kas_info = KASInfo(url=kas_url)
 
         # Create config with attributes and KASInfo
         config = sdk.new_tdf_config(
@@ -192,7 +182,18 @@ def verify_encrypt_str() -> None:
         sdk = _get_configuration()
 
         payload = b"Hello from Python"
-        config = sdk.new_tdf_config(attributes=["attr1", "attr2"])
+
+        # Create KASInfo without public key - let the SDK fetch it
+        kas_info = KASInfo(
+            url=CONFIG_TDF.OPENTDF_PLATFORM_URL,
+            default=True,
+        )
+
+        config = sdk.new_tdf_config(
+            attributes=["attr1", "attr2"],
+            kas_info_list=[kas_info],  # KAS info without explicit public key
+        )
+
         # Use BytesIO to mimic file-like API
         from io import BytesIO
 

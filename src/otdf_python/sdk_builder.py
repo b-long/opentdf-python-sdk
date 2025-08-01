@@ -294,9 +294,38 @@ class SDKBuilder:
         # In a real implementation, this would create actual service clients
         # connecting to the platform endpoints
 
+        ssl_verify = not self.insecure_skip_verify
+        auth_interceptor = self._create_auth_interceptor()
+
         class ServicesImpl(SDK.Services):
-            def __init__(self):
+            def __init__(self, builder_instance):
                 self.closed = False
+                self._ssl_verify = ssl_verify
+                self._auth_headers = auth_interceptor if auth_interceptor else {}
+                self._builder = builder_instance
+
+            def kas(self) -> "SDK.KAS":
+                """
+                Returns the KAS interface with SSL verification settings.
+                """
+                from .sdk_builder import SDKBuilder
+
+                platform_url = SDKBuilder.get_platform_url()
+
+                # Create a token source function that can refresh tokens
+                def token_source():
+                    if self._builder.auth_token:
+                        return self._builder.auth_token
+                    elif self._builder.oauth_config:
+                        return self._builder._get_token_from_client_credentials()
+                    return None
+
+                kas_impl = SDK.KAS(
+                    platform_url=platform_url,
+                    token_source=token_source,
+                    sdk_ssl_verify=self._ssl_verify,
+                )
+                return kas_impl
 
             def close(self):
                 self.closed = True
@@ -304,7 +333,7 @@ class SDKBuilder:
             def __exit__(self, exc_type, exc_val, exc_tb):
                 self.close()
 
-        return ServicesImpl()
+        return ServicesImpl(self)
 
     def build(self) -> SDK:
         """
@@ -328,4 +357,5 @@ class SDKBuilder:
             services=services,
             auth_interceptor=auth_interceptor,
             platform_url=self.platform_endpoint,
+            ssl_verify=not self.insecure_skip_verify,
         )
