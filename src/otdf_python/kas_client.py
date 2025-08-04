@@ -216,8 +216,8 @@ class KASClient:
             headers["Content-Type"] = "application/json"
 
             # In Java this uses a signed JWT, but for simplicity we'll just send the request directly
-            url = f"{key_access.url}/rewrap"
-            resp = httpx.post(url, json=claims, headers=headers)
+            url = f"{key_access.url}/kas/v2/rewrap"
+            resp = httpx.post(url, json=claims, headers=headers, verify=self.verify_ssl)
 
             if resp.status_code == 400:
                 raise KasBadRequestException(f"Rewrap request 400: {resp.text}")
