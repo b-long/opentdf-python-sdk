@@ -2,26 +2,30 @@
 KASClient: Handles communication with the Key Access Service (KAS).
 """
 
-import json
 import time
 import logging
+import hashlib
+import secrets
+import base64
 from base64 import b64decode
 from dataclasses import dataclass
-import httpx
+import jwt
 
 from .kas_key_cache import KASKeyCache
-from .sdk_exceptions import SDKException, KasBadRequestException
+from .sdk_exceptions import SDKException
 from .crypto_utils import CryptoUtils
 from .asym_decryption import AsymDecryption
-from .kas_info import KASInfo
 from .key_type_constants import RSA_KEY_TYPE, EC_KEY_TYPE
+
+from otdf_python_proto.kas import kas_pb2
+from otdf_python_proto.kas.kas_pb2_connect import AccessServiceClient
 
 
 @dataclass
 class KeyAccess:
     url: str
     wrapped_key: str
-    ephemeral_public_key: str = None
+    ephemeral_public_key: str | None = None
 
 
 class KASClient:
@@ -41,40 +45,381 @@ class KASClient:
         self.decryptor = None
         self.client_public_key = None
 
-    def get_public_key(self, kas_info: KASInfo) -> KASInfo:
+        # Generate DPoP key for JWT signing (separate from encryption keys)
+        # This matches the web-SDK pattern where dpopKeys != ephemeralKeys
+        self._dpop_private_key, self._dpop_public_key = (
+            CryptoUtils.generate_rsa_keypair()
+        )
+        self._dpop_private_key_pem = CryptoUtils.get_rsa_private_key_pem(
+            self._dpop_private_key
+        )
+        self._dpop_public_key_pem = CryptoUtils.get_rsa_public_key_pem(
+            self._dpop_public_key
+        )
+
+    def _normalize_kas_url(self, url):
         """
-        Retrieves the public key from the KAS for RSA operations.
+        Normalize KAS URLs based on client security settings.
+
+        This method mirrors the Java SDK's AddressNormalizer.normalizeAddress
+        method for consistent URL handling across SDKs.
 
         Args:
-            kas_info: KASInfo object containing the URL and algorithm
+            url: The KAS URL to normalize
 
         Returns:
-            Updated KASInfo object with KID and PublicKey populated
+            Normalized URL with appropriate protocol and port
         """
-        cached_value = self.cache.get(kas_info.url, kas_info.algorithm)
-        if cached_value:
-            return cached_value
+        from urllib.parse import urlparse
 
         try:
-            url = f"{kas_info.url}/kas/v2/kas_public_key"
-            if kas_info.algorithm:
-                url += f"?algorithm={kas_info.algorithm}"
-
-            token = self.token_source() if self.token_source else None
-            headers = {"Authorization": f"Bearer {token}"} if token else {}
-
-            resp = httpx.get(url, headers=headers, verify=self.verify_ssl)
-            resp.raise_for_status()
-
-            response_data = resp.json()
-            kas_info_copy = kas_info.clone()
-            kas_info_copy.kid = response_data.get("kid")
-            kas_info_copy.public_key = response_data.get("publicKey")
-
-            self.cache.store(kas_info_copy)
-            return kas_info_copy
+            # Parse the URL
+            parsed = urlparse(url)
         except Exception as e:
-            raise SDKException(f"Error getting public key: {e}")
+            raise SDKException(f"error trying to parse URL [{url}]", e)
+
+        # Check if we have a host or if this is likely a hostname:port combination
+        if parsed.hostname is None:
+            # No host means we likely have hostname:port being misinterpreted
+            return self._handle_missing_scheme(url)
+        else:
+            # We have a host, handle the existing scheme
+            return self._handle_existing_scheme(parsed)
+
+    def _handle_missing_scheme(self, url):
+        """Handle URLs without scheme by adding appropriate protocol and port."""
+        scheme = "http" if self.use_plaintext else "https"
+        default_port = 80 if self.use_plaintext else 443
+
+        try:
+            # If there's a colon, treat it as hostname:port
+            if ":" in url:
+                host, port_str = url.split(":", 1)
+                try:
+                    port = int(port_str)
+                    return f"{scheme}://{host}:{port}"
+                except ValueError:
+                    raise SDKException(
+                        f"error trying to create URL for host and port [{url}]"
+                    )
+            else:
+                # Just a hostname, add default port
+                return f"{scheme}://{url}:{default_port}"
+        except Exception as e:
+            raise SDKException(
+                f"error trying to create URL for host and port [{url}]", e
+            )
+
+    def _handle_existing_scheme(self, parsed):
+        """Handle URLs with existing scheme by normalizing protocol and port."""
+        # Force the scheme based on client security settings
+        scheme = "http" if self.use_plaintext else "https"
+
+        # Determine the port
+        if parsed.port is not None:
+            port = parsed.port
+        else:
+            # Use default port based on target scheme
+            port = 80 if self.use_plaintext else 443
+
+        # Reconstruct URL preserving the path (especially /kas prefix)
+        try:
+            # Create URL preserving the path component for proper endpoint routing
+            path = parsed.path if parsed.path else ""
+            normalized_url = f"{scheme}://{parsed.hostname}:{port}{path}"
+            logging.debug(f"normalized url [{parsed.geturl()}] to [{normalized_url}]")
+            return normalized_url
+        except Exception as e:
+            raise SDKException("error creating KAS address", e)
+
+    def _create_signed_request_jwt(self, policy_json, client_public_key, key_access):  # noqa: C901
+        """
+        Create a signed JWT for the rewrap request.
+        The JWT is signed with the DPoP private key, matching Java SDK implementation exactly.
+        """
+        # Convert the KeyAccess to a dict that matches Java SDK structure
+        # Handle both ManifestKeyAccess (new camelCase and old snake_case) and simple KeyAccess (for tests)
+
+        # Ensure wrappedKey is a base64-encoded string
+        # Note: wrappedKey from manifest is already base64-encoded
+        wrapped_key = getattr(key_access, "wrappedKey", None) or getattr(
+            key_access, "wrapped_key", None
+        )
+        if wrapped_key is None:
+            raise SDKException("No wrapped key found in key access object")
+
+        if isinstance(wrapped_key, bytes):
+            # Only encode if it's raw bytes (shouldn't happen from manifest)
+            wrapped_key = base64.b64encode(wrapped_key).decode("utf-8")
+        elif not isinstance(wrapped_key, str):
+            # Convert to string if it's something else
+            wrapped_key = str(wrapped_key)
+        # If it's already a string (from manifest), use it as-is since it's already base64-encoded
+
+        key_access_dict = {
+            "url": key_access.url,
+            "wrappedKey": wrapped_key,
+        }
+
+        # Add type and protocol - handle both old and new field names
+        key_type = getattr(key_access, "type", None) or getattr(
+            key_access, "key_type", None
+        )
+        if key_type is not None:
+            key_access_dict["type"] = key_type
+        else:
+            key_access_dict["type"] = "wrapped"  # Default type for tests
+
+        protocol = getattr(key_access, "protocol", None)
+        if protocol is not None:
+            key_access_dict["protocol"] = protocol
+        else:
+            key_access_dict["protocol"] = "kas"  # Default protocol for tests
+
+        # Optional fields - handle both old and new field names, only include if they exist and are not None
+        policy_binding = getattr(key_access, "policyBinding", None) or getattr(
+            key_access, "policy_binding", None
+        )
+        if policy_binding is not None:
+            # Policy binding hash should be kept as base64-encoded
+            # The server expects base64-encoded hash values in the JWT request
+            key_access_dict["policyBinding"] = policy_binding
+
+        encrypted_metadata = getattr(key_access, "encryptedMetadata", None) or getattr(
+            key_access, "encrypted_metadata", None
+        )
+        if encrypted_metadata is not None:
+            key_access_dict["encryptedMetadata"] = encrypted_metadata
+
+        kid = getattr(key_access, "kid", None)
+        if kid is not None:
+            key_access_dict["kid"] = kid
+
+        sid = getattr(key_access, "sid", None)
+        if sid is not None:
+            key_access_dict["sid"] = sid
+
+        schema_version = getattr(key_access, "schemaVersion", None) or getattr(
+            key_access, "schema_version", None
+        )
+        if schema_version is not None:
+            key_access_dict["schemaVersion"] = schema_version
+
+        ephemeral_public_key = getattr(
+            key_access, "ephemeralPublicKey", None
+        ) or getattr(key_access, "ephemeral_public_key", None)
+        if ephemeral_public_key is not None:
+            key_access_dict["ephemeralPublicKey"] = ephemeral_public_key
+
+        # Get current timestamp in seconds since epoch (UNIX timestamp)
+        now = int(time.time())
+
+        # The server expects a JWT with a requestBody field containing the UnsignedRewrapRequest
+        # Create the request body that matches UnsignedRewrapRequest protobuf structure
+        # For legacy v1 SRT format, the policy must be base64-encoded
+        policy_base64 = base64.b64encode(policy_json.encode("utf-8")).decode("utf-8")
+
+        unsigned_rewrap_request = {
+            "clientPublicKey": client_public_key,  # Maps to client_public_key
+            "policy": policy_base64,  # Maps to policy (legacy field) - base64-encoded
+            "keyAccess": key_access_dict,  # Maps to key_access (legacy field)
+        }
+
+        # Convert to JSON string
+        import json
+
+        request_body_json = json.dumps(unsigned_rewrap_request)
+
+        # JWT payload with requestBody field containing the JSON string
+        payload = {
+            "requestBody": request_body_json,
+            "iat": now,  # Issued at timestamp (required)
+            "exp": now + 7200,  # Expires in 2 hours (required)
+        }
+
+        # Sign the JWT with the DPoP private key (RS256)
+        signed_jwt = jwt.encode(payload, self._dpop_private_key_pem, algorithm="RS256")
+
+        return signed_jwt
+
+    def _create_connect_rpc_signed_token(self, key_access, policy_json):
+        """
+        Create a signed token specifically for Connect RPC requests.
+        For now, this delegates to the existing JWT creation method.
+        """
+        return self._create_signed_request_jwt(
+            policy_json, self.client_public_key, key_access
+        )
+
+    def _create_dpop_proof(self, method, url, access_token=None):
+        """
+        Create a DPoP proof JWT as per RFC 9449.
+
+        Args:
+            method: HTTP method (e.g., "POST")
+            url: Full URL of the request
+            access_token: Optional access token for ath claim
+
+        Returns:
+            DPoP proof JWT string
+        """
+        now = int(time.time())
+
+        # Create DPoP proof claims
+        proof_claims = {
+            "jti": secrets.token_urlsafe(32),  # Unique identifier
+            "htm": method,  # HTTP method
+            "htu": url,  # HTTP URI
+            "iat": now,  # Issued at
+        }
+
+        # Add access token hash if provided
+        if access_token:
+            token_hash = hashlib.sha256(access_token.encode("utf-8")).digest()
+            proof_claims["ath"] = (
+                base64.urlsafe_b64encode(token_hash).decode("utf-8").rstrip("=")
+            )
+
+        # DPoP proof must be signed with the DPoP key and include the public key in the header
+        header = {
+            "alg": "RS256",
+            "typ": "dpop+jwt",
+            "jwk": {
+                "kty": "RSA",
+                "n": base64.urlsafe_b64encode(
+                    self._dpop_public_key.public_numbers().n.to_bytes(
+                        (self._dpop_public_key.public_numbers().n.bit_length() + 7)
+                        // 8,
+                        "big",
+                    )
+                )
+                .decode("utf-8")
+                .rstrip("="),
+                "e": base64.urlsafe_b64encode(
+                    self._dpop_public_key.public_numbers().e.to_bytes(
+                        (self._dpop_public_key.public_numbers().e.bit_length() + 7)
+                        // 8,
+                        "big",
+                    )
+                )
+                .decode("utf-8")
+                .rstrip("="),
+            },
+        }
+
+        # Create and sign the DPoP proof JWT
+        return jwt.encode(
+            proof_claims, self._dpop_private_key_pem, algorithm="RS256", headers=header
+        )
+
+    def get_public_key(self, kas_info):
+        """
+        Get KAS public key using Connect RPC.
+        Checks cache first if available.
+        """
+        try:
+            # Check cache first if available (use original URL for cache key)
+            if self.cache:
+                cached_info = self.cache.get(kas_info.url)
+                if cached_info:
+                    return cached_info
+
+            result = self._get_public_key_with_connect_rpc(kas_info)
+
+            # Cache the result if cache is available
+            if self.cache and result:
+                self.cache.store(result)
+
+            return result
+
+        except Exception as e:
+            logging.error(f"Error in get_public_key: {e}")
+            raise
+
+    def _get_public_key_with_connect_rpc(self, kas_info):
+        """
+        Get KAS public key using Connect RPC.
+        """
+
+        # Get access token for authentication if token source is available
+        access_token = None
+        if self.token_source:
+            try:
+                access_token = self.token_source()
+            except Exception as e:
+                logging.warning(f"Failed to get access token: {e}")
+
+        # Debug logging to track SSL verification setting
+        logging.info(f"KAS client verify_ssl setting: {self.verify_ssl}")
+
+        # Create HTTP client with SSL verification configuration
+        import urllib3
+
+        if self.verify_ssl:
+            # Standard SSL verification
+            logging.info("Using SSL verification enabled HTTP client")
+            http_client = urllib3.PoolManager()
+        else:
+            # Disable SSL verification warnings and certificate verification
+            logging.info("Using SSL verification disabled HTTP client")
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            http_client = urllib3.PoolManager(
+                cert_reqs="CERT_NONE", assert_hostname=False
+            )
+
+        try:
+            # For Connect RPC, we need to use the base platform URL without /kas
+            # because Connect RPC client automatically appends /kas.AccessService/MethodName
+            # First normalize the URL
+            normalized_url = self._normalize_kas_url(kas_info.url)
+            connect_rpc_base_url = normalized_url
+            if connect_rpc_base_url.endswith("/kas"):
+                connect_rpc_base_url = connect_rpc_base_url[:-4]  # Remove /kas suffix
+
+            logging.info(
+                f"Creating Connect RPC client for base URL: {connect_rpc_base_url}"
+            )
+            # Create Connect RPC client with configured HTTP client using Connect protocol
+            # Note: gRPC protocol is not supported with urllib3, use default Connect protocol
+            client = AccessServiceClient(connect_rpc_base_url, http_client=http_client)
+
+            # Create public key request
+            algorithm = getattr(kas_info, "algorithm", "") or ""
+            request = (
+                kas_pb2.PublicKeyRequest(algorithm=algorithm)
+                if algorithm
+                else kas_pb2.PublicKeyRequest()
+            )
+
+            # Prepare headers with authentication if available
+            extra_headers = {}
+            if access_token:
+                extra_headers["Authorization"] = f"Bearer {access_token}"
+
+            # Make the public key call with authentication headers
+            response = client.public_key(
+                request, extra_headers=extra_headers if extra_headers else None
+            )
+
+            # Update kas_info with response
+            kas_info.public_key = response.public_key
+            kas_info.kid = response.kid
+
+            # Cache the result
+            if self.cache:
+                self.cache.store(kas_info)
+
+            return kas_info
+
+        except Exception as e:
+            import traceback
+
+            error_details = traceback.format_exc()
+            logging.error(
+                f"Connect RPC public key request failed: {type(e).__name__}: {e}"
+            )
+            logging.error(f"Full traceback: {error_details}")
+            raise SDKException(f"Connect RPC public key request failed: {e}")
 
     def _normalize_session_key_type(self, session_key_type):
         """
@@ -113,19 +458,21 @@ class KASClient:
         """
         from .eckeypair import ECKeyPair
 
-        curve_name = session_key_type.curve_name
-        ec_key_pair = ECKeyPair(curve_name=curve_name)
-        client_public_key = ec_key_pair.public_key_in_pem_format()
+        # Use default curve for now - this would need to be based on session_key_type in a full implementation
+        ec_key_pair = ECKeyPair()
+        client_public_key = ec_key_pair.public_key_pem()
         return ec_key_pair, client_public_key
 
     def _prepare_rsa_keypair(self):
         """
         Prepare RSA key pair for unwrapping, reusing if possible.
+        Uses separate ephemeral keys for encryption (not DPoP keys).
 
         Returns:
-            Client public key
+            Client public key PEM for the ephemeral encryption key
         """
         if self.decryptor is None:
+            # Generate ephemeral keys for encryption (separate from DPoP keys)
             private_key, public_key = CryptoUtils.generate_rsa_keypair()
             self.decryptor = AsymDecryption(private_key_obj=private_key)
             self.client_public_key = CryptoUtils.get_rsa_public_key_pem(public_key)
@@ -169,74 +516,171 @@ class KASClient:
         gcm = AesGcm(session_key)
         return gcm.decrypt(wrapped_key)
 
-    def unwrap(self, key_access: KeyAccess, policy: str, session_key_type=None):
+    def _ensure_client_keypair(self, session_key_type):
         """
-        Unwraps a key using the KAS.
+        Ensure client keypair is generated and stored.
+        """
+        if session_key_type == RSA_KEY_TYPE:
+            if self.decryptor is None:
+                private_key, public_key = CryptoUtils.generate_rsa_keypair()
+                private_key_pem = CryptoUtils.get_rsa_private_key_pem(private_key)
+                self.decryptor = AsymDecryption(private_key_pem)
+                self.client_public_key = CryptoUtils.get_rsa_public_key_pem(public_key)
+        else:
+            # For EC keys, generate fresh key pair each time
+            # TODO: Implement proper EC key handling
+            private_key, public_key = CryptoUtils.generate_rsa_keypair()
+            private_key_pem = CryptoUtils.get_rsa_private_key_pem(private_key)
+            self.client_public_key = CryptoUtils.get_rsa_public_key_pem(public_key)
+
+    def _parse_and_decrypt_response(self, response):
+        """
+        Parse JSON response and decrypt the wrapped key.
+        """
+        try:
+            response_data = response.json()
+        except Exception as e:
+            logging.error(f"Failed to parse JSON response: {e}")
+            logging.error(f"Raw response content: {response.content}")
+            raise SDKException(f"Invalid JSON response from KAS: {e}")
+
+        entity_wrapped_key = response_data.get("entityWrappedKey")
+        if not entity_wrapped_key:
+            raise SDKException("No entityWrappedKey in KAS response")
+
+        # Decrypt the wrapped key
+        if not self.decryptor:
+            raise SDKException("Decryptor not initialized")
+        encrypted_key = b64decode(entity_wrapped_key)
+        return self.decryptor.decrypt(encrypted_key)
+
+    def unwrap(self, key_access, policy_json, session_key_type=None):
+        """
+        Unwrap a key using Connect RPC.
 
         Args:
-            key_access: KeyAccess object with the wrapped key
-            policy: Policy string
-            session_key_type: Type of the session key (KeyType enum or string "RSA"/"EC")
+            key_access: Key access information
+            policy_json: Policy as JSON string
+            session_key_type: Type of session key (RSA_KEY_TYPE or EC_KEY_TYPE), defaults to RSA
 
         Returns:
-            Unwrapped key as bytes
+            Unwrapped key bytes
         """
+        # Default to RSA if not specified (for backward compatibility)
+        if session_key_type is None:
+            session_key_type = RSA_KEY_TYPE
+
+        # Ensure we have an ephemeral client keypair for encryption (separate from DPoP keys)
         session_key_type = self._normalize_session_key_type(session_key_type)
-        ec_key_pair = None
+        self._ensure_client_keypair(session_key_type)
 
-        # Handle key generation based on session key type
-        if session_key_type.is_ec:
-            ec_key_pair, self.client_public_key = self._prepare_ec_keypair(
-                session_key_type
-            )
+        # Create signed token for the request using DPoP key for signing
+        # BUT use the ephemeral client public key in the request body
+        signed_token = self._create_signed_request_jwt(
+            policy_json,
+            self.client_public_key,
+            key_access,  # Use ephemeral key, not DPoP key
+        )
+
+        # Call Connect RPC unwrap
+        return self._unwrap_with_connect_rpc(key_access, signed_token, policy_json)
+
+    def _unwrap_with_connect_rpc(self, key_access, signed_token, policy_json):  # noqa: C901
+        """
+        Connect RPC method for unwrapping keys.
+        """
+
+        # Get access token for authentication if token source is available
+        access_token = None
+        if self.token_source:
+            try:
+                access_token = self.token_source()
+            except Exception as e:
+                logging.warning(f"Failed to get access token: {e}")
+
+        # Debug logging to track SSL verification setting
+        logging.info(f"KAS client verify_ssl setting for unwrap: {self.verify_ssl}")
+
+        # Create HTTP client with SSL verification configuration
+        import urllib3
+
+        if self.verify_ssl:
+            # Standard SSL verification
+            logging.info("Using SSL verification enabled HTTP client for unwrap")
+            http_client = urllib3.PoolManager()
         else:
-            self.client_public_key = self._prepare_rsa_keypair()
+            # Disable SSL verification warnings and certificate verification
+            logging.info("Using SSL verification disabled HTTP client for unwrap")
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            http_client = urllib3.PoolManager(
+                cert_reqs="CERT_NONE", assert_hostname=False
+            )
 
-        # Prepare the request
-        request_body = {
-            "policy": policy,
-            "clientPublicKey": self.client_public_key,
-            "keyAccess": {
-                "url": key_access.url,
-                "wrappedKey": key_access.wrapped_key,
-                "ephemeralPublicKey": key_access.ephemeral_public_key,
-            },
-        }
+        # Create Connect RPC client with configured HTTP client
+        # For Connect RPC, we need to use the base platform URL without /kas
+        # because Connect RPC client automatically appends /kas.AccessService/MethodName
+        # First normalize the URL
+        normalized_kas_url = self._normalize_kas_url(key_access.url)
+        kas_service_url = normalized_kas_url
+        if kas_service_url.endswith("/kas"):
+            kas_service_url = kas_service_url[:-4]  # Remove /kas suffix
 
-        # Add JWT claims similar to Java implementation
-        claims = {
-            "requestBody": json.dumps(request_body),
-            "iat": int(time.time()),
-            "exp": int(time.time() + 60),  # 1 minute expiration
-        }
+        logging.info(f"Creating Connect RPC client for base URL: {kas_service_url}")
+        # Note: gRPC protocol is not supported with urllib3, use default Connect protocol
+        client = AccessServiceClient(kas_service_url, http_client=http_client)
+
+        # Create a new signed token specifically for Connect RPC
+        # This needs to be protobuf-encoded, not JSON-encoded like the HTTP version
+        connect_rpc_signed_token = self._create_connect_rpc_signed_token(
+            key_access, policy_json
+        )
+
+        # Create rewrap request
+        request = kas_pb2.RewrapRequest(signed_request_token=connect_rpc_signed_token)
+
+        # Debug: Log the signed token details
+        logging.info(f"Connect RPC signed token: {connect_rpc_signed_token}")
+
+        # Prepare headers with authentication if available
+        extra_headers = {}
+        if access_token:
+            extra_headers["Authorization"] = f"Bearer {access_token}"
 
         try:
-            token = self.token_source() if self.token_source else None
-            headers = {"Authorization": f"Bearer {token}"} if token else {}
-            headers["Content-Type"] = "application/json"
+            # Make the rewrap call with authentication headers
+            response = client.rewrap(
+                request, extra_headers=extra_headers if extra_headers else None
+            )
 
-            # In Java this uses a signed JWT, but for simplicity we'll just send the request directly
-            url = f"{key_access.url}/kas/v2/rewrap"
-            resp = httpx.post(url, json=claims, headers=headers, verify=self.verify_ssl)
-
-            if resp.status_code == 400:
-                raise KasBadRequestException(f"Rewrap request 400: {resp.text}")
-            resp.raise_for_status()
-
-            response_data = resp.json()
-            wrapped_key = b64decode(response_data.get("entityWrappedKey", ""))
-
-            # Handle decryption based on session key type
-            if session_key_type.is_ec:
-                return self._unwrap_with_ec(wrapped_key, ec_key_pair, response_data)
+            # Extract the entity wrapped key from v2 response structure
+            # The v2 response has responses[] array with results[] for each policy
+            if response.responses and len(response.responses) > 0:
+                policy_result = response.responses[0]  # First policy
+                if policy_result.results and len(policy_result.results) > 0:
+                    kao_result = policy_result.results[0]  # First KAO result
+                    if kao_result.kas_wrapped_key:
+                        entity_wrapped_key = kao_result.kas_wrapped_key
+                    else:
+                        raise SDKException(f"KAO result error: {kao_result.error}")
+                else:
+                    raise SDKException("No KAO results in policy response")
             else:
-                # RSA key unwrapping
-                return self.decryptor.decrypt(wrapped_key)
+                # Fallback to legacy entity_wrapped_key field for backward compatibility
+                entity_wrapped_key = response.entity_wrapped_key
+                if not entity_wrapped_key:
+                    raise SDKException("No entity_wrapped_key in Connect RPC response")
 
-        except KasBadRequestException as e:
-            raise e
+            # Decrypt the wrapped key
+            if not self.decryptor:
+                raise SDKException("Decryptor not initialized")
+
+            result = self.decryptor.decrypt(entity_wrapped_key)
+            logging.info("Connect RPC rewrap succeeded")
+            return result
+
         except Exception as e:
-            raise SDKException(f"Error unwrapping key: {e}")
+            logging.error(f"Connect RPC rewrap failed: {e}")
+            raise SDKException(f"Connect RPC rewrap failed: {e}")
 
     def get_key_cache(self) -> KASKeyCache:
         """Returns the key cache"""

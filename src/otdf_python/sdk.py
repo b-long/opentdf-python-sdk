@@ -52,7 +52,17 @@ class SDK(AbstractContextManager):
         """
         from otdf_python.config import TDFConfig, KASInfo
 
-        kas_url = self.platform_url or "https://default.kas.example.com"
+        platform_url = self.platform_url or "https://default.kas.example.com"
+        # Construct proper KAS URL by appending /kas to platform URL, like Java SDK
+        # Include explicit port for HTTPS to match otdfctl behavior
+        from urllib.parse import urlparse
+
+        parsed_url = urlparse(platform_url)
+        if parsed_url.scheme == "https" and parsed_url.port is None:
+            # Add explicit port 443 for HTTPS URLs without port
+            kas_url = f"{parsed_url.scheme}://{parsed_url.hostname}:443{parsed_url.path.rstrip('/')}/kas"
+        else:
+            kas_url = f"{platform_url.rstrip('/')}/kas"
         kas_info = KASInfo(url=kas_url, default=True)
         # Accept user override for kas_info_list if provided
         kas_info_list = kwargs.pop("kas_info_list", None)
@@ -292,7 +302,12 @@ class SDK(AbstractContextManager):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Clean up resources when exiting context manager"""
-        self.services.close()
+        self.close()
+
+    def close(self):
+        """Close the SDK and release resources"""
+        if hasattr(self.services, "close"):
+            self.services.close()
 
     def get_services(self) -> "SDK.Services":
         """Returns the services interface"""

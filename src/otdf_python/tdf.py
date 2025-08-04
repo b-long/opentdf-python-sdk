@@ -75,21 +75,54 @@ class TDF:
                 validated_kas_infos.append(kas)
         return validated_kas_infos
 
-    def _wrap_key_for_kas(self, key, kas_infos):
+    def _wrap_key_for_kas(self, key, kas_infos, policy_json=None):
         from otdf_python.asym_crypto import AsymEncryption
+        import hashlib
+        import hmac
 
         key_access_objs = []
         for kas in kas_infos:
             asym = AsymEncryption(kas.public_key)
             wrapped_key = base64.b64encode(asym.encrypt(key)).decode()
+
+            # Calculate policy binding hash following Java SDK approach
+            # This must match the server-side validation exactly
+            if policy_json:
+                # Try hashing the raw policy JSON (not base64 encoded)
+                # Step 1: Calculate HMAC-SHA256 using the symmetric key and policy JSON bytes
+                # Note: We use the original key (not wrapped key) as the HMAC key, like Java SDK
+                hmac_result = hmac.new(
+                    key, policy_json.encode("utf-8"), hashlib.sha256
+                ).digest()
+
+                # Step 2: Hex encode the HMAC result
+                hex_binding = hmac_result.hex()
+
+                # Step 3: Base64 encode the hex string to match Java SDK and otdfctl
+                b64_hex_binding = base64.b64encode(hex_binding.encode("utf-8")).decode(
+                    "utf-8"
+                )
+
+                policy_binding_hash = {
+                    "alg": "HS256",
+                    "hash": b64_hex_binding,
+                }
+            else:
+                # Fallback for cases where policy is not available
+                policy_binding_hash = {
+                    "alg": "HS256",
+                    "hash": hashlib.sha256(wrapped_key.encode()).hexdigest(),
+                }
+
             key_access_objs.append(
                 ManifestKeyAccess(
-                    key_type="rsa",
+                    type="wrapped",  # Changed from "rsa" to "wrapped" to match Java SDK
                     url=kas.url,
-                    protocol="https",
-                    wrapped_key=wrapped_key,
-                    policy_binding=None,
+                    protocol="kas",
+                    wrappedKey=wrapped_key,  # Changed from wrapped_key to wrappedKey
+                    policyBinding=policy_binding_hash,  # Changed from policy_binding to policyBinding
                     kid=kas.kid,
+                    schemaVersion=self.KEY_ACCESS_SCHEMA_VERSION,  # Add schema version
                 )
             )
         return key_access_objs
@@ -101,35 +134,73 @@ class TDF:
         import json as _json
 
         if policy_obj:
-            return _json.dumps(policy_obj, default=lambda o: o.__dict__)
-        elif attributes:
+            return _json.dumps(policy_obj, default=self._serialize_policy_object)
+        else:
+            # Always create a proper policy structure, even when empty
             from otdf_python.policy_object import (
                 AttributeObject,
                 PolicyBody,
                 PolicyObject,
             )
 
-            attr_objs = [AttributeObject(attribute=a) for a in attributes]
+            # Create attribute objects from the attributes list (empty if no attributes)
+            attr_objs = [AttributeObject(attribute=a) for a in (attributes or [])]
             body = PolicyBody(data_attributes=attr_objs, dissem=[])
             policy = PolicyObject(uuid=str(uuid.uuid4()), body=body)
-            return _json.dumps(policy, default=lambda o: o.__dict__)
-        else:
-            return "{}"
+            return _json.dumps(policy, default=self._serialize_policy_object)
 
-    def _enforce_policy(self, manifest: Manifest, config: TDFReaderConfig):
+    def _serialize_policy_object(self, obj):
+        """Custom serializer for policy objects to match otdfctl format."""
+        from otdf_python.policy_object import PolicyBody, AttributeObject
+
+        if isinstance(obj, PolicyBody):
+            # Convert data_attributes to dataAttributes and use null instead of empty array
+            result = {
+                "dataAttributes": obj.data_attributes if obj.data_attributes else None,
+                "dissem": obj.dissem if obj.dissem else None,
+            }
+            return result
+        elif isinstance(obj, AttributeObject):
+            # Convert AttributeObject to match expected format with camelCase field names
+            return {
+                "attribute": obj.attribute,
+                "displayName": obj.display_name,
+                "isDefault": obj.is_default,
+                "pubKey": obj.pub_key,
+                "kasUrl": obj.kas_url,
+            }
+        else:
+            return obj.__dict__
+
+    def _enforce_policy(self, manifest: Manifest, config: TDFReaderConfig):  # noqa: C901
         import json as _json
 
-        policy_json = manifest.encryption_information.policy
-        if policy_json and policy_json != "{}":
+        if not manifest.encryptionInformation:
+            return  # No encryption information, skip policy enforcement
+
+        policy_data = manifest.encryptionInformation.policy
+        if policy_data and policy_data != "{}":
             try:
-                policy_dict = _json.loads(policy_json)
+                # Try to decode base64 first, then parse JSON
+                try:
+                    policy_json = base64.b64decode(policy_data).decode()
+                    policy_dict = _json.loads(policy_json)
+                except:  # noqa: E722
+                    # If base64 decode fails, assume it's already JSON
+                    policy_dict = _json.loads(policy_data)
+
                 required_attrs = set()
-                if "body" in policy_dict and "data_attributes" in policy_dict["body"]:
-                    for attr in policy_dict["body"]["data_attributes"]:
-                        if isinstance(attr, dict) and "attribute" in attr:
-                            required_attrs.add(attr["attribute"])
-                        elif isinstance(attr, str):
-                            required_attrs.add(attr)
+                if "body" in policy_dict:
+                    # Check for both dataAttributes (new camelCase) and data_attributes (old snake_case) for backward compatibility
+                    data_attrs = policy_dict["body"].get(
+                        "dataAttributes"
+                    ) or policy_dict["body"].get("data_attributes")
+                    if data_attrs:
+                        for attr in data_attrs:
+                            if isinstance(attr, dict) and "attribute" in attr:
+                                required_attrs.add(attr["attribute"])
+                            elif isinstance(attr, str):
+                                required_attrs.add(attr)
                 if required_attrs:
                     attrs = config.attributes
                     user_attrs = set(attrs if attrs is not None else [])
@@ -154,7 +225,7 @@ class TDF:
         key = None
         for ka in key_access_objs:
             try:
-                wrapped_key = base64.b64decode(ka.wrapped_key)
+                wrapped_key = base64.b64decode(ka.wrappedKey)  # Changed field name
                 asym = AsymDecryption(private_key_pem)
                 key = asym.decrypt(wrapped_key)
                 break
@@ -164,24 +235,30 @@ class TDF:
             raise ValueError("No matching KAS private key could unwrap any payload key")
         return key
 
-    def _unwrap_key_with_kas(self, key_access_objs, policy_json):
+    def _unwrap_key_with_kas(self, key_access_objs, policy_b64):
         """
         Unwraps the key using the KAS service (production method)
         """
         # Get KAS client from services
-        kas_client = self.services.kas()
+        if not self.services:
+            raise ValueError("SDK services required for KAS operations")
+
+        kas_client = (
+            self.services.kas()
+        )  # The 'kas_client' should be typed as KASClient
+
+        # Decode base64 policy for KAS
+        try:
+            policy_json = base64.b64decode(policy_b64).decode()
+        except:  # noqa: E722
+            # If base64 decode fails, assume it's already JSON
+            policy_json = policy_b64
 
         # Try each key access object
         for ka in key_access_objs:
             try:
-                # Create KeyAccess object for KAS client
-                from .kas_client import KeyAccess
-
-                key_access = KeyAccess(
-                    url=ka.url,
-                    wrapped_key=ka.wrapped_key,
-                    ephemeral_public_key=getattr(ka, "ephemeral_public_key", None),
-                )
+                # Pass the manifest key access object directly to match Java SDK
+                key_access = ka
 
                 # Determine session key type from key_access properties
                 session_key_type = RSA_KEY_TYPE  # Default to RSA
@@ -214,7 +291,7 @@ class TDF:
         decrypted = b""
         offset = 0
         for seg in segments:
-            enc_len = seg.encrypted_segment_size
+            enc_len = seg.encryptedSegmentSize  # Changed field name
             enc_bytes = encrypted_payload[offset : offset + enc_len]
 
             # Handle empty or invalid encrypted payload in test scenarios
@@ -243,7 +320,11 @@ class TDF:
         writer = TDFWriter(output_stream)
         kas_infos = self._validate_kas_infos(config.kas_info_list)
         key = os.urandom(self.GCM_KEY_SIZE)
-        key_access_objs = self._wrap_key_for_kas(key, kas_infos)
+
+        # Build policy JSON to pass to policy binding calculation
+        policy_json = self._build_policy_json(config)
+
+        key_access_objs = self._wrap_key_for_kas(key, kas_infos, policy_json)
         aesgcm = AesGcm(key)
         segments = []
         segment_size = (
@@ -267,40 +348,51 @@ class TDF:
                 segments.append(
                     ManifestSegment(
                         hash=seg_hash,
-                        segment_size=len(chunk),
-                        encrypted_segment_size=len(encrypted.as_bytes()),
+                        segmentSize=len(
+                            chunk
+                        ),  # Changed from segment_size to segmentSize
+                        encryptedSegmentSize=len(
+                            encrypted.as_bytes()
+                        ),  # Changed from encrypted_segment_size to encryptedSegmentSize
                     )
                 )
                 hasher.update(encrypted.as_bytes())
                 total += len(chunk)
         # Use config fields for policy
         policy_json = self._build_policy_json(config)
+        # Encode policy as base64 to match Java SDK
+        policy_b64 = base64.b64encode(policy_json.encode()).decode()
+
         root_sig = base64.b64encode(hasher.digest()).decode()
         integrity_info = ManifestIntegrityInformation(
-            root_signature=ManifestRootSignature(algorithm="HS256", signature=root_sig),
-            segment_hash_alg="SHA256",
-            segment_size_default=segment_size,
-            encrypted_segment_size_default=segment_size + 28,  # approx
+            rootSignature=ManifestRootSignature(
+                alg="HS256", sig=root_sig
+            ),  # Changed field names
+            segmentHashAlg="GMAC",  # Changed from SHA256 to GMAC to match Java SDK
+            segmentSizeDefault=segment_size,  # Changed field name
+            encryptedSegmentSizeDefault=segment_size + 28,  # Changed field name, approx
             segments=segments,
         )
-        method = ManifestMethod(algorithm="AES-256-GCM", iv="", is_streamable=True)
+        method = ManifestMethod(
+            algorithm="AES-256-GCM", iv="", isStreamable=True
+        )  # Changed field name
         enc_info = ManifestEncryptionInformation(
-            key_access_type="rsa",
-            policy=policy_json,
-            key_access_obj=key_access_objs,
+            type="split",  # Changed from key_access_type to type, and value to "split"
+            policy=policy_b64,  # Use base64-encoded policy
+            keyAccess=key_access_objs,  # Changed from key_access_obj to keyAccess
             method=method,
-            integrity_information=integrity_info,
+            integrityInformation=integrity_info,  # Changed field name
         )
         payload_info = ManifestPayload(
-            type="file",
+            type="reference",  # Changed from "file" to "reference" to match Java SDK
             url="0.payload",
             protocol="zip",
-            mime_type="application/octet-stream",
-            is_encrypted=True,
+            mimeType="text/plain",  # Changed from mime_type to mimeType and value to text/plain
+            isEncrypted=True,  # Changed from is_encrypted to isEncrypted
         )
         manifest = Manifest(
-            tdf_version=self.TDF_VERSION,
-            encryption_information=enc_info,
+            schemaVersion=self.TDF_VERSION,  # Changed from tdf_version to schemaVersion
+            encryptionInformation=enc_info,  # Changed field name
             payload=payload_info,
             assertions=[],
         )
@@ -315,7 +407,13 @@ class TDF:
             manifest_json = z.read("0.manifest.json").decode()
             manifest = Manifest.from_json(manifest_json)
             self._enforce_policy(manifest, config)
-            key_access_objs = manifest.encryption_information.key_access_obj
+
+            if not manifest.encryptionInformation:
+                raise ValueError("Missing encryption information in manifest")
+
+            key_access_objs = (
+                manifest.encryptionInformation.keyAccess
+            )  # Changed field name
 
             # If a private key is provided, use local unwrapping (for testing)
             if config.kas_private_key:
@@ -328,11 +426,16 @@ class TDF:
                     )
 
                 key = self._unwrap_key_with_kas(
-                    key_access_objs, manifest.encryption_information.policy
+                    key_access_objs,
+                    manifest.encryptionInformation.policy,  # Changed field name
                 )
 
             aesgcm = AesGcm(key)
-            segments = manifest.encryption_information.integrity_information.segments
+            if not manifest.encryptionInformation.integrityInformation:
+                raise ValueError("Missing integrity information in manifest")
+            segments = (
+                manifest.encryptionInformation.integrityInformation.segments
+            )  # Changed field name
             encrypted_payload = z.read("0.payload")
             payload = self._decrypt_segments(aesgcm, segments, encrypted_payload)
             return TDFReader(payload=payload, manifest=manifest)
@@ -352,8 +455,14 @@ class TDF:
         with zipfile.ZipFile(io.BytesIO(tdf_bytes), "r") as z:
             manifest_json = z.read("0.manifest.json").decode()
             manifest = Manifest.from_json(manifest_json)
+
+            if not manifest.encryptionInformation:
+                raise ValueError("Missing encryption information in manifest")
+
             wrapped_key = base64.b64decode(
-                manifest.encryption_information.key_access_obj[0].wrapped_key
+                manifest.encryptionInformation.keyAccess[
+                    0
+                ].wrappedKey  # Changed field names
             )
             private_key_pem = config.get("kas_private_key")
             if not private_key_pem:
@@ -361,11 +470,16 @@ class TDF:
             asym = AsymDecryption(private_key_pem)
             key = asym.decrypt(wrapped_key)
             aesgcm = AesGcm(key)
-            segments = manifest.encryption_information.integrity_information.segments
+
+            if not manifest.encryptionInformation.integrityInformation:
+                raise ValueError("Missing integrity information in manifest")
+            segments = (
+                manifest.encryptionInformation.integrityInformation.segments
+            )  # Changed field names
             encrypted_payload = z.read("0.payload")
             offset = 0
             for seg in segments:
-                enc_len = seg.encrypted_segment_size
+                enc_len = seg.encryptedSegmentSize  # Changed field name
                 enc_bytes = encrypted_payload[offset : offset + enc_len]
                 # Integrity check (SHA256 HMAC)
                 seg_hash = base64.b64encode(hashlib.sha256(enc_bytes).digest()).decode()

@@ -190,6 +190,108 @@ class SDKBuilder:
         self.auth_token = token
         return self
 
+    def _discover_token_endpoint_from_platform(self) -> None:
+        """
+        Discover token endpoint using OpenTDF platform configuration.
+        Raises:
+            AutoConfigureException: If discovery fails
+        """
+        if not self.platform_endpoint or not self.oauth_config:
+            return
+
+        # Try to get OpenTDF configuration first
+        well_known_url = f"{self.platform_endpoint}/.well-known/opentdf-configuration"
+        response = httpx.get(well_known_url, verify=not self.insecure_skip_verify)
+
+        if response.status_code != 200:
+            raise AutoConfigureException(
+                f"Failed to retrieve OpenTDF configuration from {well_known_url} (status: {response.status_code}). "
+                "Please provide an explicit issuer endpoint or check platform URL."
+            )
+
+        config_doc = response.json()
+        configuration = config_doc.get("configuration", {})
+
+        # Try to get token endpoint from IDP configuration
+        idp_config = configuration.get("idp", {})
+        if idp_config.get("token_endpoint"):
+            self.oauth_config.token_endpoint = idp_config["token_endpoint"]
+            return
+
+        # Fall back to using platform_issuer for OIDC discovery
+        platform_issuer = configuration.get("platform_issuer")
+        if not platform_issuer:
+            raise AutoConfigureException(
+                "No platform_issuer found in OpenTDF configuration"
+            )
+
+        self._discover_token_endpoint_from_issuer(platform_issuer)
+
+    def _discover_token_endpoint_from_issuer(self, issuer_url: str) -> None:
+        """
+        Discover token endpoint using OIDC discovery from issuer.
+        Args:
+            issuer_url: The issuer URL to use for discovery
+        Raises:
+            AutoConfigureException: If discovery fails
+        """
+        if not self.oauth_config:
+            return
+
+        oidc_discovery_url = f"{issuer_url}/.well-known/openid-configuration"
+        oidc_response = httpx.get(
+            oidc_discovery_url, verify=not self.insecure_skip_verify
+        )
+
+        if oidc_response.status_code != 200:
+            raise AutoConfigureException(
+                f"Failed to retrieve OIDC configuration from {oidc_discovery_url}: {oidc_response.status_code}"
+            )
+
+        oidc_doc = oidc_response.json()
+        self.oauth_config.token_endpoint = oidc_doc.get("token_endpoint")
+        if not self.oauth_config.token_endpoint:
+            raise AutoConfigureException(
+                "Token endpoint not found in OIDC discovery document"
+            )
+
+    def _discover_token_endpoint(self) -> None:
+        """
+        Discover the token endpoint using available configuration.
+        Raises:
+            AutoConfigureException: If discovery fails
+        """
+        # Try platform endpoint first
+        if self.platform_endpoint:
+            try:
+                self._discover_token_endpoint_from_platform()
+                return
+            except Exception as e:
+                # If platform fails and we have an explicit issuer, try that
+                if self.issuer_endpoint:
+                    try:
+                        realm_name = "opentdf"  # Default realm name
+                        issuer_url = f"{self.issuer_endpoint}/realms/{realm_name}"
+                        self._discover_token_endpoint_from_issuer(issuer_url)
+                        return
+                    except Exception:
+                        # Re-raise the original platform error
+                        pass
+                raise AutoConfigureException(
+                    f"Error during token endpoint discovery: {e!s}"
+                )
+
+        # Fall back to explicit issuer endpoint
+        if self.issuer_endpoint:
+            realm_name = "opentdf"  # Default realm name
+            issuer_url = f"{self.issuer_endpoint}/realms/{realm_name}"
+            self._discover_token_endpoint_from_issuer(issuer_url)
+            return
+
+        raise AutoConfigureException(
+            "Platform endpoint or issuer endpoint must be configured for OIDC token discovery"
+        )
+
     def _get_token_from_client_credentials(self) -> str:
         """
         Obtains an OAuth token using client credentials.
@@ -202,33 +304,11 @@ class SDKBuilder:
             raise AutoConfigureException("OAuth configuration is not set")
 
         if not self.oauth_config.token_endpoint:
-            # Auto-discover the token endpoint
-            try:
-                realm_name = "opentdf"  # Default realm name
+            self._discover_token_endpoint()
 
-                # Default location for OpenID Connect discovery document
-                well_known_url = f"{self.issuer_endpoint}/realms/{realm_name}/.well-known/openid-configuration"
-                response = httpx.get(
-                    well_known_url, verify=not self.insecure_skip_verify
-                )
-
-                if response.status_code == 200:
-                    discovery_doc = response.json()
-                    self.oauth_config.token_endpoint = discovery_doc.get(
-                        "token_endpoint"
-                    )
-                    if not self.oauth_config.token_endpoint:
-                        raise AutoConfigureException(
-                            "Token endpoint not found in discovery document"
-                        )
-                else:
-                    raise AutoConfigureException(
-                        f"Failed to retrieve OpenID configuration: {response.status_code}"
-                    )
-            except Exception as e:
-                raise AutoConfigureException(
-                    f"Error during token endpoint discovery: {e!s}"
-                )
+        # Ensure we have a token endpoint before proceeding
+        if not self.oauth_config.token_endpoint:
+            raise AutoConfigureException("Token endpoint discovery failed")
 
         # Request the token
         try:
@@ -247,7 +327,10 @@ class SDKBuilder:
 
             if response.status_code == 200:
                 token_response = response.json()
-                return token_response.get("access_token")
+                access_token = token_response.get("access_token")
+                if not access_token:
+                    raise AutoConfigureException("No access_token in token response")
+                return access_token
             else:
                 raise AutoConfigureException(
                     f"Token request failed: {response.status_code} - {response.text}"

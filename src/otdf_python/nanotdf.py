@@ -50,6 +50,29 @@ class NanoTDF:
         body = PolicyBody(data_attributes=data_attributes, dissem=[])
         return PolicyObject(uuid=policy_uuid, body=body)
 
+    def _serialize_policy_object(self, obj):
+        """Custom serializer for policy objects to match otdfctl format."""
+        from otdf_python.policy_object import PolicyBody, AttributeObject
+
+        if isinstance(obj, PolicyBody):
+            # Convert data_attributes to dataAttributes and use null instead of empty array
+            result = {
+                "dataAttributes": obj.data_attributes if obj.data_attributes else None,
+                "dissem": obj.dissem if obj.dissem else None,
+            }
+            return result
+        elif isinstance(obj, AttributeObject):
+            # Convert snake_case field names to camelCase for JSON serialization
+            return {
+                "attribute": obj.attribute,
+                "displayName": obj.display_name,
+                "isDefault": obj.is_default,
+                "pubKey": obj.pub_key,
+                "kasUrl": obj.kas_url,
+            }
+        else:
+            return obj.__dict__
+
     def _prepare_payload(self, payload: bytes | BytesIO) -> bytes:
         """
         Convert BytesIO to bytes and validate payload size.
@@ -81,9 +104,9 @@ class NanoTDF:
         """
         attributes = config.attributes if config.attributes else []
         policy_object = self._create_policy_object(attributes)
-        policy_json = json.dumps(policy_object, default=lambda o: o.__dict__).encode(
-            "utf-8"
-        )
+        policy_json = json.dumps(
+            policy_object, default=self._serialize_policy_object
+        ).encode("utf-8")
         policy_type = (
             config.policy_type if config.policy_type else "EMBEDDED_POLICY_PLAIN_TEXT"
         )

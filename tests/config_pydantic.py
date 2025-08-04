@@ -30,6 +30,7 @@ class ConfigureTdf(BaseSettings):
     )
 
     OPENTDF_PLATFORM_HOST: str = "localhost:8080"
+    OPENTDF_PLATFORM_PORT: int = 8080
 
     # NOTE: If an end-user wants to provide a different protocol or custom
     # port, they can do so by providing the full endpoint here
@@ -70,8 +71,27 @@ class ConfigureTdf(BaseSettings):
     OPENTDF_USE_SPECIFIED_CA_CERT: bool = False
 
 
+class ConfigureTesting(BaseSettings):
+    """
+    Used by integration tests (in particular for SSH and Kubernetes access).
+    """
+
+    model_config = SettingsConfigDict(
+        # env_prefix="common_",
+        env_file=".env-testing",
+        env_file_encoding="utf-8",
+        extra="forbid",
+    )
+
+    POD_NAME: str = "some-pod-name-123456789-abcde"
+    NAMESPACE: str = "default"
+    SSH_TARGET: str = "default"
+    LOG_LINES: int = 10
+
+
 # Load and validate environment variables
 CONFIG_TDF = ConfigureTdf()
+CONFIG_TESTING = ConfigureTesting()
 
 # For debugging only
 # print(ConfigureTdf().model_dump())

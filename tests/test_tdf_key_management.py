@@ -40,38 +40,35 @@ class TestTDFKeyManagement(unittest.TestCase):
         with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
             # Create key access object
             key_access = ManifestKeyAccess(
-                key_type="rsa",
+                type="rsa",
                 url="https://kas.example.com",
                 protocol="https",
-                wrapped_key=base64.b64encode(b"wrapped_key_data").decode(),
-                policy_binding=None,
-                kid="test-kid",
+                wrappedKey=base64.b64encode(b"wrapped_key_data").decode(),
+                policyBinding=None,
             )
 
             # Create encryption info
             integrity_info = ManifestIntegrityInformation(
-                root_signature=ManifestRootSignature(
-                    algorithm="HS256", signature="signature"
-                ),
-                segment_hash_alg="SHA256",
-                segment_size_default=1024,
-                encrypted_segment_size_default=1052,
+                rootSignature=ManifestRootSignature(alg="HS256", sig="signature"),
+                segmentHashAlg="SHA256",
+                segmentSizeDefault=1024,
+                encryptedSegmentSizeDefault=1052,
                 segments=[
                     ManifestSegment(
                         hash=base64.b64encode(b"hash").decode(),
-                        segment_size=10,
-                        encrypted_segment_size=38,
+                        segmentSize=10,
+                        encryptedSegmentSize=38,
                     )
                 ],
             )
 
-            method = ManifestMethod(algorithm="AES-256-GCM", iv="", is_streamable=True)
+            method = ManifestMethod(algorithm="AES-256-GCM", iv="", isStreamable=True)
             enc_info = ManifestEncryptionInformation(
-                key_access_type="rsa",
+                type="rsa",
                 policy="{}",
-                key_access_obj=[key_access],
+                keyAccess=[key_access],
                 method=method,
-                integrity_information=integrity_info,
+                integrityInformation=integrity_info,
             )
 
             # Create payload info
@@ -79,14 +76,14 @@ class TestTDFKeyManagement(unittest.TestCase):
                 type="file",
                 url="0.payload",
                 protocol="zip",
-                mime_type="application/octet-stream",
-                is_encrypted=True,
+                mimeType="application/octet-stream",
+                isEncrypted=True,
             )
 
             # Create manifest
             manifest = Manifest(
-                tdf_version="4.3.0",
-                encryption_information=enc_info,
+                schemaVersion="4.3.0",
+                encryptionInformation=enc_info,
                 payload=payload_info,
                 assertions=[],
             )

@@ -1,0 +1,28 @@
+version: v2
+managed:
+  enabled: true
+  disable:
+    - file_option: go_package
+      module: buf.build/bufbuild/protovalidate
+    - file_option: go_package
+      module: buf.build/googleapis/googleapis
+    - file_option: go_package
+      module: buf.build/grpc-ecosystem/grpc-gateway
+plugins:
+  # Standard Python protobuf generation
+  - remote: buf.build/protocolbuffers/python:v31.1
+    out: src/otdf_python_proto
+
+  # Python type stubs generation  
+  - remote: buf.build/protocolbuffers/pyi:v31.1
+    out: src/otdf_python_proto
+
+  # Connect Python client generation (preferred)
+  - local: ../.venv/bin/protoc-gen-connect_python
+    out: src/otdf_python_proto
+    opt:
+      - paths=source_relative
+
+  # Legacy gRPC Python generation (for backward compatibility)
+  - remote: buf.build/grpc/python:v1.74.0
+    out: src/otdf_python_proto/legacy_grpc

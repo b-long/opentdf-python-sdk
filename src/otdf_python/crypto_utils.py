@@ -55,3 +55,28 @@ class CryptoUtils:
         if private_key.__class__.__name__ != "RSAPrivateKey":
             raise ValueError("Not an RSA private key")
         return CryptoUtils.get_private_key_pem(private_key)
+
+    @staticmethod
+    def get_rsa_public_key_from_pem(pem_data: str) -> rsa.RSAPublicKey:
+        """Load RSA public key from PEM string."""
+        public_key = serialization.load_pem_public_key(
+            pem_data.encode(), backend=default_backend()
+        )
+        if not isinstance(public_key, rsa.RSAPublicKey):
+            raise ValueError("Not an RSA public key")
+        return public_key
+
+    @staticmethod
+    def get_rsa_private_key_from_pem(pem_data: str) -> rsa.RSAPrivateKey:
+        """Load RSA private key from PEM string."""
+        private_key = serialization.load_pem_private_key(
+            pem_data.encode(), password=None, backend=default_backend()
+        )
+        if not isinstance(private_key, rsa.RSAPrivateKey):
+            raise ValueError("Not an RSA private key")
+        return private_key
+
+
+# Aliases for compatibility
+rsa_private_key_from_pem = CryptoUtils.get_rsa_private_key_from_pem
+rsa_public_key_from_pem = CryptoUtils.get_rsa_public_key_from_pem

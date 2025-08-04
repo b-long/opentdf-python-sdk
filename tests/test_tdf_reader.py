@@ -109,9 +109,35 @@ class TestTDFReader:
         """Test reading the policy object from the manifest."""
         mock_reader, manifest_data, _ = mock_zip_reader
 
-        # Mock Manifest.read_policy_object
-        mock_policy = MagicMock(spec=PolicyObject)
-        mock_manifest.read_policy_object.return_value = mock_policy
+        # Create a realistic manifest with a base64 encoded policy
+        import base64
+        import json
+
+        # Create a test policy object
+        test_policy = {
+            "uuid": "test-uuid-123",
+            "body": {
+                "dataAttributes": [
+                    {
+                        "attribute": "test.attr",
+                        "displayName": "Test Attribute",
+                        "isDefault": False,
+                        "pubKey": "test-key",
+                        "kasUrl": "https://kas.example.com",
+                    }
+                ],
+                "dissem": ["user1", "user2"],
+            },
+        }
+
+        # Encode the policy as base64
+        policy_json = json.dumps(test_policy)
+        policy_base64 = base64.b64encode(policy_json.encode("utf-8")).decode("utf-8")
+
+        # Create a mock manifest object with the encoded policy
+        mock_manifest_obj = MagicMock()
+        mock_manifest_obj.encryptionInformation.policy = policy_base64
+        mock_manifest.from_json.return_value = mock_manifest_obj
 
         reader = TDFReader(io.BytesIO(b"fake tdf data"))
 
@@ -119,6 +145,10 @@ class TestTDFReader:
         result = reader.read_policy_object()
 
         # Verify result
-        assert result == mock_policy
+        assert isinstance(result, PolicyObject)
+        assert result.uuid == "test-uuid-123"
+        assert len(result.body.data_attributes) == 1
+        assert result.body.data_attributes[0].attribute == "test.attr"
+        assert result.body.dissem == ["user1", "user2"]
         mock_reader.read.assert_called_with(TDF_MANIFEST_FILE_NAME)
-        mock_manifest.read_policy_object.assert_called_once()
+        mock_manifest.from_json.assert_called_once()

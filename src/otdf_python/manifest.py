@@ -6,22 +6,22 @@ import json
 @dataclass
 class ManifestSegment:
     hash: str
-    segment_size: int
-    encrypted_segment_size: int
+    segmentSize: int
+    encryptedSegmentSize: int
 
 
 @dataclass
 class ManifestRootSignature:
-    algorithm: str
-    signature: str
+    alg: str
+    sig: str
 
 
 @dataclass
 class ManifestIntegrityInformation:
-    root_signature: ManifestRootSignature
-    segment_hash_alg: str
-    segment_size_default: int
-    encrypted_segment_size_default: int
+    rootSignature: ManifestRootSignature
+    segmentHashAlg: str
+    segmentSizeDefault: int
+    encryptedSegmentSizeDefault: int
     segments: list[ManifestSegment]
 
 
@@ -33,32 +33,32 @@ class ManifestPolicyBinding:
 
 @dataclass
 class ManifestKeyAccess:
-    key_type: str
+    type: str
     url: str
     protocol: str
-    wrapped_key: str
-    policy_binding: Any
-    encrypted_metadata: str | None = None
+    wrappedKey: str
+    policyBinding: Any = None
+    encryptedMetadata: str | None = None
     kid: str | None = None
     sid: str | None = None
-    schema_version: str | None = None
-    ephemeral_public_key: str | None = None
+    schemaVersion: str | None = None
+    ephemeralPublicKey: str | None = None
 
 
 @dataclass
 class ManifestMethod:
     algorithm: str
     iv: str
-    is_streamable: bool | None = None
+    isStreamable: bool | None = None
 
 
 @dataclass
 class ManifestEncryptionInformation:
-    key_access_type: str
+    type: str
     policy: str
-    key_access_obj: list[ManifestKeyAccess]
+    keyAccess: list[ManifestKeyAccess]
     method: ManifestMethod
-    integrity_information: ManifestIntegrityInformation
+    integrityInformation: ManifestIntegrityInformation
 
 
 @dataclass
@@ -66,8 +66,8 @@ class ManifestPayload:
     type: str
     url: str
     protocol: str
-    mime_type: str
-    is_encrypted: bool
+    mimeType: str
+    isEncrypted: bool
 
 
 @dataclass
@@ -81,20 +81,60 @@ class ManifestAssertion:
     id: str
     type: str
     scope: str
-    applies_to_state: str
+    appliesTo_state: str
     statement: Any
     binding: ManifestBinding | None = None
 
 
 @dataclass
 class Manifest:
-    tdf_version: str | None = None
-    encryption_information: ManifestEncryptionInformation | None = None
+    schemaVersion: str | None = None
+    encryptionInformation: ManifestEncryptionInformation | None = None
     payload: ManifestPayload | None = None
     assertions: list[ManifestAssertion] = field(default_factory=list)
 
+    def _remove_none_values_and_empty_lists(self, obj):
+        """Recursively remove None values and empty lists from dictionaries and lists."""
+        if isinstance(obj, dict):
+            cleaned = {}
+            for k, v in obj.items():
+                if v is not None:
+                    # For 'assertions' field, exclude if it's an empty list
+                    if k == "assertions" and isinstance(v, list) and len(v) == 0:
+                        continue
+                    cleaned[k] = self._remove_none_values_and_empty_lists(v)
+            return cleaned
+        elif isinstance(obj, list):
+            return [
+                self._remove_none_values_and_empty_lists(item)
+                for item in obj
+                if item is not None
+            ]
+        else:
+            return obj
+
     def to_json(self) -> str:
-        return json.dumps(asdict(self), default=str)
+        # Create manifest dict with fields ordered to match otdfctl expectations
+        # Order: encryptionInformation, payload, schemaVersion, assertions
+        manifest_dict = {}
+
+        # Add fields in the order expected by otdfctl
+        if self.encryptionInformation is not None:
+            manifest_dict["encryptionInformation"] = asdict(self.encryptionInformation)
+
+        if self.payload is not None:
+            manifest_dict["payload"] = asdict(self.payload)
+
+        if self.schemaVersion is not None:
+            manifest_dict["schemaVersion"] = self.schemaVersion
+
+        if self.assertions and len(self.assertions) > 0:
+            manifest_dict["assertions"] = [
+                asdict(assertion) for assertion in self.assertions
+            ]
+
+        cleaned_dict = self._remove_none_values_and_empty_lists(manifest_dict)
+        return json.dumps(cleaned_dict, default=str)
 
     @staticmethod
     def from_json(data: str) -> "Manifest":
@@ -111,11 +151,19 @@ class Manifest:
             return ManifestRootSignature(**rs)
 
         def _integrity(i):
+            # Handle both old snake_case and new camelCase formats for backward compatibility
             return ManifestIntegrityInformation(
-                root_signature=_root_sig(i["root_signature"]),
-                segment_hash_alg=i["segment_hash_alg"],
-                segment_size_default=i["segment_size_default"],
-                encrypted_segment_size_default=i["encrypted_segment_size_default"],
+                rootSignature=_root_sig(
+                    i.get("rootSignature", i.get("root_signature"))
+                ),
+                segmentHashAlg=i.get("segmentHashAlg", i.get("segment_hash_alg")),
+                segmentSizeDefault=i.get(
+                    "segmentSizeDefault", i.get("segment_size_default")
+                ),
+                encryptedSegmentSizeDefault=i.get(
+                    "encryptedSegmentSizeDefault",
+                    i.get("encrypted_segment_size_default"),
+                ),
                 segments=[_segment(s) for s in i["segments"]],
             )
 
@@ -126,12 +174,18 @@ class Manifest:
             return ManifestKeyAccess(**k)
 
         def _enc_info(e):
+            # Handle both old snake_case and new camelCase formats
             return ManifestEncryptionInformation(
-                key_access_type=e["key_access_type"],
+                type=e.get("type", e.get("key_access_type", "split")),
                 policy=e["policy"],
-                key_access_obj=[_key_access(k) for k in e["key_access_obj"]],
+                keyAccess=[
+                    _key_access(k)
+                    for k in e.get("keyAccess", e.get("key_access_obj", []))
+                ],
                 method=_method(e["method"]),
-                integrity_information=_integrity(e["integrity_information"]),
+                integrityInformation=_integrity(
+                    e.get("integrityInformation", e.get("integrity_information"))
+                ),
             )
 
         def _binding(b):
@@ -142,15 +196,17 @@ class Manifest:
                 id=a["id"],
                 type=a["type"],
                 scope=a["scope"],
-                applies_to_state=a["applies_to_state"],
+                appliesTo_state=a.get("appliesTo_state", a.get("applies_to_state")),
                 statement=a["statement"],
                 binding=_binding(a.get("binding")),
             )
 
         return Manifest(
-            tdf_version=d.get("tdf_version"),
-            encryption_information=_enc_info(d["encryption_information"])
-            if d.get("encryption_information")
+            schemaVersion=d.get("schemaVersion", d.get("tdf_version")),
+            encryptionInformation=_enc_info(
+                d.get("encryptionInformation", d.get("encryption_information"))
+            )
+            if d.get("encryptionInformation") or d.get("encryption_information")
             else None,
             payload=_payload(d["payload"]) if d.get("payload") else None,
             assertions=[_assertion(a) for a in d.get("assertions", [])],

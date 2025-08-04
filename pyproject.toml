@@ -9,13 +9,22 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "cryptography>=45.0.4",
+    "connect-python[compiler]>=0.4.2",
     "httpx>=0.28.1",
+    "protobuf>=6.31.1",
     "pyjwt>=2.10.1",
+    # Legacy gRPC support (may be removed in future versions)
+    "grpcio>=1.74.0",
+    "grpcio-tools>=1.74.0",
+    "grpcio-status>=1.74.0",
+    "protoc-gen-openapiv2>=0.0.1",
+    "otdf-python-proto",
 ]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
 
 [dependency-groups]
 dev = [
@@ -57,3 +66,11 @@ lint.select = [
     "SIM",       # flake8-simplify (simplifications)
     "RUF",       # Ruff-specific rules
 ]
+
+[tool.uv.workspace]
+members = [
+    "otdf-python-proto",
+]
+
+[tool.uv.sources]
+otdf-python-proto = { workspace = true }
