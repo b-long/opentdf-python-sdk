@@ -6,10 +6,6 @@
 name: "NEW: Platform Integration testing"
 
 on:
-  push:
-    branches:
-      - chore/rewrite
-  pull_request:
   workflow_call:
     inputs:
       wheel:
@@ -127,7 +123,7 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
-      - name: Validate the Python SDK
+      - name: Run all tests, minus integration tests
         env:
           OPENTDF_CLIENT_ID: "opentdf-sdk"
           OPENTDF_CLIENT_SECRET: "secret"
@@ -141,6 +137,20 @@ jobs:
           uv run pytest -m "not integration" --tb=short -vv tests
         shell: bash
 
+      - name: Run integration tests
+        env:
+          OPENTDF_CLIENT_ID: "opentdf-sdk"
+          OPENTDF_CLIENT_SECRET: "secret"
+          OPENTDF_PLATFORM_HOST: "localhost:8080"
+          OPENTDF_PLATFORM_URL: "http://localhost:8080"
+          OIDC_OP_TOKEN_ENDPOINT: "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
+          OPENTDF_KAS_URL: "http://localhost:8080/kas"
+          INSECURE_SKIP_VERIFY: "TRUE"
+        run: |
+          uv sync
+          # Skip the tests marked "integration"
+          uv run pytest -m "integration" --tb=short -vv tests
+        shell: bash
 
   # platform-xtest:
   #   permissions:

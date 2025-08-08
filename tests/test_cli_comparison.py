@@ -9,6 +9,7 @@ import tempfile
 import json
 from pathlib import Path
 from tests.config_pydantic import CONFIG_TDF
+from tests.support_otdfctl import check_for_otdfctl
 
 # Fail fast if OPENTDF_PLATFORM_URL is not set
 platform_url = CONFIG_TDF.OPENTDF_PLATFORM_URL
@@ -20,13 +21,7 @@ if not platform_url:
 def test_otdfctl_encrypt_python_decrypt(collect_server_logs):
     """Integration test that uses otdfctl for encryption and the Python CLI for decryption"""
 
-    # Check if otdfctl is available
-    try:
-        subprocess.run(["otdfctl", "--version"], capture_output=True, check=True)
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        raise Exception(
-            "otdfctl command not found on system. Please install otdfctl to run this test."
-        )
+    check_for_otdfctl()
 
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -201,13 +196,7 @@ def test_otdfctl_encrypt_python_decrypt(collect_server_logs):
 def test_otdfctl_encrypt_otdfctl_decrypt(collect_server_logs):
     """Integration test that uses otdfctl for both encryption and decryption to verify roundtrip functionality"""
 
-    # Check if otdfctl is available
-    try:
-        subprocess.run(["otdfctl", "--version"], capture_output=True, check=True)
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        raise Exception(
-            "otdfctl command not found on system. Please install otdfctl to run this test."
-        )
+    check_for_otdfctl()
 
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:

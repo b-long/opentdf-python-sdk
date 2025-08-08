@@ -11,6 +11,8 @@ from pathlib import Path
 from tests.config_pydantic import CONFIG_TDF
 import os
 
+from tests.support_otdfctl import check_for_otdfctl
+
 original_env = os.environ.copy()
 original_env["GRPC_ENFORCE_ALPN_ENABLED"] = "false"
 
@@ -24,15 +26,7 @@ if not platform_url:
 def test_cli_decrypt_otdfctl_tdf():
     """Integration test to decrypt .tdf files created by otdfctl"""
 
-    # Check if otdfctl is available
-    try:
-        subprocess.run(
-            ["otdfctl", "--version"], capture_output=True, check=True, env=original_env
-        )
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        raise Exception(
-            "otdfctl command not found on system. Please install otdfctl to run this test."
-        )
+    check_for_otdfctl()
 
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -136,15 +130,7 @@ def test_cli_decrypt_otdfctl_tdf():
 @pytest.mark.integration
 def test_otdfctl_decrypt_comparison(collect_server_logs):
     """Integration test that exercises otdfctl decrypt to compare with Python CLI decrypt"""
-    # Check if otdfctl is available
-    try:
-        subprocess.run(
-            ["otdfctl", "--version"], capture_output=True, check=True, env=original_env
-        )
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        raise Exception(
-            "otdfctl command not found on system. Please install otdfctl to run this test."
-        )
+    check_for_otdfctl()
 
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -313,15 +299,7 @@ def test_otdfctl_decrypt_comparison(collect_server_logs):
 def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs):
     """Integration test that uses otdfctl for both encryption and decryption to verify roundtrip functionality"""
 
-    # Check if otdfctl is available
-    try:
-        subprocess.run(
-            ["otdfctl", "--version"], capture_output=True, check=True, env=original_env
-        )
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        raise Exception(
-            "otdfctl command not found on system. Please install otdfctl to run this test."
-        )
+    check_for_otdfctl()
 
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:

@@ -13,6 +13,7 @@ from otdf_python.tdf_reader import (
     TDFReader,
 )
 from tests.config_pydantic import CONFIG_TDF
+from tests.support_otdfctl import check_for_otdfctl
 
 # Fail fast if OPENTDF_PLATFORM_URL is not set
 platform_url = CONFIG_TDF.OPENTDF_PLATFORM_URL
@@ -27,11 +28,7 @@ class TestTDFReaderIntegration:
     def test_read_otdfctl_created_tdf_structure(self):
         """Test that TDFReader can parse the structure of files created by otdfctl."""
 
-        # Check if otdfctl is available
-        try:
-            subprocess.run(["otdfctl", "--version"], capture_output=True, check=True)
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            pytest.skip("otdfctl command not found on system")
+        check_for_otdfctl()
 
         # Create temporary directory for work
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -128,11 +125,7 @@ class TestTDFReaderIntegration:
     def test_read_otdfctl_tdf_with_attributes(self):
         """Test reading TDF files created by otdfctl with data attributes."""
 
-        # Check if otdfctl is available
-        try:
-            subprocess.run(["otdfctl", "--version"], capture_output=True, check=True)
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            pytest.skip("otdfctl command not found on system")
+        check_for_otdfctl()
 
         # Create temporary directory for work
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -222,11 +215,7 @@ class TestTDFReaderIntegration:
     def test_read_multiple_otdfctl_files(self):
         """Test reading multiple TDF files of different types created by otdfctl."""
 
-        # Check if otdfctl is available
-        try:
-            subprocess.run(["otdfctl", "--version"], capture_output=True, check=True)
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            pytest.skip("otdfctl command not found on system")
+        check_for_otdfctl()
 
         # Create temporary directory for work
         with tempfile.TemporaryDirectory() as temp_dir:
