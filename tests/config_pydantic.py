@@ -83,6 +83,7 @@ class ConfigureTesting(BaseSettings):
         extra="forbid",
     )
 
+    ENABLE_LOG_COLLECTION: bool = False
     POD_NAME: str = "some-pod-name-123456789-abcde"
     NAMESPACE: str = "default"
     SSH_TARGET: str = "default"

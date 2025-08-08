@@ -15,6 +15,7 @@ def collect_server_logs(
     namespace: str = CONFIG_TESTING.NAMESPACE,
     ssh_target: str = CONFIG_TESTING.SSH_TARGET,
     lines: int = CONFIG_TESTING.LOG_LINES,
+    test_name: str | None = None,
 ) -> str | None:
     """
     Collect server logs from a Kubernetes pod via SSH.
@@ -28,6 +29,19 @@ def collect_server_logs(
     Returns:
         Log output as string, or None if collection failed
     """
+    if CONFIG_TESTING.ENABLE_LOG_COLLECTION:
+        logging.debug(f"\n{'=' * 60}")
+        if test_name:
+            logging.debug(f"Collecting logs for test: {test_name}")
+        else:
+            logging.debug("Collecting logs without a specific test name")
+        logging.debug(f"{'=' * 60}\n")
+    else:
+        logging.debug(
+            "Log collection is disabled. To enable, set ENABLE_LOG_COLLECTION to True in .env-testing"
+        )
+        return None
+
     cmd = ["ssh", ssh_target, f"kubectl logs -n {lines} {pod_name} -n {namespace}"]
 
     try:
@@ -69,18 +83,15 @@ def log_server_logs_on_failure(
         ssh_target: SSH target (hostname/alias)
         lines: Number of log lines to retrieve
     """
-    print(f"\n{'=' * 60}")
-    print(f"COLLECTING SERVER LOGS FOR FAILED TEST: {test_name}")
-    print(f"{'=' * 60}")
 
-    logs = collect_server_logs(pod_name, namespace, ssh_target, lines)
+    logs = collect_server_logs(pod_name, namespace, ssh_target, lines, test_name)
 
     if logs:
-        print(f"\nServer logs (last {lines} lines):")
-        print("-" * 40)
-        print(logs)
-        print("-" * 40)
+        logging.debug(f"\nServer logs (last {lines} lines):")
+        logging.debug("-" * 40)
+        logging.debug(logs)
+        logging.debug("-" * 40)
     else:
-        print("\nFailed to collect server logs")
+        logging.debug("\nFailed to collect server logs")
 
-    print(f"{'=' * 60}\n")
+    logging.debug(f"{'=' * 60}\n")
