@@ -116,6 +116,15 @@ def build_sdk(args) -> SDK:
     if args.platform_url:
         builder.set_platform_endpoint(args.platform_url)
 
+        # Auto-detect HTTP URLs and enable plaintext mode
+        if args.platform_url.startswith("http://") and (
+            not hasattr(args, "plaintext") or not args.plaintext
+        ):
+            logger.debug(
+                f"Auto-detected HTTP URL {args.platform_url}, enabling plaintext mode"
+            )
+            builder.use_insecure_plaintext_connection(True)
+
     if args.oidc_endpoint:
         builder.set_issuer_endpoint(args.oidc_endpoint)
 
@@ -140,7 +149,7 @@ def build_sdk(args) -> SDK:
             "Authentication required: provide --with-client-creds-file, --client-id and --client-secret, or --auth",
         )
 
-    if args.plaintext:
+    if hasattr(args, "plaintext") and args.plaintext:
         builder.use_insecure_plaintext_connection(True)
 
     if args.insecure:

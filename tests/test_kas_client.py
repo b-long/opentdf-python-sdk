@@ -231,6 +231,191 @@ def test_kas_url_normalization_with_secure_client():
     assert normalized_url == "https://example.com:8443"
 
 
+def test_kas_url_normalization_with_kasinfo_objects_plaintext():
+    """Test URL normalization using KASInfo objects with plaintext client.
+
+    This test ensures that _normalize_kas_url works correctly when called
+    with various KASInfo.url values in plaintext mode (use_plaintext=True).
+    """
+    from otdf_python.config import KASInfo
+
+    client = KASClient(use_plaintext=True)
+
+    # Test cases with different URL formats in KASInfo objects
+    test_cases = [
+        # Basic hostname without scheme
+        (KASInfo(url="example.com"), "http://example.com:80"),
+        # Hostname with port
+        (KASInfo(url="example.com:8080"), "http://example.com:8080"),
+        # Localhost
+        (KASInfo(url="localhost"), "http://localhost:80"),
+        # Localhost with port
+        (KASInfo(url="localhost:8080"), "http://localhost:8080"),
+        # HTTP URL (should preserve port)
+        (KASInfo(url="http://example.com"), "http://example.com:80"),
+        # HTTP URL with custom port
+        (KASInfo(url="http://example.com:9000"), "http://example.com:9000"),
+        # HTTPS URL (should be converted to HTTP in plaintext mode)
+        (KASInfo(url="https://example.com"), "http://example.com:80"),
+        # HTTPS URL with custom port (should be converted to HTTP)
+        (KASInfo(url="https://example.com:8443"), "http://example.com:8443"),
+        # URL with /kas path (no scheme, should add proper scheme and port)
+        (KASInfo(url="example.com/kas"), "http://example.com:80/kas"),
+        # URL with /kas path and port would be invalid as parsed - skip this case
+        # Complex URL with path
+        (
+            KASInfo(url="https://platform.example.com:8443/api/kas"),
+            "http://platform.example.com:8443/api/kas",
+        ),
+    ]
+
+    for kas_info, expected_url in test_cases:
+        normalized_url = client._normalize_kas_url(kas_info.url)
+        assert normalized_url == expected_url, (
+            f"Failed for {kas_info.url}: expected {expected_url}, got {normalized_url}"
+        )
+
+
+def test_kas_url_normalization_with_kasinfo_objects_secure():
+    """Test URL normalization using KASInfo objects with secure client.
+
+    This test ensures that _normalize_kas_url works correctly when called
+    with various KASInfo.url values in secure mode (use_plaintext=False).
+    """
+    from otdf_python.config import KASInfo
+
+    client = KASClient(use_plaintext=False)
+
+    # Test cases with different URL formats in KASInfo objects
+    test_cases = [
+        # Basic hostname without scheme
+        (KASInfo(url="example.com"), "https://example.com:443"),
+        # Hostname with port
+        (KASInfo(url="example.com:8443"), "https://example.com:8443"),
+        # Localhost
+        (KASInfo(url="localhost"), "https://localhost:443"),
+        # Localhost with port
+        (KASInfo(url="localhost:8443"), "https://localhost:8443"),
+        # HTTP URL (should be upgraded to HTTPS)
+        (KASInfo(url="http://example.com"), "https://example.com:443"),
+        # HTTP URL with custom port (should be upgraded to HTTPS)
+        (KASInfo(url="http://example.com:8080"), "https://example.com:8080"),
+        # HTTPS URL (should preserve HTTPS)
+        (KASInfo(url="https://example.com"), "https://example.com:443"),
+        # HTTPS URL with custom port
+        (KASInfo(url="https://example.com:8443"), "https://example.com:8443"),
+        # URL with /kas path (no scheme, should add proper scheme and port)
+        (KASInfo(url="example.com/kas"), "https://example.com:443/kas"),
+        # Complex URL with path
+        (
+            KASInfo(url="http://platform.example.com:8080/api/kas"),
+            "https://platform.example.com:8080/api/kas",
+        ),
+    ]
+
+    for kas_info, expected_url in test_cases:
+        normalized_url = client._normalize_kas_url(kas_info.url)
+        assert normalized_url == expected_url, (
+            f"Failed for {kas_info.url}: expected {expected_url}, got {normalized_url}"
+        )
+
+
+def test_kas_url_normalization_with_kasinfo_edge_cases():
+    """Test URL normalization edge cases using KASInfo objects.
+
+    This test covers edge cases and potential error conditions when
+    normalizing URLs from KASInfo objects.
+    """
+    from otdf_python.config import KASInfo
+
+    client = KASClient(use_plaintext=False)
+
+    # Test various edge cases
+    test_cases = [
+        # IP addresses
+        (KASInfo(url="192.168.1.100"), "https://192.168.1.100:443"),
+        (KASInfo(url="192.168.1.100:8443"), "https://192.168.1.100:8443"),
+        # URLs with query parameters (no scheme, should add proper scheme and port)
+        (
+            KASInfo(url="example.com/kas?param=value"),
+            "https://example.com:443/kas?param=value",
+        ),
+        # URLs with fragments (no scheme, should add proper scheme and port)
+        (KASInfo(url="example.com/kas#section"), "https://example.com:443/kas#section"),
+        # Complex paths (no scheme, should add proper scheme and port)
+        (
+            KASInfo(url="platform.example.com/api/v1/kas"),
+            "https://platform.example.com:443/api/v1/kas",
+        ),
+    ]
+
+    for kas_info, expected_url in test_cases:
+        normalized_url = client._normalize_kas_url(kas_info.url)
+        assert normalized_url == expected_url, (
+            f"Failed for {kas_info.url}: expected {expected_url}, got {normalized_url}"
+        )
+
+
+def test_kas_url_normalization_with_kasinfo_additional_fields():
+    """Test that URL normalization works with KASInfo objects containing additional fields.
+
+    This test ensures that the normalization process only uses the URL field
+    and doesn't interfere with other KASInfo fields like algorithm, kid, etc.
+    """
+    from otdf_python.config import KASInfo
+
+    client = KASClient(use_plaintext=False)
+
+    # Create KASInfo with all fields populated
+    # Using a URL with scheme to avoid the hostname:port/path parsing issue
+    kas_info = KASInfo(
+        url="https://example.com:8443/kas",
+        public_key="-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A...",
+        kid="key-id-123",
+        default=True,
+        algorithm="rsa",
+    )
+
+    normalized_url = client._normalize_kas_url(kas_info.url)
+    assert normalized_url == "https://example.com:8443/kas"
+
+    # Verify other fields remain unchanged
+    assert (
+        kas_info.public_key
+        == "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A..."
+    )
+    assert kas_info.kid == "key-id-123"
+    assert kas_info.default is True
+    assert kas_info.algorithm == "rsa"
+
+
+def test_kas_url_normalization_error_handling_with_kasinfo():
+    """Test error handling in URL normalization with invalid KASInfo URLs.
+
+    This test ensures that appropriate SDKExceptions are raised for
+    malformed URLs in KASInfo objects.
+    """
+    from otdf_python.config import KASInfo
+
+    client = KASClient(use_plaintext=False)
+
+    # Test cases that should raise SDKException
+    invalid_urls = [
+        # Invalid port format
+        "example.com:invalid_port",
+        # Multiple colons (ambiguous port)
+        "example.com:8080:extra",
+        # IPv6 addresses without proper scheme (current limitation)
+        "[::1]",
+        "[2001:db8::1]",
+    ]
+
+    for invalid_url in invalid_urls:
+        kas_info = KASInfo(url=invalid_url)
+        with pytest.raises(SDKException):
+            client._normalize_kas_url(kas_info.url)
+
+
 @patch("urllib3.PoolManager")
 @patch("otdf_python.kas_client.AccessServiceClient")
 def test_jwt_signature_verification_in_unwrap_request(

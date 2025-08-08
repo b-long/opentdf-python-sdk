@@ -53,16 +53,50 @@ class SDK(AbstractContextManager):
         from otdf_python.config import TDFConfig, KASInfo
 
         platform_url = self.platform_url or "https://default.kas.example.com"
+
+        # Get use_plaintext setting - allow override via kwargs, fall back to SDK setting
+        use_plaintext = kwargs.pop(
+            "use_plaintext", getattr(self, "_use_plaintext", False)
+        )
+
         # Construct proper KAS URL by appending /kas to platform URL, like Java SDK
         # Include explicit port for HTTPS to match otdfctl behavior
         from urllib.parse import urlparse
 
         parsed_url = urlparse(platform_url)
-        if parsed_url.scheme == "https" and parsed_url.port is None:
-            # Add explicit port 443 for HTTPS URLs without port
-            kas_url = f"{parsed_url.scheme}://{parsed_url.hostname}:443{parsed_url.path.rstrip('/')}/kas"
+
+        # Determine scheme and default port based on use_plaintext setting
+        if use_plaintext:
+            target_scheme = "http"
+            default_port = 80
         else:
-            kas_url = f"{platform_url.rstrip('/')}/kas"
+            target_scheme = "https"
+            default_port = 443
+
+        # Use the original scheme if it exists, otherwise apply target_scheme
+        # This preserves the platform URL's scheme when it's already appropriate
+        original_scheme = parsed_url.scheme
+        if original_scheme in ("http", "https"):
+            # If platform URL already has a scheme, check if it's compatible with use_plaintext
+            if use_plaintext and original_scheme == "http":
+                scheme = "http"
+            elif not use_plaintext and original_scheme == "https":
+                scheme = "https"
+            else:
+                # Scheme conflicts with use_plaintext setting, apply target_scheme
+                scheme = target_scheme
+        else:
+            # No scheme or unknown scheme, apply target_scheme
+            scheme = target_scheme
+
+        # Handle URL construction with proper scheme and port
+        if parsed_url.port is None:
+            # Add explicit port if not present
+            kas_url = f"{scheme}://{parsed_url.hostname}:{default_port}{parsed_url.path.rstrip('/')}/kas"
+        else:
+            # Use existing port with the determined scheme
+            kas_url = f"{scheme}://{parsed_url.hostname}:{parsed_url.port}{parsed_url.path.rstrip('/')}/kas"
+
         kas_info = KASInfo(url=kas_url, default=True)
         # Accept user override for kas_info_list if provided
         kas_info_list = kwargs.pop("kas_info_list", None)
@@ -105,6 +139,7 @@ class SDK(AbstractContextManager):
             platform_url=None,
             token_source=None,
             sdk_ssl_verify=True,
+            use_plaintext=False,
             auth_headers: dict | None = None,
         ):
             """
@@ -114,6 +149,7 @@ class SDK(AbstractContextManager):
                 platform_url: URL of the platform
                 token_source: Function that returns an authentication token
                 sdk_ssl_verify: Whether to verify SSL certificates
+                use_plaintext: Whether to use plaintext HTTP connections instead of HTTPS
                 auth_headers: Dictionary of authentication headers to include in requests
             """
             from .kas_client import KASClient
@@ -122,9 +158,11 @@ class SDK(AbstractContextManager):
                 kas_url=platform_url,
                 token_source=token_source,
                 verify_ssl=sdk_ssl_verify,
+                use_plaintext=use_plaintext,
             )
-            # Store the parameters for potential use (though delegating to KASClient)
+            # Store the parameters for potential use
             self._sdk_ssl_verify = sdk_ssl_verify
+            self._use_plaintext = use_plaintext
             self._auth_headers = auth_headers
 
         def get_ec_public_key(self, kas_info: Any, curve: Any) -> Any:
@@ -256,14 +294,17 @@ class SDK(AbstractContextManager):
             Returns:
                 KAS: The KAS interface implementation
             """
-            # Return a KAS implementation with the SDK's platform URL
+            # Return a KAS implementation with the SDK's platform URL and settings
             # This is where we would get the platform URL and token source from the SDK
             from .sdk_builder import SDKBuilder
 
             platform_url = SDKBuilder.get_platform_url()
 
-            # Create the KAS implementation with the platform URL
-            kas_impl = SDK.KAS(platform_url=platform_url)
+            # Create the KAS implementation with the platform URL and use_plaintext setting from SDK
+            kas_impl = SDK.KAS(
+                platform_url=platform_url,
+                use_plaintext=getattr(self, "_use_plaintext", False),
+            )
             return kas_impl
 
         def close(self):
@@ -281,6 +322,7 @@ class SDK(AbstractContextManager):
         platform_services_client: ProtocolClient | None = None,
         platform_url: str | None = None,
         ssl_verify: bool = True,
+        use_plaintext: bool = False,
     ):
         """
         Initializes a new SDK instance.
@@ -292,6 +334,7 @@ class SDK(AbstractContextManager):
             platform_services_client: Optional client for platform services
             platform_url: Optional platform base URL
             ssl_verify: Whether to verify SSL certificates (default: True)
+            use_plaintext: Whether to use HTTP instead of HTTPS (default: False)
         """
         self.services = services
         self.trust_manager = trust_manager
@@ -299,6 +342,7 @@ class SDK(AbstractContextManager):
         self.platform_services_client = platform_services_client
         self.platform_url = platform_url
         self.ssl_verify = ssl_verify
+        self._use_plaintext = use_plaintext
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Clean up resources when exiting context manager"""

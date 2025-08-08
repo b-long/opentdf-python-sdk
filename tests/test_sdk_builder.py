@@ -18,7 +18,7 @@ def test_sdk_builder_init():
     builder = SDKBuilder()
     assert builder.platform_endpoint is None
     assert builder.oauth_config is None
-    assert builder.use_plain_text is False
+    assert builder.use_plaintext is False
     assert builder.ssl_context is None
     assert builder.auth_token is None
 
@@ -29,7 +29,7 @@ def test_sdk_builder_new_builder():
     assert isinstance(builder, SDKBuilder)
     assert builder.platform_endpoint is None
     assert builder.oauth_config is None
-    assert builder.use_plain_text is False
+    assert builder.use_plaintext is False
 
 
 def test_platform_endpoint():
@@ -49,8 +49,8 @@ def test_platform_endpoint():
     result = builder.set_platform_endpoint("https://secure.example.com")
     assert builder.platform_endpoint == "https://secure.example.com"
 
-    # Test with use_plain_text=True
-    builder.use_plain_text = True
+    # Test with use_plaintext=True
+    builder.use_plaintext = True
     result = builder.set_platform_endpoint("example.net")
     assert builder.platform_endpoint == "http://example.net"
 
@@ -65,12 +65,12 @@ def test_use_insecure_plaintext_connection():
 
     result = builder.use_insecure_plaintext_connection(True)
     assert result is builder  # Returns self for chaining
-    assert builder.use_plain_text is True
+    assert builder.use_plaintext is True
     assert builder.platform_endpoint == "http://secure.example.com"
 
     # Change back to secure
     result = builder.use_insecure_plaintext_connection(False)
-    assert builder.use_plain_text is False
+    assert builder.use_plaintext is False
     assert builder.platform_endpoint == "https://secure.example.com"
 
 

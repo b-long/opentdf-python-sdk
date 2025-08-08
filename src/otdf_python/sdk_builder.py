@@ -41,7 +41,7 @@ class SDKBuilder:
         self.platform_endpoint: str | None = None
         self.issuer_endpoint: str | None = None
         self.oauth_config: OAuthConfig | None = None
-        self.use_plain_text: bool = False
+        self.use_plaintext: bool = False
         self.insecure_skip_verify: bool = False
         self.ssl_context: ssl.SSLContext | None = None
         self.auth_token: str | None = None
@@ -115,7 +115,7 @@ class SDKBuilder:
         if endpoint and not (
             endpoint.startswith("http://") or endpoint.startswith("https://")
         ):
-            if self.use_plain_text:
+            if self.use_plaintext:
                 endpoint = f"http://{endpoint}"
             else:
                 endpoint = f"https://{endpoint}"
@@ -143,23 +143,26 @@ class SDKBuilder:
         return self
 
     def use_insecure_plaintext_connection(
-        self, use_plain_text: bool = True
+        self, use_plaintext: bool = True
     ) -> "SDKBuilder":
         """
         Configures whether to use plain text (HTTP) connection instead of HTTPS.
         Args:
-            use_plain_text: Whether to use plain text connection
+            use_plaintext: Whether to use plain text connection
         Returns:
             self: The builder instance for chaining
         """
-        self.use_plain_text = use_plain_text
+        self.use_plaintext = use_plaintext
 
         # Update platform endpoint protocol if necessary
         if self.platform_endpoint:
-            if use_plain_text and self.platform_endpoint.startswith("https://"):
+            if use_plaintext and self.platform_endpoint.startswith("https://"):
                 self.platform_endpoint = f"http://{self.platform_endpoint[8:]}"
-            elif not use_plain_text and self.platform_endpoint.startswith("http://"):
+            elif not use_plaintext and self.platform_endpoint.startswith("http://"):
                 self.platform_endpoint = f"https://{self.platform_endpoint[7:]}"
+
+            # Update the class variable as well since kas() method uses it
+            SDKBuilder._platform_url = self.platform_endpoint
 
         return self
 
@@ -407,6 +410,7 @@ class SDKBuilder:
                     platform_url=platform_url,
                     token_source=token_source,
                     sdk_ssl_verify=self._ssl_verify,
+                    use_plaintext=self._builder.use_plaintext,
                 )
                 return kas_impl
 
@@ -441,4 +445,5 @@ class SDKBuilder:
             auth_interceptor=auth_interceptor,
             platform_url=self.platform_endpoint,
             ssl_verify=not self.insecure_skip_verify,
+            use_plaintext=getattr(self, "use_plaintext", False),
         )

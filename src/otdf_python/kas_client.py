@@ -57,12 +57,9 @@ class KASClient:
             self._dpop_public_key
         )
 
-    def _normalize_kas_url(self, url):
+    def _normalize_kas_url(self, url: str) -> str:
         """
         Normalize KAS URLs based on client security settings.
-
-        This method mirrors the Java SDK's AddressNormalizer.normalizeAddress
-        method for consistent URL handling across SDKs.
 
         Args:
             url: The KAS URL to normalize
@@ -86,14 +83,14 @@ class KASClient:
             # We have a host, handle the existing scheme
             return self._handle_existing_scheme(parsed)
 
-    def _handle_missing_scheme(self, url):
+    def _handle_missing_scheme(self, url: str) -> str:
         """Handle URLs without scheme by adding appropriate protocol and port."""
         scheme = "http" if self.use_plaintext else "https"
         default_port = 80 if self.use_plaintext else 443
 
         try:
-            # If there's a colon, treat it as hostname:port
-            if ":" in url:
+            # Check if we have a hostname:port format (colon before any slash)
+            if ":" in url and ("/" not in url or url.index(":") < url.index("/")):
                 host, port_str = url.split(":", 1)
                 try:
                     port = int(port_str)
@@ -103,14 +100,20 @@ class KASClient:
                         f"error trying to create URL for host and port [{url}]"
                     )
             else:
-                # Just a hostname, add default port
-                return f"{scheme}://{url}:{default_port}"
+                # Hostname with or without path, add default port
+                if "/" in url:
+                    # Split at first slash to separate hostname from path
+                    host, path = url.split("/", 1)
+                    return f"{scheme}://{host}:{default_port}/{path}"
+                else:
+                    # Just a hostname, add default port
+                    return f"{scheme}://{url}:{default_port}"
         except Exception as e:
             raise SDKException(
                 f"error trying to create URL for host and port [{url}]", e
             )
 
-    def _handle_existing_scheme(self, parsed):
+    def _handle_existing_scheme(self, parsed) -> str:
         """Handle URLs with existing scheme by normalizing protocol and port."""
         # Force the scheme based on client security settings
         scheme = "http" if self.use_plaintext else "https"
@@ -349,23 +352,27 @@ class KASClient:
             except Exception as e:
                 logging.warning(f"Failed to get access token: {e}")
 
-        # Debug logging to track SSL verification setting
-        logging.info(f"KAS client verify_ssl setting: {self.verify_ssl}")
+        # Debug logging
+        logging.info(
+            f"KAS client settings for public key retrieval {self.verify_ssl=} {self.use_plaintext=} {kas_info.url=}"
+        )
 
         # Create HTTP client with SSL verification configuration
         import urllib3
 
         if self.verify_ssl:
             # Standard SSL verification
-            logging.info("Using SSL verification enabled HTTP client")
+            logging.info(
+                "Using SSL verification enabled HTTP client for public key retrieval"
+            )
             http_client = urllib3.PoolManager()
         else:
             # Disable SSL verification warnings and certificate verification
-            logging.info("Using SSL verification disabled HTTP client")
-            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-            http_client = urllib3.PoolManager(
-                cert_reqs="CERT_NONE", assert_hostname=False
+            logging.info(
+                "Using SSL verification disabled HTTP client for public key retrieval"
             )
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            http_client = urllib3.PoolManager(cert_reqs="CERT_NONE")
 
         try:
             # For Connect RPC, we need to use the base platform URL without /kas
@@ -377,7 +384,7 @@ class KASClient:
                 connect_rpc_base_url = connect_rpc_base_url[:-4]  # Remove /kas suffix
 
             logging.info(
-                f"Creating Connect RPC client for base URL: {connect_rpc_base_url}"
+                f"Creating Connect RPC client for base URL: {connect_rpc_base_url}, for public key retrieval"
             )
             # Create Connect RPC client with configured HTTP client using Connect protocol
             # Note: gRPC protocol is not supported with urllib3, use default Connect protocol
@@ -598,8 +605,10 @@ class KASClient:
             except Exception as e:
                 logging.warning(f"Failed to get access token: {e}")
 
-        # Debug logging to track SSL verification setting
-        logging.info(f"KAS client verify_ssl setting for unwrap: {self.verify_ssl}")
+        # Debug logging
+        logging.info(
+            f"KAS client settings for unwrap {self.verify_ssl=} {self.use_plaintext=} {key_access.url=}"
+        )
 
         # Create HTTP client with SSL verification configuration
         import urllib3
@@ -612,9 +621,7 @@ class KASClient:
             # Disable SSL verification warnings and certificate verification
             logging.info("Using SSL verification disabled HTTP client for unwrap")
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-            http_client = urllib3.PoolManager(
-                cert_reqs="CERT_NONE", assert_hostname=False
-            )
+            http_client = urllib3.PoolManager(cert_reqs="CERT_NONE")
 
         # Create Connect RPC client with configured HTTP client
         # For Connect RPC, we need to use the base platform URL without /kas
@@ -625,7 +632,9 @@ class KASClient:
         if kas_service_url.endswith("/kas"):
             kas_service_url = kas_service_url[:-4]  # Remove /kas suffix
 
-        logging.info(f"Creating Connect RPC client for base URL: {kas_service_url}")
+        logging.info(
+            f"Creating Connect RPC client for base URL: {kas_service_url}, for unwrap"
+        )
         # Note: gRPC protocol is not supported with urllib3, use default Connect protocol
         client = AccessServiceClient(kas_service_url, http_client=http_client)
 
