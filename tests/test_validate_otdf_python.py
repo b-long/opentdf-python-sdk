@@ -32,7 +32,7 @@ def _get_sdk() -> SDK:
                 CONFIG_TDF.OPENTDF_CLIENT_ID,
                 CONFIG_TDF.OPENTDF_CLIENT_SECRET,
             )
-            .use_insecure_plaintext_connection(False)
+            .use_insecure_plaintext_connection(True)
             .use_insecure_skip_verify(CONFIG_TDF.INSECURE_SKIP_VERIFY)
             .build()
         )

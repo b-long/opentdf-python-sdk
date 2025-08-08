@@ -277,11 +277,8 @@ def _run_otdfctl_inspect(
 ) -> str:
     """Run otdfctl inspect on a TDF file and return the output."""
     inspect_flags = []
-    if platform_url.startswith("http://"):
-        inspect_flags = ["--plaintext"]
-    else:
-        if CONFIG_TDF.INSECURE_SKIP_VERIFY:
-            inspect_flags = ["--tls-no-verify"]
+    if platform_url.startswith("https://") and CONFIG_TDF.INSECURE_SKIP_VERIFY:
+        inspect_flags = ["--tls-no-verify"]
     otdfctl_inspect_cmd = [
         "otdfctl",
         "inspect",
