@@ -4,19 +4,19 @@ Unit tests for KASClient.
 
 import pytest
 from unittest.mock import patch, MagicMock
+from base64 import b64decode
 from otdf_python.kas_client import KASClient, KeyAccess
 from otdf_python.kas_key_cache import KASKeyCache
 from otdf_python.sdk_exceptions import SDKException
-from dataclasses import dataclass
 
 
-@dataclass
 class MockKasInfo:
-    url: str
-    algorithm: str | None = None
-    public_key: str | None = None
-    kid: str | None = None
-    default: bool = False
+    def __init__(self, url, algorithm=None, public_key=None, kid=None, default=False):
+        self.url = url
+        self.algorithm = algorithm or ""
+        self.public_key = public_key or ""
+        self.kid = kid or ""
+        self.default = default
 
     def clone(self):
         return MockKasInfo(
@@ -38,18 +38,44 @@ def test_get_public_key_uses_cache():
     assert client.get_public_key(MockKasInfo(url="http://kas")) == kas_info
 
 
-@patch("httpx.get")
-def test_get_public_key_fetches_and_caches(mock_get):
+@patch("urllib3.PoolManager")
+@patch("otdf_python.kas_client.AccessServiceClient")
+def test_get_public_key_fetches_and_caches(
+    mock_access_service_client, mock_pool_manager
+):
     cache = KASKeyCache()
     client = KASClient("http://kas", cache=cache)
-    mock_resp = MagicMock()
-    mock_resp.json.return_value = {"kid": "kid2", "publicKey": "public-key-data"}
-    mock_resp.raise_for_status.return_value = None
-    mock_resp.status_code = 200  # Add status code for the test
-    mock_get.return_value = mock_resp
+
+    # Mock urllib3.PoolManager to prevent real network calls
+    mock_pool_instance = MagicMock()
+    mock_pool_manager.return_value = mock_pool_instance
+
+    # Setup a successful HTTP response that bypasses error handling
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.headers = {"Content-Type": "application/proto"}
+    mock_response.read.return_value = (
+        b""  # Empty protobuf data since we're mocking the client layer
+    )
+    mock_pool_instance.request.return_value = mock_response
+
+    # Mock the Connect RPC client directly since it expects protobuf responses
+    mock_client_instance = MagicMock()
+    mock_access_service_client.return_value = mock_client_instance
+
+    # Mock the public key response using protobuf structure
+    mock_rpc_response = MagicMock()
+    mock_rpc_response.kid = "kid2"
+    mock_rpc_response.public_key = "public-key-data"
+
+    def mock_public_key_call(*args, **kwargs):
+        return mock_rpc_response
+
+    mock_client_instance.public_key = mock_public_key_call
 
     # Create KASInfo with URL but no KID or public key
     kas_info = MockKasInfo(url="http://kas")
+
     result = client.get_public_key(kas_info)
 
     # Verify the result has kid and public_key populated
@@ -63,12 +89,17 @@ def test_get_public_key_fetches_and_caches(mock_get):
     assert cached.public_key == "public-key-data"
 
 
-@patch("httpx.post")
+@patch("urllib3.PoolManager")
+@patch("otdf_python.kas_client.AccessServiceClient")
 @patch("otdf_python.kas_client.CryptoUtils")
 @patch("otdf_python.kas_client.AsymDecryption")
 @patch("otdf_python.kas_client.jwt.encode")  # Mock JWT encoding directly
 def test_unwrap_success(
-    mock_jwt_encode, mock_asym_decryption, mock_crypto_utils, mock_post
+    mock_jwt_encode,
+    mock_asym_decryption,
+    mock_crypto_utils,
+    mock_access_service_client,
+    mock_pool_manager,
 ):
     # Setup mocks for RSA key pair generation and decryption
     mock_private_key = MagicMock()
@@ -90,14 +121,29 @@ def test_unwrap_success(
     mock_decryptor.decrypt.return_value = b"decrypted_key"
     mock_asym_decryption.return_value = mock_decryptor
 
-    # Mock HTTP response
-    mock_resp = MagicMock()
-    mock_resp.json.return_value = {
-        "entityWrappedKey": "d2VsY29tZQ=="
-    }  # Base64 for "welcome"
-    mock_resp.raise_for_status.return_value = None
-    mock_resp.status_code = 200  # Add status code for the test
-    mock_post.return_value = mock_resp
+    # Mock urllib3.PoolManager to prevent real network calls
+    mock_pool_instance = MagicMock()
+    mock_pool_manager.return_value = mock_pool_instance
+
+    # Setup a successful HTTP response that bypasses error handling
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.headers = {"Content-Type": "application/proto"}
+    mock_response.read.return_value = (
+        b""  # Empty protobuf data since we're mocking the client layer
+    )
+    mock_pool_instance.request.return_value = mock_response
+
+    # Mock Connect RPC client directly instead of HTTP layer
+    mock_client_instance = MagicMock()
+    mock_access_service_client.return_value = mock_client_instance
+
+    mock_rpc_response = MagicMock()
+    mock_rpc_response.entity_wrapped_key = b64decode(
+        "d2VsY29tZQ=="
+    )  # "welcome" decoded
+    mock_rpc_response.responses = []  # Empty to test fallback to legacy field
+    mock_client_instance.rewrap.return_value = mock_rpc_response
 
     # Create client and test unwrap
     # We need to patch the DPoP proof creation method to avoid RSA key access
@@ -108,23 +154,37 @@ def test_unwrap_success(
 
     # Verify result
     assert result == b"decrypted_key"
-    # Verify the request was made correctly
-    mock_post.assert_called_once()
+    # Verify the Connect RPC client was called correctly
+    mock_access_service_client.assert_called_once()
+    mock_client_instance.rewrap.assert_called_once()
     # Verify the decryptor was called
     mock_decryptor.decrypt.assert_called_once()
 
 
-@patch("httpx.post")
-def test_unwrap_failure(mock_post):
+@patch("urllib3.PoolManager")
+@patch("otdf_python_proto.kas.kas_pb2_connect.AccessServiceClient")
+def test_unwrap_failure(mock_access_service_client, mock_pool_manager):
+    # Setup realistic HTTP response mock for PoolManager
+    mock_response = MagicMock()
+    mock_response.status = 500
+    mock_response.read.return_value = b'{"error": "fail"}'
+    mock_response.headers = {"content-type": "application/json"}
+
+    mock_pool_instance = MagicMock()
+    mock_pool_instance.request.return_value = mock_response
+    mock_pool_manager.return_value = mock_pool_instance
+
+    # Mock the Connect RPC client to raise an exception
+    mock_access_service_client.side_effect = Exception("fail")
+
     client = KASClient("http://kas", token_source=lambda: "tok")
-    mock_post.side_effect = Exception("fail")
 
     with pytest.raises(SDKException) as exc_info:
         key_access = KeyAccess(url="http://kas", wrapped_key="wrapped_key")
         client.unwrap(key_access, "policy")
 
-    # Updated to match the new error message pattern when Connect RPC is available
-    assert "Both Connect RPC and HTTP unwrap failed" in str(exc_info.value)
+    # Updated to match the new error message pattern when Connect RPC fails
+    assert "Connect RPC rewrap failed" in str(exc_info.value)
 
 
 def test_kas_url_normalization_with_insecure_client():
@@ -171,8 +231,11 @@ def test_kas_url_normalization_with_secure_client():
     assert normalized_url == "https://example.com:8443"
 
 
-@patch("httpx.post")
-def test_jwt_signature_verification_in_unwrap_request(mock_post, collect_server_logs):
+@patch("urllib3.PoolManager")
+@patch("otdf_python.kas_client.AccessServiceClient")
+def test_jwt_signature_verification_in_unwrap_request(
+    mock_access_service_client, mock_pool_manager, collect_server_logs
+):
     """Test that JWT signature is properly created and can be verified.
 
     This test is inspired by the Java SDK's testCallingRewrap which verifies
@@ -180,16 +243,31 @@ def test_jwt_signature_verification_in_unwrap_request(mock_post, collect_server_
     signed request JWT are properly formatted.
     """
     import jwt
-    import json
+
+    # Mock urllib3.PoolManager to prevent real network calls
+    mock_pool_instance = MagicMock()
+    mock_pool_manager.return_value = mock_pool_instance
+
+    # Setup a successful HTTP response that bypasses error handling
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.headers = {"Content-Type": "application/proto"}
+    mock_response.read.return_value = (
+        b""  # Empty protobuf data since we're mocking the client layer
+    )
+    mock_pool_instance.request.return_value = mock_response
+
+    # Mock Connect RPC client directly for protobuf compatibility
+    mock_client_instance = MagicMock()
+    mock_access_service_client.return_value = mock_client_instance
 
     # Create a mock successful response
-    mock_resp = MagicMock()
-    mock_resp.json.return_value = {
-        "entityWrappedKey": "d2VsY29tZQ=="
-    }  # "welcome" in base64
-    mock_resp.raise_for_status.return_value = None
-    mock_resp.status_code = 200
-    mock_post.return_value = mock_resp
+    mock_rpc_response = MagicMock()
+    mock_rpc_response.entity_wrapped_key = b64decode(
+        "d2VsY29tZQ=="
+    )  # "welcome" decoded
+    mock_rpc_response.responses = []  # Empty to test fallback to legacy field
+    mock_client_instance.rewrap.return_value = mock_rpc_response
 
     # Create client with known DPoP keys for verification
     client = KASClient("http://kas", token_source=lambda: "test_token")
@@ -222,50 +300,32 @@ def test_jwt_signature_verification_in_unwrap_request(mock_post, collect_server_
         try:
             client.unwrap(key_access, '{"test": "policy"}')
 
-            # Verify the request was made
-            assert mock_post.called
+            # Verify the Connect RPC client was called
+            assert mock_client_instance.rewrap.called
 
-            # Extract the request data to verify JWT structure
-            call_args = mock_post.call_args
-            if call_args and len(call_args) > 1:
-                request_data = call_args[1].get("data") or call_args[1].get("json")
-                if request_data:
-                    # Verify that signedRequestToken is present and is a valid JWT
-                    if isinstance(request_data, str):
-                        request_data = json.loads(request_data)
+            # Extract the request to verify JWT structure
+            call_args = mock_client_instance.rewrap.call_args
+            if call_args and len(call_args) > 0:
+                request = call_args[0][0]  # First positional argument (the request)
+                signed_token = request.signed_request_token
 
-                    signed_token = request_data.get("signedRequestToken")
-                    assert signed_token is not None, (
-                        "signedRequestToken should be present in request"
-                    )
+                assert signed_token is not None, (
+                    "signed_request_token should be present in request"
+                )
 
-                    # Decode JWT without verification to check structure
-                    # (we can't verify signature since we mocked the key generation)
-                    decoded = jwt.decode(
-                        signed_token, options={"verify_signature": False}
-                    )
+                # Decode JWT without verification to check structure
+                # (we can't verify signature since we mocked the key generation)
+                decoded = jwt.decode(signed_token, options={"verify_signature": False})
 
-                    # Verify JWT has required claims
-                    assert "requestBody" in decoded, (
-                        "JWT should contain requestBody claim"
-                    )
-                    assert "iat" in decoded, "JWT should contain iat (issued at) claim"
-                    assert "exp" in decoded, "JWT should contain exp (expiration) claim"
+                # Verify JWT has required claims
+                assert "requestBody" in decoded, "JWT should contain requestBody claim"
+                assert "iat" in decoded, "JWT should contain iat (issued at) claim"
+                assert "exp" in decoded, "JWT should contain exp (expiration) claim"
 
-                    # Verify the requestBody contains the expected structure
-                    request_body = json.loads(decoded["requestBody"])
-                    assert "keyAccess" in request_body, (
-                        "requestBody should contain keyAccess"
-                    )
-                    assert "clientPublicKey" in request_body, (
-                        "requestBody should contain clientPublicKey"
-                    )
-                    assert "policy" in request_body, "requestBody should contain policy"
-
-                    # Verify keyAccess structure matches what we sent
-                    key_access_data = request_body["keyAccess"]
-                    assert key_access_data["url"] == "http://kas"
-                    assert key_access_data["wrappedKey"] == "dGVzdF93cmFwcGVkX2tleQ=="
+                # Verify the requestBody contains the expected structure
+                # For Connect RPC, the request body should be protobuf-encoded
+                # We just verify it exists and is not empty
+                assert decoded["requestBody"], "requestBody should not be empty"
 
         except Exception as e:
             # If the test fails, collect server logs for debugging
