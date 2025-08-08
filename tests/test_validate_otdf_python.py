@@ -14,6 +14,7 @@ from otdf_python.sdk_builder import SDKBuilder
 from otdf_python.sdk import SDK
 from otdf_python.tdf import TDFReaderConfig
 from tests.config_pydantic import CONFIG_TDF
+import pytest
 
 # Set up detailed logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
@@ -109,6 +110,7 @@ def verify_encrypt_str() -> None:
         ) from e
 
 
+@pytest.mark.integration
 def test_verify_encrypt_str():
     """Run the string encryption verification test."""
     verify_encrypt_str()
@@ -131,6 +133,7 @@ def verify_encrypt_file() -> None:
         ) from e
 
 
+@pytest.mark.integration
 def test_verify_encrypt_file():
     """Run the file encryption verification test."""
     verify_encrypt_file()
@@ -174,6 +177,7 @@ def verify_encrypt_decrypt_file() -> None:
         ) from e
 
 
+@pytest.mark.integration
 def test_verify_encrypt_decrypt_file():
     """Run the encrypt/decrypt verification test."""
     verify_encrypt_decrypt_file()
