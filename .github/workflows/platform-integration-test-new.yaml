@@ -138,7 +138,8 @@ jobs:
           INSECURE_SKIP_VERIFY: "TRUE"
         run: |
           uv sync
-          uv run pytest --ignore=tests/test_validate_otdf_python.py
+          # Skip the tests marked "integration"
+          uv run pytest -m "not integration" --tb=short -vv tests
         shell: bash
 
 
