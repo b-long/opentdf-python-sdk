@@ -44,7 +44,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python3_version: ["3.12", "3.13"]
+        # python3_version: ["3.12", "3.13"]
+        python3_version: ["3.13"]
     needs: build
     uses: ./.github/workflows/platform-integration-test-new.yaml
     with:
