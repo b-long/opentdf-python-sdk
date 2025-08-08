@@ -121,12 +121,11 @@ jobs:
           otdfctl encrypt -o secret.txt.tdf --host http://localhost:8080 --tls-no-verify --with-client-creds-file creds.json secret.txt
         shell: bash
 
-      - name: Install uv
+      - name: Set up uv
         uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
-          python-version: "3.13"
-
+          cache-dependency-glob: "uv.lock"
 
       - name: Validate the Python SDK
         env:

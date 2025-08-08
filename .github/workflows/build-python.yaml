@@ -15,19 +15,16 @@ jobs:
       - name: Checkout this repo
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: '3.12'
-
-      - name: Install uv
-        run: pip install uv
-        shell: bash
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
       - name: Build otdf-python wheel using uv
         run: |
-          uv pip install --system build
-          python -m build --wheel
+          uv sync --frozen
+          uv build
         shell: bash
 
       - name: Find built wheel
