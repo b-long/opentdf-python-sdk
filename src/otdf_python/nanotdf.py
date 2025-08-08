@@ -51,7 +51,7 @@ class NanoTDF:
         return PolicyObject(uuid=policy_uuid, body=body)
 
     def _serialize_policy_object(self, obj):
-        """Custom serializer for policy objects to match otdfctl format."""
+        """Custom NanoTDF serializer to convert to compatible JSON format."""
         from otdf_python.policy_object import PolicyBody, AttributeObject
 
         if isinstance(obj, PolicyBody):
@@ -123,7 +123,7 @@ class NanoTDF:
         return policy_body, policy_type
 
     def _prepare_encryption_key(self, config: NanoTDFConfig) -> bytes:
-        """Get encryption key from config or generate a new one."""
+        """Get encryption key from config if provided as hex string, otherwise generate a new random key."""
         key = None
         if (
             config.cipher
@@ -438,7 +438,7 @@ class NanoTDF:
         return key, config
 
     def create_nanotdf(self, data: bytes, config: dict | NanoTDFConfig) -> bytes:
-        """Legacy method for backwards compatibility with existing tests"""
+        """Create a NanoTDF from input data using the provided configuration."""
         if len(data) > self.K_MAX_TDF_SIZE:
             raise NanoTDFMaxSizeLimit("exceeds max size for nano tdf")
 
@@ -512,7 +512,7 @@ class NanoTDF:
     def read_nanotdf(
         self, nanotdf_bytes: bytes, config: dict | NanoTDFConfig | None = None
     ) -> bytes:
-        """Legacy method for backwards compatibility with existing tests"""
+        """Read and decrypt a NanoTDF, returning the original plaintext data."""
         output = BytesIO()
         from otdf_python.header import Header  # Local import to avoid circular import
 

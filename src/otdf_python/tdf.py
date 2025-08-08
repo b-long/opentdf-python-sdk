@@ -150,7 +150,7 @@ class TDF:
             return _json.dumps(policy, default=self._serialize_policy_object)
 
     def _serialize_policy_object(self, obj):
-        """Custom serializer for policy objects to match otdfctl format."""
+        """Custom TDF serializer to convert to compatible JSON format."""
         from otdf_python.policy_object import PolicyBody, AttributeObject
 
         if isinstance(obj, PolicyBody):

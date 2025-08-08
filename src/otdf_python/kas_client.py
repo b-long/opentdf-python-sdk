@@ -692,5 +692,5 @@ class KASClient:
             raise SDKException(f"Connect RPC rewrap failed: {e}")
 
     def get_key_cache(self) -> KASKeyCache:
-        """Returns the key cache"""
+        """Returns the KAS key cache used for storing and retrieving encryption keys."""
         return self.cache

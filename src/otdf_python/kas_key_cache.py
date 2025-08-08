@@ -38,7 +38,7 @@ class KASKeyCache:
             self._cache[cache_key] = kas_info
 
     def set(self, key, value):
-        """Backwards compatibility method"""
+        """Store a key-value pair in the cache."""
         with self._lock:
             self._cache[key] = value
 

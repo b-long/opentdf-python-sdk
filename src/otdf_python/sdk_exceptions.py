@@ -9,8 +9,8 @@ class AutoConfigureException(SDKException):
         super().__init__(message, cause)
 
 
-class KasBadRequestException(SDKException):
-    """Thrown when the KAS returns a bad request response."""
+class KASBadRequestException(SDKException):
+    """Thrown when the KAS returns a bad request response or other client request errors."""
 
     def __init__(self, message):
         super().__init__(message)
