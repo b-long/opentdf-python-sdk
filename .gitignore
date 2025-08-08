@@ -1,8 +1,3 @@
-#### Start project specific git exclusions
-otdf_python/
-
-#### End project specific git exclusions
-
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python
 
@@ -129,7 +124,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+.env*
 .venv
 env/
 venv/
