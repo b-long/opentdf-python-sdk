@@ -24,7 +24,9 @@ if not platform_url:
 
 @pytest.mark.integration
 def test_cli_decrypt_otdfctl_tdf():
-    """Integration test to decrypt .tdf files created by otdfctl"""
+    """
+    Test that the Python CLI can successfully decrypt TDF files created by otdfctl.
+    """
 
     check_for_otdfctl()
 
@@ -129,7 +131,9 @@ def test_cli_decrypt_otdfctl_tdf():
 
 @pytest.mark.integration
 def test_otdfctl_decrypt_comparison(collect_server_logs):
-    """Integration test that exercises otdfctl decrypt to compare with Python CLI decrypt"""
+    """
+    Test comparative decryption between otdfctl and Python CLI on the same TDF.
+    """
     check_for_otdfctl()
 
     # Create temporary directory for work
@@ -297,7 +301,9 @@ def test_otdfctl_decrypt_comparison(collect_server_logs):
 
 @pytest.mark.integration
 def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs):
-    """Integration test that uses otdfctl for both encryption and decryption to verify roundtrip functionality"""
+    """
+    Test complete encrypt-decrypt roundtrip using otdfctl to verify functionality.
+    """
 
     check_for_otdfctl()
 
