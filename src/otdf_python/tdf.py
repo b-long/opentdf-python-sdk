@@ -380,7 +380,7 @@ class TDF:
             algorithm="AES-256-GCM", iv="", isStreamable=True
         )  # Changed field name
         enc_info = ManifestEncryptionInformation(
-            type="split",  # Changed from key_access_type to type, and value to "split"
+            type="split",
             policy=policy_b64,  # Use base64-encoded policy
             keyAccess=key_access_objs,  # Changed from key_access_obj to keyAccess
             method=method,
@@ -390,7 +390,7 @@ class TDF:
             type="reference",  # Changed from "file" to "reference" to match Java SDK
             url="0.payload",
             protocol="zip",
-            mimeType="text/plain",  # Changed from mime_type to mimeType and value to text/plain
+            mimeType=config.mime_type,  # Use MIME type from config
             isEncrypted=True,  # Changed from is_encrypted to isEncrypted
         )
         manifest = Manifest(
