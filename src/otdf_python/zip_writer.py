@@ -15,7 +15,7 @@ class ZipWriter:
     def __init__(self, out_stream: io.BytesIO | None = None):
         self.out_stream = out_stream or io.BytesIO()
         self.zipfile = zipfile.ZipFile(
-            self.out_stream, mode="w", compression=zipfile.ZIP_DEFLATED
+            self.out_stream, mode="w", compression=zipfile.ZIP_STORED
         )
         self._file_infos: list[FileInfo] = []
         self._offsets: dict[str, int] = {}

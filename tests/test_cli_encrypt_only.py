@@ -370,7 +370,6 @@ def test_otdfctl_encrypt(collect_server_logs):
         print(f"TDF file size: {otdfctl_tdf_output.stat().st_size} bytes")
 
 
-@pytest.mark.skip(reason="Skipping Python CLI encrypt test until fixed")
 @pytest.mark.integration
 def test_python_encrypt(collect_server_logs):
     """Integration test that uses Python CLI for encryption only and verifies the TDF can be inspected"""
