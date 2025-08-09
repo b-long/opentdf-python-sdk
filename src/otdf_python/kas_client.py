@@ -16,9 +16,7 @@ from .sdk_exceptions import SDKException
 from .crypto_utils import CryptoUtils
 from .asym_decryption import AsymDecryption
 from .key_type_constants import RSA_KEY_TYPE, EC_KEY_TYPE
-
-from otdf_python_proto.kas import kas_pb2
-from otdf_python_proto.kas.kas_pb2_connect import AccessServiceClient
+from .kas_connect_rpc_client import KASConnectRPCClient
 
 
 @dataclass
@@ -44,6 +42,11 @@ class KASClient:
         self.verify_ssl = verify_ssl
         self.decryptor = None
         self.client_public_key = None
+
+        # Initialize Connect RPC client for protobuf interactions
+        self.connect_rpc_client = KASConnectRPCClient(
+            use_plaintext=use_plaintext, verify_ssl=verify_ssl
+        )
 
         # Generate DPoP key for JWT signing (separate from encryption keys)
         # This matches the web-SDK pattern where dpopKeys != ephemeralKeys
@@ -352,71 +355,20 @@ class KASClient:
             except Exception as e:
                 logging.warning(f"Failed to get access token: {e}")
 
-        # Debug logging
-        logging.info(
-            f"KAS client settings for public key retrieval {self.verify_ssl=} {self.use_plaintext=} {kas_info.url=}"
-        )
-
-        # Create HTTP client with SSL verification configuration
-        import urllib3
-
-        if self.verify_ssl:
-            # Standard SSL verification
-            logging.info(
-                "Using SSL verification enabled HTTP client for public key retrieval"
-            )
-            http_client = urllib3.PoolManager()
-        else:
-            # Disable SSL verification warnings and certificate verification
-            logging.info(
-                "Using SSL verification disabled HTTP client for public key retrieval"
-            )
-            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-            http_client = urllib3.PoolManager(cert_reqs="CERT_NONE")
+        # Normalize the URL
+        normalized_url = self._normalize_kas_url(kas_info.url)
 
         try:
-            # For Connect RPC, we need to use the base platform URL without /kas
-            # because Connect RPC client automatically appends /kas.AccessService/MethodName
-            # First normalize the URL
-            normalized_url = self._normalize_kas_url(kas_info.url)
-            connect_rpc_base_url = normalized_url
-            if connect_rpc_base_url.endswith("/kas"):
-                connect_rpc_base_url = connect_rpc_base_url[:-4]  # Remove /kas suffix
-
-            logging.info(
-                f"Creating Connect RPC client for base URL: {connect_rpc_base_url}, for public key retrieval"
+            # Delegate to the Connect RPC client
+            result = self.connect_rpc_client.get_public_key(
+                normalized_url, kas_info, access_token
             )
-            # Create Connect RPC client with configured HTTP client using Connect protocol
-            # Note: gRPC protocol is not supported with urllib3, use default Connect protocol
-            client = AccessServiceClient(connect_rpc_base_url, http_client=http_client)
-
-            # Create public key request
-            algorithm = getattr(kas_info, "algorithm", "") or ""
-            request = (
-                kas_pb2.PublicKeyRequest(algorithm=algorithm)
-                if algorithm
-                else kas_pb2.PublicKeyRequest()
-            )
-
-            # Prepare headers with authentication if available
-            extra_headers = {}
-            if access_token:
-                extra_headers["Authorization"] = f"Bearer {access_token}"
-
-            # Make the public key call with authentication headers
-            response = client.public_key(
-                request, extra_headers=extra_headers if extra_headers else None
-            )
-
-            # Update kas_info with response
-            kas_info.public_key = response.public_key
-            kas_info.kid = response.kid
 
             # Cache the result
             if self.cache:
-                self.cache.store(kas_info)
+                self.cache.store(result)
 
-            return kas_info
+            return result
 
         except Exception as e:
             import traceback
@@ -592,7 +544,7 @@ class KASClient:
         # Call Connect RPC unwrap
         return self._unwrap_with_connect_rpc(key_access, signed_token, policy_json)
 
-    def _unwrap_with_connect_rpc(self, key_access, signed_token, policy_json):  # noqa: C901
+    def _unwrap_with_connect_rpc(self, key_access, signed_token, policy_json):
         """
         Connect RPC method for unwrapping keys.
         """
@@ -605,79 +557,14 @@ class KASClient:
             except Exception as e:
                 logging.warning(f"Failed to get access token: {e}")
 
-        # Debug logging
-        logging.info(
-            f"KAS client settings for unwrap {self.verify_ssl=} {self.use_plaintext=} {key_access.url=}"
-        )
-
-        # Create HTTP client with SSL verification configuration
-        import urllib3
-
-        if self.verify_ssl:
-            # Standard SSL verification
-            logging.info("Using SSL verification enabled HTTP client for unwrap")
-            http_client = urllib3.PoolManager()
-        else:
-            # Disable SSL verification warnings and certificate verification
-            logging.info("Using SSL verification disabled HTTP client for unwrap")
-            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-            http_client = urllib3.PoolManager(cert_reqs="CERT_NONE")
-
-        # Create Connect RPC client with configured HTTP client
-        # For Connect RPC, we need to use the base platform URL without /kas
-        # because Connect RPC client automatically appends /kas.AccessService/MethodName
-        # First normalize the URL
+        # Normalize the URL
         normalized_kas_url = self._normalize_kas_url(key_access.url)
-        kas_service_url = normalized_kas_url
-        if kas_service_url.endswith("/kas"):
-            kas_service_url = kas_service_url[:-4]  # Remove /kas suffix
-
-        logging.info(
-            f"Creating Connect RPC client for base URL: {kas_service_url}, for unwrap"
-        )
-        # Note: gRPC protocol is not supported with urllib3, use default Connect protocol
-        client = AccessServiceClient(kas_service_url, http_client=http_client)
-
-        # Create a new signed token specifically for Connect RPC
-        # This needs to be protobuf-encoded, not JSON-encoded like the HTTP version
-        connect_rpc_signed_token = self._create_connect_rpc_signed_token(
-            key_access, policy_json
-        )
-
-        # Create rewrap request
-        request = kas_pb2.RewrapRequest(signed_request_token=connect_rpc_signed_token)
-
-        # Debug: Log the signed token details
-        logging.info(f"Connect RPC signed token: {connect_rpc_signed_token}")
-
-        # Prepare headers with authentication if available
-        extra_headers = {}
-        if access_token:
-            extra_headers["Authorization"] = f"Bearer {access_token}"
 
         try:
-            # Make the rewrap call with authentication headers
-            response = client.rewrap(
-                request, extra_headers=extra_headers if extra_headers else None
+            # Delegate to the Connect RPC client
+            entity_wrapped_key = self.connect_rpc_client.unwrap_key(
+                normalized_kas_url, key_access, signed_token, access_token
             )
-
-            # Extract the entity wrapped key from v2 response structure
-            # The v2 response has responses[] array with results[] for each policy
-            if response.responses and len(response.responses) > 0:
-                policy_result = response.responses[0]  # First policy
-                if policy_result.results and len(policy_result.results) > 0:
-                    kao_result = policy_result.results[0]  # First KAO result
-                    if kao_result.kas_wrapped_key:
-                        entity_wrapped_key = kao_result.kas_wrapped_key
-                    else:
-                        raise SDKException(f"KAO result error: {kao_result.error}")
-                else:
-                    raise SDKException("No KAO results in policy response")
-            else:
-                # Fallback to legacy entity_wrapped_key field for backward compatibility
-                entity_wrapped_key = response.entity_wrapped_key
-                if not entity_wrapped_key:
-                    raise SDKException("No entity_wrapped_key in Connect RPC response")
 
             # Decrypt the wrapped key
             if not self.decryptor:
