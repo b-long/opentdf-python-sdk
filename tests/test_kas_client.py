@@ -39,7 +39,7 @@ def test_get_public_key_uses_cache():
 
 
 @patch("urllib3.PoolManager")
-@patch("otdf_python.kas_client.AccessServiceClient")
+@patch("otdf_python.kas_connect_rpc_client.AccessServiceClient")
 def test_get_public_key_fetches_and_caches(
     mock_access_service_client, mock_pool_manager
 ):
@@ -74,7 +74,9 @@ def test_get_public_key_fetches_and_caches(
     mock_client_instance.public_key = mock_public_key_call
 
     # Create KASInfo with URL but no KID or public key
-    kas_info = MockKasInfo(url="http://kas")
+    from otdf_python.config import KASInfo
+
+    kas_info = KASInfo(url="http://kas")
 
     result = client.get_public_key(kas_info)
 
@@ -90,7 +92,7 @@ def test_get_public_key_fetches_and_caches(
 
 
 @patch("urllib3.PoolManager")
-@patch("otdf_python.kas_client.AccessServiceClient")
+@patch("otdf_python.kas_connect_rpc_client.AccessServiceClient")
 @patch("otdf_python.kas_client.CryptoUtils")
 @patch("otdf_python.kas_client.AsymDecryption")
 @patch("otdf_python.kas_client.jwt.encode")  # Mock JWT encoding directly
@@ -417,7 +419,7 @@ def test_kas_url_normalization_error_handling_with_kasinfo():
 
 
 @patch("urllib3.PoolManager")
-@patch("otdf_python.kas_client.AccessServiceClient")
+@patch("otdf_python.kas_connect_rpc_client.AccessServiceClient")
 def test_jwt_signature_verification_in_unwrap_request(
     mock_access_service_client, mock_pool_manager, collect_server_logs
 ):
