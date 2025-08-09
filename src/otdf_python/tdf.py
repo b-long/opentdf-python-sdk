@@ -85,27 +85,30 @@ class TDF:
             asym = AsymEncryption(kas.public_key)
             wrapped_key = base64.b64encode(asym.encrypt(key)).decode()
 
-            # Calculate policy binding hash following Java SDK approach
-            # This must match the server-side validation exactly
+            # Calculate policy binding hash following OpenTDF specification
+            # Per spec: HMAC(DEK, Base64(policyJSON)) then hex-encode result
             if policy_json:
-                # Try hashing the raw policy JSON (not base64 encoded)
-                # Step 1: Calculate HMAC-SHA256 using the symmetric key and policy JSON bytes
-                # Note: We use the original key (not wrapped key) as the HMAC key, like Java SDK
-                hmac_result = hmac.new(
-                    key, policy_json.encode("utf-8"), hashlib.sha256
-                ).digest()
-
-                # Step 2: Hex encode the HMAC result
-                hex_binding = hmac_result.hex()
-
-                # Step 3: Base64 encode the hex string to match Java SDK and otdfctl
-                b64_hex_binding = base64.b64encode(hex_binding.encode("utf-8")).decode(
+                # Step 1: Base64 encode the policy JSON first (per OpenTDF spec)
+                policy_b64 = base64.b64encode(policy_json.encode("utf-8")).decode(
                     "utf-8"
                 )
 
+                # Step 2: Calculate HMAC-SHA256 using DEK and Base64-encoded policy
+                hmac_result = hmac.new(
+                    key, policy_b64.encode("utf-8"), hashlib.sha256
+                ).digest()
+
+                # Step 3: Hex encode the HMAC result (required by OpenTDF implementation)
+                policy_binding_hex = hmac_result.hex()
+
+                # Step 4: Base64 encode the hex string for transmission
+                policy_binding_b64 = base64.b64encode(
+                    policy_binding_hex.encode("utf-8")
+                ).decode("utf-8")
+
                 policy_binding_hash = {
                     "alg": "HS256",
-                    "hash": b64_hex_binding,
+                    "hash": policy_binding_b64,
                 }
             else:
                 # Fallback for cases where policy is not available

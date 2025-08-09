@@ -4,7 +4,6 @@ Test CLI functionality
 
 import pytest
 import subprocess
-import sys
 import tempfile
 import json
 from pathlib import Path
@@ -114,7 +113,9 @@ def test_otdfctl_encrypt_python_decrypt(collect_server_logs):
 
         # Run our Python CLI decrypt on the same TDF
         cli_decrypt_cmd = [
-            sys.executable,
+            "uv",
+            "run",
+            "python",
             "-m",
             "otdf_python",
             "--platform-url",
