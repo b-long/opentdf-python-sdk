@@ -65,6 +65,7 @@ lint.select = [
     "UP",        # pyupgrade (modern Python features)
     "SIM",       # flake8-simplify (simplifications)
     "RUF",       # Ruff-specific rules
+    "FURB",      # refurb (FURB)
 ]
 
 [tool.uv.workspace]

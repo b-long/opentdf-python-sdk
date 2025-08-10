@@ -53,8 +53,8 @@ class KASConnectRPCClient:
             Base URL for Connect RPC client (without /kas suffix)
         """
         connect_rpc_base_url = kas_url
-        if connect_rpc_base_url.endswith("/kas"):
-            connect_rpc_base_url = connect_rpc_base_url[:-4]  # Remove /kas suffix
+        # Remove /kas suffix, if present
+        connect_rpc_base_url = connect_rpc_base_url.removesuffix("/kas")
         return connect_rpc_base_url
 
     def _prepare_auth_headers(self, access_token):
