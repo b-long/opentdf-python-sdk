@@ -23,7 +23,8 @@ def test_kas_info_str():
         algorithm="alg",
     )
     s = str(kas)
-    assert "KASInfo{" in s and "kas.example.com" in s
+    assert "KASInfo{" in s
+    assert "kas.example.com" in s
 
 
 def test_get_kas_address():

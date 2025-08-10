@@ -66,6 +66,7 @@ lint.select = [
     "SIM",       # flake8-simplify (simplifications)
     "RUF",       # Ruff-specific rules
     "FURB",      # refurb (FURB)
+    "PT018",     # flake8-pytest-style (pytest style)
 ]
 
 [tool.uv.workspace]

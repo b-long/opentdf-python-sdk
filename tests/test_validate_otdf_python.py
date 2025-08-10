@@ -120,7 +120,8 @@ def verify_encrypt_str() -> None:
         sdk.create_tdf(payload, tdf_config, output_stream=output)
         manifest_bytes = output.getvalue()
         print(f"Manifest returned: {manifest_bytes[:60]}... (truncated)")
-        assert manifest_bytes and len(manifest_bytes) > 0
+        assert manifest_bytes
+        assert len(manifest_bytes) > 0
     except Exception as e:
         import traceback
 
@@ -146,7 +147,8 @@ def verify_encrypt_file() -> None:
             encrypted_path = encrypt_file(some_plaintext_file)
             print(f"Encrypted file at: {encrypted_path}")
             # Optionally, check the file exists and is not empty
-            assert encrypted_path.exists() and encrypted_path.stat().st_size > 0
+            assert encrypted_path.exists()
+            assert encrypted_path.stat().st_size > 0
     except Exception as e:
         raise RuntimeError(
             "An unexpected error occurred testing otdf_python file encryption"
