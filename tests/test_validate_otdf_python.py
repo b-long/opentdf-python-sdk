@@ -197,7 +197,6 @@ def verify_encrypt_decrypt_file() -> None:
         ) from e
 
 
-@pytest.mark.skip(reason="Skipping 'test_verify_encrypt_decrypt_file' until fixed")
 @pytest.mark.integration
 def test_verify_encrypt_decrypt_file():
     """Run the encrypt/decrypt verification test."""

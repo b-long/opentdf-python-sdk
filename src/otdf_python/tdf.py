@@ -2,6 +2,7 @@ from typing import BinaryIO
 import io
 import os
 import hashlib
+import hmac
 import base64
 import zipfile
 from otdf_python.manifest import (
@@ -334,7 +335,7 @@ class TDF:
         segment_size = (
             getattr(config, "default_segment_size", None) or self.SEGMENT_SIZE
         )
-        hasher = hashlib.sha256()
+        segment_hashes_raw = []
         total = 0
         # Write encrypted payload in segments
         with writer.payload() as f:
@@ -346,9 +347,14 @@ class TDF:
                     break
                 encrypted = aesgcm.encrypt(chunk)
                 f.write(encrypted.as_bytes())
-                seg_hash = base64.b64encode(
-                    hashlib.sha256(encrypted.as_bytes()).digest()
-                ).decode()
+                # Calculate segment hash using GMAC (last 16 bytes of encrypted segment)
+                # This matches the platform SDK when segmentHashAlg is "GMAC"
+                encrypted_bytes = encrypted.as_bytes()
+                gmac_length = 16  # kGMACPayloadLength from platform SDK
+                if len(encrypted_bytes) < gmac_length:
+                    raise ValueError("Encrypted segment too short for GMAC")
+                seg_hash_raw = encrypted_bytes[-gmac_length:]  # Take last 16 bytes
+                seg_hash = base64.b64encode(seg_hash_raw).decode()
                 segments.append(
                     ManifestSegment(
                         hash=seg_hash,
@@ -360,14 +366,19 @@ class TDF:
                         ),  # Changed from encrypted_segment_size to encryptedSegmentSize
                     )
                 )
-                hasher.update(encrypted.as_bytes())
+                # Collect raw segment hash bytes for root signature calculation
+                segment_hashes_raw.append(seg_hash_raw)
                 total += len(chunk)
         # Use config fields for policy
         policy_json = self._build_policy_json(config)
         # Encode policy as base64 to match Java SDK
         policy_b64 = base64.b64encode(policy_json.encode()).decode()
 
-        root_sig = base64.b64encode(hasher.digest()).decode()
+        # Calculate root signature: HMAC-SHA256 over concatenated segment hash raw bytes
+        # This matches the platform SDK approach
+        aggregate_hash = b"".join(segment_hashes_raw)
+        root_sig_raw = hmac.new(key, aggregate_hash, hashlib.sha256).digest()
+        root_sig = base64.b64encode(root_sig_raw).decode()
         integrity_info = ManifestIntegrityInformation(
             rootSignature=ManifestRootSignature(
                 alg="HS256", sig=root_sig
@@ -454,7 +465,6 @@ class TDF:
         from otdf_python.aesgcm import AesGcm
         from otdf_python.asym_crypto import AsymDecryption
         import base64
-        import hashlib
 
         with zipfile.ZipFile(io.BytesIO(tdf_bytes), "r") as z:
             manifest_json = z.read("0.manifest.json").decode()
@@ -485,8 +495,15 @@ class TDF:
             for seg in segments:
                 enc_len = seg.encryptedSegmentSize  # Changed field name
                 enc_bytes = encrypted_payload[offset : offset + enc_len]
-                # Integrity check (SHA256 HMAC)
-                seg_hash = base64.b64encode(hashlib.sha256(enc_bytes).digest()).decode()
+                # Integrity check using GMAC (last 16 bytes of encrypted segment)
+                # This matches how segments are hashed when segmentHashAlg is "GMAC"
+                gmac_length = 16  # kGMACPayloadLength from platform SDK
+                if len(enc_bytes) < gmac_length:
+                    raise ValueError(
+                        "Encrypted segment too short for GMAC verification"
+                    )
+                seg_hash_raw = enc_bytes[-gmac_length:]  # Take last 16 bytes
+                seg_hash = base64.b64encode(seg_hash_raw).decode()
                 if seg.hash != seg_hash:
                     raise ValueError("Segment signature mismatch")
                 iv = enc_bytes[: AesGcm.GCM_NONCE_LENGTH]

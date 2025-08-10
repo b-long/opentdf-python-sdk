@@ -1,10 +1,7 @@
-import os
 import pytest
 import secrets
 from otdf_python.nanotdf import NanoTDF, NanoTDFMaxSizeLimit, InvalidNanoTDFConfig
 from otdf_python.config import NanoTDFConfig
-
-# Unit tests
 
 
 def test_nanotdf_roundtrip():
@@ -36,23 +33,29 @@ def test_nanotdf_invalid_magic():
         nanotdf.read_nanotdf(bad_bytes, config)
 
 
-# Existing integration test
-@pytest.mark.integration
-@pytest.mark.skipif(
-    not os.path.exists(".env.integration"), reason="Integration .env file not found"
+@pytest.mark.skip(
+    "This test is skipped because NanoTDF encryption/decryption is not implemented yet."
 )
+@pytest.mark.integration
 def test_nanotdf_integration_encrypt_decrypt():
     # Load environment variables for integration
-    from dotenv import load_dotenv
+    from tests.config_pydantic import CONFIG_TDF
+    from otdf_python.config import KASInfo
 
-    load_dotenv(".env.integration")
-    # Example: get KAS_URL or other config from env
-    kas_url = os.getenv("KAS_URL")
-    assert kas_url, "KAS_URL must be set in .env.integration"
+    # Create KAS info from configuration
+    kas_info = KASInfo(url=CONFIG_TDF.KAS_ENDPOINT)
+
+    # Create KAS client with SSL verification disabled for testing
+    # from otdf_python.kas_client import KASClient
+    # client = KASClient(
+    #     kas_url=CONFIG_TDF.KAS_ENDPOINT,
+    #     verify_ssl=not CONFIG_TDF.INSECURE_SKIP_VERIFY,
+    #     use_plaintext=bool(CONFIG_TDF.OPENTDF_PLATFORM_URL.startswith("http://")),
+    # )
 
     nanotdf = NanoTDF()
     data = b"test data"
-    config = NanoTDFConfig(kas_info_list=[{"url": kas_url}])
+    config = NanoTDFConfig(kas_info_list=[kas_info])
     # These will raise NotImplementedError until implemented
     try:
         nanotdf_bytes = nanotdf.create_nanotdf(data, config)

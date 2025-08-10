@@ -222,18 +222,37 @@ class KASClient:
 
         # The server expects a JWT with a requestBody field containing the UnsignedRewrapRequest
         # Create the request body that matches UnsignedRewrapRequest protobuf structure
-        # For legacy v1 SRT format, the policy must be base64-encoded
+        # Use the v2 format with explicit policy ID and requests array for cross-tool compatibility
+
+        # Use "policy" as policy ID for compatibility with otdfctl
+        import json
+
+        policy_uuid = "policy"  # otdfctl uses "policy" as the policy ID
+
+        # For v2 format, the policy body must be base64-encoded
         policy_base64 = base64.b64encode(policy_json.encode("utf-8")).decode("utf-8")
 
         unsigned_rewrap_request = {
             "clientPublicKey": client_public_key,  # Maps to client_public_key
-            "policy": policy_base64,  # Maps to policy (legacy field) - base64-encoded
-            "keyAccess": key_access_dict,  # Maps to key_access (legacy field)
+            "requests": [
+                {  # Maps to requests array (v2 format)
+                    "keyAccessObjects": [
+                        {
+                            "keyAccessObjectId": "kao-0",  # Standard KAO ID
+                            "keyAccessObject": key_access_dict,
+                        }
+                    ],
+                    "policy": {
+                        "id": policy_uuid,  # Use the UUID from policy as the policy ID
+                        "body": policy_base64,  # Base64-encoded policy JSON
+                    },
+                }
+            ],
+            "keyAccess": key_access_dict,  # Keep legacy field for backward compatibility
+            "policy": policy_base64,  # Keep legacy field for backward compatibility
         }
 
         # Convert to JSON string
-        import json
-
         request_body_json = json.dumps(unsigned_rewrap_request)
 
         # JWT payload with requestBody field containing the JSON string
