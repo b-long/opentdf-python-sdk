@@ -14,6 +14,7 @@ from otdf_python.manifest import (
     ManifestMethod,
     ManifestKeyAccess,
 )
+from otdf_python.policy_stub import NULL_POLICY_UUID
 from otdf_python.tdf_writer import TDFWriter
 from otdf_python.aesgcm import AesGcm
 from dataclasses import dataclass
@@ -133,7 +134,6 @@ class TDF:
     def _build_policy_json(self, config: TDFConfig) -> str:
         policy_obj = config.policy_object
         attributes = config.attributes
-        import uuid
         import json as _json
 
         if policy_obj:
@@ -149,7 +149,8 @@ class TDF:
             # Create attribute objects from the attributes list (empty if no attributes)
             attr_objs = [AttributeObject(attribute=a) for a in (attributes or [])]
             body = PolicyBody(data_attributes=attr_objs, dissem=[])
-            policy = PolicyObject(uuid=str(uuid.uuid4()), body=body)
+            # TODO: Replace this with a proper Policy UUID value
+            policy = PolicyObject(uuid=NULL_POLICY_UUID, body=body)
             return _json.dumps(policy, default=self._serialize_policy_object)
 
     def _serialize_policy_object(self, obj):

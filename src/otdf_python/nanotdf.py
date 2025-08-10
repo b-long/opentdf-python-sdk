@@ -4,6 +4,7 @@ import secrets
 from typing import BinaryIO
 from io import BytesIO
 from otdf_python.collection_store import CollectionStore, NoOpCollectionStore
+from otdf_python.policy_stub import NULL_POLICY_UUID
 from otdf_python.sdk_exceptions import SDKException
 from otdf_python.constants import MAGIC_NUMBER_AND_VERSION
 from otdf_python.resource_locator import ResourceLocator
@@ -45,7 +46,8 @@ class NanoTDF:
         self.collection_store = collection_store or NoOpCollectionStore()
 
     def _create_policy_object(self, attributes: list[str]) -> PolicyObject:
-        policy_uuid = "00000000-0000-0000-0000-000000000000"  # For deterministic tests, or use uuid.uuid4()
+        # TODO: Replace this with a proper Policy UUID value
+        policy_uuid = NULL_POLICY_UUID
         data_attributes = [AttributeObject(attribute=a) for a in attributes]
         body = PolicyBody(data_attributes=data_attributes, dissem=[])
         return PolicyObject(uuid=policy_uuid, body=body)
