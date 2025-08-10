@@ -70,6 +70,9 @@ class ConfigureTdf(BaseSettings):
 
     OPENTDF_USE_SPECIFIED_CA_CERT: bool = False
 
+    TEST_OPENTDF_ATTRIBUTE_1: str = "https://example.com/attr/attr1/value/value1"
+    TEST_OPENTDF_ATTRIBUTE_2: str = "https://example.com/attr/attr1/value/value2"
+
 
 class ConfigureTesting(BaseSettings):
     """

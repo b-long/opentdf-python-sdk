@@ -5,6 +5,7 @@ Tests for the integration between SDK and TDF classes.
 import io
 
 from otdf_python.sdk_builder import SDKBuilder
+from tests.config_pydantic import CONFIG_TDF
 from tests.mock_crypto import generate_rsa_keypair
 
 
@@ -24,8 +25,13 @@ def test_sdk_create_tdf_with_builder():
     )
 
     # Use the SDK to create a TDFConfig with the KASInfo
-    config = sdk.new_tdf_config(attributes=["attr1", "attr2"], kas_info_list=[kas_info])
-
+    config = sdk.new_tdf_config(
+        attributes=[
+            CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1,
+            CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_2,
+        ],
+        kas_info_list=[kas_info],
+    )
     # Use BytesIO to mimic file-like API
     payload = b"Hello from test"
     output = io.BytesIO()
@@ -55,7 +61,13 @@ def test_validate_otdf_python_script():
     )
 
     # Use the SDK to create a TDFConfig with the KASInfo
-    config = sdk.new_tdf_config(attributes=["attr1", "attr2"], kas_info_list=[kas_info])
+    config = sdk.new_tdf_config(
+        attributes=[
+            CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1,
+            CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_2,
+        ],
+        kas_info_list=[kas_info],
+    )
 
     # Use BytesIO to mimic file-like API
     payload = b"Hello from Python"
@@ -80,7 +92,7 @@ def test_new_tdf_config_with_https_platform():
     )
 
     # Create config without overriding kas_info_list
-    config = sdk.new_tdf_config(attributes=["classification"])
+    config = sdk.new_tdf_config(attributes=[CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1])
 
     # Verify the default KAS info was created with HTTPS URL
     assert len(config.kas_info_list) == 1
@@ -100,7 +112,7 @@ def test_new_tdf_config_with_http_platform_using_plaintext():
     )
 
     # Create config without overriding kas_info_list
-    config = sdk.new_tdf_config(attributes=["classification"])
+    config = sdk.new_tdf_config(attributes=[CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1])
 
     # Verify the default KAS info was created with HTTP URL
     assert len(config.kas_info_list) == 1
@@ -117,7 +129,7 @@ def test_new_tdf_config_with_custom_port_https():
     )
 
     # Create config without overriding kas_info_list
-    config = sdk.new_tdf_config(attributes=["classification"])
+    config = sdk.new_tdf_config(attributes=[CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1])
 
     # Verify the default KAS info preserves the custom port
     assert len(config.kas_info_list) == 1
@@ -137,7 +149,7 @@ def test_new_tdf_config_with_custom_port_http():
     )
 
     # Create config without overriding kas_info_list
-    config = sdk.new_tdf_config(attributes=["classification"])
+    config = sdk.new_tdf_config(attributes=[CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1])
 
     # Verify the default KAS info preserves the custom port
     assert len(config.kas_info_list) == 1
@@ -154,7 +166,7 @@ def test_new_tdf_config_with_path_preservation():
     )
 
     # Create config without overriding kas_info_list
-    config = sdk.new_tdf_config(attributes=["classification"])
+    config = sdk.new_tdf_config(attributes=[CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1])
 
     # Verify the default KAS info preserves the path
     assert len(config.kas_info_list) == 1
@@ -169,7 +181,9 @@ def test_new_tdf_config_use_plaintext_parameter_validation():
     sdk = SDKBuilder().set_platform_endpoint("https://platform.example.com").build()
 
     # Create config with use_plaintext parameter
-    config = sdk.new_tdf_config(attributes=["classification"], use_plaintext=True)
+    config = sdk.new_tdf_config(
+        attributes=[CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1], use_plaintext=True
+    )
 
     # Verify the config was created successfully
     assert config is not None
@@ -200,7 +214,7 @@ def test_new_tdf_config_kas_info_list_override():
 
     # Create config with custom kas_info_list
     config = sdk.new_tdf_config(
-        attributes=["classification"], kas_info_list=[custom_kas]
+        attributes=[CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1], kas_info_list=[custom_kas]
     )
 
     # Verify the custom KAS info was used instead of default
@@ -237,7 +251,7 @@ def test_new_tdf_config_kwargs_passthrough():
 
     # Create config with additional kwargs that should be passed to TDFConfig
     config = sdk.new_tdf_config(
-        attributes=["classification"],
+        attributes=[CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1],
         default_segment_size=1024 * 1024,
         mime_type="application/json",
         render_version_info_in_manifest=False,

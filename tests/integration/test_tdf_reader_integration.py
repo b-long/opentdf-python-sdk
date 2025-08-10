@@ -153,7 +153,7 @@ class TestTDFReaderIntegration:
                 "--mime-type",
                 "text/plain",
                 "--attr",
-                "https://example.com/attr/classification/value/secret",
+                CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1,
                 str(input_file),
                 "-o",
                 str(otdfctl_output),
@@ -164,10 +164,7 @@ class TestTDFReaderIntegration:
             )
 
             # If otdfctl fails, skip the test
-            if otdfctl_result.returncode != 0:
-                pytest.skip(
-                    f"otdfctl encrypt with attributes failed: {otdfctl_result.stderr}"
-                )
+            assert otdfctl_result.returncode == 0, "otdfctl encrypt failed"
 
             # Verify the TDF file was created
             assert otdfctl_output.exists(), "otdfctl did not create TDF file"
