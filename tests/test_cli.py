@@ -10,7 +10,6 @@ import os
 import json
 from pathlib import Path
 from tests.config_pydantic import CONFIG_TDF
-from tests.support_otdfctl import check_for_otdfctl
 
 
 def test_cli_help():
@@ -180,8 +179,6 @@ def test_cli_encrypt_integration():
         raise Exception(
             "OPENTDF_PLATFORM_URL must be set in config for integration tests"
         )
-
-    check_for_otdfctl()
 
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:

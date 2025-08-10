@@ -11,7 +11,6 @@ from pathlib import Path
 from tests.config_pydantic import CONFIG_TDF
 import os
 
-from tests.support_otdfctl import check_for_otdfctl
 
 original_env = os.environ.copy()
 original_env["GRPC_ENFORCE_ALPN_ENABLED"] = "false"
@@ -27,8 +26,6 @@ def test_cli_decrypt_otdfctl_tdf():
     """
     Test that the Python CLI can successfully decrypt TDF files created by otdfctl.
     """
-
-    check_for_otdfctl()
 
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -134,7 +131,6 @@ def test_otdfctl_decrypt_comparison(collect_server_logs):
     """
     Test comparative decryption between otdfctl and Python CLI on the same TDF.
     """
-    check_for_otdfctl()
 
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -304,8 +300,6 @@ def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs):
     """
     Test complete encrypt-decrypt roundtrip using otdfctl to verify functionality.
     """
-
-    check_for_otdfctl()
 
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:

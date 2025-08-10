@@ -8,7 +8,6 @@ import tempfile
 import json
 from pathlib import Path
 from tests.config_pydantic import CONFIG_TDF
-from tests.support_otdfctl import check_for_otdfctl
 
 # Fail fast if OPENTDF_PLATFORM_URL is not set
 platform_url = CONFIG_TDF.OPENTDF_PLATFORM_URL
@@ -19,8 +18,6 @@ if not platform_url:
 @pytest.mark.integration
 def test_otdfctl_encrypt_python_decrypt(collect_server_logs):
     """Integration test that uses otdfctl for encryption and the Python CLI for decryption"""
-
-    check_for_otdfctl()
 
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -196,8 +193,6 @@ def test_otdfctl_encrypt_python_decrypt(collect_server_logs):
 @pytest.mark.integration
 def test_otdfctl_encrypt_otdfctl_decrypt(collect_server_logs):
     """Integration test that uses otdfctl for both encryption and decryption to verify roundtrip functionality"""
-
-    check_for_otdfctl()
 
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:

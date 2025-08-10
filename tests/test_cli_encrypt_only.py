@@ -12,7 +12,6 @@ from tests.config_pydantic import CONFIG_TDF
 import zipfile
 import os
 import sys
-from tests.support_otdfctl import check_for_otdfctl
 
 original_env = os.environ.copy()
 original_env["GRPC_ENFORCE_ALPN_ENABLED"] = "false"
@@ -314,7 +313,6 @@ def _run_otdfctl_inspect(
 @pytest.mark.integration
 def test_otdfctl_encrypt(collect_server_logs):
     """Integration test that uses otdfctl for encryption only and verifies the TDF can be inspected"""
-    check_for_otdfctl()
 
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -373,7 +371,6 @@ def test_otdfctl_encrypt(collect_server_logs):
 @pytest.mark.integration
 def test_python_encrypt(collect_server_logs):
     """Integration test that uses Python CLI for encryption only and verifies the TDF can be inspected"""
-    check_for_otdfctl()
 
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
