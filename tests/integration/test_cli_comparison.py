@@ -5,7 +5,6 @@ Test CLI functionality
 import pytest
 import subprocess
 import tempfile
-import json
 from pathlib import Path
 from tests.config_pydantic import CONFIG_TDF
 
@@ -16,18 +15,12 @@ if not platform_url:
 
 
 @pytest.mark.integration
-def test_otdfctl_encrypt_python_decrypt(collect_server_logs):
+def test_otdfctl_encrypt_python_decrypt(collect_server_logs, temp_credentials_file):
     """Integration test that uses otdfctl for encryption and the Python CLI for decryption"""
 
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
-
-        # Create credentials file
-        creds_file = temp_path / "creds.json"
-        creds_data = {"clientId": "opentdf", "clientSecret": "secret"}
-        with open(creds_file, "w") as f:
-            json.dump(creds_data, f)
 
         # Create input file
         input_file = temp_path / "input.txt"
@@ -49,7 +42,7 @@ def test_otdfctl_encrypt_python_decrypt(collect_server_logs):
             "--host",
             platform_url,
             "--with-client-creds-file",
-            str(creds_file),
+            str(temp_credentials_file),
             "--tls-no-verify",
             "--mime-type",
             "text/plain",
@@ -77,7 +70,7 @@ def test_otdfctl_encrypt_python_decrypt(collect_server_logs):
             "--host",
             platform_url,
             "--with-client-creds-file",
-            str(creds_file),
+            str(temp_credentials_file),
             "--tls-no-verify",
             str(otdfctl_tdf_output),
             "-o",
@@ -118,7 +111,7 @@ def test_otdfctl_encrypt_python_decrypt(collect_server_logs):
             "--platform-url",
             platform_url,
             "--with-client-creds-file",
-            str(creds_file),
+            str(temp_credentials_file),
             "--insecure",  # equivalent to --tls-no-verify
             "decrypt",
             str(otdfctl_tdf_output),
@@ -191,18 +184,12 @@ def test_otdfctl_encrypt_python_decrypt(collect_server_logs):
 
 
 @pytest.mark.integration
-def test_otdfctl_encrypt_otdfctl_decrypt(collect_server_logs):
+def test_otdfctl_encrypt_otdfctl_decrypt(collect_server_logs, temp_credentials_file):
     """Integration test that uses otdfctl for both encryption and decryption to verify roundtrip functionality"""
 
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
-
-        # Create credentials file
-        creds_file = temp_path / "creds.json"
-        creds_data = {"clientId": "opentdf", "clientSecret": "secret"}
-        with open(creds_file, "w") as f:
-            json.dump(creds_data, f)
 
         # Create input file
         input_file = temp_path / "input.txt"
@@ -223,7 +210,7 @@ def test_otdfctl_encrypt_otdfctl_decrypt(collect_server_logs):
             "--host",
             platform_url,
             "--with-client-creds-file",
-            str(creds_file),
+            str(temp_credentials_file),
             "--tls-no-verify",
             "--mime-type",
             "text/plain",
@@ -272,7 +259,7 @@ def test_otdfctl_encrypt_otdfctl_decrypt(collect_server_logs):
             "--host",
             platform_url,
             "--with-client-creds-file",
-            str(creds_file),
+            str(temp_credentials_file),
             "--tls-no-verify",
             str(otdfctl_tdf_output),
             "-o",

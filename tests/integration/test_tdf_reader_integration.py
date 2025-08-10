@@ -24,18 +24,12 @@ class TestTDFReaderIntegration:
     """Integration tests for TDFReader with real TDF files created by otdfctl."""
 
     @pytest.mark.integration
-    def test_read_otdfctl_created_tdf_structure(self):
+    def test_read_otdfctl_created_tdf_structure(self, temp_credentials_file):
         """Test that TDFReader can parse the structure of files created by otdfctl."""
 
         # Create temporary directory for work
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
-
-            # Create credentials file
-            creds_file = temp_path / "creds.json"
-            creds_data = {"clientId": "opentdf", "clientSecret": "secret"}
-            with open(creds_file, "w") as f:
-                json.dump(creds_data, f)
 
             # Create input file
             input_file = temp_path / "input.txt"
@@ -53,7 +47,7 @@ class TestTDFReaderIntegration:
                 "--host",
                 platform_url,
                 "--with-client-creds-file",
-                str(creds_file),
+                str(temp_credentials_file),
                 "--tls-no-verify",
                 "--mime-type",
                 "text/plain",
@@ -119,18 +113,12 @@ class TestTDFReaderIntegration:
             assert policy_obj is not None, "Should be able to read policy object"
 
     @pytest.mark.integration
-    def test_read_otdfctl_tdf_with_attributes(self):
+    def test_read_otdfctl_tdf_with_attributes(self, temp_credentials_file):
         """Test reading TDF files created by otdfctl with data attributes."""
 
         # Create temporary directory for work
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
-
-            # Create credentials file
-            creds_file = temp_path / "creds.json"
-            creds_data = {"clientId": "sample-user", "clientSecret": "testuser123"}
-            with open(creds_file, "w") as f:
-                json.dump(creds_data, f)
 
             # Create input file
             input_file = temp_path / "input.txt"
@@ -148,7 +136,7 @@ class TestTDFReaderIntegration:
                 "--host",
                 platform_url,
                 "--with-client-creds-file",
-                str(creds_file),
+                str(temp_credentials_file),
                 "--tls-no-verify",
                 "--mime-type",
                 "text/plain",
@@ -212,18 +200,12 @@ class TestTDFReaderIntegration:
             )
 
     @pytest.mark.integration
-    def test_read_multiple_otdfctl_files(self):
+    def test_read_multiple_otdfctl_files(self, temp_credentials_file):
         """Test reading multiple TDF files of different types created by otdfctl."""
 
         # Create temporary directory for work
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
-
-            # Create credentials file
-            creds_file = temp_path / "creds.json"
-            creds_data = {"clientId": "opentdf", "clientSecret": "secret"}
-            with open(creds_file, "w") as f:
-                json.dump(creds_data, f)
 
             # Test different file types and content
             test_cases = [
@@ -267,7 +249,7 @@ class TestTDFReaderIntegration:
                         "--host",
                         platform_url,
                         "--with-client-creds-file",
-                        str(creds_file),
+                        str(temp_credentials_file),
                         "--tls-no-verify",
                         "--mime-type",
                         test_case["mime_type"],

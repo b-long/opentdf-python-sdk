@@ -33,15 +33,6 @@ else:
         otdfctl_flags = ["--tls-no-verify"]
 
 
-def _create_test_credentials(temp_path: Path) -> Path:
-    """Create a test credentials file in the given temporary directory."""
-    creds_file = temp_path / "test-creds.json"
-    creds_data = {"clientId": "opentdf", "clientSecret": "secret"}
-    with open(creds_file, "w") as f:
-        json.dump(creds_data, f)
-    return creds_file
-
-
 def _create_test_input_file(temp_path: Path, content: str) -> Path:
     """Create a test input file with the given content."""
     input_file = temp_path / "input.txt"
@@ -381,7 +372,7 @@ def _run_python_cli_decrypt(
 
 
 @pytest.mark.integration
-def test_otdfctl_encrypt_with_validation(collect_server_logs):
+def test_otdfctl_encrypt_with_validation(collect_server_logs, temp_credentials_file):
     """Integration test that uses otdfctl for encryption and validates the TDF thoroughly."""
 
     # Create temporary directory for work
@@ -389,7 +380,6 @@ def test_otdfctl_encrypt_with_validation(collect_server_logs):
         temp_path = Path(temp_dir)
 
         # Create test files
-        creds_file = _create_test_credentials(temp_path)
         input_content = "Hello, World! This is test content for otdfctl encryption."
         input_file = _create_test_input_file(temp_path, input_content)
 
@@ -403,7 +393,7 @@ def test_otdfctl_encrypt_with_validation(collect_server_logs):
             "--host",
             platform_url,
             "--with-client-creds-file",
-            str(creds_file),
+            str(temp_credentials_file),
             *otdfctl_flags,
             "--mime-type",
             "text/plain",
@@ -433,7 +423,7 @@ def test_otdfctl_encrypt_with_validation(collect_server_logs):
         _run_otdfctl_decrypt(
             otdfctl_tdf_output,
             platform_url,
-            creds_file,
+            temp_credentials_file,
             temp_path,
             collect_server_logs,
             input_content,
@@ -444,7 +434,7 @@ def test_otdfctl_encrypt_with_validation(collect_server_logs):
 
 
 @pytest.mark.integration
-def test_python_encrypt(collect_server_logs):
+def test_python_encrypt(collect_server_logs, temp_credentials_file):
     """Integration test that uses Python CLI for encryption only and verifies the TDF can be inspected"""
 
     # Create temporary directory for work
@@ -452,7 +442,6 @@ def test_python_encrypt(collect_server_logs):
         temp_path = Path(temp_dir)
 
         # Create test files
-        creds_file = _create_test_credentials(temp_path)
         input_content = "Hello, World! This is test content for Python CLI encryption."
         input_file = _create_test_input_file(temp_path, input_content)
 
@@ -469,7 +458,7 @@ def test_python_encrypt(collect_server_logs):
             "--platform-url",
             platform_url,
             "--with-client-creds-file",
-            str(creds_file),
+            str(temp_credentials_file),
             *cli_flags,
             "encrypt",
             "--mime-type",
@@ -500,7 +489,7 @@ def test_python_encrypt(collect_server_logs):
         _run_otdfctl_decrypt(
             python_tdf_output,
             platform_url,
-            creds_file,
+            temp_credentials_file,
             temp_path,
             collect_server_logs,
             input_content,
@@ -513,7 +502,7 @@ def test_python_encrypt(collect_server_logs):
 
 
 @pytest.mark.integration
-def test_cross_tool_compatibility(collect_server_logs):
+def test_cross_tool_compatibility(collect_server_logs, temp_credentials_file):
     """Test that TDFs created by one tool can be decrypted by the other."""
 
     # Create temporary directory for work
@@ -521,7 +510,6 @@ def test_cross_tool_compatibility(collect_server_logs):
         temp_path = Path(temp_dir)
 
         # Create test files
-        creds_file = _create_test_credentials(temp_path)
         input_content = "Cross-tool compatibility test content. Testing 123!"
         input_file = _create_test_input_file(temp_path, input_content)
 
@@ -535,7 +523,7 @@ def test_cross_tool_compatibility(collect_server_logs):
             "--host",
             platform_url,
             "--with-client-creds-file",
-            str(creds_file),
+            str(temp_credentials_file),
             *otdfctl_flags,
             "--mime-type",
             "text/plain",
@@ -562,7 +550,7 @@ def test_cross_tool_compatibility(collect_server_logs):
         _run_python_cli_decrypt(
             otdfctl_tdf_output,
             platform_url,
-            creds_file,
+            temp_credentials_file,
             temp_path,
             collect_server_logs,
             input_content,
@@ -581,7 +569,7 @@ def test_cross_tool_compatibility(collect_server_logs):
             "--platform-url",
             platform_url,
             "--with-client-creds-file",
-            str(creds_file),
+            str(temp_credentials_file),
             *cli_flags,
             "encrypt",
             "--mime-type",
@@ -609,7 +597,7 @@ def test_cross_tool_compatibility(collect_server_logs):
         _run_otdfctl_decrypt(
             python_tdf_output,
             platform_url,
-            creds_file,
+            temp_credentials_file,
             temp_path,
             collect_server_logs,
             input_content,
@@ -621,7 +609,7 @@ def test_cross_tool_compatibility(collect_server_logs):
 
 
 @pytest.mark.integration
-def test_different_content_types(collect_server_logs):
+def test_different_content_types(collect_server_logs, temp_credentials_file):
     """Test encryption/decryption with different types of content."""
 
     test_cases = [
@@ -634,7 +622,6 @@ def test_different_content_types(collect_server_logs):
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
-        creds_file = _create_test_credentials(temp_path)
 
         for filename, content in test_cases:
             print(f"\n--- Testing {filename} (content length: {len(content)}) ---")
@@ -657,7 +644,7 @@ def test_different_content_types(collect_server_logs):
                 "--platform-url",
                 platform_url,
                 "--with-client-creds-file",
-                str(creds_file),
+                str(temp_credentials_file),
                 *cli_flags,
                 "encrypt",
                 "--mime-type",
@@ -688,7 +675,7 @@ def test_different_content_types(collect_server_logs):
             _run_otdfctl_decrypt(
                 python_tdf_output,
                 platform_url,
-                creds_file,
+                temp_credentials_file,
                 temp_path,
                 collect_server_logs,
                 content,
@@ -701,7 +688,7 @@ def test_different_content_types(collect_server_logs):
 
 @pytest.mark.skip("Skipping test for now due to known issues with empty content")
 @pytest.mark.integration
-def test_different_content_types_empty(collect_server_logs):
+def test_different_content_types_empty(collect_server_logs, temp_credentials_file):
     """Test encryption/decryption with different types of content."""
 
     test_cases = [
@@ -711,7 +698,6 @@ def test_different_content_types_empty(collect_server_logs):
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
-        creds_file = _create_test_credentials(temp_path)
 
         for filename, content in test_cases:
             print(f"\n--- Testing {filename} (content length: {len(content)}) ---")
@@ -734,7 +720,7 @@ def test_different_content_types_empty(collect_server_logs):
                 "--platform-url",
                 platform_url,
                 "--with-client-creds-file",
-                str(creds_file),
+                str(temp_credentials_file),
                 *cli_flags,
                 "encrypt",
                 "--mime-type",
@@ -765,7 +751,7 @@ def test_different_content_types_empty(collect_server_logs):
             _run_otdfctl_decrypt(
                 python_tdf_output,
                 platform_url,
-                creds_file,
+                temp_credentials_file,
                 temp_path,
                 collect_server_logs,
                 content,
