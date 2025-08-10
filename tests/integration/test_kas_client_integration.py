@@ -6,12 +6,12 @@ import pytest
 from otdf_python.kas_client import KASClient, KeyAccess
 from otdf_python.kas_key_cache import KASKeyCache
 from otdf_python.sdk_exceptions import SDKException
+from tests.config_pydantic import CONFIG_TDF
 
 
 @pytest.mark.integration
 def test_connect_rpc_public_key_retrieval():
     """Test Connect RPC public key retrieval using live backend server."""
-    from tests.config_pydantic import CONFIG_TDF
     from otdf_python.config import KASInfo
 
     # Create KAS info from configuration
@@ -43,7 +43,6 @@ def test_connect_rpc_public_key_retrieval():
 @pytest.mark.integration
 def test_public_key_caching():
     """Test that retrieving the public key uses the cache on subsequent calls."""
-    from tests.config_pydantic import CONFIG_TDF
     from otdf_python.config import KASInfo
 
     # Create a custom cache instance to verify caching behavior
@@ -85,7 +84,6 @@ def test_public_key_caching():
 @pytest.mark.integration
 def test_unwrap_success():
     """Test successful key unwrapping using Connect RPC."""
-    from tests.config_pydantic import CONFIG_TDF
     import base64
 
     # Create a token source for authentication
@@ -131,7 +129,6 @@ def test_unwrap_success():
 @pytest.mark.integration
 def test_unwrap_failure():
     """Test unwrap failure handling with invalid data."""
-    from tests.config_pydantic import CONFIG_TDF
     import base64
 
     # Create a token source for authentication
@@ -169,7 +166,6 @@ def test_unwrap_failure():
 @pytest.mark.integration
 def test_kas_url_normalization():
     """Test KAS URL normalization with different URL formats."""
-    from tests.config_pydantic import CONFIG_TDF
     from urllib.parse import urlparse
 
     # Test with plaintext client (HTTP)

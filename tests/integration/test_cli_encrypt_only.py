@@ -620,17 +620,92 @@ def test_cross_tool_compatibility(collect_server_logs):
         )
 
 
-@pytest.mark.skip("Skipping test for now due to known issues with content types")
 @pytest.mark.integration
 def test_different_content_types(collect_server_logs):
     """Test encryption/decryption with different types of content."""
 
     test_cases = [
         ("short.txt", "x"),  # Single character
-        ("empty.txt", ""),  # Empty file
         ("multiline.txt", "Line 1\nLine 2\nLine 3\n"),  # Multi-line content
         ("unicode.txt", "Hello 世界! 🌍 Testing UTF-8 content."),  # Unicode content
         ("large.txt", "A" * 10000),  # Large content
+    ]
+
+    # Create temporary directory for work
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        creds_file = _create_test_credentials(temp_path)
+
+        for filename, content in test_cases:
+            print(f"\n--- Testing {filename} (content length: {len(content)}) ---")
+
+            # Create input file
+            input_file = temp_path / filename
+            # Use binary mode for consistent handling of all content types
+            with open(input_file, "w", encoding="utf-8") as f:
+                f.write(content)
+
+            # Test with Python CLI
+            python_tdf_output = temp_path / f"python_{filename}.tdf"
+
+            python_encrypt_cmd = [
+                "uv",
+                "run",
+                "python",
+                "-m",
+                "otdf_python",
+                "--platform-url",
+                platform_url,
+                "--with-client-creds-file",
+                str(creds_file),
+                *cli_flags,
+                "encrypt",
+                "--mime-type",
+                "text/plain",
+                str(input_file),
+                "-o",
+                str(python_tdf_output),
+            ]
+
+            python_encrypt_result = subprocess.run(
+                python_encrypt_cmd,
+                capture_output=True,
+                text=True,
+                cwd=Path(__file__).parent.parent,
+                env=original_env,
+            )
+
+            _handle_subprocess_error(
+                python_encrypt_result,
+                collect_server_logs,
+                f"Python CLI encrypt ({filename})",
+            )
+
+            # Validate TDF structure
+            _validate_tdf_file(python_tdf_output, f"Python CLI ({filename})")
+
+            # Decrypt and validate content
+            _run_otdfctl_decrypt(
+                python_tdf_output,
+                platform_url,
+                creds_file,
+                temp_path,
+                collect_server_logs,
+                content,
+            )
+
+            print(f"✓ Successfully processed {filename}")
+
+        print("✓ All content types processed successfully")
+
+
+@pytest.mark.skip("Skipping test for now due to known issues with empty content")
+@pytest.mark.integration
+def test_different_content_types_empty(collect_server_logs):
+    """Test encryption/decryption with different types of content."""
+
+    test_cases = [
+        ("empty.txt", ""),  # Empty file
     ]
 
     # Create temporary directory for work
