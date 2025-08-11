@@ -1,0 +1,181 @@
+# Based on
+#   https://github.com/opentdf/java-sdk/blob/v0.6.1/.github/workflows/checks.yaml
+#
+# Except, that this is a "Composite Action", and specifies 'shell: bash' for
+# each 'run:' step.
+name: "NEW: Platform Integration testing"
+
+on:
+  workflow_call:
+    inputs:
+      wheel:
+        required: true
+        type: string
+      python_version:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  integration_test:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+
+      # - uses: bufbuild/buf-setup-action@382440cdb8ec7bc25a68d7b4711163d95f7cc3aa
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check out platform
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        with:
+          repository: opentdf/platform
+          ref: main
+          path: platform
+      - name: Set up go
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491
+        with:
+          go-version: "1.24.x"
+          check-latest: false
+          cache-dependency-path: |
+            platform/service/go.sum
+            platform/examples/go.sum
+            platform/protocol/go/go.sum
+            platform/sdk/go.sum
+      - run: go mod download
+        shell: bash
+        working-directory: platform
+      - run: go mod verify
+        shell: bash
+        working-directory: platform
+      - name: Create keys
+        shell: bash
+        run: |
+          .github/scripts/init-temp-keys.sh
+          cp opentdf-dev.yaml opentdf.yaml
+          sudo chmod -R 777 ./keys
+        working-directory: platform
+      # - name: Trust the locally issued cert
+      #   run: |
+      #     keytool \
+      #       -importcert \
+      #       -storepass changeit \
+      #       -noprompt \
+      #       -file localhost.crt \
+      #       -keystore $JAVA_HOME/lib/security/cacerts \
+      #       -alias localhost-for-tests
+      #   working-directory: platform/keys
+      - name: Bring the services up
+        shell: bash
+        run: docker compose up -d --wait --wait-timeout 240
+        working-directory: platform
+      - name: Provision keycloak
+        shell: bash
+        run: go run ./service provision keycloak
+        working-directory: platform
+      - name: Provision fixtures
+        shell: bash
+        run: go run ./service provision fixtures
+        working-directory: platform
+      - name: Start server in background
+        uses: JarvusInnovations/background-action@2428e7b970a846423095c79d43f759abf979a635
+        with:
+          run: |
+            go run ./service start
+          wait-on: |
+            tcp:localhost:8080
+          log-output-if: true
+          wait-for: 90s
+          working-directory: platform
+      - name: Get grpcurl
+        shell: bash
+        run: go install github.com/fullstorydev/grpcurl/cmd/grpcurl@v1.8.9
+      - name: Make sure that the platform is up
+        shell: bash
+        run: |
+          grpcurl -plaintext localhost:8080 list && \
+          grpcurl -plaintext localhost:8080 kas.AccessService/PublicKey
+
+      - name: Install otdfctl
+        run: go install github.com/opentdf/otdfctl@latest
+        shell: bash
+
+      - name: Create creds.json for otdfctl
+        run: echo -n '{"clientId":"opentdf-sdk","clientSecret":"secret"}' > creds.json
+        shell: bash
+
+      - name: Create a plaintext file
+        run: echo "integration test secret" > secret.txt
+        shell: bash
+
+      - name: Encrypt file with otdfctl (no attributes)
+        run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
+          otdfctl encrypt -o secret.txt.tdf --host http://localhost:8080 --tls-no-verify --with-client-creds-file creds.json secret.txt
+        shell: bash
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Run all tests, minus integration tests
+        env:
+          OPENTDF_CLIENT_ID: "opentdf"
+          OPENTDF_CLIENT_SECRET: "secret"
+          OPENTDF_HOSTNAME: "localhost:8080"
+          OIDC_TOKEN_ENDPOINT: "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
+          OPENTDF_KAS_URL: "http://localhost:8080/kas"
+          INSECURE_SKIP_VERIFY: "TRUE"
+          TEST_OPENTDF_ATTRIBUTE_1: "https://example.com/attr/attr1/value/value1"
+          TEST_OPENTDF_ATTRIBUTE_2: "https://example.com/attr/attr1/value/value2"
+        run: |
+          uv sync
+          # Skip the tests marked "integration"
+          uv run pytest -m "not integration" --tb=short -vv tests
+        shell: bash
+
+      - name: Run integration tests
+        env:
+          OPENTDF_CLIENT_ID: "opentdf"
+          OPENTDF_CLIENT_SECRET: "secret"
+          OPENTDF_PLATFORM_HOST: "localhost:8080"
+          OPENTDF_PLATFORM_URL: "http://localhost:8080"
+          OIDC_OP_TOKEN_ENDPOINT: "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
+          OPENTDF_KAS_URL: "http://localhost:8080/kas"
+          INSECURE_SKIP_VERIFY: "TRUE"
+          TEST_OPENTDF_ATTRIBUTE_1: "https://example.com/attr/attr1/value/value1"
+          TEST_OPENTDF_ATTRIBUTE_2: "https://example.com/attr/attr1/value/value2"
+        run: |
+          # Run check_entitlements.sh
+          ./.github/check_entitlements.sh
+
+          uv sync
+          # Skip the tests marked "integration"
+          uv run pytest -m "integration" --tb=short -vv tests
+        shell: bash
+
+  # platform-xtest:
+  #   permissions:
+  #     contents: read
+  #     packages: read
+  #   needs: platform-integration
+  #   uses: opentdf/tests/.github/workflows/xtest.yml@main
+  #   with:
+  #     java-ref: ${{ github.ref }}
+
+  # ci:
+  #   needs:
+  #     - platform-integration
+  #     - platform-xtest
+  #     - mavenverify
+  #     - pr
+  #   runs-on: ubuntu-22.04
+  #   if: always()
+  #   steps:
+  #     - if: contains(needs.*.result, 'failure')
+  #       run: echo "Failed due to ${{ contains(needs.*.result, 'failure') }}" && exit 1

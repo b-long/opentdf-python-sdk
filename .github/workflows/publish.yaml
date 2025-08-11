@@ -1,25 +1,19 @@
 name: PyPIBuild
 
-# Based on:
-# - https://github.com/tuananh/py-event-ruler/blob/0129d15e17d0023863a4d0e0e25e5256988b5c5b/.github/workflows/publish.yml
-# - https://github.com/adhadse/excelFormExtractor/blob/1f82a97808b3cf3cdb25dcefdc1c6a1c74c5ad45/.github/workflows/build.yaml
-
-
 on:
-    push:
-        branches:
-            - main
-    workflow_dispatch:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build_macos:
-    # if: false
     name: MacOS ${{ matrix.os_version }} Python 3${{ matrix.python3_version }} ${{ matrix.arch_cibw_go[0] }}
     strategy:
       fail-fast: false
       matrix:
         os_version: [ 13 ]
-        python3_version: [ 10, 11, 12 ]
+        python3_version: [ 12, 13 ]  # Focus on Python 3.12+ as required by pyproject.toml
         arch_cibw_go:
           - [ "x86_64", "amd64" ]
           - [ "arm64", "arm64" ]
@@ -27,53 +21,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: set up Go
-        uses: actions/setup-go@v3
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
-          go-version: "1.24.x"
+          version: "latest"
 
-      - name: Setup project files
-        run: |
-            rm -rf poetry.lock pyproject.toml
-            cp setup_ci.py setup.py
-
-      - name: install gopy
-        run: go install github.com/go-python/gopy@v0.4.10
-
-      - name: install goimports
-        run: go install golang.org/x/tools/cmd/goimports@latest
-
-      - name: install python 3.${{ matrix.python3_version }}
-        run: |
-          brew install --force --overwrite python@3.${{ matrix.python3_version }}
-          ln -s /usr/local/opt/python@3.${{ matrix.python3_version }}/bin/python3.${{ matrix.python3_version }}  /usr/local/bin/python_for_build
-          /usr/local/bin/python_for_build --version
-
-      - name: install cibuildwheel and pybindgen
-        run: /usr/local/bin/python_for_build -m pip install --break-system-packages cibuildwheel==2.21.3 pybindgen
-
-      - name: build wheels
-        run: /usr/local/bin/python_for_build -m cibuildwheel --output-dir wheelhouse
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.21.3
         env:
-          CGO_ENABLED: 1  # build fails for arm if unset
           CIBW_ARCHS: ${{ matrix.arch_cibw_go[0] }}
-          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
-          PYTHON_BINARY_PATH: /usr/local/bin/python_for_build
           CIBW_BUILD: "cp3${{ matrix.python3_version }}-*"
-          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp313-* *-musllinux_x86_64"
-          CIBW_ENVIRONMENT: >
-            PATH=$PATH:/usr/local/go/bin
-            GOARCH=${{ matrix.arch_cibw_go[1] }}
-
-
-      # FIXME: Test before uploading
-      # - name: Test Python wheel
-      #   run: |
-      #       # Test wheel installation
-      #       /usr/local/bin/python_for_build -m pip install wheelhouse/*.whl
-
-      #       # Test wheel functionality
-      #       /usr/local/bin/python_for_build validate_otdf_python.py
+          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* cp311-* *-musllinux_x86_64"
+          CIBW_TEST_COMMAND: "uv run python -c 'import otdf_python; print(\"Package imported successfully\")'"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -82,65 +41,45 @@ jobs:
           path: ./wheelhouse/*.whl
 
   build_linux_x86_64:
-    # if: false
     name: Linux Python x86_64
     runs-on: ubuntu-22.04
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup project files
-        run: |
-            rm -rf poetry.lock pyproject.toml
-            cp setup_ci.py setup.py
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.21.3
         env:
-          CIBW_BUILD: "cp3*_x86_64 cp3*_aarch64"
-          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp313-* *-musllinux_x86_64"
-          CIBW_ARCHS: "native"
-          CIBW_ENVIRONMENT: >
-            PATH=$PATH:/usr/local/go/bin
-          CIBW_BEFORE_ALL_LINUX: |
-            curl -o go.tar.gz https://dl.google.com/go/go1.24.5.linux-amd64.tar.gz
-            tar -C /usr/local -xzf go.tar.gz
-            go install github.com/go-python/gopy@v0.4.10
-            go install golang.org/x/tools/cmd/goimports@latest
-
-
-      # FIXME: Test before uploading
-      # - name: Test Python wheel
-      #   run: |
-      #       # Test wheel installation
-      #       python3 -m pip install wheelhouse/*.whl
-
-      #       # Test wheel functionality
-      #       python3 validate_otdf_python.py
+          CIBW_BUILD: "cp312-* cp313-*"  # Focus on Python 3.12+ as required
+          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* cp311-* *-musllinux_x86_64"
+          CIBW_ARCHS: "x86_64"
+          CIBW_TEST_COMMAND: "uv run python -c 'import otdf_python; print(\"Package imported successfully\")'"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-linux-amd64
+          name: wheels-linux-x86_64
           path: ./wheelhouse/*.whl
 
   build_linux_arm:
     name: Linux Python ARM
     runs-on: ubuntu-22.04
     timeout-minutes: 60
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup project files
-        run: |
-            rm -rf poetry.lock pyproject.toml
-            cp setup_ci.py setup.py
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
 
       # QEMU is used by cibuildwheel to cross-compile wheels
       # https://cibuildwheel.pypa.io/en/stable/faq/#emulation
       - name: Set up QEMU
-        if: runner.os == 'Linux'
         uses: docker/setup-qemu-action@v3
         with:
           platforms: all
@@ -148,16 +87,10 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.21.3
         env:
-          CIBW_BUILD: "cp3*_aarch64"
-          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp313-* *-musllinux_x86_64"
+          CIBW_BUILD: "cp312-* cp313-*"  # Focus on Python 3.12+ as required
+          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* cp311-* *-musllinux_x86_64"
           CIBW_ARCHS: "aarch64"
-          CIBW_ENVIRONMENT: >
-            PATH=$PATH:/usr/local/go/bin
-          CIBW_BEFORE_ALL_LINUX: |
-            curl -o go.tar.gz https://dl.google.com/go/go1.24.5.linux-arm64.tar.gz
-            tar -C /usr/local -xzf go.tar.gz
-            go install github.com/go-python/gopy@v0.4.10
-            go install golang.org/x/tools/cmd/goimports@latest
+          CIBW_TEST_COMMAND: "uv run python -c 'import otdf_python; print(\"Package imported successfully\")'"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -219,6 +152,14 @@ jobs:
     steps:
         - uses: actions/checkout@v4
         - uses: actions/download-artifact@v4
+          with:
+            pattern: wheels-*
+            merge-multiple: true
+
+        - name: Install uv
+          uses: astral-sh/setup-uv@v6
+          with:
+            version: "latest"
 
         - name: Collect all wheels
           run: |
@@ -229,15 +170,14 @@ jobs:
 
         - name: Store version
           run: |
-              pip install poetry
-
-              PROJECT_VESION=$(poetry version -s)
-              echo "PROJECT_VESION=$PROJECT_VESION" >> $GITHUB_ENV
+              uv add --dev hatchling
+              PROJECT_VERSION=$(uv run python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+              echo "PROJECT_VERSION=$PROJECT_VERSION" >> $GITHUB_ENV
 
         # Publish with "trusted publisher" mechanism:
         # https://docs.pypi.org/trusted-publishers/
         #
-        # Requires GHA token permission (above in YAML) and PyPI magement:
+        # Requires GHA token permission (above in YAML) and PyPI management:
         #   https://pypi.org/manage/project/otdf-python/settings/publishing/
         - name: Publish package distributions to PyPI
           uses: pypa/gh-action-pypi-publish@release/v1
@@ -250,6 +190,6 @@ jobs:
             artifacts: |
                 README.md,
                 dist/*.whl
-            body: otdf_python version ${{ env.PROJECT_VESION }}
-            # tag: "dev-${{ github.job }}-${{ env.PROJECT_VESION }}"
-            tag: v${{ env.PROJECT_VESION }}
+            body: otdf_python version ${{ env.PROJECT_VERSION }}
+            # tag: "dev-${{ github.job }}-${{ env.PROJECT_VERSION }}"
+            tag: v${{ env.PROJECT_VERSION }}
