@@ -4,44 +4,12 @@ on:
   push:
     branches:
       - develop
+      - chore/rewrite-in-python
   workflow_dispatch:
 
 jobs:
-  build_macos:
-    name: MacOS ${{ matrix.os_version }} Python 3${{ matrix.python3_version }} ${{ matrix.arch_cibw_go[0] }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os_version: [ 13 ]
-        python3_version: [ 12, 13 ]  # Focus on Python 3.12+ as required by pyproject.toml
-        arch_cibw_go:
-          - [ "x86_64", "amd64" ]
-          - [ "arm64", "arm64" ]
-    runs-on: macos-${{ matrix.os_version }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-        with:
-          version: "latest"
-
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.21.3
-        env:
-          CIBW_ARCHS: ${{ matrix.arch_cibw_go[0] }}
-          CIBW_BUILD: "cp3${{ matrix.python3_version }}-*"
-          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* cp311-* *-musllinux_x86_64"
-          CIBW_TEST_COMMAND: "uv run python -c 'import otdf_python; print(\"Package imported successfully\")'"
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-macos${{ matrix.os_version }}-py3${{ matrix.python3_version }}-${{ matrix.arch_cibw_go[0] }}
-          path: ./wheelhouse/*.whl
-
-  build_linux_x86_64:
-    name: Linux Python x86_64
+  build:
+    name: Build Python Package
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -51,52 +19,19 @@ jobs:
         with:
           version: "latest"
 
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.21.3
-        env:
-          CIBW_BUILD: "cp312-* cp313-*"  # Focus on Python 3.12+ as required
-          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* cp311-* *-musllinux_x86_64"
-          CIBW_ARCHS: "x86_64"
-          CIBW_TEST_COMMAND: "uv run python -c 'import otdf_python; print(\"Package imported successfully\")'"
+      - name: Build package
+        run: |
+          uv build
+
+      - name: Test import
+        run: |
+          uv run python -c 'import otdf_python; print("Package imported successfully")'
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-linux-x86_64
-          path: ./wheelhouse/*.whl
-
-  build_linux_arm:
-    name: Linux Python ARM
-    runs-on: ubuntu-22.04
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-        with:
-          version: "latest"
-
-      # QEMU is used by cibuildwheel to cross-compile wheels
-      # https://cibuildwheel.pypa.io/en/stable/faq/#emulation
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: all
-
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.21.3
-        env:
-          CIBW_BUILD: "cp312-* cp313-*"  # Focus on Python 3.12+ as required
-          CIBW_SKIP: "cp36-* cp37-* cp38-* cp39-* cp310-* cp311-* *-musllinux_x86_64"
-          CIBW_ARCHS: "aarch64"
-          CIBW_TEST_COMMAND: "uv run python -c 'import otdf_python; print(\"Package imported successfully\")'"
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-linux-arm
-          path: ./wheelhouse/*.whl
+          name: python-package
+          path: ./dist/*
 
 #   build_windows:
 #     if: false  # not working
@@ -144,7 +79,7 @@ jobs:
       contents: write
       # This permission is mandatory for PyPI's trusted publishing
       id-token: write
-    needs: [build_macos, build_linux_x86_64, build_linux_arm]
+    needs: [build]
     runs-on: ubuntu-22.04
     # If branch is 'develop'
     if: github.ref == 'refs/heads/develop'
@@ -158,12 +93,15 @@ jobs:
           with:
             version: "latest"
 
-        - name: Collect all wheels
+        - name: Collect all artifacts
           run: |
-            # ls -R
-            mkdir dist
-            for f in $(find . -type f -name '*.whl'); do mv ${f} dist; done;
-            ls -R dist
+            # List downloaded artifacts
+            ls -la
+            # Move artifacts to dist directory
+            mkdir -p dist
+            find . -name "*.whl" -o -name "*.tar.gz" | head -10
+            cp python-package/* dist/ || echo "No artifacts found in python-package"
+            ls -la dist/
 
         - name: Store version
           run: |
