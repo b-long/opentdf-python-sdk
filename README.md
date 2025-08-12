@@ -81,47 +81,104 @@ pip install otdf-python
 ### Basic Configuration
 
 ```python
-from otdf_python.config import Config
-from otdf_python.sdk import SDK
+from otdf_python.sdk_builder import SDKBuilder
 
-# Create configuration
-config = Config(
-    platform_endpoint="https://platform.example.com",
-    client_id="your-client-id",
-    client_secret="your-client-secret"
-)
+# Create and configure SDK using builder pattern
+builder = SDKBuilder()
+builder.set_platform_endpoint("https://platform.example.com")
+builder.client_secret("your-client-id", "your-client-secret")
 
-# Initialize SDK
-sdk = SDK(config)
+# Build the SDK instance
+sdk = builder.build()
+```
+
+### Advanced Configuration
+
+```python
+from otdf_python.sdk_builder import SDKBuilder
+
+# Create SDK with additional configuration options
+builder = SDKBuilder()
+builder.set_platform_endpoint("https://platform.example.com")
+builder.set_issuer_endpoint("https://auth.example.com")
+builder.client_secret("your-client-id", "your-client-secret")
+
+# Examples, for local development
+
+# Use HTTP instead of HTTPS
+builder.use_insecure_plaintext_connection(True)
+
+# Or
+# Skip TLS verification
+builder.use_insecure_skip_verify(True)
+
+# Build the SDK instance
+sdk = builder.build()
 ```
 
 ### Encrypt Data
 
 ```python
-# Encrypt a string
-encrypted_data = sdk.encrypt_string(
-    data="Hello, World!",
-    attributes=["https://example.com/attr/classification/value/public"]
-)
+from io import BytesIO
 
-# Encrypt a file
-sdk.encrypt_file(
-    input_path="plaintext.txt",
-    output_path="encrypted.tdf"
-)
+# Create TDF configuration with attributes
+config = sdk.new_tdf_config(attributes=["https://example.com/attr/classification/value/public"])
+
+# Encrypt data to TDF format
+input_data = b"Hello, World!"
+output_stream = BytesIO()
+manifest, size, _ = sdk.create_tdf(BytesIO(input_data), config, output_stream)
+encrypted_data = output_stream.getvalue()
+
+# Save encrypted data to file
+with open("encrypted.tdf", "wb") as f:
+    f.write(encrypted_data)
 ```
 
 ### Decrypt Data
 
 ```python
-# Decrypt to string
-decrypted_text = sdk.decrypt_string(encrypted_data)
+from otdf_python.tdf import TDFReaderConfig
 
-# Decrypt a file
-sdk.decrypt_file(
-    input_path="encrypted.tdf",
-    output_path="decrypted.txt"
+# Read encrypted TDF file
+with open("encrypted.tdf", "rb") as f:
+    encrypted_data = f.read()
+
+# Decrypt TDF
+reader_config = TDFReaderConfig()
+tdf_reader = sdk.load_tdf(encrypted_data, reader_config)
+decrypted_data = tdf_reader.payload
+
+# Save decrypted data
+with open("decrypted.txt", "wb") as f:
+    f.write(decrypted_data)
+
+# Don't forget to close the SDK when done
+sdk.close()
+```
+
+### NanoTDF Support
+
+```python
+from io import BytesIO
+from otdf_python.config import NanoTDFConfig
+
+# Create NanoTDF configuration
+config = NanoTDFConfig(
+    attributes=["https://example.com/attr/classification/value/public"],
+    ecc_mode="ecdsa"  # or "gmac"
 )
+
+# Encrypt to NanoTDF format
+input_data = b"Hello, World!"
+output_stream = BytesIO()
+size = sdk.create_nano_tdf(BytesIO(input_data), output_stream, config)
+encrypted_data = output_stream.getvalue()
+
+# Decrypt NanoTDF
+decrypted_stream = BytesIO()
+sdk.read_nano_tdf(BytesIO(encrypted_data), decrypted_stream, config)
+decrypted_data = decrypted_stream.getvalue()
 ```
 
 ## Project Structure
