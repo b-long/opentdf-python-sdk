@@ -35,7 +35,7 @@ def test_cli_version():
     )
     assert result.returncode == 0
     assert "OpenTDF Python SDK" in result.stdout
-    assert "0.3.0a2" in result.stdout
+    assert "0.3.0a3" in result.stdout
 
 
 def test_cli_encrypt_help():

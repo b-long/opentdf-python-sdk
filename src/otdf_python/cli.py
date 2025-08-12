@@ -22,7 +22,7 @@ import contextlib
 
 
 # Version - get from project metadata
-__version__ = "0.3.0a2"
+__version__ = "0.3.0a3"
 
 
 # Set up logging
