@@ -1,6 +1,6 @@
 [project]
 name = "otdf-python"
-version = "0.3.0a2"
+version = "0.3.0a3"
 description = "Unofficial OpenTDF SDK for Python"
 readme = "README.md"
 authors = [
@@ -13,13 +13,12 @@ dependencies = [
     "httpx>=0.28.1",
     "protobuf>=6.31.1",
     "pyjwt>=2.10.1",
+    "typing-extensions>=4.14.1",
     # Legacy gRPC support (may be removed in future versions)
     "grpcio>=1.74.0",
     "grpcio-tools>=1.74.0",
     "grpcio-status>=1.74.0",
     "protoc-gen-openapiv2>=0.0.1",
-    # Local workspace dependency for proto files
-    "otdf-python-proto",
 ]
 
 [build-system]
@@ -29,13 +28,8 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = [
     "src/otdf_python",
+    "otdf-python-proto/src/otdf_python_proto",
 ]
-
-[tool.uv.sources]
-otdf-python-proto = { workspace = true }
-
-[tool.uv.workspace]
-members = [".", "otdf-python-proto"]
 
 
 [dependency-groups]
@@ -49,6 +43,8 @@ dev = [
 markers = [
     "integration: mark a test as an integration test."
 ]
+testpaths = ["tests"]
+norecursedirs = ["otdf-python-proto"]
 
 [tool.ruff]
 line-length = 88
