@@ -1,6 +1,6 @@
 [project]
 name = "otdf-python"
-version = "0.3.0a1"
+version = "0.3.0a2"
 description = "Unofficial OpenTDF SDK for Python"
 readme = "README.md"
 authors = [
@@ -18,12 +18,24 @@ dependencies = [
     "grpcio-tools>=1.74.0",
     "grpcio-status>=1.74.0",
     "protoc-gen-openapiv2>=0.0.1",
+    # Local workspace dependency for proto files
     "otdf-python-proto",
 ]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "src/otdf_python",
+]
+
+[tool.uv.sources]
+otdf-python-proto = { workspace = true }
+
+[tool.uv.workspace]
+members = [".", "otdf-python-proto"]
 
 
 [dependency-groups]
@@ -68,11 +80,3 @@ lint.select = [
     "FURB",      # refurb (FURB)
     "PT018",     # flake8-pytest-style (pytest style)
 ]
-
-[tool.uv.workspace]
-members = [
-    "otdf-python-proto",
-]
-
-[tool.uv.sources]
-otdf-python-proto = { workspace = true }
