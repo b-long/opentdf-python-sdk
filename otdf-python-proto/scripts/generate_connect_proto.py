@@ -26,7 +26,7 @@ def check_dependencies() -> bool:
         try:
             subprocess.run(check_cmd, shell=True, capture_output=True, check=True)
             print(f"✓ {name} is available")
-        except (subprocess.CalledProcessError, FileNotFoundError):
+        except (subprocess.CalledProcessError, FileNotFoundError):  # noqa: PERF203
             missing.append(name)
             print(f"✗ {name} is missing")
 
@@ -104,7 +104,7 @@ def copy_opentdf_proto_files(proto_gen_dir: Path) -> bool:
 
                     copied_files += 1
 
-                except Exception as e:
+                except Exception as e:  # noqa: PERF203
                     print(f"  Warning: Failed to copy {relative_path}: {e}")
 
         print(f"Found and copied {copied_files} proto files from repository")
@@ -235,7 +235,7 @@ def _fix_ignore_if_default_value(proto_files_dir):
 
             print(f"Updated {proto_file.name} to use IGNORE_IF_ZERO_VALUE")
 
-        except Exception as e:
+        except Exception as e:  # noqa: PERF203
             print(f"Error updating {proto_file.name}: {e}")
 
 

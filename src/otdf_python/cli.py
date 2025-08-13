@@ -3,7 +3,7 @@
 OpenTDF Python CLI
 
 A command-line interface for encrypting and decrypting files using OpenTDF.
-Provides encrypt, decrypt, and inspect commands similar to the TypeScript CLI.
+Provides encrypt, decrypt, and inspect commands similar to the otdfctl CLI.
 """
 
 import argparse
@@ -146,7 +146,7 @@ def build_sdk(args) -> SDK:
     else:
         raise CLIError(
             "CRITICAL",
-            "Authentication required: provide --with-client-creds-file, --client-id and --client-secret, or --auth",
+            "Authentication required: provide --with-client-creds-file OR --client-id and --client-secret",
         )
 
     if hasattr(args, "plaintext") and args.plaintext:
@@ -479,11 +479,6 @@ Where creds.json contains:
     )
     auth_group.add_argument("--client-id", help="OAuth client ID")
     auth_group.add_argument("--client-secret", help="OAuth client secret")
-    # Keep --auth for backward compatibility
-    auth_group.add_argument(
-        "--auth",
-        help="Combined OAuth credentials (clientId:clientSecret) - deprecated, use --with-client-creds-file",
-    )
 
     # Security options
     security_group = parser.add_argument_group("Security")

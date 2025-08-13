@@ -1,5 +1,6 @@
 from otdf_python.sdk import (
     SDK,
+    KAS,
     AttributesServiceClientInterface,
     NamespaceServiceClientInterface,
     SubjectMappingServiceClientInterface,
@@ -9,7 +10,7 @@ from otdf_python.sdk import (
 )
 
 
-class MockKAS(SDK.KAS):
+class MockKAS(KAS):
     def get_public_key(self, kas_info):
         return "mock-public-key"
 
