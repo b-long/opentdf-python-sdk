@@ -1,0 +1,1 @@
+"""entity protobuf definitions."""

@@ -1,0 +1,160 @@
+syntax = "proto3";
+
+package kas;
+
+import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/wrappers.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "OpenTDF Key Access Service";
+    version: "1.5.0";
+    license: {
+      name: "BSD 3-Clause Clear";
+      url: "https://github.com/opentdf/backend/blob/master/LICENSE";
+    };
+  };
+};
+
+message InfoRequest {
+  // Intentionally empty. May include features later.
+}
+
+// Service application level metadata
+message InfoResponse {
+  string version = 1;
+}
+
+message LegacyPublicKeyRequest {
+  string algorithm = 1;
+}
+
+message PolicyBinding {
+  string algorithm = 1 [json_name = "alg"];
+  string hash = 2;
+}
+
+message KeyAccess {
+  string encrypted_metadata = 1;
+  PolicyBinding policy_binding = 2;
+  string protocol = 3;
+  string key_type = 4 [json_name = "type"];
+  string kas_url = 5 [json_name = "url"];
+  string kid = 6;
+  string split_id = 7 [json_name = "sid"];
+  bytes wrapped_key = 8;
+  // header is only used for NanoTDFs
+  bytes header = 9;
+
+  // For wrapping with an ECDH derived key, when type=ec-wrapped.
+  // Should be a PEM-encoded PKCS#8 (asn.1) value.
+  string ephemeral_public_key = 10;
+}
+
+message UnsignedRewrapRequest {
+  message WithPolicy {
+    string id = 1;
+    string body = 2;
+  }
+  message WithKeyAccessObject {
+    string key_access_object_id = 1;
+    KeyAccess key_access_object = 2;
+  }
+
+  message WithPolicyRequest {
+    repeated WithKeyAccessObject key_access_objects = 1;
+    WithPolicy policy = 2;
+    string algorithm = 3;
+  }
+
+  string client_public_key = 1;
+  repeated WithPolicyRequest requests = 2;
+
+  // Used for legacy non-bulk requests
+  KeyAccess key_access = 3 [deprecated = true];
+  // Used for legacy non-bulk requests
+  string policy = 4 [deprecated = true];
+  // Used for legacy non-bulk requests
+  string algorithm = 5 [deprecated = true];
+}
+message PublicKeyRequest {
+  string algorithm = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "algorithm type rsa:<keysize> or ec:<curvename>"}];
+  string fmt = 2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "response format"}];
+  string v = 3 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {description: "request version"}];
+}
+
+message PublicKeyResponse {
+  string public_key = 1;
+  string kid = 2;
+}
+
+message RewrapRequest {
+  reserved 2;
+  reserved "bearer";
+  string signed_request_token = 1;
+}
+
+
+message KeyAccessRewrapResult {
+  map<string, google.protobuf.Value> metadata = 1;
+  string key_access_object_id = 2;
+  string status = 3;
+  oneof result {
+    bytes kas_wrapped_key = 4;
+    string error = 5;
+  }
+}
+
+message PolicyRewrapResult {
+  string policy_id = 1;
+  repeated KeyAccessRewrapResult results = 2;
+}
+
+message RewrapResponse {
+  map<string, google.protobuf.Value> metadata = 1 [deprecated = true];
+  bytes entity_wrapped_key = 2 [deprecated = true];
+  string session_public_key = 3;
+  string schema_version = 4 [deprecated = true];
+  // New Rewrap API changes
+  repeated PolicyRewrapResult responses = 5;
+}
+
+// Get app info from the root path
+service AccessService {
+  rpc PublicKey(PublicKeyRequest) returns (PublicKeyResponse) {
+    option (google.api.http) = {get: "/kas/v2/kas_public_key"};
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      responses: {key: "200"}
+    };
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+
+  // Endpoint intended for gRPC Gateway's REST endpoint to provide v1 compatibility with older TDF clients
+  //
+  // This endpoint is not recommended for use in new applications, prefer the v2 endpoint ('PublicKey') instead.
+  //
+  // buf:lint:ignore RPC_RESPONSE_STANDARD_NAME
+  rpc LegacyPublicKey(LegacyPublicKeyRequest) returns (google.protobuf.StringValue) {
+    option (google.api.http) = {get: "/kas/kas_public_key"};
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      responses: {key: "200"}
+    };
+    option idempotency_level = NO_SIDE_EFFECTS;
+    option deprecated = true;
+  }
+
+  rpc Rewrap(RewrapRequest) returns (RewrapResponse) {
+    option (google.api.http) = {
+      post: "/kas/v2/rewrap"
+      body: "*";
+    };
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      responses: {key: "200"}
+    };
+  }
+}

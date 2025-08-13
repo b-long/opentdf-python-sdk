@@ -1,0 +1,1 @@
+"""wellknownconfiguration protobuf definitions."""

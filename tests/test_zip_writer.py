@@ -1,0 +1,34 @@
+import unittest
+import io
+from otdf_python.zip_writer import ZipWriter
+import zipfile
+
+
+class TestZipWriter(unittest.TestCase):
+    def test_data_and_stream(self):
+        out = io.BytesIO()
+        writer = ZipWriter(out)
+        # Write using data
+        writer.data("foo.txt", b"hello world")
+        # Write using stream
+        with writer.stream("bar.txt") as f:
+            f.write(b"bar contents")
+        size = writer.finish()
+        self.assertGreater(size, 0)
+        # Validate zip contents
+        out.seek(0)
+        with zipfile.ZipFile(out, "r") as z:
+            self.assertEqual(z.read("foo.txt"), b"hello world")
+            self.assertEqual(z.read("bar.txt"), b"bar contents")
+
+    def test_getvalue(self):
+        writer = ZipWriter()
+        writer.data("a.txt", b"A")
+        writer.finish()
+        data = writer.getvalue()
+        with zipfile.ZipFile(io.BytesIO(data), "r") as z:
+            self.assertEqual(z.read("a.txt"), b"A")
+
+
+if __name__ == "__main__":
+    unittest.main()
