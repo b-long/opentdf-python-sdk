@@ -1,10 +1,14 @@
-from typing import BinaryIO
+from typing import BinaryIO, TYPE_CHECKING
 import io
 import os
 import hashlib
 import hmac
 import base64
 import zipfile
+
+if TYPE_CHECKING:
+    from otdf_python.kas_client import KASClient
+
 from otdf_python.manifest import (
     Manifest,
     ManifestSegment,
@@ -196,7 +200,8 @@ class TDF:
 
                 required_attrs = set()
                 if "body" in policy_dict:
-                    # Check for both dataAttributes (new camelCase) and data_attributes (old snake_case) for backward compatibility
+                    # Handle both snake_case and camelCase fields
+                    # TODO: This can probably be simplified to only camelCase
                     data_attrs = policy_dict["body"].get(
                         "dataAttributes"
                     ) or policy_dict["body"].get("data_attributes")
@@ -240,7 +245,7 @@ class TDF:
             raise ValueError("No matching KAS private key could unwrap any payload key")
         return key
 
-    def _unwrap_key_with_kas(self, key_access_objs, policy_b64):
+    def _unwrap_key_with_kas(self, key_access_objs, policy_b64) -> bytes:
         """
         Unwraps the key using the KAS service (production method)
         """
@@ -248,7 +253,7 @@ class TDF:
         if not self.services:
             raise ValueError("SDK services required for KAS operations")
 
-        kas_client = (
+        kas_client: KASClient = (
             self.services.kas()
         )  # The 'kas_client' should be typed as KASClient
 
@@ -262,7 +267,7 @@ class TDF:
         # Try each key access object
         for ka in key_access_objs:
             try:
-                # Pass the manifest key access object directly to match Java SDK
+                # Pass the manifest key access object directly
                 key_access = ka
 
                 # Determine session key type from key_access properties
@@ -281,7 +286,7 @@ class TDF:
                 if key:
                     return key
 
-            except Exception as e:
+            except Exception as e:  # noqa: PERF203
                 import logging
 
                 logging.warning(f"Error unwrapping key with KAS: {e}")

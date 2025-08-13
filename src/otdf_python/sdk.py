@@ -42,6 +42,154 @@ class Interceptor: ...  # Can be dict in Python implementation
 class TrustManager: ...
 
 
+class KAS(AbstractContextManager):
+    """
+    KAS (Key Access Service) interface to define methods related to key access and management.
+    """
+
+    def get_public_key(self, kas_info: Any) -> Any:
+        """
+        Retrieves the public key from the KAS for RSA operations.
+        If the public key is cached, returns the cached value.
+        Otherwise, makes a request to the KAS.
+
+        Args:
+            kas_info: KASInfo object containing the URL and algorithm
+
+        Returns:
+            Updated KASInfo object with KID and PublicKey populated
+
+        Raises:
+            SDKException: If there's an error retrieving the public key
+        """
+        # Delegate to the underlying KAS client which handles authentication properly
+        return self._kas_client.get_public_key(kas_info)
+
+    def __init__(
+        self,
+        platform_url=None,
+        token_source=None,
+        sdk_ssl_verify=True,
+        use_plaintext=False,
+        auth_headers: dict | None = None,
+    ):
+        """
+        Initialize the KAS client
+
+        Args:
+            platform_url: URL of the platform
+            token_source: Function that returns an authentication token
+            sdk_ssl_verify: Whether to verify SSL certificates
+            use_plaintext: Whether to use plaintext HTTP connections instead of HTTPS
+            auth_headers: Dictionary of authentication headers to include in requests
+        """
+        from .kas_client import KASClient
+
+        self._kas_client = KASClient(
+            kas_url=platform_url,
+            token_source=token_source,
+            verify_ssl=sdk_ssl_verify,
+            use_plaintext=use_plaintext,
+        )
+        # Store the parameters for potential use
+        self._sdk_ssl_verify = sdk_ssl_verify
+        self._use_plaintext = use_plaintext
+        self._auth_headers = auth_headers
+
+    def get_ec_public_key(self, kas_info: Any, curve: Any) -> Any:
+        """
+        Retrieves the EC public key from the KAS.
+
+        Args:
+            kas_info: KASInfo object containing the URL
+            curve: The EC curve to use
+
+        Returns:
+            Updated KASInfo object with KID and PublicKey populated
+        """
+        # Set algorithm to "ec:<curve>"
+        from copy import copy
+
+        kas_info_copy = copy(kas_info)
+        kas_info_copy.algorithm = f"ec:{curve}"
+        return self.get_public_key_from_kas(kas_info_copy)
+
+    def get_public_key_from_kas(self, kas_info: Any) -> Any:
+        """
+        Retrieves the public key from the KAS for RSA operations.
+        Wrapper around the KAS client's get_public_key method.
+
+        Args:
+            kas_info: KASInfo object containing the URL and algorithm
+
+        Returns:
+            Updated KASInfo object with KID and PublicKey populated
+        """
+        return self._kas_client.get_public_key(kas_info)
+
+    def unwrap(self, key_access: Any, policy: str, session_key_type: Any) -> bytes:
+        """
+        Unwraps the key using the KAS.
+
+        Args:
+            key_access: KeyAccess object containing the wrapped key
+            policy: Policy JSON string
+            session_key_type: Type of session key (RSA, EC)
+
+        Returns:
+            Unwrapped key as bytes
+        """
+        return self._kas_client.unwrap(key_access, policy, session_key_type)
+
+    def unwrap_nanotdf(
+        self,
+        curve: Any,
+        header: str,
+        kas_url: str,
+        wrapped_key: bytes | None = None,
+        kas_private_key: str | None = None,
+        mock: bool = False,
+    ) -> bytes:
+        """
+        Unwraps the NanoTDF key using the KAS. If mock=True, performs local unwrap using the private key (for tests).
+
+        Args:
+            curve: EC curve used
+            header: NanoTDF header
+            kas_url: URL of the KAS
+            wrapped_key: Optional wrapped key bytes (for mock mode)
+            kas_private_key: Optional KAS private key (for mock mode)
+            mock: If True, unwrap locally using provided private key
+
+        Returns:
+            Unwrapped key as bytes
+        """
+        if mock and wrapped_key and kas_private_key:
+            from .asym_decryption import AsymDecryption
+
+            asym = AsymDecryption(private_key_pem=kas_private_key)
+            return asym.decrypt(wrapped_key)
+
+        # This would be implemented using nanotdf-specific logic
+        raise NotImplementedError("KAS unwrap_nanotdf not implemented.")
+
+    def get_key_cache(self) -> Any:
+        """
+        Returns the KAS key cache.
+
+        Returns:
+            The KAS key cache object
+        """
+        return self._kas_client.get_key_cache()
+
+    def close(self):
+        """Closes resources associated with the KAS interface"""
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+
 class SDK(AbstractContextManager):
     def new_tdf_config(
         self, attributes: list[str] | None = None, **kwargs
@@ -111,153 +259,6 @@ class SDK(AbstractContextManager):
     Provides various services for TDF/NanoTDF operations and platform API calls.
     """
 
-    class KAS(AbstractContextManager):
-        """
-        KAS (Key Access Service) interface to define methods related to key access and management.
-        """
-
-        def get_public_key(self, kas_info: Any) -> Any:
-            """
-            Retrieves the public key from the KAS for RSA operations.
-            If the public key is cached, returns the cached value.
-            Otherwise, makes a request to the KAS.
-
-            Args:
-                kas_info: KASInfo object containing the URL and algorithm
-
-            Returns:
-                Updated KASInfo object with KID and PublicKey populated
-
-            Raises:
-                SDKException: If there's an error retrieving the public key
-            """
-            # Delegate to the underlying KAS client which handles authentication properly
-            return self._kas_client.get_public_key(kas_info)
-
-        def __init__(
-            self,
-            platform_url=None,
-            token_source=None,
-            sdk_ssl_verify=True,
-            use_plaintext=False,
-            auth_headers: dict | None = None,
-        ):
-            """
-            Initialize the KAS client
-
-            Args:
-                platform_url: URL of the platform
-                token_source: Function that returns an authentication token
-                sdk_ssl_verify: Whether to verify SSL certificates
-                use_plaintext: Whether to use plaintext HTTP connections instead of HTTPS
-                auth_headers: Dictionary of authentication headers to include in requests
-            """
-            from .kas_client import KASClient
-
-            self._kas_client = KASClient(
-                kas_url=platform_url,
-                token_source=token_source,
-                verify_ssl=sdk_ssl_verify,
-                use_plaintext=use_plaintext,
-            )
-            # Store the parameters for potential use
-            self._sdk_ssl_verify = sdk_ssl_verify
-            self._use_plaintext = use_plaintext
-            self._auth_headers = auth_headers
-
-        def get_ec_public_key(self, kas_info: Any, curve: Any) -> Any:
-            """
-            Retrieves the EC public key from the KAS.
-
-            Args:
-                kas_info: KASInfo object containing the URL
-                curve: The EC curve to use
-
-            Returns:
-                Updated KASInfo object with KID and PublicKey populated
-            """
-            # Set algorithm to "ec:<curve>"
-            from copy import copy
-
-            kas_info_copy = copy(kas_info)
-            kas_info_copy.algorithm = f"ec:{curve}"
-            return self.get_public_key_from_kas(kas_info_copy)
-
-        def get_public_key_from_kas(self, kas_info: Any) -> Any:
-            """
-            Retrieves the public key from the KAS for RSA operations.
-            Wrapper around the KAS client's get_public_key method.
-
-            Args:
-                kas_info: KASInfo object containing the URL and algorithm
-
-            Returns:
-                Updated KASInfo object with KID and PublicKey populated
-            """
-            return self._kas_client.get_public_key(kas_info)
-
-        def unwrap(self, key_access: Any, policy: str, session_key_type: Any) -> bytes:
-            """
-            Unwraps the key using the KAS.
-
-            Args:
-                key_access: KeyAccess object containing the wrapped key
-                policy: Policy JSON string
-                session_key_type: Type of session key (RSA, EC)
-
-            Returns:
-                Unwrapped key as bytes
-            """
-            return self._kas_client.unwrap(key_access, policy, session_key_type)
-
-        def unwrap_nanotdf(
-            self,
-            curve: Any,
-            header: str,
-            kas_url: str,
-            wrapped_key: bytes | None = None,
-            kas_private_key: str | None = None,
-            mock: bool = False,
-        ) -> bytes:
-            """
-            Unwraps the NanoTDF key using the KAS. If mock=True, performs local unwrap using the private key (for tests).
-
-            Args:
-                curve: EC curve used
-                header: NanoTDF header
-                kas_url: URL of the KAS
-                wrapped_key: Optional wrapped key bytes (for mock mode)
-                kas_private_key: Optional KAS private key (for mock mode)
-                mock: If True, unwrap locally using provided private key
-
-            Returns:
-                Unwrapped key as bytes
-            """
-            if mock and wrapped_key and kas_private_key:
-                from .asym_decryption import AsymDecryption
-
-                asym = AsymDecryption(private_key_pem=kas_private_key)
-                return asym.decrypt(wrapped_key)
-
-            # This would be implemented using nanotdf-specific logic
-            raise NotImplementedError("KAS unwrap_nanotdf not implemented.")
-
-        def get_key_cache(self) -> Any:
-            """
-            Returns the KAS key cache.
-
-            Returns:
-                The KAS key cache object
-            """
-            return self._kas_client.get_key_cache()
-
-        def close(self):
-            """Closes resources associated with the KAS interface"""
-            pass
-
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            self.close()
-
     class Services(AbstractContextManager):
         """
         The Services interface provides access to various platform service clients and KAS.
@@ -287,25 +288,12 @@ class SDK(AbstractContextManager):
             """Returns the KAS registry service client"""
             raise NotImplementedError
 
-        def kas(self) -> "SDK.KAS":
+        def kas(self) -> KAS:
             """
-            Returns the KAS interface.
-
-            Returns:
-                KAS: The KAS interface implementation
+            Returns the KAS client for key access operations.
+            This should be implemented to return an instance of KAS.
             """
-            # Return a KAS implementation with the SDK's platform URL and settings
-            # This is where we would get the platform URL and token source from the SDK
-            from .sdk_builder import SDKBuilder
-
-            platform_url = SDKBuilder.get_platform_url()
-
-            # Create the KAS implementation with the platform URL and use_plaintext setting from SDK
-            kas_impl = SDK.KAS(
-                platform_url=platform_url,
-                use_plaintext=getattr(self, "_use_plaintext", False),
-            )
-            return kas_impl
+            raise NotImplementedError
 
         def close(self):
             """Closes resources associated with the services"""
@@ -373,11 +361,11 @@ class SDK(AbstractContextManager):
         """Returns the platform URL if set"""
         return self.platform_url
 
-    def load_tdf(
+    def load_tdf_with_config(
         self, tdf_data: bytes | BinaryIO | BytesIO, config: TDFReaderConfig
     ) -> TDFReader:
         """
-        Loads a TDF from the provided data.
+        Loads a TDF from the provided data according to the config.
 
         Args:
             tdf_data: The TDF data as bytes, file object, or BytesIO
@@ -391,6 +379,25 @@ class SDK(AbstractContextManager):
         """
         tdf = TDF(self.services)
         return tdf.load_tdf(tdf_data, config)
+
+    def load_tdf_without_config(
+        self, tdf_data: bytes | BinaryIO | BytesIO
+    ) -> TDFReader:
+        """
+        Loads a TDF from the provided data.
+
+        Args:
+            tdf_data: The TDF data as bytes, file object, or BytesIO
+
+        Returns:
+            TDFReader: Contains payload and manifest
+
+        Raises:
+            SDKException: If there's an error loading the TDF
+        """
+        tdf = TDF(self.services)
+        default = TDFReaderConfig()
+        return tdf.load_tdf(tdf_data, default)
 
     def create_tdf(
         self,

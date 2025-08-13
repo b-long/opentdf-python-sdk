@@ -3,7 +3,7 @@
 OpenTDF Python CLI
 
 A command-line interface for encrypting and decrypting files using OpenTDF.
-Provides encrypt, decrypt, and inspect commands similar to the TypeScript CLI.
+Provides encrypt, decrypt, and inspect commands similar to the otdfctl CLI.
 """
 
 import argparse
@@ -146,7 +146,7 @@ def build_sdk(args) -> SDK:
     else:
         raise CLIError(
             "CRITICAL",
-            "Authentication required: provide --with-client-creds-file, --client-id and --client-secret, or --auth",
+            "Authentication required: provide --with-client-creds-file OR --client-id and --client-secret",
         )
 
     if hasattr(args, "plaintext") and args.plaintext:
@@ -307,7 +307,7 @@ def cmd_decrypt(args):
                         # Regular TDF (ZIP format)
                         logger.debug("Decrypting TDF")
                         reader_config = TDFReaderConfig()
-                        tdf_reader = sdk.load_tdf(encrypted_data, reader_config)
+                        tdf_reader = sdk.load_tdf_with_config(encrypted_data, reader_config)
                         # Access payload directly from TDFReader
                         payload_bytes = tdf_reader.payload
                         output_file.write(payload_bytes)
@@ -331,7 +331,7 @@ def cmd_decrypt(args):
                 # Regular TDF (ZIP format)
                 logger.debug("Decrypting TDF")
                 reader_config = TDFReaderConfig()
-                tdf_reader = sdk.load_tdf(encrypted_data, reader_config)
+                tdf_reader = sdk.load_tdf_with_config(encrypted_data, reader_config)
                 payload_bytes = tdf_reader.payload
                 output_file.write(payload_bytes)
                 logger.info("Successfully decrypted TDF")
@@ -384,7 +384,7 @@ def cmd_inspect(args):
                 # Regular TDF
                 logger.debug("Inspecting TDF")
                 reader_config = TDFReaderConfig()
-                tdf_reader = sdk.load_tdf(BytesIO(encrypted_data), reader_config)
+                tdf_reader = sdk.load_tdf_with_config(BytesIO(encrypted_data), reader_config)
                 manifest = tdf_reader.manifest
 
                 # Try to get data attributes
@@ -479,11 +479,6 @@ Where creds.json contains:
     )
     auth_group.add_argument("--client-id", help="OAuth client ID")
     auth_group.add_argument("--client-secret", help="OAuth client secret")
-    # Keep --auth for backward compatibility
-    auth_group.add_argument(
-        "--auth",
-        help="Combined OAuth credentials (clientId:clientSecret) - deprecated, use --with-client-creds-file",
-    )
 
     # Security options
     security_group = parser.add_argument_group("Security")
