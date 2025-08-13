@@ -151,7 +151,8 @@ class Manifest:
             return ManifestRootSignature(**rs)
 
         def _integrity(i):
-            # Handle both old snake_case and new camelCase formats for backward compatibility
+            # Handle both snake_case and camelCase fields
+            # TODO: This can probably be simplified to only camelCase
             return ManifestIntegrityInformation(
                 rootSignature=_root_sig(
                     i.get("rootSignature", i.get("root_signature"))
@@ -174,7 +175,8 @@ class Manifest:
             return ManifestKeyAccess(**k)
 
         def _enc_info(e):
-            # Handle both old snake_case and new camelCase formats
+            # Handle both snake_case and camelCase fields
+            # TODO: This can probably be simplified to only camelCase
             return ManifestEncryptionInformation(
                 type=e.get("type", e.get("key_access_type", "split")),
                 policy=e["policy"],

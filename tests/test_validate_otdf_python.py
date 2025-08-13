@@ -10,11 +10,10 @@ import sys
 import tempfile
 import logging
 from pathlib import Path
-from otdf_python.sdk_builder import SDKBuilder
-from otdf_python.sdk import SDK
 from otdf_python.tdf import TDFReaderConfig
-from tests.config_pydantic import CONFIG_TDF
 import pytest
+
+from tests.integration.support_sdk import get_sdk
 
 # Set up detailed logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
@@ -22,43 +21,8 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message
 _test_attributes = []
 
 
-def _get_sdk() -> SDK:
-    if CONFIG_TDF.OPENTDF_PLATFORM_URL.startswith("http://"):
-        sdk = (
-            SDKBuilder()
-            .set_platform_endpoint(CONFIG_TDF.OPENTDF_PLATFORM_URL)
-            .set_issuer_endpoint(CONFIG_TDF.OPENTDF_KEYCLOAK_HOST)
-            .client_secret(
-                CONFIG_TDF.OPENTDF_CLIENT_ID,
-                CONFIG_TDF.OPENTDF_CLIENT_SECRET,
-            )
-            .use_insecure_plaintext_connection(True)
-            .use_insecure_skip_verify(CONFIG_TDF.INSECURE_SKIP_VERIFY)
-            .build()
-        )
-    elif CONFIG_TDF.OPENTDF_PLATFORM_URL.startswith("https://"):
-        sdk = (
-            SDKBuilder()
-            .set_platform_endpoint(CONFIG_TDF.OPENTDF_PLATFORM_URL)
-            .set_issuer_endpoint(CONFIG_TDF.OPENTDF_KEYCLOAK_HOST)
-            .client_secret(
-                CONFIG_TDF.OPENTDF_CLIENT_ID,
-                CONFIG_TDF.OPENTDF_CLIENT_SECRET,
-            )
-            .use_insecure_skip_verify(CONFIG_TDF.INSECURE_SKIP_VERIFY)
-            .build()
-        )
-    else:
-        raise ValueError(
-            f"Invalid platform URL: {CONFIG_TDF.OPENTDF_PLATFORM_URL}. "
-            "It must start with 'http://' or 'https://'."
-        )
-
-    return sdk
-
-
 def _get_sdk_and_tdf_config() -> tuple:
-    sdk = _get_sdk()
+    sdk = get_sdk()
 
     # Let the SDK create the default KAS info from the platform URL
     # This will automatically append /kas to the platform URL
@@ -83,7 +47,7 @@ def encrypt_file(input_path: Path) -> Path:
 
 def decrypt_file(encrypted_path: Path) -> Path:
     """Decrypt a file and return the path to the decrypted file."""
-    sdk = _get_sdk()
+    sdk = get_sdk()
 
     output_path = encrypted_path.with_suffix(".decrypted")
     with open(encrypted_path, "rb") as infile, open(output_path, "wb") as outfile:
@@ -102,7 +66,7 @@ def decrypt_file(encrypted_path: Path) -> Path:
 def verify_encrypt_str() -> None:
     print("Validating string encryption (local TDF)")
     try:
-        sdk = _get_sdk()
+        sdk = get_sdk()
 
         payload = b"Hello from Python"
 

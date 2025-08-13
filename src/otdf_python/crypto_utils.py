@@ -75,8 +75,3 @@ class CryptoUtils:
         if not isinstance(private_key, rsa.RSAPrivateKey):
             raise ValueError("Not an RSA private key")
         return private_key
-
-
-# Aliases for compatibility
-rsa_private_key_from_pem = CryptoUtils.get_rsa_private_key_from_pem
-rsa_public_key_from_pem = CryptoUtils.get_rsa_public_key_from_pem
