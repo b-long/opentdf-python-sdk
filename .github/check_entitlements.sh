@@ -7,6 +7,9 @@ OTDF_HOST_AND_PORT="${OPENTDF_PLATFORM_HOST}"
 OTDF_CLIENT="${OPENTDF_CLIENT_ID}"
 OTDF_CLIENT_SECRET="${OPENTDF_CLIENT_SECRET}"
 
+# Used to test PE auth
+CLIENT_ID="opentdf-sdk"
+
 # Enable debug mode
 DEBUG=1
 
@@ -24,6 +27,21 @@ get_token() {
     --data-urlencode "grant_type=client_credentials" \
     --data-urlencode "client_id=$OTDF_CLIENT" \
     --data-urlencode "client_secret=$OTDF_CLIENT_SECRET"
+}
+
+auth_pe() {
+  # Auth, according to sample user accounts
+  # https://github.com/opentdf/platform/blob/service/v0.8.1/service/cmd/keycloak_data.yaml#L84-L92
+  USERNAME="${1}"
+  PASSWORD="testuser123"
+  AUTH_CLIENT="${2}"
+
+  curl -k -X POST "$TOKEN_URL" \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -d "grant_type=password" \
+    -d "client_id=$AUTH_CLIENT" \
+    -d "username=$USERNAME" \
+    -d "password=$PASSWORD"
 }
 
 echo "🔐 Getting access token..."
@@ -52,6 +70,13 @@ for USERNAME in "${USERNAMES[@]}"; do
 
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "✅ Entitlements retrieval complete for ${USERNAME}!"
+    echo ""
+
+    # Test two different values for AUTH_CLIENT
+    echo "Testing auth_pe for ${USERNAME} with ${CLIENT_ID}..."
+    auth_pe "$USERNAME" "$CLIENT_ID"
+    echo "Testing auth_pe for ${USERNAME} with ${OTDF_CLIENT}..."
+    auth_pe "$USERNAME" "$OTDF_CLIENT"
     echo ""
 done
 
