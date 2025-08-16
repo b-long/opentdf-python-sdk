@@ -21,12 +21,10 @@ logger = logging.getLogger(__name__)
 
 
 def decrypt(input_path: Path, output_path: Path, sdk: SDK):
-    # # Determine output
-    # with open(output_path, "wb") as output_file:
+    # Determine output
     with open(input_path, "rb") as infile, open(output_path, "wb") as outfile:
         try:
             logger.debug("Decrypting TDF")
-            # tdf_reader = sdk.load_tdf(infile.read(), reader_config)
             tdf_reader = sdk.load_tdf_without_config(infile.read())
             # Access payload directly from TDFReader
             payload_bytes = tdf_reader.payload

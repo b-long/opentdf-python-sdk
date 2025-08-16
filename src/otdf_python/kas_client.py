@@ -141,9 +141,8 @@ class KASClient:
     def _create_signed_request_jwt(self, policy_json, client_public_key, key_access):  # noqa: C901
         """
         Create a signed JWT for the rewrap request.
-        The JWT is signed with the DPoP private key, mimicking the Java SDK implementation.
+        The JWT is signed with the DPoP private key.
         """
-        # Convert the KeyAccess to a dict that matches Java SDK structure
         # Handle both ManifestKeyAccess (new camelCase and old snake_case) and simple KeyAccess (for tests)
         # TODO: This can probably be simplified to only camelCase
 

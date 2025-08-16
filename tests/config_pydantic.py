@@ -74,7 +74,7 @@ class ConfigureTdf(BaseSettings):
     TEST_OPENTDF_ATTRIBUTE_2: str = "https://example.com/attr/attr1/value/value2"
 
     TEST_USER_ID: str = "sample-user"
-    TEST_USER_PASSWORD: str = "sample-password"
+    TEST_USER_PASSWORD: str = "testuser123"
 
 
 class ConfigureTesting(BaseSettings):

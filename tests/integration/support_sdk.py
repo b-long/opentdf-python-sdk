@@ -5,38 +5,27 @@ import httpx
 
 
 def get_sdk() -> SDK:
+    builder = (
+        SDKBuilder()
+        .set_platform_endpoint(CONFIG_TDF.OPENTDF_PLATFORM_URL)
+        .set_issuer_endpoint(CONFIG_TDF.OPENTDF_KEYCLOAK_HOST)
+        .client_secret(
+            CONFIG_TDF.OPENTDF_CLIENT_ID,
+            CONFIG_TDF.OPENTDF_CLIENT_SECRET,
+        )
+    )
+
     if CONFIG_TDF.OPENTDF_PLATFORM_URL.startswith("http://"):
-        sdk = (
-            SDKBuilder()
-            .set_platform_endpoint(CONFIG_TDF.OPENTDF_PLATFORM_URL)
-            .set_issuer_endpoint(CONFIG_TDF.OPENTDF_KEYCLOAK_HOST)
-            .client_secret(
-                CONFIG_TDF.OPENTDF_CLIENT_ID,
-                CONFIG_TDF.OPENTDF_CLIENT_SECRET,
-            )
-            .use_insecure_plaintext_connection(True)
-            .use_insecure_skip_verify(CONFIG_TDF.INSECURE_SKIP_VERIFY)
-            .build()
-        )
+        builder.use_insecure_plaintext_connection(True)
     elif CONFIG_TDF.OPENTDF_PLATFORM_URL.startswith("https://"):
-        sdk = (
-            SDKBuilder()
-            .set_platform_endpoint(CONFIG_TDF.OPENTDF_PLATFORM_URL)
-            .set_issuer_endpoint(CONFIG_TDF.OPENTDF_KEYCLOAK_HOST)
-            .client_secret(
-                CONFIG_TDF.OPENTDF_CLIENT_ID,
-                CONFIG_TDF.OPENTDF_CLIENT_SECRET,
-            )
-            .use_insecure_skip_verify(CONFIG_TDF.INSECURE_SKIP_VERIFY)
-            .build()
-        )
+        builder.use_insecure_skip_verify(CONFIG_TDF.INSECURE_SKIP_VERIFY)
     else:
         raise ValueError(
             f"Invalid platform URL: {CONFIG_TDF.OPENTDF_PLATFORM_URL}. "
             "It must start with 'http://' or 'https://'."
         )
 
-    return sdk
+    return builder.build()
 
 
 def get_sdk_for_pe() -> SDK:
@@ -87,7 +76,7 @@ def get_user_access_token(
         "password": pe_password,
     }
 
-    with httpx.Client(verify=False) as client:
+    with httpx.Client(verify=not CONFIG_TDF.INSECURE_SKIP_VERIFY) as client:
         response = client.post(token_endpoint, headers=headers, data=data)
         response.raise_for_status()
         token_data = response.json()

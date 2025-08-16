@@ -57,7 +57,7 @@ def decrypt_file(encrypted_path: Path) -> Path:
         )
 
         # Use KAS client for key unwrapping
-        reader = sdk.load_tdf(infile.read(), reader_config)
+        reader = sdk.load_tdf_with_config(infile.read(), reader_config)
         # TDFReader is a dataclass with payload attribute
         outfile.write(reader.payload)
     return output_path
