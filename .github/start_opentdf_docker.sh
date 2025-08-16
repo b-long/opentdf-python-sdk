@@ -9,6 +9,13 @@ fi
 cd platform
 git checkout DSPX-1539-keytoolnomore
 
+yq -i '.realms[0].clients[0].client.directAccessGrantsEnabled = true | .realms[0].clients[0].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
+
+yq -i '.realms[0].clients[1].client.directAccessGrantsEnabled = true | .realms[0].clients[0].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
+
+yq -i '.realms[0].clients[4].client.directAccessGrantsEnabled = true | .realms[0].clients[0].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
+
+
 if [ -d ./keys ]; then
   go mod download
 
