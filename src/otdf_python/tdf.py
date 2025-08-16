@@ -426,7 +426,9 @@ class TDF:
         with zipfile.ZipFile(io.BytesIO(tdf_bytes), "r") as z:
             manifest_json = z.read("0.manifest.json").decode()
             manifest = Manifest.from_json(manifest_json)
-            self._enforce_policy(manifest, config)
+
+            # TODO: Re-work policy enforcement
+            # self._enforce_policy(manifest, config)
 
             if not manifest.encryptionInformation:
                 raise ValueError("Missing encryption information in manifest")
