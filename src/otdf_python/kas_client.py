@@ -141,10 +141,10 @@ class KASClient:
     def _create_signed_request_jwt(self, policy_json, client_public_key, key_access):  # noqa: C901
         """
         Create a signed JWT for the rewrap request.
-        The JWT is signed with the DPoP private key, matching Java SDK implementation exactly.
+        The JWT is signed with the DPoP private key.
         """
-        # Convert the KeyAccess to a dict that matches Java SDK structure
         # Handle both ManifestKeyAccess (new camelCase and old snake_case) and simple KeyAccess (for tests)
+        # TODO: This can probably be simplified to only camelCase
 
         # Ensure wrappedKey is a base64-encoded string
         # Note: wrappedKey from manifest is already base64-encoded
@@ -248,8 +248,8 @@ class KASClient:
                     },
                 }
             ],
-            "keyAccess": key_access_dict,  # Keep legacy field for backward compatibility
-            "policy": policy_base64,  # Keep legacy field for backward compatibility
+            "keyAccess": key_access_dict,
+            "policy": policy_base64,
         }
 
         # Convert to JSON string
@@ -532,7 +532,7 @@ class KASClient:
         encrypted_key = b64decode(entity_wrapped_key)
         return self.decryptor.decrypt(encrypted_key)
 
-    def unwrap(self, key_access, policy_json, session_key_type=None):
+    def unwrap(self, key_access, policy_json, session_key_type=None) -> bytes:
         """
         Unwrap a key using Connect RPC.
 
@@ -544,7 +544,7 @@ class KASClient:
         Returns:
             Unwrapped key bytes
         """
-        # Default to RSA if not specified (for backward compatibility)
+        # Default to RSA if not specified
         if session_key_type is None:
             session_key_type = RSA_KEY_TYPE
 
@@ -561,9 +561,9 @@ class KASClient:
         )
 
         # Call Connect RPC unwrap
-        return self._unwrap_with_connect_rpc(key_access, signed_token, policy_json)
+        return self._unwrap_with_connect_rpc(key_access, signed_token)
 
-    def _unwrap_with_connect_rpc(self, key_access, signed_token, policy_json):
+    def _unwrap_with_connect_rpc(self, key_access, signed_token) -> bytes:
         """
         Connect RPC method for unwrapping keys.
         """
