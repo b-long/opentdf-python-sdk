@@ -4,7 +4,7 @@ from tests.config_pydantic import CONFIG_TDF
 import httpx
 
 
-def get_sdk() -> SDK:
+def _get_sdk_builder() -> SDKBuilder:
     builder = (
         SDKBuilder()
         .set_platform_endpoint(CONFIG_TDF.OPENTDF_PLATFORM_URL)
@@ -24,34 +24,25 @@ def get_sdk() -> SDK:
             f"Invalid platform URL: {CONFIG_TDF.OPENTDF_PLATFORM_URL}. "
             "It must start with 'http://' or 'https://'."
         )
+    return builder
 
+
+def get_sdk() -> SDK:
+    """Get SDK instance."""
+    builder = _get_sdk_builder()
     return builder.build()
 
 
 def get_sdk_for_pe() -> SDK:
+    """Get SDK instance for Person Entity (PE) workflows."""
     user_token: str = get_user_access_token(
         CONFIG_TDF.OIDC_OP_TOKEN_ENDPOINT,
         CONFIG_TDF.TEST_USER_ID,
         CONFIG_TDF.TEST_USER_PASSWORD,
     )
-    builder = (
-        SDKBuilder()
-        .bearer_token(user_token)
-        .set_platform_endpoint(CONFIG_TDF.OPENTDF_PLATFORM_URL)
-        .set_issuer_endpoint(CONFIG_TDF.OPENTDF_KEYCLOAK_HOST)
-    )
-
-    if CONFIG_TDF.OPENTDF_PLATFORM_URL.startswith("http://"):
-        sdk = builder.use_insecure_plaintext_connection(True).build()
-    elif CONFIG_TDF.OPENTDF_PLATFORM_URL.startswith("https://"):
-        sdk = builder.use_insecure_skip_verify(CONFIG_TDF.INSECURE_SKIP_VERIFY).build()
-    else:
-        raise ValueError(
-            f"Invalid platform URL: {CONFIG_TDF.OPENTDF_PLATFORM_URL}. "
-            "It must start with 'http://' or 'https://'."
-        )
-
-    return sdk
+    builder = _get_sdk_builder()
+    builder.bearer_token(user_token)
+    return builder.build()
 
 
 def get_user_access_token(
