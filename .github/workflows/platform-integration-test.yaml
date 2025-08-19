@@ -59,7 +59,7 @@ jobs:
           yq -i '.realms[0].clients[0].client.directAccessGrantsEnabled = true | .realms[0].clients[0].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
           yq -i '.realms[0].clients[1].client.directAccessGrantsEnabled = true | .realms[0].clients[1].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
           yq -i '.realms[0].clients[4].client.directAccessGrantsEnabled = true | .realms[0].clients[4].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
-          
+
           cp opentdf-example.yaml opentdf.yaml
           # Edit 'opentdf.yaml' for our use case
           yq -i 'del(.db)' opentdf.yaml

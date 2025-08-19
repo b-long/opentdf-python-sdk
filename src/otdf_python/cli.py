@@ -307,7 +307,9 @@ def cmd_decrypt(args):
                         # Regular TDF (ZIP format)
                         logger.debug("Decrypting TDF")
                         reader_config = TDFReaderConfig()
-                        tdf_reader = sdk.load_tdf_with_config(encrypted_data, reader_config)
+                        tdf_reader = sdk.load_tdf_with_config(
+                            encrypted_data, reader_config
+                        )
                         # Access payload directly from TDFReader
                         payload_bytes = tdf_reader.payload
                         output_file.write(payload_bytes)
@@ -384,7 +386,9 @@ def cmd_inspect(args):
                 # Regular TDF
                 logger.debug("Inspecting TDF")
                 reader_config = TDFReaderConfig()
-                tdf_reader = sdk.load_tdf_with_config(BytesIO(encrypted_data), reader_config)
+                tdf_reader = sdk.load_tdf_with_config(
+                    BytesIO(encrypted_data), reader_config
+                )
                 manifest = tdf_reader.manifest
 
                 # Try to get data attributes

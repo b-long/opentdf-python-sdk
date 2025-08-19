@@ -56,6 +56,7 @@ def test_tdf_multi_kas_roundtrip():
         dec = tdf.load_tdf(data, reader_config)
         assert dec.payload == payload
 
+
 @pytest.mark.skip(reason="Disable odd test")
 def test_tdf_abac_policy_enforcement():
     tdf = TDF()

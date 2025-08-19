@@ -5,6 +5,7 @@ import hashlib
 import hmac
 import base64
 import zipfile
+import logging
 
 if TYPE_CHECKING:
     from otdf_python.kas_client import KASClient
@@ -287,8 +288,6 @@ class TDF:
                     return key
 
             except Exception as e:  # noqa: PERF203
-                import logging
-
                 logging.warning(f"Error unwrapping key with KAS: {e}")
                 # Continue to try next key access
                 continue
