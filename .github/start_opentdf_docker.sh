@@ -3,7 +3,6 @@
 set -euo pipefail
 
 if ! [ -d platform ]; then
-  # Sparse clone opentdf/platform
   git clone https://github.com/opentdf/platform.git
 fi
 cd platform
