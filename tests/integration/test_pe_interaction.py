@@ -38,7 +38,6 @@ def decrypt(input_path: Path, output_path: Path, sdk: SDK):
             raise SDKException("Decryption failed")
 
 
-@pytest.mark.skip(reason="Skipping until PE environment issues are resolved")
 @pytest.mark.integration
 def test_single_attribute_encryption_decryption():
     # Encrypt with SDK using a single attribute
