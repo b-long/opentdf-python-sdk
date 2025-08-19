@@ -11,9 +11,9 @@ git checkout DSPX-1539-keytoolnomore
 
 yq -i '.realms[0].clients[0].client.directAccessGrantsEnabled = true | .realms[0].clients[0].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
 
-yq -i '.realms[0].clients[1].client.directAccessGrantsEnabled = true | .realms[0].clients[0].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
+yq -i '.realms[0].clients[1].client.directAccessGrantsEnabled = true | .realms[0].clients[1].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
 
-yq -i '.realms[0].clients[4].client.directAccessGrantsEnabled = true | .realms[0].clients[0].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
+yq -i '.realms[0].clients[4].client.directAccessGrantsEnabled = true | .realms[0].clients[4].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
 
 
 if ! [ -d ./keys ]; then
@@ -49,7 +49,7 @@ if ! [ -d ./keys ]; then
   }
 }
 ' opentdf.yaml
-  chmod -R 777 ./keys
+  chmod -R 700 ./keys
 fi
 
 docker compose up -d --wait --wait-timeout 360
