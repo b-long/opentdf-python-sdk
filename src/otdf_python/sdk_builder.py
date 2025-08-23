@@ -394,8 +394,6 @@ class SDKBuilder:
                 """
                 Returns the KAS interface with SSL verification settings.
                 """
-                from .sdk_builder import SDKBuilder
-
                 platform_url = SDKBuilder.get_platform_url()
 
                 # Create a token source function that can refresh tokens
