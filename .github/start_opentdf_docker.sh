@@ -6,7 +6,7 @@ if ! [ -d platform ]; then
   git clone https://github.com/opentdf/platform.git
 fi
 cd platform
-git checkout DSPX-1539-keytoolnomore
+git checkout 3360befcb3e6e9791d7bfd2e89128aee0e7d2818 # Branch 'DSPX-1539-keytoolnomore'
 
 yq -i '.realms[0].clients[0].client.directAccessGrantsEnabled = true | .realms[0].clients[0].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
 
