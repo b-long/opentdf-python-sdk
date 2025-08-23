@@ -112,20 +112,7 @@ class KAS(AbstractContextManager):
 
         kas_info_copy = copy(kas_info)
         kas_info_copy.algorithm = f"ec:{curve}"
-        return self.get_public_key_from_kas(kas_info_copy)
-
-    def get_public_key_from_kas(self, kas_info: Any) -> Any:
-        """
-        Retrieves the public key from the KAS for RSA operations.
-        Wrapper around the KAS client's get_public_key method.
-
-        Args:
-            kas_info: KASInfo object containing the URL and algorithm
-
-        Returns:
-            Updated KASInfo object with KID and PublicKey populated
-        """
-        return self._kas_client.get_public_key(kas_info)
+        return self.get_public_key(kas_info_copy)
 
     def unwrap(self, key_access: Any, policy: str, session_key_type: Any) -> bytes:
         """

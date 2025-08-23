@@ -3,7 +3,6 @@ Integration test: Single attribute encryption/decryption using SDK and otdfctl
 """
 
 import logging
-import os
 import tempfile
 from pathlib import Path
 import pytest
@@ -94,8 +93,3 @@ def test_single_attribute_encryption_decryption():
         #     assert f1.read() == f2.read(), (
         #         "otdfctl decrypted output does not match input"
         #     )
-
-        # Clean up
-        for f in [TDF_FILE, DECRYPTED_FILE_SDK, DECRYPTED_FILE_OTDFCTL]:
-            if os.path.exists(f):
-                os.remove(f)
