@@ -1,10 +1,15 @@
-from typing import BinaryIO
+from typing import BinaryIO, TYPE_CHECKING
 import io
 import os
 import hashlib
 import hmac
 import base64
 import zipfile
+import logging
+
+if TYPE_CHECKING:
+    from otdf_python.kas_client import KASClient
+
 from otdf_python.manifest import (
     Manifest,
     ManifestSegment,
@@ -177,50 +182,6 @@ class TDF:
         else:
             return obj.__dict__
 
-    def _enforce_policy(self, manifest: Manifest, config: TDFReaderConfig):  # noqa: C901
-        import json as _json
-
-        if not manifest.encryptionInformation:
-            return  # No encryption information, skip policy enforcement
-
-        policy_data = manifest.encryptionInformation.policy
-        if policy_data and policy_data != "{}":
-            try:
-                # Try to decode base64 first, then parse JSON
-                try:
-                    policy_json = base64.b64decode(policy_data).decode()
-                    policy_dict = _json.loads(policy_json)
-                except:  # noqa: E722
-                    # If base64 decode fails, assume it's already JSON
-                    policy_dict = _json.loads(policy_data)
-
-                required_attrs = set()
-                if "body" in policy_dict:
-                    # Check for both dataAttributes (new camelCase) and data_attributes (old snake_case) for backward compatibility
-                    data_attrs = policy_dict["body"].get(
-                        "dataAttributes"
-                    ) or policy_dict["body"].get("data_attributes")
-                    if data_attrs:
-                        for attr in data_attrs:
-                            if isinstance(attr, dict) and "attribute" in attr:
-                                required_attrs.add(attr["attribute"])
-                            elif isinstance(attr, str):
-                                required_attrs.add(attr)
-                if required_attrs:
-                    attrs = config.attributes
-                    user_attrs = set(attrs if attrs is not None else [])
-                    if not user_attrs:
-                        raise ValueError(
-                            "ABAC policy enforcement: user attributes required but not provided"
-                        )
-                    missing = required_attrs - user_attrs
-                    if missing:
-                        raise ValueError(
-                            f"ABAC policy enforcement: missing required attributes: {missing}"
-                        )
-            except Exception as e:
-                raise ValueError(f"Failed to parse/enforce policy: {e}")
-
     def _unwrap_key(self, key_access_objs, private_key_pem):
         """
         Unwraps the key locally using a provided private key (used for testing)
@@ -240,7 +201,7 @@ class TDF:
             raise ValueError("No matching KAS private key could unwrap any payload key")
         return key
 
-    def _unwrap_key_with_kas(self, key_access_objs, policy_b64):
+    def _unwrap_key_with_kas(self, key_access_objs, policy_b64) -> bytes:
         """
         Unwraps the key using the KAS service (production method)
         """
@@ -248,7 +209,7 @@ class TDF:
         if not self.services:
             raise ValueError("SDK services required for KAS operations")
 
-        kas_client = (
+        kas_client: KASClient = (
             self.services.kas()
         )  # The 'kas_client' should be typed as KASClient
 
@@ -262,7 +223,7 @@ class TDF:
         # Try each key access object
         for ka in key_access_objs:
             try:
-                # Pass the manifest key access object directly to match Java SDK
+                # Pass the manifest key access object directly
                 key_access = ka
 
                 # Determine session key type from key_access properties
@@ -281,9 +242,7 @@ class TDF:
                 if key:
                     return key
 
-            except Exception as e:
-                import logging
-
+            except Exception as e:  # noqa: PERF203
                 logging.warning(f"Error unwrapping key with KAS: {e}")
                 # Continue to try next key access
                 continue
@@ -421,7 +380,6 @@ class TDF:
         with zipfile.ZipFile(io.BytesIO(tdf_bytes), "r") as z:
             manifest_json = z.read("0.manifest.json").decode()
             manifest = Manifest.from_json(manifest_json)
-            self._enforce_policy(manifest, config)
 
             if not manifest.encryptionInformation:
                 raise ValueError("Missing encryption information in manifest")

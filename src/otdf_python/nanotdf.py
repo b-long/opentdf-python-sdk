@@ -371,10 +371,10 @@ class NanoTDF:
             if not kas_private_key and not kas_mock_unwrap:
                 raise InvalidNanoTDFConfig("Missing kas_private_key for unwrap.")
             if kas_mock_unwrap:
-                # Use the SDK.KAS mock unwrap_nanotdf logic
-                from otdf_python.sdk import SDK
+                # Use the KAS mock unwrap_nanotdf logic
+                from otdf_python.sdk import KAS
 
-                key = SDK.KAS().unwrap_nanotdf(
+                key = KAS().unwrap_nanotdf(
                     curve=None,
                     header=None,
                     kas_url=None,
@@ -395,7 +395,6 @@ class NanoTDF:
         plaintext = aesgcm.decrypt(iv_padded, ciphertext, None)
         output_stream.write(plaintext)
 
-    # Legacy method names for backward compatibility
     def _convert_dict_to_nanotdf_config(self, config: dict) -> NanoTDFConfig:
         """Convert a dictionary config to a NanoTDFConfig object."""
         converted_config = NanoTDFConfig()

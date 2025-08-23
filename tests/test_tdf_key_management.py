@@ -15,7 +15,6 @@ from otdf_python.manifest import (
     ManifestRootSignature,
     ManifestSegment,
 )
-from otdf_python.aesgcm import AesGcm
 
 
 class TestTDFKeyManagement(unittest.TestCase):
@@ -103,13 +102,10 @@ class TestTDFKeyManagement(unittest.TestCase):
         # Configure the mock KAS client - use a proper 32-byte AES-GCM key
         self.mock_kas_client.unwrap.return_value = b"x" * 32  # 32-byte key
 
-        # Create a mock for the AesGcm.decrypt method
-        original_decrypt = AesGcm.decrypt
-
-        try:
-            # Patch the decrypt method directly
-            AesGcm.decrypt = Mock(return_value=b"decrypted_payload")
-
+        # Patch the decrypt method
+        with patch(
+            "otdf_python.aesgcm.AesGcm.decrypt", return_value=b"decrypted_payload"
+        ):
             # Load the TDF without a kas_private_key
             config = TDFReaderConfig(attributes=["attr1"])
             result = self.tdf.load_tdf(self.tdf_bytes, config)
@@ -119,9 +115,6 @@ class TestTDFKeyManagement(unittest.TestCase):
 
             # Verify payload was decrypted
             self.assertEqual(result.payload, b"decrypted_payload")
-        finally:
-            # Restore original method
-            AesGcm.decrypt = original_decrypt
 
     def test_load_tdf_with_private_key(self):
         """Test loading a TDF with a provided KAS private key (testing mode)."""
@@ -133,13 +126,10 @@ class TestTDFKeyManagement(unittest.TestCase):
             mock_asym_decryption.decrypt.return_value = b"x" * 32  # 32-byte key
             mock_asym_decryption_class.return_value = mock_asym_decryption
 
-            # Create a mock for the AesGcm.decrypt method
-            original_decrypt = AesGcm.decrypt
-
-            try:
-                # Patch the decrypt method directly
-                AesGcm.decrypt = Mock(return_value=b"decrypted_payload")
-
+            # Patch the decrypt method
+            with patch(
+                "otdf_python.aesgcm.AesGcm.decrypt", return_value=b"decrypted_payload"
+            ):
                 # Load the TDF with a kas_private_key
                 config = TDFReaderConfig(
                     kas_private_key="PRIVATE_KEY_PEM", attributes=["attr1"]
@@ -155,9 +145,6 @@ class TestTDFKeyManagement(unittest.TestCase):
 
                 # Verify payload was decrypted
                 self.assertEqual(result.payload, b"decrypted_payload")
-            finally:
-                # Restore original method
-                AesGcm.decrypt = original_decrypt
 
 
 if __name__ == "__main__":

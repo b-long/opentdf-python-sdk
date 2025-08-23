@@ -56,6 +56,10 @@ def test_manifest_serialization():
     js = manifest.to_json()
     loaded = Manifest.from_json(js)
     assert loaded.schemaVersion == manifest.schemaVersion
+    assert isinstance(loaded.payload, ManifestPayload)
+    assert isinstance(manifest.payload, ManifestPayload)
     assert loaded.payload.type == manifest.payload.type
+    assert isinstance(loaded.encryptionInformation, ManifestEncryptionInformation)
+    assert isinstance(manifest.encryptionInformation, ManifestEncryptionInformation)
     assert loaded.encryptionInformation.type == manifest.encryptionInformation.type
     assert loaded.assertions[0].id == manifest.assertions[0].id

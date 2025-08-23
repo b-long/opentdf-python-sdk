@@ -10,7 +10,7 @@ import ssl
 import httpx
 from dataclasses import dataclass
 
-from otdf_python.sdk import SDK
+from otdf_python.sdk import SDK, KAS
 from otdf_python.sdk_exceptions import AutoConfigureException
 
 # Configure logging
@@ -390,12 +390,10 @@ class SDKBuilder:
                 self._auth_headers = auth_interceptor if auth_interceptor else {}
                 self._builder = builder_instance
 
-            def kas(self) -> "SDK.KAS":
+            def kas(self) -> KAS:
                 """
                 Returns the KAS interface with SSL verification settings.
                 """
-                from .sdk_builder import SDKBuilder
-
                 platform_url = SDKBuilder.get_platform_url()
 
                 # Create a token source function that can refresh tokens
@@ -406,7 +404,7 @@ class SDKBuilder:
                         return self._builder._get_token_from_client_credentials()
                     return None
 
-                kas_impl = SDK.KAS(
+                kas_impl = KAS(
                     platform_url=platform_url,
                     token_source=token_source,
                     sdk_ssl_verify=self._ssl_verify,
