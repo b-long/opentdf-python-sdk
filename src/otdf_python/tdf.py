@@ -182,51 +182,6 @@ class TDF:
         else:
             return obj.__dict__
 
-    def _enforce_policy(self, manifest: Manifest, config: TDFReaderConfig):  # noqa: C901
-        import json as _json
-
-        if not manifest.encryptionInformation:
-            return  # No encryption information, skip policy enforcement
-
-        policy_data = manifest.encryptionInformation.policy
-        if policy_data and policy_data != "{}":
-            try:
-                # Try to decode base64 first, then parse JSON
-                try:
-                    policy_json = base64.b64decode(policy_data).decode()
-                    policy_dict = _json.loads(policy_json)
-                except:  # noqa: E722
-                    # If base64 decode fails, assume it's already JSON
-                    policy_dict = _json.loads(policy_data)
-
-                required_attrs = set()
-                if "body" in policy_dict:
-                    # Handle both snake_case and camelCase fields
-                    # TODO: This can probably be simplified to only camelCase
-                    data_attrs = policy_dict["body"].get(
-                        "dataAttributes"
-                    ) or policy_dict["body"].get("data_attributes")
-                    if data_attrs:
-                        for attr in data_attrs:
-                            if isinstance(attr, dict) and "attribute" in attr:
-                                required_attrs.add(attr["attribute"])
-                            elif isinstance(attr, str):
-                                required_attrs.add(attr)
-                if required_attrs:
-                    attrs = config.attributes
-                    user_attrs = set(attrs if attrs is not None else [])
-                    if not user_attrs:
-                        raise ValueError(
-                            "ABAC policy enforcement: user attributes required but not provided"
-                        )
-                    missing = required_attrs - user_attrs
-                    if missing:
-                        raise ValueError(
-                            f"ABAC policy enforcement: missing required attributes: {missing}"
-                        )
-            except Exception as e:
-                raise ValueError(f"Failed to parse/enforce policy: {e}")
-
     def _unwrap_key(self, key_access_objs, private_key_pem):
         """
         Unwraps the key locally using a provided private key (used for testing)
@@ -425,9 +380,6 @@ class TDF:
         with zipfile.ZipFile(io.BytesIO(tdf_bytes), "r") as z:
             manifest_json = z.read("0.manifest.json").decode()
             manifest = Manifest.from_json(manifest_json)
-
-            # TODO: Re-work policy enforcement
-            # self._enforce_policy(manifest, config)
 
             if not manifest.encryptionInformation:
                 raise ValueError("Missing encryption information in manifest")
