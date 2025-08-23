@@ -52,9 +52,8 @@ class TestKASKeyManagement(unittest.TestCase):
                 self.assertIsNotNone(client.client_public_key)
 
                 # The public key should be in PEM format
-                self.assertTrue(
-                    client.client_public_key.startswith("-----BEGIN PUBLIC KEY-----")
-                )
+                assert isinstance(client.client_public_key, str)
+                assert client.client_public_key.startswith("-----BEGIN PUBLIC KEY-----")
 
     @pytest.mark.skip(reason="Skipping 'test_ec_key_generation' until fixed")
     @pytest.mark.integration

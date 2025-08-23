@@ -9,9 +9,9 @@ from dataclasses import dataclass
 @dataclass
 class MockKasInfo:
     url: str
-    algorithm: str = None
-    public_key: str = None
-    kid: str = None
+    algorithm: str | None = None
+    public_key: str | None = None
+    kid: str | None = None
     default: bool = False
 
 

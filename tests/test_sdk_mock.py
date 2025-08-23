@@ -55,4 +55,4 @@ def test_sdk_instantiation():
     sdk = SDK(services=services)
     assert sdk.get_services() is services
     assert sdk.get_services().kas().get_public_key(None) == "mock-public-key"
-    assert sdk.get_services().kas().unwrap(None, None, None) == b"mock-unwrapped-key"
+    assert sdk.get_services().kas().unwrap(None, "", None) == b"mock-unwrapped-key"
