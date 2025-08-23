@@ -24,9 +24,12 @@ if ! [ -d ./keys ]; then
   cp opentdf-example.yaml opentdf.yaml
 
   # Edit 'opentdf.yaml' for our use case
-  yq -i 'del(.db)' opentdf.yaml
-  yq -i '.services.entityresolution.url = "http://localhost:8888/auth"' opentdf.yaml
-  yq -i '.server.auth.issuer = "http://localhost:8888/auth/realms/opentdf"' opentdf.yaml
+  yq -i 'del(.db) | .services.entityresolution.url = "http://localhost:8888/auth" | .server.auth.issuer = "http://localhost:8888/auth/realms/opentdf"' opentdf.yaml
+  # The above expression can also be written as 3 separate commands:
+  # yq -i 'del(.db)' opentdf.yaml
+  # yq -i '.services.entityresolution.url = "http://localhost:8888/auth"' opentdf.yaml
+  # yq -i '.server.auth.issuer = "http://localhost:8888/auth/realms/opentdf"' opentdf.yaml
+
   yq -i '
 .server.cryptoProvider = {
   "type": "standard",
