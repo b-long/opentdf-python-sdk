@@ -77,3 +77,5 @@ lint.select = [
     "FURB",      # refurb (FURB)
     "PT018",     # flake8-pytest-style (pytest style)
 ]
+# Ignore generated files
+extend-exclude = ["otdf-python-proto/src/"]
