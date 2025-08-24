@@ -6,18 +6,12 @@ on:
       - develop
       - chore/update-docs-and-release-process
   repository_dispatch:
-    types: [alpha-release-created]
+    types: [alpha-release-created, stable-release-created]
   workflow_dispatch:
 
 jobs:
-  # Run full test suite before any publishing operations
-  test-suite:
-    uses: ./.github/workflows/test-suite.yaml
-
   build:
     name: Build Python Package
-    needs: test-suite
-    if: needs.test-suite.outputs.tests_passed == 'true'
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4

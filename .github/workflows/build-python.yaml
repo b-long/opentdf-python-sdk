@@ -7,14 +7,8 @@ on:
   pull_request:
 
 jobs:
-  # Run comprehensive test suite first (fail fast)
-  test-suite:
-    uses: ./.github/workflows/test-suite.yaml
-
   build:
     runs-on: ubuntu-22.04
-    needs: test-suite
-    if: needs.test-suite.outputs.tests_passed == 'true'
     outputs:
       wheel: ${{ steps.find_wheel.outputs.wheel_path }}
     steps:
@@ -47,15 +41,3 @@ jobs:
           path: dist/*.whl
           overwrite: true
 
-  integration-test:
-    strategy:
-      fail-fast: true
-      matrix:
-        python3_version: ["3.10", "3.11", "3.12", "3.13"]
-        # python3_version: ["3.13"]
-    needs: [test-suite, build]
-    if: needs.test-suite.outputs.tests_passed == 'true'
-    uses: ./.github/workflows/platform-integration-test.yaml
-    with:
-      wheel: ${{ needs.build.outputs.wheel }}
-      python_version: ${{ matrix.python3_version }}

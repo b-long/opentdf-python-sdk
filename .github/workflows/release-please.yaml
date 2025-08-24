@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - develop
   workflow_dispatch:
 
 permissions:
@@ -51,29 +52,20 @@ jobs:
             echo "Stable version detected: $VERSION"
           fi
 
-      # For alpha versions: trigger TestPyPI build (develop branch workflow)
-      - name: Trigger TestPyPI Build (Alpha)
-        if: steps.check_alpha.outputs.is_alpha == 'true'
+      # For develop branch: trigger TestPyPI build (both alpha and stable releases go to TestPyPI from develop)
+      - name: Trigger TestPyPI Build (Develop)
+        if: github.ref == 'refs/heads/develop'
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          event-type: alpha-release-created
+          event-type: ${{ steps.check_alpha.outputs.is_alpha == 'true' && 'alpha-release-created' || 'stable-release-created' }}
           client-payload: '{"version": "${{ steps.check_alpha.outputs.version }}", "releases": "${{ needs.release-please.outputs.paths_released }}"}'
 
-      # For alpha versions: also trigger main PyPI build
-      - name: Trigger PyPI Build (Alpha)
-        if: steps.check_alpha.outputs.is_alpha == 'true'
+      # For main branch: trigger PyPI build (both alpha and stable releases go to PyPI from main)
+      - name: Trigger PyPI Build (Main)
+        if: github.ref == 'refs/heads/main'
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          event-type: stable-release-created
-          client-payload: '{"version": "${{ steps.check_alpha.outputs.version }}", "releases": "${{ needs.release-please.outputs.paths_released }}"}'
-
-      # For stable versions: only trigger main PyPI build
-      - name: Trigger PyPI Build (Stable)
-        if: steps.check_alpha.outputs.is_alpha == 'false'
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          event-type: stable-release-created
+          event-type: ${{ steps.check_alpha.outputs.is_alpha == 'true' && 'alpha-release-created' || 'stable-release-created' }}
           client-payload: '{"version": "${{ steps.check_alpha.outputs.version }}", "releases": "${{ needs.release-please.outputs.paths_released }}"}'
