@@ -45,6 +45,7 @@ jobs:
         with:
           name: python-wheel
           path: dist/*.whl
+          overwrite: true
 
   integration-test:
     strategy:
