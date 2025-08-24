@@ -86,7 +86,7 @@ curl -o proto-gen/proto-files/kas.proto https://raw.githubusercontent.com/opentd
 
 ## Dependencies
 
-The proto-gen sub-module includes these dependencies:
+The otdf-python-proto sub-module includes these dependencies:
 - `grpcio>=1.74.0` - gRPC runtime
 - `grpcio-tools>=1.74.0` - Protocol buffer compiler
 - `protobuf>=6.31.1` - Protocol buffer runtime
@@ -128,7 +128,7 @@ The generated Python files include:
 - **`kas_pb2.py`** - Protocol buffer message classes
 - **`kas_pb2_grpc.py`** - gRPC service client and server classes
 
-These files are automatically synced to `src/otdf_python/proto/` in the main project.
+These files are automatically synced to `otdf-python-proto/generated/` and used by the main project in `src/otdf_python/`.
 
 ## Fallback Strategy
 

@@ -29,7 +29,7 @@ See [CONNECT_RPC_MIGRATION.md](../CONNECT_RPC_MIGRATION.md) for migration guide 
 To generate Connect RPC clients and protobuf files:
 
 ```bash
-cd proto-gen
+cd otdf-python-proto
 uv run python scripts/generate_connect_proto.py
 ```
 
@@ -50,7 +50,7 @@ This generates:
 To generate traditional gRPC clients (backward compatibility):
 
 ```bash
-cd proto-gen
+cd otdf-python-proto
 uv run python scripts/generate_proto.py
 ```
 
@@ -65,7 +65,7 @@ Or use the legacy script:
 To download the latest proto files from OpenTDF platform:
 
 ```bash
-cd proto-gen
+cd otdf-python-proto
 uv run python scripts/generate_connect_proto.py --download
 ```
 
@@ -91,8 +91,8 @@ The generated files depend on:
 
 ```python
 import urllib3
-from generated.policy_pb2 import GetPolicyRequest
-from generated.policy_connect import PolicyServiceClient
+from otdf_python_proto.policy_pb2 import GetPolicyRequest
+from otdf_python_proto.policy_connect import PolicyServiceClient
 
 # Create HTTP client
 http_client = urllib3.PoolManager()
@@ -116,7 +116,7 @@ response = client.get_policy(
 
 ```python
 import aiohttp
-from generated.policy_connect import AsyncPolicyServiceClient
+from otdf_python_proto.policy_connect import AsyncPolicyServiceClient
 
 async with aiohttp.ClientSession() as session:
     client = AsyncPolicyServiceClient(
@@ -131,7 +131,7 @@ async with aiohttp.ClientSession() as session:
 
 ```python
 import grpc
-from generated.legacy_grpc.policy_pb2_grpc import PolicyServiceStub
+from otdf_python_proto.legacy_grpc.policy_pb2_grpc import PolicyServiceStub
 
 channel = grpc.insecure_channel("platform.opentdf.io:443")
 client = PolicyServiceStub(channel)
@@ -159,7 +159,7 @@ response = client.GetPolicy(request)
 If you're migrating from traditional gRPC clients to Connect RPC:
 
 1. Read the [Connect RPC Migration Guide](../CONNECT_RPC_MIGRATION.md)
-2. Run the Connect RPC generation: `./scripts/build_connect_proto.sh`
+2. Run the Connect RPC generation: `./scripts/build_connect_proto.sh` (or from the submodule: `cd otdf-python-proto && uv run python scripts/generate_connect_proto.py`)
 3. Update your client code to use `*_connect.py` modules
 4. Test with your authentication and deployment setup
 5. Optionally remove legacy gRPC dependencies
@@ -173,7 +173,7 @@ Install buf: `brew install bufbuild/buf/buf`
 Install with compiler support: `uv add connect-python[compiler]`
 
 ### Import errors after generation
-Ensure `__init__.py` files exist in generated directories
+Ensure `__init__.py` files exist in otdf_python_proto directories
 
 ### Protocol version mismatches
 Regenerate with latest proto files: `uv run python scripts/generate_connect_proto.py --download`
