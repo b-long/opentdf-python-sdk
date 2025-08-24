@@ -220,6 +220,13 @@ tests/
 6. Push to the branch: `git push origin feature-name`
 7. Submit a pull request
 
+### Release Process
+
+For maintainers and contributors working on releases:
+- See [RELEASES.md](RELEASES.md) for comprehensive release documentation
+- Feature branch alpha releases available for testing changes before merge
+- Automated releases via Release Please on the main branch
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
