@@ -37,6 +37,7 @@ dev = [
     "pydantic-settings>=2.10.1",
     "pytest>=8.4.1",
     "respx>=0.21.1",
+    "ruff>=0.12.10",
 ]
 
 [tool.pytest.ini_options]
