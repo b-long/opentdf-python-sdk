@@ -1,14 +1,21 @@
 name: PyPIBuild
 
 on:
-  push:
-    branches:
-      - main
+  release:
+    types: [published]
+  repository_dispatch:
+    types: [stable-release-created]
   workflow_dispatch:
 
 jobs:
+  # Run full test suite before any publishing operations
+  test-suite:
+    uses: ./.github/workflows/test-suite.yaml
+
   build_macos:
     name: MacOS ${{ matrix.os_version }} Python 3${{ matrix.python3_version }} ${{ matrix.arch_cibw_go[0] }}
+    needs: test-suite
+    if: needs.test-suite.outputs.tests_passed == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -42,6 +49,8 @@ jobs:
 
   build_linux_x86_64:
     name: Linux Python x86_64
+    needs: test-suite
+    if: needs.test-suite.outputs.tests_passed == 'true'
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -67,6 +76,8 @@ jobs:
 
   build_linux_arm:
     name: Linux Python ARM
+    needs: test-suite
+    if: needs.test-suite.outputs.tests_passed == 'true'
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
@@ -106,8 +117,8 @@ jobs:
       id-token: write
     needs: [build_macos, build_linux_x86_64, build_linux_arm]
     runs-on: ubuntu-22.04
-    # If branch is 'main'
-    if: github.ref == 'refs/heads/main'
+    # If branch is 'main' or triggered by repository dispatch
+    if: github.ref == 'refs/heads/main' || github.event_name == 'repository_dispatch' || github.event_name == 'release'
 
     steps:
         - uses: actions/checkout@v4

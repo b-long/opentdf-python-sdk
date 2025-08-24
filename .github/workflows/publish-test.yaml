@@ -5,11 +5,19 @@ on:
     branches:
       - develop
       - chore/rewrite-in-python
+  repository_dispatch:
+    types: [alpha-release-created]
   workflow_dispatch:
 
 jobs:
+  # Run full test suite before any publishing operations
+  test-suite:
+    uses: ./.github/workflows/test-suite.yaml
+
   build:
     name: Build Python Package
+    needs: test-suite
+    if: needs.test-suite.outputs.tests_passed == 'true'
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -41,8 +49,8 @@ jobs:
       id-token: write
     needs: [build]
     runs-on: ubuntu-22.04
-    # If branch is 'develop'
-    if: github.ref == 'refs/heads/develop'
+    # If branch is 'develop' or triggered by repository dispatch
+    if: github.ref == 'refs/heads/develop' || github.event_name == 'repository_dispatch'
 
     steps:
         - uses: actions/checkout@v4
