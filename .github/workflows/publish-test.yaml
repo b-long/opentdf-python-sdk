@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - develop
-      - chore/rewrite-in-python
+      - chore/update-docs-and-release-process
   repository_dispatch:
     types: [alpha-release-created]
   workflow_dispatch:
