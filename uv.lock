@@ -686,7 +686,7 @@ wheels = [
 
 [[package]]
 name = "otdf-python"
-version = "0.3.0a6"
+version = "0.3.0a7"
 source = { editable = "." }
 dependencies = [
     { name = "connect-python", extra = ["compiler"] },

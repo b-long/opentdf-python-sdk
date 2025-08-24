@@ -6,7 +6,7 @@ This document provides comprehensive guidance for maintainers on the OpenTDF Pyt
 
 The OpenTDF Python SDK uses **Release Please** for automated version management and publishing. The system supports:
 
-- **Alpha releases** (e.g., `0.3.0a6`): Automated publishing to both test.pypi.org and pypi.org
+- **Alpha releases** (e.g., `0.3.0a7`): Automated publishing to both test.pypi.org and pypi.org
 - **Stable releases** (e.g., `0.3.0`): Automated publishing to pypi.org only
 - **Feature branch testing**: Manual alpha releases from development branches
 
@@ -127,14 +127,14 @@ Use this approach when you need to test changes before merging to main:
    uv version --bump alpha
    
    # Option B: Edit pyproject.toml directly to create unique alpha
-   # If current is 0.3.0a6, you might use 0.3.0a6.dev1 or 0.3.1a1
+   # If current is 0.3.0a7, you might use 0.3.0a7.dev1 or 0.3.1a1
    ```
 
 3. **Update Version Files**:
    ```bash
    # Update any version references in extra files
    # (Release Please normally handles this)
-   sed -i 's/0.3.0a6/0.3.0a7.dev1/g' src/otdf_python/cli.py
+   sed -i 's/0.3.0a7/0.3.0a7.dev1/g' src/otdf_python/cli.py
    ```
 
 4. **Commit Version Changes**:
@@ -187,7 +187,7 @@ git push origin --delete feature/new-encryption-method
 
 ### Alpha Versions
 - **Sequential alphas**: `0.3.0a1`, `0.3.0a2`, `0.3.0a3`...
-- **Feature branch alphas**: `0.3.0a6.dev1`, `0.3.1a1.dev1`
+- **Feature branch alphas**: `0.3.0a7.dev1`, `0.3.1a1.dev1`
 - **Experimental**: `0.4.0a1.experimental`
 
 ### Stable Versions

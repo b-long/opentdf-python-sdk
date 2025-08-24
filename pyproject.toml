@@ -1,6 +1,6 @@
 [project]
 name = "otdf-python"
-version = "0.3.0a6"
+version = "0.3.0a7"
 description = "Unofficial OpenTDF SDK for Python"
 readme = "README.md"
 authors = [
