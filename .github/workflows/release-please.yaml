@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - develop
+      - chore/update-docs-and-release-process
   workflow_dispatch:
 
 permissions:
@@ -54,7 +55,7 @@ jobs:
 
       # For develop branch: trigger TestPyPI build (both alpha and stable releases go to TestPyPI from develop)
       - name: Trigger TestPyPI Build (Develop)
-        if: github.ref == 'refs/heads/develop'
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/chore/update-docs-and-release-process'
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

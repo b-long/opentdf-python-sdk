@@ -44,7 +44,7 @@ jobs:
     needs: [build]
     runs-on: ubuntu-22.04
     # If branch is 'develop' or triggered by repository dispatch
-    if: github.ref == 'refs/heads/develop' || github.event_name == 'repository_dispatch'
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/chore/update-docs-and-release-process'  || github.event_name == 'repository_dispatch'
 
     steps:
         - uses: actions/checkout@v4
