@@ -1,4 +1,9 @@
 ---
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+  - pre-push
+  - post-rewrite
 exclude: |
     (?x)^(
         otdf_python/.*
@@ -7,7 +12,7 @@ exclude: |
 # See https://pre-commit.com/hooks.html for more hooks#
 repos:
     - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v5.0.0
+      rev: v6.0.0
       hooks:
           - id: check-yaml
           - id: end-of-file-fixer
@@ -40,9 +45,15 @@ repos:
 
     - repo: https://github.com/astral-sh/ruff-pre-commit
       # Ruff version.
-      rev: v0.12.5
+      rev: v0.12.12
       hooks:
         # Run the linter.
         - id: ruff
         # Run the formatter.
         - id: ruff-format
+    - repo: https://github.com/compilerla/conventional-pre-commit
+      rev: v4.2.0
+      hooks:
+        - id: conventional-pre-commit
+          stages: [commit-msg,pre-push,post-rewrite]
+          args: [--verbose]
