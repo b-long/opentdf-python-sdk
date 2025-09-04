@@ -1,10 +1,12 @@
 name: TestPyPIBuild
 
 on:
-  push:
-    branches:
-      - develop
-      - chore/rewrite-in-python
+  # push:
+  #   branches:
+  #     - develop
+  #     - chore/update-docs-and-release-process
+  # repository_dispatch:
+  #   types: [alpha-release-created, stable-release-created]
   workflow_dispatch:
 
 jobs:
@@ -41,8 +43,8 @@ jobs:
       id-token: write
     needs: [build]
     runs-on: ubuntu-22.04
-    # If branch is 'develop'
-    if: github.ref == 'refs/heads/develop'
+    # If branch is 'develop' or triggered by repository dispatch
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/chore/update-docs-and-release-process'  || github.event_name == 'repository_dispatch'
 
     steps:
         - uses: actions/checkout@v4

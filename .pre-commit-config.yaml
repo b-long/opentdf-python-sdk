@@ -1,4 +1,8 @@
 ---
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+  - post-rewrite
 exclude: |
   (?x)^(
     otdf_python/.*
@@ -17,26 +21,6 @@ repos:
           - id: check-yaml
           - id: end-of-file-fixer
           - id: trailing-whitespace
-
-    # - repo: https://github.com/tekwizely/pre-commit-golang
-    #   rev: master
-    #   hooks:
-    #       - id: go-lint
-
-    - repo: https://github.com/dnephin/pre-commit-golang
-      rev: v0.5.1
-      hooks:
-          - id: go-fmt
-
-          - id: go-vet
-          # - id: golangci-lint
-            # timeout is needed for CI
-            # args: [-E, gosec, -E, goconst, -E, govet, --timeout, 300s]
-          # - id: go-imports
-          # - id: go-cyclo
-          #   args: [-over=15]
-          # - id: validate-toml
-          - id: no-go-testing
     - repo: https://github.com/codespell-project/codespell
       rev: v2.4.1
       hooks:
@@ -45,9 +29,15 @@ repos:
 
     - repo: https://github.com/astral-sh/ruff-pre-commit
       # Ruff version.
-      rev: v0.12.10
+      rev: v0.12.12
       hooks:
         # Run the linter.
         - id: ruff
         # Run the formatter.
         - id: ruff-format
+    - repo: https://github.com/compilerla/conventional-pre-commit
+      rev: v4.2.0
+      hooks:
+        - id: conventional-pre-commit
+          stages: [commit-msg,post-rewrite]
+          args: [--verbose,--scopes=feat,fix,docs,style,test,chore,ci]

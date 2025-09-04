@@ -76,6 +76,21 @@ Install from PyPI:
 pip install otdf-python
 ```
 
+
+## Protobuf & Connect RPC Generation
+
+This project uses a dedicated submodule, `otdf-python-proto/`, for generating Python protobuf files and Connect RPC clients from OpenTDF platform proto definitions.
+
+### Regenerating Protobuf & Connect RPC Files
+
+From the submodule:
+```bash
+cd otdf-python-proto
+uv run python scripts/generate_connect_proto.py
+```
+
+See [`otdf-python-proto/README.md`](otdf-python-proto/README.md) and [`PROTOBUF_SETUP.md`](PROTOBUF_SETUP.md) for details.
+
 ## Quick Start
 
 ### Basic Configuration
@@ -185,21 +200,15 @@ decrypted_data = decrypted_stream.getvalue()
 
 ```
 src/otdf_python/
-├── __init__.py              # Package initialization
-├── sdk.py                   # Main SDK interface
+├── sdk.py                  # Main SDK interface
 ├── config.py               # Configuration management
 ├── tdf.py                  # TDF format handling
 ├── nanotdf.py              # NanoTDF format handling
 ├── crypto_utils.py         # Cryptographic utilities
 ├── kas_client.py           # Key Access Service client
 └── ...                     # Additional modules
-
 tests/
-├── test_sdk.py             # SDK tests
-├── test_config.py          # Configuration tests
-├── test_tdf.py            # TDF format tests
-└── ...                    # Additional test files
-```
+└── ...                     # Various tests
 
 ## Contributing
 
@@ -210,6 +219,13 @@ tests/
 5. Commit your changes: `git commit -am 'Add feature'`
 6. Push to the branch: `git push origin feature-name`
 7. Submit a pull request
+
+### Release Process
+
+For maintainers and contributors working on releases:
+- See [RELEASES.md](RELEASES.md) for comprehensive release documentation
+- Feature branch alpha releases available for testing changes before merge
+- Automated releases via Release Please on the main branch
 
 ## License
 

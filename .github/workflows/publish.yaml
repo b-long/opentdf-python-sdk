@@ -1,9 +1,10 @@
 name: PyPIBuild
 
 on:
-  push:
-    branches:
-      - main
+  release:
+    types: [published]
+  repository_dispatch:
+    types: [alpha-release-created, stable-release-created]
   workflow_dispatch:
 
 jobs:
@@ -106,8 +107,8 @@ jobs:
       id-token: write
     needs: [build_macos, build_linux_x86_64, build_linux_arm]
     runs-on: ubuntu-22.04
-    # If branch is 'main'
-    if: github.ref == 'refs/heads/main'
+    # If branch is 'main' or triggered by repository dispatch
+    if: github.ref == 'refs/heads/main' || github.event_name == 'repository_dispatch' || github.event_name == 'release'
 
     steps:
         - uses: actions/checkout@v4
