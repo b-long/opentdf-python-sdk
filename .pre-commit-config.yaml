@@ -2,7 +2,6 @@
 default_install_hook_types:
   - pre-commit
   - commit-msg
-  - pre-push
   - post-rewrite
 exclude: |
     (?x)^(
@@ -55,5 +54,5 @@ repos:
       rev: v4.2.0
       hooks:
         - id: conventional-pre-commit
-          stages: [commit-msg,pre-push,post-rewrite]
+          stages: [commit-msg,post-rewrite]
           args: [--verbose,--scopes=feat,fix,docs,style,test,chore,ci]
