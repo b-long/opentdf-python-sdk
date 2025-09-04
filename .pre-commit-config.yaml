@@ -56,4 +56,4 @@ repos:
       hooks:
         - id: conventional-pre-commit
           stages: [commit-msg,pre-push,post-rewrite]
-          args: [--verbose]
+          args: [--verbose,--scopes=feat,fix,docs,style,test,chore,ci]
