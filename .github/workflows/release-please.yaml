@@ -30,7 +30,7 @@ jobs:
         with:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
-          target-branch: ${{ github.ref_name }}
+          target-branch: develop # FIXME: Change to 'main' after initial setup
           token: ${{ secrets.GITHUB_TOKEN }}
 
   # Trigger appropriate publish workflows based on release type
