@@ -6,7 +6,7 @@ This document provides comprehensive guidance for maintainers on the OpenTDF Pyt
 
 The OpenTDF Python SDK uses **Release Please** for automated version management and publishing. The system supports:
 
-- **Alpha releases** (e.g., `0.3.0a7`): Automated publishing to both test.pypi.org and pypi.org
+- **Alpha releases** (e.g., `0.3.0a8`): Automated publishing to both test.pypi.org and pypi.org
 - **Stable releases** (e.g., `0.3.0`): Automated publishing to pypi.org only
 - **Feature branch testing**: Manual alpha releases from development branches
 
@@ -19,7 +19,7 @@ uv version --short
 # Preview next alpha version
 uv version --bump alpha --dry-run
 
-# Preview next stable version  
+# Preview next stable version
 uv version --bump minor --dry-run  # or patch/major
 ```
 
@@ -59,7 +59,7 @@ uv version --bump minor --dry-run  # or patch/major
 
 The system automatically determines release type based on version format:
 
-- **Alpha**: `X.Y.ZaN` (e.g., `0.3.0a7`) → Published to test.pypi.org + pypi.org
+- **Alpha**: `X.Y.ZaN` (e.g., `0.3.0a8`) → Published to test.pypi.org + pypi.org
 - **Stable**: `X.Y.Z` (e.g., `0.3.0`) → Published to pypi.org only
 
 ## Manual Release Management
@@ -125,22 +125,22 @@ Use this approach when you need to test changes before merging to main:
    ```bash
    # Option A: Use uv to bump version in pyproject.toml
    uv version --bump alpha
-   
+
    # Option B: Edit pyproject.toml directly to create unique alpha
-   # If current is 0.3.0a7, you might use 0.3.0a7.dev1 or 0.3.1a1
+   # If current is 0.3.0a8, you might use 0.3.0a8.dev1 or 0.3.1a1
    ```
 
 3. **Update Version Files**:
    ```bash
    # Update any version references in extra files
    # (Release Please normally handles this)
-   sed -i 's/0.3.0a7/0.3.0a7.dev1/g' src/otdf_python/cli.py
+   sed -i 's/0.3.0a8/0.3.0a8.dev1/g' src/otdf_python/cli.py
    ```
 
 4. **Commit Version Changes**:
    ```bash
    git add .
-   git commit -m "chore: bump version for feature testing to 0.3.0a7.dev1"
+   git commit -m "chore: bump version for feature testing to 0.3.0a8.dev1"
    ```
 
 5. **Push Feature Branch**:
@@ -149,19 +149,19 @@ Use this approach when you need to test changes before merging to main:
    ```
 
 6. **Manual Build and Publish**:
-   
+
    **Option A: GitHub Actions (Recommended)**
    - Push to a temporary branch that matches main branch patterns
    - Or trigger workflow dispatch with your branch
-   
+
    **Option B: Local Build** (for internal testing):
    ```bash
    # Build wheel locally
    uv build
-   
+
    # Install for testing
-   pip install dist/otdf_python-0.3.0a7.dev1-*.whl
-   
+   pip install dist/otdf_python-0.3.0a8.dev1-*.whl
+
    # Or upload to test.pypi.org manually
    uv publish --repository testpypi dist/*
    ```
@@ -187,7 +187,7 @@ git push origin --delete feature/new-encryption-method
 
 ### Alpha Versions
 - **Sequential alphas**: `0.3.0a1`, `0.3.0a2`, `0.3.0a3`...
-- **Feature branch alphas**: `0.3.0a7.dev1`, `0.3.1a1.dev1`
+- **Feature branch alphas**: `0.3.0a8.dev1`, `0.3.1a1.dev1`
 - **Experimental**: `0.4.0a1.experimental`
 
 ### Stable Versions
@@ -216,7 +216,7 @@ uvx ty check src/
 ### After Publishing
 ```bash
 # Test installation from PyPI
-pip install otdf-python==0.3.0a7
+pip install otdf-python==0.3.0a8
 
 # Test basic functionality
 python -c "import otdf_python; print('Import successful')"
@@ -272,7 +272,7 @@ Both packages should maintain version sync. Release Please handles this automati
 ### Yanking a Bad Release
 ```bash
 # Yank from PyPI (makes it unavailable for new installs)
-uv publish --yank "0.3.0a7" --reason "Critical security issue"
+uv publish --yank "0.3.0a8" --reason "Critical security issue"
 
 # Create hotfix release
 git checkout main
