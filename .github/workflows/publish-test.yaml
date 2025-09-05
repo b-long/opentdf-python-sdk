@@ -1,12 +1,6 @@
 name: TestPyPIBuild
 
 on:
-  # push:
-  #   branches:
-  #     - develop
-  #     - chore/update-docs-and-release-process
-  # repository_dispatch:
-  #   types: [alpha-release-created, stable-release-created]
   workflow_dispatch:
 
 jobs:
@@ -34,7 +28,6 @@ jobs:
         with:
           name: python-package
           path: ./dist/*
-
 
   release:
     permissions:
@@ -67,8 +60,8 @@ jobs:
 
         - name: Store version
           run: |
-              PROJECT_VERSION=$(uv version --short)
-              echo "PROJECT_VERSION=$PROJECT_VERSION" >> $GITHUB_ENV
+            PROJECT_VERSION=$(uv version --short)
+            echo "PROJECT_VERSION=$PROJECT_VERSION" >> $GITHUB_ENV
 
         # Publish with "trusted publisher" mechanism:
         # https://docs.pypi.org/trusted-publishers/
@@ -85,7 +78,8 @@ jobs:
           with:
             artifacts: |
                 README.md,
-                dist/*.whl
+                dist/*.whl,
+                dist/*.tar.gz
             body: otdf_python version ${{ env.PROJECT_VERSION }}
             makeLatest: "false"
             tag: "${{ env.PROJECT_VERSION }}-dev-${{ github.sha }}"
