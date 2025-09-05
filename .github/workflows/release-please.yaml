@@ -35,6 +35,10 @@ jobs:
 
   # Trigger appropriate publish workflows based on release type
   trigger-publish:
+    permissions:
+      contents: write
+      # This permission is mandatory for PyPI's trusted publishing
+      id-token: write
     needs: release-please
     if: ${{ needs.release-please.outputs.releases_created }}
     runs-on: ubuntu-latest
@@ -58,7 +62,7 @@ jobs:
       # For develop branch: trigger TestPyPI build (both alpha and stable releases go to TestPyPI from develop)
       - name: Trigger TestPyPI Build (Develop)
         if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/chore/update-docs-and-release-process'
-        uses: ./.github/workflows/publish-test.yaml
+        uses: ./.github/workflows/publish-test
         with:
           version: ${{ steps.check_alpha.outputs.version }}
           releases: ${{ needs.release-please.outputs.paths_released }}
@@ -66,7 +70,7 @@ jobs:
       # For main branch: trigger PyPI build (both alpha and stable releases go to PyPI from main)
       - name: Trigger PyPI Build (Main)
         if: github.ref == 'refs/heads/main'
-        uses: ./.github/workflows/publish.yaml
+        uses: ./.github/workflows/publish
         with:
           version: ${{ steps.check_alpha.outputs.version }}
           releases: ${{ needs.release-please.outputs.paths_released }}
