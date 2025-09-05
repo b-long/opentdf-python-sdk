@@ -6,13 +6,19 @@
       "release-type": "python",
       "package-name": "otdf-python",
       "extra-files": [
+        "pyproject.toml",
+        "uv.lock",
         "src/otdf_python/cli.py",
-        "tests/test_cli.py"
+        "tests/test_cli.py",
+        "RELEASES.md"
       ]
     },
     "otdf-python-proto": {
       "release-type": "python",
-      "package-name": "otdf-python-proto"
+      "package-name": "otdf-python-proto",
+      "extra-files": [
+        "otdf-python-proto/pyproject.toml"
+      ]
     }
   },
   "changelog-sections": [
