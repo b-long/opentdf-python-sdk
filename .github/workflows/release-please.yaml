@@ -58,17 +58,15 @@ jobs:
       # For develop branch: trigger TestPyPI build (both alpha and stable releases go to TestPyPI from develop)
       - name: Trigger TestPyPI Build (Develop)
         if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/chore/update-docs-and-release-process'
-        uses: peter-evans/repository-dispatch@v3
+        uses: ./.github/workflows/publish-test.yaml
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          event-type: ${{ steps.check_alpha.outputs.is_alpha == 'true' && 'alpha-release-created' || 'stable-release-created' }}
-          client-payload: '{"version": "${{ steps.check_alpha.outputs.version }}", "releases": "${{ needs.release-please.outputs.paths_released }}"}'
+          version: ${{ steps.check_alpha.outputs.version }}
+          releases: ${{ needs.release-please.outputs.paths_released }}
 
       # For main branch: trigger PyPI build (both alpha and stable releases go to PyPI from main)
       - name: Trigger PyPI Build (Main)
         if: github.ref == 'refs/heads/main'
-        uses: peter-evans/repository-dispatch@v3
+        uses: ./.github/workflows/publish.yaml
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          event-type: ${{ steps.check_alpha.outputs.is_alpha == 'true' && 'alpha-release-created' || 'stable-release-created' }}
-          client-payload: '{"version": "${{ steps.check_alpha.outputs.version }}", "releases": "${{ needs.release-please.outputs.paths_released }}"}'
+          version: ${{ steps.check_alpha.outputs.version }}
+          releases: ${{ needs.release-please.outputs.paths_released }}
