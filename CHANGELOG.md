@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.3.1...otdf-python-v0.3.2) (2025-09-05)
+
+
+### Bug Fixes
+
+* remove unnecessary 'ncipollo/release-action' ([6a1d57b](https://github.com/b-long/opentdf-python-sdk/commit/6a1d57b562b6b6f506db9c29fa11858bf28ef702))
+
 ## [0.3.1](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.3.0...otdf-python-v0.3.1) (2025-09-05)
 
 
