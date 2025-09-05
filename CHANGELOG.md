@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.1](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.3.0...otdf-python-v0.3.1) (2025-09-05)
+
+
+### Bug Fixes
+
+* address pre-commit (lint) issues ([f61b020](https://github.com/b-long/opentdf-python-sdk/commit/f61b02033f4a132ee1e552be61917d18d5a0bf4c))
+* omit README from Github releases ([cca9e3e](https://github.com/b-long/opentdf-python-sdk/commit/cca9e3efb9ead3693d401261e3e74debd985653e))
+* use correct 'extra-files' for uv.lock ([0e09171](https://github.com/b-long/opentdf-python-sdk/commit/0e091714cad2a5f462bf0a5444e92d8e71639626))
+
+
+### Miscellaneous Chores
+
+* release 0.3.1 ([c1395b1](https://github.com/b-long/opentdf-python-sdk/commit/c1395b1ff6bf02ffb24f20e7d45ca0869ae033f5))
+
 ## [0.3.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.3.0...otdf-python-v0.3.0) (2025-09-05)
 
 
