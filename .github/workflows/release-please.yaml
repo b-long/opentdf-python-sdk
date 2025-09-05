@@ -59,18 +59,77 @@ jobs:
             echo "Stable version detected: $VERSION"
           fi
 
-      # For develop branch: trigger TestPyPI build (both alpha and stable releases go to TestPyPI from develop)
-      - name: Trigger TestPyPI Build (Develop)
-        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/chore/update-docs-and-release-process'
-        uses: ./.github/workflows/publish-test
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
-          version: ${{ steps.check_alpha.outputs.version }}
-          releases: ${{ needs.release-please.outputs.paths_released }}
+          version: "latest"
+
+      - name: Build package
+        shell: bash
+        run: |
+          uv build
+
+      - name: Test import
+        shell: bash
+        run: |
+          uv run python -c 'import otdf_python; print("Package imported successfully")'
+
+      - name: Store version
+        shell: bash
+        run: |
+          PROJECT_VERSION=$(uv version --short)
+          echo "PROJECT_VERSION=$PROJECT_VERSION" >> $GITHUB_ENV
+
+      # For develop branch: trigger TestPyPI build (both alpha and stable releases go to TestPyPI from develop)
+
+      # Publish with "trusted publisher" mechanism:
+      # https://docs.pypi.org/trusted-publishers/
+      #
+      # Requires GHA token permission (above in YAML) and PyPI management:
+      #   https://test.pypi.org/manage/project/otdf-python/settings/publishing/
+      - name: Publish package distributions to TestPyPI
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/chore/update-docs-and-release-process'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: dist/
+
+      - name: Create release
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/chore/update-docs-and-release-process'
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: |
+              README.md,
+              dist/*.whl,
+              dist/*.tar.gz
+          body: otdf_python version ${{ env.PROJECT_VERSION }}
+          makeLatest: "false"
+          tag: "${{ env.PROJECT_VERSION }}-dev-${{ github.sha }}"
+          # tag: v${{ env.PROJECT_VERSION }}
 
       # For main branch: trigger PyPI build (both alpha and stable releases go to PyPI from main)
-      - name: Trigger PyPI Build (Main)
+      # Publish with "trusted publisher" mechanism:
+      # https://docs.pypi.org/trusted-publishers/
+      #
+      # Requires GHA token permission (above in YAML) and PyPI management:
+      #   https://pypi.org/manage/project/otdf-python/settings/publishing/
+      - name: Publish package distributions to PyPI
         if: github.ref == 'refs/heads/main'
-        uses: ./.github/workflows/publish
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          version: ${{ steps.check_alpha.outputs.version }}
-          releases: ${{ needs.release-please.outputs.paths_released }}
+          # repository-url: https://pypi.org/legacy/
+          packages-dir: dist/
+
+      - name: Create release
+        if: github.ref == 'refs/heads/main'
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: |
+              README.md,
+              dist/*.whl,
+              dist/*.tar.gz
+          body: otdf_python version ${{ env.PROJECT_VERSION }}
+          tag: v${{ env.PROJECT_VERSION }}
+
+
