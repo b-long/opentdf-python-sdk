@@ -20,7 +20,8 @@
       "release-type": "python",
       "package-name": "otdf-python-proto",
       "extra-files": [
-        "otdf-python-proto/pyproject.toml"
+        "otdf-python-proto/pyproject.toml",
+        "otdf-python-proto/uv.lock"
       ]
     }
   },
