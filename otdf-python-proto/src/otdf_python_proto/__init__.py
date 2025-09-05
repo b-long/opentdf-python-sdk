@@ -5,7 +5,7 @@ It includes modules for authorization, common types, entities, policy management
 and other OpenTDF services.
 """
 
-__version__ = "0.3.0a9"
+__version__ = "0.3.0"
 
 # Import submodules to make them available
 from . import authorization
