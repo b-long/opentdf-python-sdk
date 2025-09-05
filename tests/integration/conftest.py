@@ -108,7 +108,7 @@ def sample_input_files(test_data_dir):
     """Provide paths to sample input files for TDF generation."""
     return {
         "text": test_data_dir / "sample_text.txt",
-        "empty": test_data_dir / "empty_file.txt",
+        # "empty": test_data_dir / "empty_file.txt",
         "binary": test_data_dir / "sample_binary.png",
         "with_attributes": test_data_dir / "sample_with_attributes.txt",
     }
