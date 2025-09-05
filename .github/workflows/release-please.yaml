@@ -100,7 +100,6 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: |
-              README.md,
               dist/*.whl,
               dist/*.tar.gz
           body: otdf_python version ${{ env.PROJECT_VERSION }}
@@ -126,7 +125,6 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: |
-              README.md,
               dist/*.whl,
               dist/*.tar.gz
           body: otdf_python version ${{ env.PROJECT_VERSION }}
