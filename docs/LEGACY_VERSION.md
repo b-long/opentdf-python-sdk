@@ -1,8 +1,8 @@
 # Legacy Version
 
-The legacy version of this project is available for now using the Github branch: `0.2.x`. 
+The legacy version of this project is available for now using the Github branch: `0.2.x`.
 
-You can access it directly via the following link: 
+You can access it directly via the following link:
 https://github.com/b-long/opentdf-python-sdk/tree/0.2.x
 
 In extreme cases, if you need to use this legacy version, please refer to the information
@@ -15,6 +15,6 @@ release of the OpenTDF Python SDK. It provided basic functionalities for interac
 
 ## PyPI
 
-The most recent release of the legacy version is available on PyPI and can 
+The most recent release of the legacy version is available on PyPI and can
 be found at the following link:
 https://pypi.org/project/otdf-python/0.2.20/

@@ -129,5 +129,3 @@ jobs:
               dist/*.tar.gz
           body: otdf_python version ${{ env.PROJECT_VERSION }}
           tag: v${{ env.PROJECT_VERSION }}
-
-
