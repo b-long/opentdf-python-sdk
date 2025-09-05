@@ -96,18 +96,6 @@ jobs:
           verbose: true
           packages-dir: dist/
 
-      - name: Create release
-        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/chore/update-docs-and-release-process'
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: |
-              dist/*.whl,
-              dist/*.tar.gz
-          body: otdf_python version ${{ env.PROJECT_VERSION }}
-          makeLatest: "false"
-          tag: "${{ env.PROJECT_VERSION }}-dev-${{ github.sha }}"
-          # tag: v${{ env.PROJECT_VERSION }}
-
       # For main branch: trigger PyPI build (both alpha and stable releases go to PyPI from main)
       # Publish with "trusted publisher" mechanism:
       # https://docs.pypi.org/trusted-publishers/
@@ -121,13 +109,3 @@ jobs:
           # repository-url: https://pypi.org/legacy/
           packages-dir: dist/
           verbose: true
-
-      - name: Create release
-        if: github.ref == 'refs/heads/main'
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: |
-              dist/*.whl,
-              dist/*.tar.gz
-          body: otdf_python version ${{ env.PROJECT_VERSION }}
-          tag: v${{ env.PROJECT_VERSION }}
