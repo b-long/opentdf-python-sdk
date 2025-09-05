@@ -2,16 +2,15 @@
 Test CLI functionality
 """
 
-import pytest
 import subprocess
 import tempfile
 from pathlib import Path
-from tests.config_pydantic import CONFIG_TDF
 
-# Fail fast if OPENTDF_PLATFORM_URL is not set
-platform_url = CONFIG_TDF.OPENTDF_PLATFORM_URL
-if not platform_url:
-    raise Exception("OPENTDF_PLATFORM_URL must be set in config for integration tests")
+import pytest
+
+from tests.support_otdfctl_args import get_platform_url
+
+platform_url = get_platform_url()
 
 
 @pytest.mark.integration

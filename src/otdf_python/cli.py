@@ -7,19 +7,18 @@ Provides encrypt, decrypt, and inspect commands similar to the otdfctl CLI.
 """
 
 import argparse
+import contextlib
 import json
 import logging
 import sys
 from io import BytesIO
 from pathlib import Path
 
-from otdf_python.sdk_builder import SDKBuilder
+from otdf_python.config import KASInfo, NanoTDFConfig, TDFConfig
 from otdf_python.sdk import SDK
-from otdf_python.config import TDFConfig, NanoTDFConfig, KASInfo
-from otdf_python.tdf import TDFReaderConfig
+from otdf_python.sdk_builder import SDKBuilder
 from otdf_python.sdk_exceptions import SDKException
-import contextlib
-
+from otdf_python.tdf import TDFReaderConfig
 
 # Version - get from project metadata
 __version__ = "0.3.0"
