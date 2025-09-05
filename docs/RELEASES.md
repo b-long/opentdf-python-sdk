@@ -2,6 +2,10 @@
 
 This document provides comprehensive guidance for maintainers on the OpenTDF Python SDK release process, including both automated releases and feature branch testing.
 
+## Legacy Version
+
+**NOTE:** For the legacy (`gopy`-based) version of this project, please refer to the [LEGACY_VERSION.md](./LEGACY_VERSION.md) file.
+
 ## Release Overview
 
 The OpenTDF Python SDK uses **Release Please** for automated version management and publishing. The system supports:
