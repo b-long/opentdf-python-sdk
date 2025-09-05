@@ -12,13 +12,17 @@ from pathlib import Path
 import pytest
 
 from otdf_python.tdf_reader import TDF_MANIFEST_FILE_NAME, TDF_PAYLOAD_FILE_NAME
-from tests.support_otdfctl_args import get_otdfctl_flags, get_platform_url
+from tests.support_cli_args import (
+    get_otdfctl_flags,
+    get_platform_url,
+    get_cli_flags,
+)
 
 original_env = os.environ.copy()
 original_env["GRPC_ENFORCE_ALPN_ENABLED"] = "false"
 
 # Determine CLI flags based on platform URL
-cli_flags = []
+cli_flags = get_cli_flags()
 platform_url = get_platform_url()
 otdfctl_flags = get_otdfctl_flags()
 

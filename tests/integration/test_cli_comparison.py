@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.support_otdfctl_args import get_platform_url
+from tests.support_cli_args import get_platform_url
 
 platform_url = get_platform_url()
 
