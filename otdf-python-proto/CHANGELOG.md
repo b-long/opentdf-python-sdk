@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-proto-v0.3.0...otdf-python-proto-v0.3.1) (2025-09-05)
+
+
+### Miscellaneous Chores
+
+* release 0.3.1 ([c1395b1](https://github.com/b-long/opentdf-python-sdk/commit/c1395b1ff6bf02ffb24f20e7d45ca0869ae033f5))
+
 ## [0.3.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-proto-v0.3.0...otdf-python-proto-v0.3.0) (2025-09-05)
 
 
