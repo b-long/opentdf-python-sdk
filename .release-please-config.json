@@ -10,10 +10,14 @@
       "package-name": "otdf-python",
       "extra-files": [
         "pyproject.toml",
-        "uv.lock",
         "src/otdf_python/cli.py",
         "tests/test_cli.py",
-        "RELEASES.md"
+        "RELEASES.md",
+        {
+          "path": "uv.lock",
+          "type": "toml",
+          "jsonpath": "$.package[?(@.name.value=='otdf-python')].version"
+        }
       ]
     },
     "otdf-python-proto": {
@@ -21,7 +25,11 @@
       "package-name": "otdf-python-proto",
       "extra-files": [
         "otdf-python-proto/pyproject.toml",
-        "otdf-python-proto/uv.lock"
+        {
+          "path": "otdf-python-proto/uv.lock",
+          "type": "toml",
+          "jsonpath": "$.package[?(@.name.value=='otdf-python-proto')].version"
+        }
       ]
     }
   },
