@@ -93,6 +93,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
+          verbose: true
           packages-dir: dist/
 
       - name: Create release
@@ -119,6 +120,7 @@ jobs:
         with:
           # repository-url: https://pypi.org/legacy/
           packages-dir: dist/
+          verbose: true
 
       - name: Create release
         if: github.ref == 'refs/heads/main'
