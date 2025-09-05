@@ -27,3 +27,21 @@ def get_otdfctl_flags() -> list:
             otdfctl_flags = ["--tls-no-verify"]
 
     return otdfctl_flags
+
+
+def get_cli_flags() -> list:
+    """
+    Determine Python (cli) flags based on platform URL
+    """
+    platform_url = get_platform_url()
+    cli_flags = []
+
+    if platform_url.startswith("http://"):
+        cli_flags = ["--plaintext"]
+        # otdfctl doesn't have a --plaintext flag, just omit --tls-no-verify for HTTP
+    else:
+        # For HTTPS, skip TLS verification if INSECURE_SKIP_VERIFY is True
+        if CONFIG_TDF.INSECURE_SKIP_VERIFY:
+            cli_flags = ["--insecure"]  # equivalent to --tls-no-verify
+
+    return cli_flags

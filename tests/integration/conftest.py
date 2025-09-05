@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 
 from tests.config_pydantic import CONFIG_TDF
-from tests.support_otdfctl_args import get_otdfctl_flags, get_platform_url
+from tests.support_cli_args import get_otdfctl_flags, get_platform_url
 
 # Set up environment and configuration
 original_env = os.environ.copy()
