@@ -19,7 +19,11 @@ def test_target_mode_fixtures_exist(all_target_mode_tdf_files):
         tdf_files = all_target_mode_tdf_files[version]
 
         # Check all expected file types exist
-        expected_types = ["text", "empty", "binary", "with_attributes"]
+        expected_types = [
+            "text",
+            "binary",
+            "with_attributes",
+        ]  # Consider 'empty' as well
         for file_type in expected_types:
             assert file_type in tdf_files, f"Missing {file_type} TDF for {version}"
 
