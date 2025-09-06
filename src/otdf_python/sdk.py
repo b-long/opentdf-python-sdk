@@ -180,14 +180,14 @@ class KAS(AbstractContextManager):
 class SDK(AbstractContextManager):
     def new_tdf_config(
         self, attributes: list[str] | None = None, **kwargs
-    ) -> "TDFConfig":
+    ) -> TDFConfig:
         """
         Create a TDFConfig with default kas_info_list from the SDK's platform_url.
-        Based on Java implementation.
         """
-        from otdf_python.config import TDFConfig, KASInfo
+        from otdf_python.config import KASInfo
 
-        platform_url = self.platform_url or "https://default.kas.example.com"
+        if self.platform_url is None:
+            raise SDKException("Cannot create TDFConfig: SDK platform_url is not set.")
 
         # Get use_plaintext setting - allow override via kwargs, fall back to SDK setting
         use_plaintext = kwargs.pop(
@@ -198,7 +198,7 @@ class SDK(AbstractContextManager):
         # Include explicit port for HTTPS to match otdfctl behavior
         from urllib.parse import urlparse
 
-        parsed_url = urlparse(platform_url)
+        parsed_url = urlparse(self.platform_url)
 
         # Determine scheme and default port based on use_plaintext setting
         if use_plaintext:
