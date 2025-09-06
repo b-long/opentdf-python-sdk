@@ -84,7 +84,40 @@ def test_cli_inspect_v4_2_2_vs_v4_3_1(all_target_mode_tdf_files, temp_credential
 
 
 @pytest.mark.integration
-def test_cli_inspect_different_file_types(tdf_v4_3_1_files, temp_credentials_file):
+def test_cli_inspect_different_file_types_v4_2_2(tdf_v4_2_2_files, temp_credentials_file):
+    """
+    Test CLI inspect with different file types.
+    """
+
+    file_types_to_test = [
+        "text",
+        "binary",
+        "with_attributes",
+    ]  # TODO: Consider adding "empty" file type as well
+
+    for file_type in file_types_to_test:
+        tdf_path = tdf_v4_2_2_files[file_type]
+
+        # Inspect the TDF
+        result = _run_cli_inspect(tdf_path, temp_credentials_file)
+
+        assert result is not None, f"Failed to inspect {file_type} TDF"
+        assert "manifest" in result, f"{file_type} TDF inspection missing manifest"
+
+        # Check file-type specific expectations
+        if file_type == "empty":
+            # Empty files should still have valid manifests
+            assert "encryptionInformation" in result["manifest"]
+        elif file_type == "with_attributes":
+            # Attributed files should have keyAccess information
+            assert (
+                "keyAccess" in result["manifest"]
+                or "encryptionInformation" in result["manifest"]
+            )
+
+
+@pytest.mark.integration
+def test_cli_inspect_different_file_types_v4_3_1(tdf_v4_3_1_files, temp_credentials_file):
     """
     Test CLI inspect with different file types.
     """
@@ -118,7 +151,7 @@ def test_cli_inspect_different_file_types(tdf_v4_3_1_files, temp_credentials_fil
 
 def _run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict | None:
     """
-    Helper function to run CLI inspect command and return parsed JSON result.
+    Helper function to run Python CLI inspect command and return parsed JSON result.
 
     This demonstrates how the CLI inspect functionality could be tested
     with the new fixtures.
