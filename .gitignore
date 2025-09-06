@@ -2,7 +2,8 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=python
 
 platform/
-
+tests/integration/test_data/v4.2.2/*tdf
+tests/integration/test_data/v4.3.1/*tdf
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
