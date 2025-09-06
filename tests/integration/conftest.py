@@ -117,124 +117,91 @@ def sample_input_files(test_data_dir):
     }
 
 
+def _generate_tdf_files_for_target_mode(
+    target_mode: str,
+    temp_credentials_file: Path,
+    test_data_dir: Path,
+    sample_input_files: dict[str, Path],
+) -> dict[str, Path]:
+    """
+    Factory function to generate TDF files for a specific target mode.
+
+    Args:
+        target_mode: Target TDF spec version (e.g., "v4.2.2", "v4.3.1")
+        temp_credentials_file: Path to credentials file
+        test_data_dir: Base test data directory
+        sample_input_files: Dictionary of sample input files
+
+    Returns:
+        Dictionary mapping file types to their TDF file paths
+    """
+    output_dir = test_data_dir / target_mode
+    tdf_files = {}
+
+    # Define the file generation configurations
+    file_configs = [
+        {
+            "key": "text",
+            "input_key": "text",
+            "output_name": "sample_text.txt.tdf",
+            "mime_type": "text/plain",
+        },
+        # {
+        #     "key": "empty",
+        #     "input_key": "empty",
+        #     "output_name": "empty_file.txt.tdf",
+        #     "mime_type": "text/plain",
+        # },
+        {
+            "key": "binary",
+            "input_key": "binary",
+            "output_name": "sample_binary.png.tdf",
+            "mime_type": "image/png",
+        },
+        {
+            "key": "with_attributes",
+            "input_key": "with_attributes",
+            "output_name": "sample_with_attributes.txt.tdf",
+            "mime_type": "text/plain",
+        },
+    ]
+
+    try:
+        for config in file_configs:
+            tdf_path = output_dir / config["output_name"]
+            _generate_target_mode_tdf(
+                sample_input_files[config["input_key"]],
+                tdf_path,
+                target_mode,
+                temp_credentials_file,
+                # attributes=[CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1] if config["key"] == "with_attributes" else None,  # Temporarily disabled due to external KAS dependency
+                mime_type=config["mime_type"],
+            )
+            tdf_files[config["key"]] = tdf_path
+
+        return tdf_files
+
+    except Exception as e:
+        logger.error(f"Error generating {target_mode} TDF files: {e}")
+        raise Exception(f"Failed to generate {target_mode} TDF files: {e}") from e
+
+
 @pytest.fixture(scope="session")
 def tdf_v4_2_2_files(temp_credentials_file, test_data_dir, sample_input_files):
     """Generate TDF files with target mode v4.2.2."""
-
-    output_dir = test_data_dir / "v4.2.2"
-    tdf_files = {}
-
-    try:
-        # Generate text TDF
-        text_tdf = output_dir / "sample_text.txt.tdf"
-        _generate_target_mode_tdf(
-            sample_input_files["text"],
-            text_tdf,
-            "v4.2.2",
-            temp_credentials_file,
-            mime_type="text/plain",
-        )
-        tdf_files["text"] = text_tdf
-
-        # Generate empty file TDF
-        # empty_tdf = output_dir / "empty_file.txt.tdf"
-        # _generate_target_mode_tdf(
-        #     sample_input_files["empty"],
-        #     empty_tdf,
-        #     "v4.2.2",
-        #     temp_credentials_file,
-        #     mime_type="text/plain",
-        # )
-        # tdf_files["empty"] = empty_tdf
-
-        # Generate binary TDF
-        binary_tdf = output_dir / "sample_binary.png.tdf"
-        _generate_target_mode_tdf(
-            sample_input_files["binary"],
-            binary_tdf,
-            "v4.2.2",
-            temp_credentials_file,
-            mime_type="image/png",
-        )
-        tdf_files["binary"] = binary_tdf
-
-        # Generate TDF with attributes (temporarily without attributes to avoid KAS lookup issues)
-        attr_tdf = output_dir / "sample_with_attributes.txt.tdf"
-        _generate_target_mode_tdf(
-            sample_input_files["with_attributes"],
-            attr_tdf,
-            "v4.2.2",
-            temp_credentials_file,
-            # attributes=[CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1],  # Temporarily disabled due to external KAS dependency
-            mime_type="text/plain",
-        )
-        tdf_files["with_attributes"] = attr_tdf
-
-        yield tdf_files
-
-    except Exception as e:
-        logger.error(f"Error generating v4.2.2 TDF files: {e}")
-        raise Exception(f"Failed to generate v4.2.2 TDF files: {e}") from e
+    tdf_files = _generate_tdf_files_for_target_mode(
+        "v4.2.2", temp_credentials_file, test_data_dir, sample_input_files
+    )
+    yield tdf_files
 
 
 @pytest.fixture(scope="session")
 def tdf_v4_3_1_files(temp_credentials_file, test_data_dir, sample_input_files):
     """Generate TDF files with target mode v4.3.1."""
-
-    output_dir = test_data_dir / "v4.3.1"
-    tdf_files = {}
-
-    try:
-        # Generate text TDF
-        text_tdf = output_dir / "sample_text.txt.tdf"
-        _generate_target_mode_tdf(
-            sample_input_files["text"],
-            text_tdf,
-            "v4.3.1",
-            temp_credentials_file,
-            mime_type="text/plain",
-        )
-        tdf_files["text"] = text_tdf
-
-        # Generate empty file TDF
-        # empty_tdf = output_dir / "empty_file.txt.tdf"
-        # _generate_target_mode_tdf(
-        #     sample_input_files["empty"],
-        #     empty_tdf,
-        #     "v4.3.1",
-        #     temp_credentials_file,
-        #     mime_type="text/plain",
-        # )
-        # tdf_files["empty"] = empty_tdf
-
-        # Generate binary TDF
-        binary_tdf = output_dir / "sample_binary.png.tdf"
-        _generate_target_mode_tdf(
-            sample_input_files["binary"],
-            binary_tdf,
-            "v4.3.1",
-            temp_credentials_file,
-            mime_type="image/png",
-        )
-        tdf_files["binary"] = binary_tdf
-
-        # Generate TDF with attributes (temporarily without attributes to avoid KAS lookup issues)
-        attr_tdf = output_dir / "sample_with_attributes.txt.tdf"
-        _generate_target_mode_tdf(
-            sample_input_files["with_attributes"],
-            attr_tdf,
-            "v4.3.1",
-            temp_credentials_file,
-            # attributes=[CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1],  # Temporarily disabled due to external KAS dependency
-            mime_type="text/plain",
-        )
-        tdf_files["with_attributes"] = attr_tdf
-
-        yield tdf_files
-
-    except Exception as e:
-        logger.error(f"Error generating v4.3.1 TDF files: {e}")
-        raise Exception(f"Failed to generate v4.3.1 TDF files: {e}") from e
+    tdf_files = _generate_tdf_files_for_target_mode(
+        "v4.3.1", temp_credentials_file, test_data_dir, sample_input_files
+    )
+    yield tdf_files
 
 
 @pytest.fixture(scope="session")
