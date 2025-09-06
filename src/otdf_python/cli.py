@@ -13,6 +13,7 @@ import logging
 import sys
 from io import BytesIO
 from pathlib import Path
+from dataclasses import asdict
 
 from otdf_python.config import KASInfo, NanoTDFConfig, TDFConfig
 from otdf_python.sdk import SDK
@@ -386,8 +387,6 @@ def cmd_inspect(args):
 
                 # Try to get data attributes
                 try:
-                    from dataclasses import asdict
-
                     data_attributes = []  # This would need to be implemented in the SDK
                     inspection_result = {
                         "manifest": asdict(manifest),
@@ -395,8 +394,6 @@ def cmd_inspect(args):
                     }
                 except Exception as e:
                     logger.warning(f"Could not retrieve data attributes: {e}")
-                    from dataclasses import asdict
-
                     inspection_result = {"manifest": asdict(manifest)}
 
                 print(json.dumps(inspection_result, indent=2, default=str))

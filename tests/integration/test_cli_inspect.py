@@ -7,9 +7,16 @@ import subprocess
 import sys
 from pathlib import Path
 
+import logging
+
 import pytest
 
 from tests.config_pydantic import CONFIG_TDF
+from tests.support_cli_args import (
+    get_cli_flags,
+)
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.mark.integration
@@ -43,9 +50,15 @@ def test_cli_inspect_v4_2_2_vs_v4_3_1(all_target_mode_tdf_files, temp_credential
                 f"v4.3.1 {file_type} inspection missing manifest while v4.2.2 has it"
             )
             # Compare manifest versions (this is where version differences would show)
-            print(f"\\n=== {file_type.upper()} TDF Comparison (Full Inspection) ===")
-            print(f"v4.2.2 manifest keys: {list(v4_2_2_result['manifest'].keys())}")
-            print(f"v4.3.1 manifest keys: {list(v4_3_1_result['manifest'].keys())}")
+            logger.info(
+                f"\n=== {file_type.upper()} TDF Comparison (Full Inspection) ==="
+            )
+            logger.info(
+                f"v4.2.2 manifest keys: {list(v4_2_2_result['manifest'].keys())}"
+            )
+            logger.info(
+                f"v4.3.1 manifest keys: {list(v4_3_1_result['manifest'].keys())}"
+            )
         else:
             # Limited inspection - check for basic structure
             assert "type" in v4_2_2_result, (
@@ -61,7 +74,7 @@ def test_cli_inspect_v4_2_2_vs_v4_3_1(all_target_mode_tdf_files, temp_credential
                 f"v4.3.1 {file_type} inspection missing size"
             )
 
-            print(f"\\n=== {file_type.upper()} TDF Comparison (Limited Inspection) ===")
+            print(f"\n=== {file_type.upper()} TDF Comparison (Limited Inspection) ===")
             print(
                 f"v4.2.2 type: {v4_2_2_result['type']}, size: {v4_2_2_result['size']}"
             )
@@ -112,12 +125,7 @@ def _run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict | None:
     """
     # Determine platform flags
     platform_url = CONFIG_TDF.OPENTDF_PLATFORM_URL
-    cli_flags = []
-
-    if platform_url.startswith("http://"):
-        cli_flags = ["--plaintext"]
-    elif CONFIG_TDF.INSECURE_SKIP_VERIFY:
-        cli_flags = ["--insecure"]
+    cli_flags = get_cli_flags()
 
     # Build CLI command
     cmd = [
@@ -147,5 +155,5 @@ def _run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict | None:
         return json.loads(result.stdout)
 
     except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
-        print(f"CLI inspect failed for {tdf_path}: {e}")
-        return None
+        logger.error(f"CLI inspect failed for {tdf_path}: {e}")
+        raise Exception(f"Failed to inspect TDF {tdf_path}: {e}") from e
