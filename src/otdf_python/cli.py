@@ -354,27 +354,21 @@ def cmd_inspect(args):
     # Validate input file
     input_path = validate_file_exists(args.file)
 
-    # For inspection, we don't need full authentication
-    # Create a minimal SDK for reading metadata
+    # For inspection, try to create authenticated SDK, but allow unauthenticated inspection too
     try:
-        builder = SDKBuilder()
-        if args.platform_url:
-            builder.set_platform_endpoint(args.platform_url)
-
-        # For inspection, we may not need authentication depending on the TDF
-        if args.client_id and args.client_secret:
-            builder.client_secret(args.client_id, args.client_secret)
-        elif args.auth:
-            auth_parts = args.auth.split(":")
-            if len(auth_parts) == 2:
-                builder.client_secret(auth_parts[0], auth_parts[1])
-
-        if args.plaintext:
-            builder.use_insecure_plaintext_connection(True)
-        if args.insecure:
-            builder.use_insecure_skip_verify(True)
-
-        sdk = builder.build()
+        try:
+            sdk = build_sdk(args)
+        except CLIError as auth_error:
+            # If authentication fails, create minimal SDK for basic inspection
+            logger.warning(f"Authentication failed, using minimal SDK: {auth_error}")
+            builder = SDKBuilder()
+            if args.platform_url:
+                builder.set_platform_endpoint(args.platform_url)
+            if hasattr(args, "plaintext") and args.plaintext:
+                builder.use_insecure_plaintext_connection(True)
+            if args.insecure:
+                builder.use_insecure_skip_verify(True)
+            sdk = builder.build()
 
         try:
             # Read encrypted file
@@ -392,14 +386,18 @@ def cmd_inspect(args):
 
                 # Try to get data attributes
                 try:
+                    from dataclasses import asdict
+
                     data_attributes = []  # This would need to be implemented in the SDK
                     inspection_result = {
-                        "manifest": manifest,
+                        "manifest": asdict(manifest),
                         "dataAttributes": data_attributes,
                     }
                 except Exception as e:
                     logger.warning(f"Could not retrieve data attributes: {e}")
-                    inspection_result = {"manifest": manifest}
+                    from dataclasses import asdict
+
+                    inspection_result = {"manifest": asdict(manifest)}
 
                 print(json.dumps(inspection_result, indent=2, default=str))
             else:
