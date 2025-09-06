@@ -277,7 +277,7 @@ class TDF:
         self,
         payload: bytes | BinaryIO,
         config: TDFConfig,
-        output_stream: BinaryIO | None = None,
+        output_stream: io.BytesIO | None = None,
     ):
         if output_stream is None:
             output_stream = io.BytesIO()
@@ -376,13 +376,13 @@ class TDF:
         return manifest, size, output_stream
 
     def load_tdf(
-        self, tdf_data: bytes | BinaryIO, config: TDFReaderConfig
+        self, tdf_data: bytes | io.BytesIO, config: TDFReaderConfig
     ) -> TDFReader:
         # Extract manifest, unwrap payload key using KAS client
         # Handle both bytes and BinaryIO input
         tdf_bytes_io = io.BytesIO(tdf_data) if isinstance(tdf_data, bytes) else tdf_data
 
-        with zipfile.ZipFile(tdf_bytes_io, "r") as z:  # type: ignore
+        with zipfile.ZipFile(tdf_bytes_io, "r") as z:
             manifest_json = z.read("0.manifest.json").decode()
             manifest = Manifest.from_json(manifest_json)
 
