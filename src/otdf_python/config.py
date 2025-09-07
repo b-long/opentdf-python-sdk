@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from urllib.parse import urlparse, urlunparse
 from typing import Any
+from urllib.parse import urlparse, urlunparse
 
 
 class TDFFormat(Enum):

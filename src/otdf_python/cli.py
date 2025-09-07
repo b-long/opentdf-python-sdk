@@ -11,9 +11,9 @@ import contextlib
 import json
 import logging
 import sys
+from dataclasses import asdict
 from io import BytesIO
 from pathlib import Path
-from dataclasses import asdict
 
 from otdf_python.config import KASInfo, NanoTDFConfig, TDFConfig
 from otdf_python.sdk import SDK

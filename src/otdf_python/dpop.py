@@ -2,9 +2,10 @@
 DPoP (Demonstration of Proof-of-Possession) token generation utilities.
 """
 
-import time
-import hashlib
 import base64
+import hashlib
+import time
+
 import jwt
 
 from .crypto_utils import CryptoUtils

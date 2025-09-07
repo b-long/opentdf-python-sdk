@@ -2,14 +2,14 @@
 Python port of the main SDK class for OpenTDF platform interaction.
 """
 
-from typing import Any, BinaryIO
-from io import BytesIO
 from contextlib import AbstractContextManager
+from io import BytesIO
+from typing import Any, BinaryIO
 
-from otdf_python.tdf import TDF, TDFReaderConfig, TDFReader
+from otdf_python.config import NanoTDFConfig, TDFConfig
 from otdf_python.nanotdf import NanoTDF
 from otdf_python.sdk_exceptions import SDKException
-from otdf_python.config import NanoTDFConfig, TDFConfig
+from otdf_python.tdf import TDF, TDFReader, TDFReaderConfig
 
 
 # Stubs for service client interfaces (to be implemented)

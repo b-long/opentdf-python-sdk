@@ -1,20 +1,22 @@
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from otdf_python.asym_crypto import AsymDecryption
-import secrets
-from typing import BinaryIO
-from io import BytesIO
-from otdf_python.collection_store import CollectionStore, NoOpCollectionStore
-from otdf_python.policy_stub import NULL_POLICY_UUID
-from otdf_python.sdk_exceptions import SDKException
-from otdf_python.constants import MAGIC_NUMBER_AND_VERSION
-from otdf_python.resource_locator import ResourceLocator
-from otdf_python.policy_object import PolicyObject, PolicyBody, AttributeObject
-from otdf_python.symmetric_and_payload_config import SymmetricAndPayloadConfig
-from otdf_python.ecc_mode import ECCMode
-import json
 import hashlib
+import json
+import secrets
+from io import BytesIO
+from typing import BinaryIO
+
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+from otdf_python.asym_crypto import AsymDecryption
+from otdf_python.collection_store import CollectionStore, NoOpCollectionStore
+from otdf_python.config import KASInfo, NanoTDFConfig
+from otdf_python.constants import MAGIC_NUMBER_AND_VERSION
+from otdf_python.ecc_mode import ECCMode
 from otdf_python.policy_info import PolicyInfo
-from otdf_python.config import NanoTDFConfig, KASInfo
+from otdf_python.policy_object import AttributeObject, PolicyBody, PolicyObject
+from otdf_python.policy_stub import NULL_POLICY_UUID
+from otdf_python.resource_locator import ResourceLocator
+from otdf_python.sdk_exceptions import SDKException
+from otdf_python.symmetric_and_payload_config import SymmetricAndPayloadConfig
 
 
 class NanoTDFException(SDKException):
@@ -54,7 +56,7 @@ class NanoTDF:
 
     def _serialize_policy_object(self, obj):
         """Custom NanoTDF serializer to convert to compatible JSON format."""
-        from otdf_python.policy_object import PolicyBody, AttributeObject
+        from otdf_python.policy_object import AttributeObject, PolicyBody
 
         if isinstance(obj, PolicyBody):
             # Convert data_attributes to dataAttributes and use null instead of empty array
@@ -224,10 +226,9 @@ class NanoTDF:
                     break
 
         if kas_public_key:
-            from cryptography.hazmat.primitives import serialization
-            from cryptography.hazmat.primitives.asymmetric import padding
-            from cryptography.hazmat.primitives import hashes
             from cryptography.hazmat.backends import default_backend
+            from cryptography.hazmat.primitives import hashes, serialization
+            from cryptography.hazmat.primitives.asymmetric import padding
 
             public_key = serialization.load_pem_public_key(
                 kas_public_key.encode(), backend=default_backend()

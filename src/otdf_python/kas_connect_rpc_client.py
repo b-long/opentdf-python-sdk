@@ -4,11 +4,12 @@ This class encapsulates all interactions with otdf_python_proto.
 """
 
 import logging
-import urllib3
-from .sdk_exceptions import SDKException
 
+import urllib3
 from otdf_python_proto.kas import kas_pb2
 from otdf_python_proto.kas.kas_pb2_connect import AccessServiceClient
+
+from .sdk_exceptions import SDKException
 
 
 class KASConnectRPCClient:

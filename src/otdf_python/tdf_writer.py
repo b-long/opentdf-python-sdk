@@ -1,4 +1,5 @@
 import io
+
 from otdf_python.zip_writer import ZipWriter
 
 

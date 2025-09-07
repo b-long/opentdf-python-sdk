@@ -1,8 +1,8 @@
-from otdf_python.resource_locator import ResourceLocator
-from otdf_python.ecc_mode import ECCMode
-from otdf_python.symmetric_and_payload_config import SymmetricAndPayloadConfig
-from otdf_python.policy_info import PolicyInfo
 from otdf_python.constants import MAGIC_NUMBER_AND_VERSION
+from otdf_python.ecc_mode import ECCMode
+from otdf_python.policy_info import PolicyInfo
+from otdf_python.resource_locator import ResourceLocator
+from otdf_python.symmetric_and_payload_config import SymmetricAndPayloadConfig
 
 
 class Header:
