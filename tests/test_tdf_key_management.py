@@ -1,20 +1,20 @@
-import unittest
-from unittest.mock import Mock, patch
 import base64
 import io
+import unittest
 import zipfile
+from unittest.mock import Mock, patch
 
-from otdf_python.tdf import TDF, TDFReaderConfig
 from otdf_python.manifest import (
     Manifest,
     ManifestEncryptionInformation,
+    ManifestIntegrityInformation,
+    ManifestKeyAccess,
     ManifestMethod,
     ManifestPayload,
-    ManifestKeyAccess,
-    ManifestIntegrityInformation,
     ManifestRootSignature,
     ManifestSegment,
 )
+from otdf_python.tdf import TDF, TDFReaderConfig
 
 
 class TestTDFKeyManagement(unittest.TestCase):

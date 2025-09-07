@@ -1,8 +1,9 @@
 import unittest
+
 from otdf_python.collection_store import (
     CollectionKey,
-    NoOpCollectionStore,
     CollectionStoreImpl,
+    NoOpCollectionStore,
 )
 
 

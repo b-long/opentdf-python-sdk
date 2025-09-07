@@ -2,8 +2,8 @@
 Server log collection utility for debugging test failures.
 """
 
-import subprocess
 import logging
+import subprocess
 
 from tests.config_pydantic import CONFIG_TESTING
 

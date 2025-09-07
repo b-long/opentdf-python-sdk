@@ -2,12 +2,13 @@
 Test CLI functionality
 """
 
-import pytest
+import os
 import subprocess
 import sys
 import tempfile
-import os
 from pathlib import Path
+
+import pytest
 
 
 def test_cli_help():

@@ -1,10 +1,11 @@
 import unittest
+
 from otdf_python.autoconfigure_utils import (
-    RuleType,
-    KeySplitStep,
     AttributeNameFQN,
     AttributeValueFQN,
     AutoConfigureException,
+    KeySplitStep,
+    RuleType,
 )
 
 

@@ -6,6 +6,7 @@ loaded by pytest when running tests.
 """
 
 import pytest
+
 from tests.server_logs import log_server_logs_on_failure
 
 
@@ -43,7 +44,6 @@ def pytest_runtest_makereport(item, call):
                 log_server_logs_on_failure(test_name)
 
 
-# Optional: Add a fixture to manually collect logs
 @pytest.fixture
 def collect_server_logs():
     """

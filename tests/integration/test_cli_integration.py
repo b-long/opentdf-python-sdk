@@ -10,7 +10,6 @@ from pathlib import Path
 
 import pytest
 
-from tests.config_pydantic import CONFIG_TDF
 from tests.support_cli_args import get_platform_url
 
 original_env = os.environ.copy()
@@ -65,7 +64,7 @@ def test_cli_decrypt_otdfctl_tdf(temp_credentials_file):
             env=original_env,
         )
 
-        # If otdfctl fails, skip the test (might be server issues)
+        # If otdfctl fails to encrypt, fail fast
         if otdfctl_result.returncode != 0:
             raise Exception(f"otdfctl encrypt failed: {otdfctl_result.stderr}")
 
@@ -165,7 +164,7 @@ def test_otdfctl_decrypt_comparison(collect_server_logs, temp_credentials_file):
             env=original_env,
         )
 
-        # If otdfctl encrypt fails, skip the test (might be server issues)
+        # If otdfctl fails to encrypt, fail fast
         if otdfctl_encrypt_result.returncode != 0:
             raise Exception(f"otdfctl encrypt failed: {otdfctl_encrypt_result.stderr}")
 
@@ -226,23 +225,9 @@ def test_otdfctl_decrypt_comparison(collect_server_logs, temp_credentials_file):
 
         # Check that our CLI succeeded
         if cli_decrypt_result.returncode != 0:
-            # Collect server logs for debugging
             logs = collect_server_logs()
             print(f"Server logs when Python CLI decrypt failed:\n{logs}")
-
-            # Check if this is a server connectivity issue
-            if (
-                "401 Unauthorized" in cli_decrypt_result.stderr
-                or "token endpoint discovery" in cli_decrypt_result.stderr
-                or "Issuer endpoint must be configured" in cli_decrypt_result.stderr
-            ):
-                pytest.skip(
-                    f"Server connectivity or authentication issue: {cli_decrypt_result.stderr}"
-                )
-            else:
-                assert cli_decrypt_result.returncode == 0, (
-                    f"Python CLI decrypt failed: {cli_decrypt_result.stderr}"
-                )
+            raise Exception(f"Python CLI decrypt failed: {cli_decrypt_result.stderr}")
 
         # Verify both decrypted files were created
         assert otdfctl_decrypt_output.exists(), "otdfctl did not create decrypted file"
@@ -327,25 +312,9 @@ def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs, temp_credentials
             env=original_env,
         )
 
-        # If otdfctl encrypt fails, skip the test (might be server issues)
+        # If otdfctl fails to encrypt, fail fast
         if otdfctl_encrypt_result.returncode != 0:
-            # Collect server logs for debugging
-            logs = collect_server_logs()
-            print(f"Server logs when otdfctl encrypt failed:\n{logs}")
-
-            # Check if this is a server connectivity issue
-            if (
-                "401 Unauthorized" in otdfctl_encrypt_result.stderr
-                or "token endpoint discovery" in otdfctl_encrypt_result.stderr
-                or "Issuer endpoint must be configured" in otdfctl_encrypt_result.stderr
-            ):
-                pytest.skip(
-                    f"Server connectivity or authentication issue: {otdfctl_encrypt_result.stderr}"
-                )
-            else:
-                assert otdfctl_encrypt_result.returncode == 0, (
-                    f"otdfctl encrypt failed: {otdfctl_encrypt_result.stderr}"
-                )
+            raise Exception(f"otdfctl encrypt failed: {otdfctl_encrypt_result.stderr}")
 
         # Verify the TDF file was created
         assert otdfctl_tdf_output.exists(), "otdfctl did not create TDF file"
@@ -378,25 +347,11 @@ def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs, temp_credentials
             env=original_env,
         )
 
-        # Check that otdfctl decrypt succeeded
+        # If otdfctl fails to decrypt, fail fast
         if otdfctl_decrypt_result.returncode != 0:
-            # Collect server logs for debugging
             logs = collect_server_logs()
             print(f"Server logs when otdfctl decrypt failed:\n{logs}")
-
-            # Check if this is a server connectivity issue
-            if (
-                "401 Unauthorized" in otdfctl_decrypt_result.stderr
-                or "token endpoint discovery" in otdfctl_decrypt_result.stderr
-                or "Issuer endpoint must be configured" in otdfctl_decrypt_result.stderr
-            ):
-                pytest.skip(
-                    f"Server connectivity or authentication issue: {otdfctl_decrypt_result.stderr}"
-                )
-            else:
-                assert otdfctl_decrypt_result.returncode == 0, (
-                    f"otdfctl decrypt failed: {otdfctl_decrypt_result.stderr}"
-                )
+            raise Exception(f"otdfctl decrypt failed: {otdfctl_decrypt_result.stderr}")
 
         # Verify the decrypted file was created
         assert otdfctl_decrypt_output.exists(), "otdfctl did not create decrypted file"
@@ -429,14 +384,8 @@ def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs, temp_credentials
 
 
 @pytest.mark.integration
-def test_cli_encrypt_integration(temp_credentials_file):
+def test_cli_encrypt_integration(collect_server_logs, temp_credentials_file):
     """Integration test comparing our CLI with otdfctl"""
-    # Skip if OPENTDF_PLATFORM_URL is not set
-    platform_url = CONFIG_TDF.OPENTDF_PLATFORM_URL
-    if not platform_url:
-        raise Exception(
-            "OPENTDF_PLATFORM_URL must be set in config for integration tests"
-        )
 
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -502,20 +451,9 @@ def test_cli_encrypt_integration(temp_credentials_file):
 
         # Check that our CLI succeeded
         if cli_result.returncode != 0:
-            # Check if this is a server connectivity issue
-            if (
-                "401 Unauthorized" in cli_result.stderr
-                or "token endpoint discovery" in cli_result.stderr
-                or "Issuer endpoint must be configured" in cli_result.stderr
-            ):
-                pytest.skip(
-                    f"Server connectivity or authentication issue: {cli_result.stderr}"
-                )
-
-            else:
-                assert cli_result.returncode == 0, (
-                    f"Python CLI failed: {cli_result.stderr}"
-                )
+            logs = collect_server_logs()
+            print(f"Server logs when Python CLI encrypt failed:\n{logs}")
+            raise Exception(f"Python CLI failed: {cli_result.stderr}")
 
         # Both output files should exist
         assert otdfctl_output.exists(), "otdfctl output file does not exist"

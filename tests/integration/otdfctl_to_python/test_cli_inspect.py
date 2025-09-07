@@ -3,11 +3,10 @@ Tests using target mode fixtures, for CLI integration testing.
 """
 
 import json
+import logging
 import subprocess
 import sys
 from pathlib import Path
-
-import logging
 
 import pytest
 
@@ -22,7 +21,7 @@ logger = logging.getLogger(__name__)
 @pytest.mark.integration
 def test_cli_inspect_v4_2_2_vs_v4_3_1(all_target_mode_tdf_files, temp_credentials_file):
     """
-    Test CLI inspect with various TDF versions.
+    Test Python CLI inspect with various TDF versions created by otdfctl.
     """
 
     v4_2_2_files = all_target_mode_tdf_files["v4.2.2"]
@@ -74,17 +73,21 @@ def test_cli_inspect_v4_2_2_vs_v4_3_1(all_target_mode_tdf_files, temp_credential
                 f"v4.3.1 {file_type} inspection missing size"
             )
 
-            print(f"\n=== {file_type.upper()} TDF Comparison (Limited Inspection) ===")
-            print(
+            logger.info(
+                f"\n=== {file_type.upper()} TDF Comparison (Limited Inspection) ==="
+            )
+            logger.info(
                 f"v4.2.2 type: {v4_2_2_result['type']}, size: {v4_2_2_result['size']}"
             )
-            print(
+            logger.info(
                 f"v4.3.1 type: {v4_3_1_result['type']}, size: {v4_3_1_result['size']}"
             )
 
 
 @pytest.mark.integration
-def test_cli_inspect_different_file_types_v4_2_2(tdf_v4_2_2_files, temp_credentials_file):
+def test_cli_inspect_different_file_types_v4_2_2(
+    tdf_v4_2_2_files, temp_credentials_file
+):
     """
     Test CLI inspect with different file types.
     """
@@ -117,7 +120,9 @@ def test_cli_inspect_different_file_types_v4_2_2(tdf_v4_2_2_files, temp_credenti
 
 
 @pytest.mark.integration
-def test_cli_inspect_different_file_types_v4_3_1(tdf_v4_3_1_files, temp_credentials_file):
+def test_cli_inspect_different_file_types_v4_3_1(
+    tdf_v4_3_1_files, temp_credentials_file
+):
     """
     Test CLI inspect with different file types.
     """

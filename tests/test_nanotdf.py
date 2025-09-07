@@ -1,7 +1,9 @@
-import pytest
 import secrets
-from otdf_python.nanotdf import NanoTDF, NanoTDFMaxSizeLimit, InvalidNanoTDFConfig
+
+import pytest
+
 from otdf_python.config import NanoTDFConfig
+from otdf_python.nanotdf import InvalidNanoTDFConfig, NanoTDF, NanoTDFMaxSizeLimit
 
 
 def test_nanotdf_roundtrip():
@@ -39,8 +41,8 @@ def test_nanotdf_invalid_magic():
 @pytest.mark.integration
 def test_nanotdf_integration_encrypt_decrypt():
     # Load environment variables for integration
-    from tests.config_pydantic import CONFIG_TDF
     from otdf_python.config import KASInfo
+    from tests.config_pydantic import CONFIG_TDF
 
     # Create KAS info from configuration
     kas_info = KASInfo(url=CONFIG_TDF.KAS_ENDPOINT)

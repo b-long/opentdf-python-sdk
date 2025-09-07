@@ -3,10 +3,11 @@ Tests for the SDKBuilder class.
 """
 
 import os
+import tempfile
+from unittest.mock import MagicMock, patch
+
 import pytest
 import respx
-import tempfile
-from unittest.mock import patch, MagicMock
 
 from otdf_python.sdk import SDK
 from otdf_python.sdk_builder import SDKBuilder

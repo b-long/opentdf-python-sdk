@@ -14,8 +14,8 @@ types, saving us from doing type conversion.
 
 """
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class ConfigureTdf(BaseSettings):
