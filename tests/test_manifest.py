@@ -1,11 +1,11 @@
 from otdf_python.manifest import (
     Manifest,
-    ManifestEncryptionInformation,
-    ManifestPayload,
     ManifestAssertion,
-    ManifestMethod,
-    ManifestKeyAccess,
+    ManifestEncryptionInformation,
     ManifestIntegrityInformation,
+    ManifestKeyAccess,
+    ManifestMethod,
+    ManifestPayload,
     ManifestRootSignature,
     ManifestSegment,
 )

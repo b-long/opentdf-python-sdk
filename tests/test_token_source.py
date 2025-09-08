@@ -3,7 +3,8 @@ Unit tests for TokenSource.
 """
 
 import time
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from otdf_python.token_source import TokenSource
 
 

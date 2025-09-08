@@ -1,8 +1,9 @@
-import unittest
 import io
 import random
-from otdf_python.zip_writer import ZipWriter
+import unittest
+
 from otdf_python.zip_reader import ZipReader
+from otdf_python.zip_writer import ZipWriter
 
 
 class TestZipReader(unittest.TestCase):

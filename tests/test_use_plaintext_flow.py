@@ -2,7 +2,7 @@
 Test to verify that the use_plaintext parameter flows correctly from SDKBuilder to KASClient.
 """
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from otdf_python.sdk_builder import SDKBuilder
 

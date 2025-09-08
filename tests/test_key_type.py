@@ -1,4 +1,5 @@
 import unittest
+
 from otdf_python.key_type import KeyType
 
 

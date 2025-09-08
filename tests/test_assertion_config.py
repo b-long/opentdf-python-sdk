@@ -1,13 +1,14 @@
 import unittest
+
 from otdf_python.assertion_config import (
-    Type,
-    Scope,
-    AssertionKeyAlg,
     AppliesToState,
-    BindingMethod,
-    AssertionKey,
-    Statement,
     AssertionConfig,
+    AssertionKey,
+    AssertionKeyAlg,
+    BindingMethod,
+    Scope,
+    Statement,
+    Type,
 )
 
 

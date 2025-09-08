@@ -3,11 +3,10 @@ Tests using target mode fixtures, for CLI integration testing.
 """
 
 import json
+import logging
 import subprocess
 import sys
 from pathlib import Path
-
-import logging
 
 import pytest
 
@@ -22,7 +21,7 @@ logger = logging.getLogger(__name__)
 @pytest.mark.integration
 def test_cli_inspect_v4_2_2_vs_v4_3_1(all_target_mode_tdf_files, temp_credentials_file):
     """
-    Test CLI inspect with various TDF versions.
+    Test Python CLI inspect with various TDF versions created by otdfctl.
     """
 
     v4_2_2_files = all_target_mode_tdf_files["v4.2.2"]
@@ -74,51 +73,64 @@ def test_cli_inspect_v4_2_2_vs_v4_3_1(all_target_mode_tdf_files, temp_credential
                 f"v4.3.1 {file_type} inspection missing size"
             )
 
-            print(f"\n=== {file_type.upper()} TDF Comparison (Limited Inspection) ===")
-            print(
+            logger.info(
+                f"\n=== {file_type.upper()} TDF Comparison (Limited Inspection) ==="
+            )
+            logger.info(
                 f"v4.2.2 type: {v4_2_2_result['type']}, size: {v4_2_2_result['size']}"
             )
-            print(
+            logger.info(
                 f"v4.3.1 type: {v4_3_1_result['type']}, size: {v4_3_1_result['size']}"
             )
 
 
 @pytest.mark.integration
-def test_cli_inspect_different_file_types(tdf_v4_3_1_files, temp_credentials_file):
+def test_cli_inspect_different_file_types(
+    all_target_mode_tdf_files,
+    temp_credentials_file,
+):
     """
     Test CLI inspect with different file types.
     """
+    assert "v4.2.2" in all_target_mode_tdf_files
+    assert "v4.3.1" in all_target_mode_tdf_files
 
-    file_types_to_test = [
-        "text",
-        "binary",
-        "with_attributes",
-    ]  # TODO: Consider adding "empty" file type as well
+    # Check each version has the expected file types
+    for version in ["v4.2.2", "v4.3.1"]:
+        tdf_files = all_target_mode_tdf_files[version]
 
-    for file_type in file_types_to_test:
-        tdf_path = tdf_v4_3_1_files[file_type]
+        file_types_to_test = [
+            "text",
+            "binary",
+            "with_attributes",
+        ]  # TODO: Consider adding "empty" file type as well
 
-        # Inspect the TDF
-        result = _run_cli_inspect(tdf_path, temp_credentials_file)
+        for file_type in file_types_to_test:
+            tdf_path = tdf_files[file_type]
 
-        assert result is not None, f"Failed to inspect {file_type} TDF"
-        assert "manifest" in result, f"{file_type} TDF inspection missing manifest"
+            # Inspect the TDF
+            result = _run_cli_inspect(tdf_path, temp_credentials_file)
 
-        # Check file-type specific expectations
-        if file_type == "empty":
-            # Empty files should still have valid manifests
-            assert "encryptionInformation" in result["manifest"]
-        elif file_type == "with_attributes":
-            # Attributed files should have keyAccess information
-            assert (
-                "keyAccess" in result["manifest"]
-                or "encryptionInformation" in result["manifest"]
+            assert result is not None, (
+                f"Failed to inspect {file_type} TDF, TDF version {version}"
             )
+            assert "manifest" in result, f"{file_type} TDF inspection missing manifest"
+
+            # Check file-type specific expectations
+            if file_type == "empty":
+                # Empty files should still have valid manifests
+                assert "encryptionInformation" in result["manifest"]
+            elif file_type == "with_attributes":
+                # Attributed files should have keyAccess information
+                assert (
+                    "keyAccess" in result["manifest"]
+                    or "encryptionInformation" in result["manifest"]
+                )
 
 
 def _run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict | None:
     """
-    Helper function to run CLI inspect command and return parsed JSON result.
+    Helper function to run Python CLI inspect command and return parsed JSON result.
 
     This demonstrates how the CLI inspect functionality could be tested
     with the new fixtures.

@@ -1,5 +1,5 @@
-from otdf_python.asym_encryption import AsymEncryption
 from otdf_python.asym_decryption import AsymDecryption
+from otdf_python.asym_encryption import AsymEncryption
 from tests.mock_crypto import generate_rsa_keypair
 
 

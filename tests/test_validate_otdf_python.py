@@ -6,13 +6,14 @@ Execute using:
     uv run pytest tests/test_validate_otdf_python.py
 """
 
+import logging
 import sys
 import tempfile
-import logging
 from pathlib import Path
-from otdf_python.tdf import TDFReaderConfig
+
 import pytest
 
+from otdf_python.tdf import TDFReaderConfig
 from tests.integration.support_sdk import get_sdk
 
 # Set up detailed logging

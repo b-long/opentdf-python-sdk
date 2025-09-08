@@ -1,5 +1,6 @@
 import unittest
-from otdf_python.sdk_exceptions import SDKException, AutoConfigureException
+
+from otdf_python.sdk_exceptions import AutoConfigureException, SDKException
 
 
 class TestSDKExceptions(unittest.TestCase):

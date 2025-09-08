@@ -69,6 +69,8 @@ lint.select = [
     "C4",
     # McCabe complexity
     "C90",
+    # isort
+    "I",
     # Performance-related rules
     "PERF",      # Ruff's performance rules
     # Additional useful rules

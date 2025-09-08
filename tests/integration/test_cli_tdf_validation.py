@@ -13,9 +13,9 @@ import pytest
 
 from otdf_python.tdf_reader import TDF_MANIFEST_FILE_NAME, TDF_PAYLOAD_FILE_NAME
 from tests.support_cli_args import (
+    get_cli_flags,
     get_otdfctl_flags,
     get_platform_url,
-    get_cli_flags,
 )
 
 original_env = os.environ.copy()

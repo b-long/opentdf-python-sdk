@@ -1,7 +1,8 @@
-from otdf_python.sdk_builder import SDKBuilder
-from otdf_python.sdk import SDK
-from tests.config_pydantic import CONFIG_TDF
 import httpx
+
+from otdf_python.sdk import SDK
+from otdf_python.sdk_builder import SDKBuilder
+from tests.config_pydantic import CONFIG_TDF
 
 
 def _get_sdk_builder() -> SDKBuilder:

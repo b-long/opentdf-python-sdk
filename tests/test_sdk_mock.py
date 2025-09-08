@@ -1,12 +1,12 @@
 from otdf_python.sdk import (
-    SDK,
     KAS,
+    SDK,
     AttributesServiceClientInterface,
-    NamespaceServiceClientInterface,
-    SubjectMappingServiceClientInterface,
-    ResourceMappingServiceClientInterface,
     AuthorizationServiceClientInterface,
     KeyAccessServerRegistryServiceClientInterface,
+    NamespaceServiceClientInterface,
+    ResourceMappingServiceClientInterface,
+    SubjectMappingServiceClientInterface,
 )
 
 

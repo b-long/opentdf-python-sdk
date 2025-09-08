@@ -1,5 +1,6 @@
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 import os
+
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 
 class AesGcm:

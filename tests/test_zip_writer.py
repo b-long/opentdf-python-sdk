@@ -1,7 +1,8 @@
-import unittest
 import io
-from otdf_python.zip_writer import ZipWriter
+import unittest
 import zipfile
+
+from otdf_python.zip_writer import ZipWriter
 
 
 class TestZipWriter(unittest.TestCase):

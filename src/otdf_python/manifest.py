@@ -1,6 +1,6 @@
-from dataclasses import dataclass, field, asdict
-from typing import Any
 import json
+from dataclasses import asdict, dataclass, field
+from typing import Any
 
 
 @dataclass

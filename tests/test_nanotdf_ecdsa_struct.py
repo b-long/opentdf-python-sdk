@@ -5,8 +5,8 @@ Tests for NanoTDFECDSAStruct.
 import pytest
 
 from otdf_python.nanotdf_ecdsa_struct import (
-    NanoTDFECDSAStruct,
     IncorrectNanoTDFECDSASignatureSize,
+    NanoTDFECDSAStruct,
 )
 
 
