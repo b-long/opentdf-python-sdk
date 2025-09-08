@@ -55,13 +55,15 @@ class TestTDFReaderIntegration:
                 str(otdfctl_output),
             ]
 
-            otdfctl_result = subprocess.run(
+            otdfctl_encrypt_result = subprocess.run(
                 otdfctl_cmd, capture_output=True, text=True, cwd=temp_path
             )
 
             # If otdfctl fails, skip the test (might be server issues)
-            if otdfctl_result.returncode != 0:
-                pytest.skip(f"otdfctl encrypt failed: {otdfctl_result.stderr}")
+            if otdfctl_encrypt_result.returncode != 0:
+                raise Exception(
+                    f"otdfctl encrypt failed: {otdfctl_encrypt_result.stderr}"
+                )
 
             # Verify the TDF file was created
             assert otdfctl_output.exists(), "otdfctl did not create TDF file"
@@ -153,13 +155,9 @@ class TestTDFReaderIntegration:
             # If otdfctl fails, skip the test
             # assert otdfctl_result.returncode == 0, "otdfctl encrypt failed"
             if otdfctl_result.returncode != 0:
-                print(f"otdfctl encrypt failed: {otdfctl_result.stderr}")
-                # Skip the test
-                pytest.skip(
+                raise Exception(
                     f"otdfctl encrypt with attributes failed: {otdfctl_result.stderr}"
                 )
-            else:
-                print("otdfctl encrypt with attributes succeeded")
 
             # Verify the TDF file was created
             assert otdfctl_output.exists(), "otdfctl did not create TDF file"

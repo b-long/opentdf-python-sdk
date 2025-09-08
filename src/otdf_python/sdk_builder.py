@@ -3,14 +3,15 @@ Python port of the SDKBuilder class for OpenTDF platform interaction.
 Provides methods to configure and build SDK instances.
 """
 
-from typing import Any
-import os
 import logging
+import os
 import ssl
-import httpx
 from dataclasses import dataclass
+from typing import Any
 
-from otdf_python.sdk import SDK, KAS
+import httpx
+
+from otdf_python.sdk import KAS, SDK
 from otdf_python.sdk_exceptions import AutoConfigureException
 
 # Configure logging

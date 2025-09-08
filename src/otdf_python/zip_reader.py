@@ -1,5 +1,6 @@
-import zipfile
 import io
+import zipfile
+
 from otdf_python.invalid_zip_exception import InvalidZipException
 
 

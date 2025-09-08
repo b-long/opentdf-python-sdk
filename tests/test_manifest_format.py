@@ -3,10 +3,9 @@ Test TDF manifest format, inspired by the Java SDK manifest tests.
 """
 
 import json
+
+from otdf_python.config import KASInfo, TDFConfig
 from otdf_python.tdf import TDF
-from otdf_python.config import TDFConfig, KASInfo
-
-
 from tests.mock_crypto import generate_rsa_keypair
 
 

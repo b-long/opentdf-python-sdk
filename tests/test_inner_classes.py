@@ -1,4 +1,5 @@
 import unittest
+
 from otdf_python.auth_headers import AuthHeaders
 from otdf_python.kas_info import KASInfo
 from otdf_python.policy_binding_serializer import PolicyBinding, PolicyBindingSerializer

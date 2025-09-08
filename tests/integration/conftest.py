@@ -3,13 +3,14 @@ Shared fixtures and utilities for integration tests.
 """
 
 import json
+import logging
 import os
 import subprocess
 import tempfile
 from pathlib import Path
 
 import pytest
-import logging
+
 from tests.support_cli_args import get_otdfctl_flags, get_platform_url
 
 logger = logging.getLogger(__name__)

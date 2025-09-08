@@ -2,8 +2,9 @@
 Unit tests for KASKeyCache.
 """
 
-from otdf_python.kas_key_cache import KASKeyCache
 from dataclasses import dataclass
+
+from otdf_python.kas_key_cache import KASKeyCache
 
 
 @dataclass
