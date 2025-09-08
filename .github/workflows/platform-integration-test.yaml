@@ -163,8 +163,8 @@ jobs:
           OIDC_TOKEN_ENDPOINT: "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
           OPENTDF_KAS_URL: "http://localhost:8080/kas"
           INSECURE_SKIP_VERIFY: "TRUE"
-          TEST_OPENTDF_ATTRIBUTE_1: "https://example.com/attr/attr1/value/value1"
-          TEST_OPENTDF_ATTRIBUTE_2: "https://example.com/attr/attr1/value/value2"
+          TEST_OPENTDF_ATTRIBUTE_1: "https://example.net/attr/attr1/value/value1"
+          TEST_OPENTDF_ATTRIBUTE_2: "https://example.com/attr/attr1/value/value1"
         run: |
           uv sync
           # Skip the tests marked "integration"
@@ -180,8 +180,8 @@ jobs:
           OIDC_OP_TOKEN_ENDPOINT: "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
           OPENTDF_KAS_URL: "http://localhost:8080/kas"
           INSECURE_SKIP_VERIFY: "TRUE"
-          TEST_OPENTDF_ATTRIBUTE_1: "https://example.com/attr/attr1/value/value1"
-          TEST_OPENTDF_ATTRIBUTE_2: "https://example.com/attr/attr1/value/value2"
+          TEST_OPENTDF_ATTRIBUTE_1: "https://example.net/attr/attr1/value/value1"
+          TEST_OPENTDF_ATTRIBUTE_2: "https://example.com/attr/attr1/value/value1"
         run: |
           # Run check_entitlements.sh
           ./.github/check_entitlements.sh
