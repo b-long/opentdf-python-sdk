@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from tests.config_pydantic import CONFIG_TDF
 
 
@@ -45,3 +47,65 @@ def get_cli_flags() -> list:
             cli_flags = ["--insecure"]  # equivalent to --tls-no-verify
 
     return cli_flags
+
+
+def get_otdfctl_base_command(platform_url: str, creds_file: Path) -> list:
+    """Get base otdfctl command with common flags."""
+    base_cmd = [
+        "otdfctl",
+        "--host",
+        platform_url,
+        "--with-client-creds-file",
+        str(creds_file),
+    ]
+
+    # Add platform-specific flags
+    base_cmd.extend(get_otdfctl_flags())
+
+    return base_cmd
+
+
+def build_otdfctl_encrypt_command(
+    platform_url: str,
+    creds_file: Path,
+    input_file,
+    output_file,
+    mime_type: str = "text/plain",
+    attributes: list | None = None,
+) -> list:
+    """Build otdfctl encrypt command."""
+    cmd = get_otdfctl_base_command(platform_url, creds_file)
+    cmd.extend(
+        [
+            "encrypt",
+            "--mime-type",
+            mime_type,
+            str(input_file),
+            "-o",
+            str(output_file),
+        ]
+    )
+
+    # Add attributes if provided
+    if attributes:
+        for attr in attributes:
+            cmd.extend(["--attr", attr])
+
+    return cmd
+
+
+def build_otdfctl_decrypt_command(
+    platform_url: str, creds_file: Path, tdf_file: Path, output_file: Path
+) -> list:
+    """Build otdfctl decrypt command."""
+    cmd = get_otdfctl_base_command(platform_url, creds_file)
+    cmd.extend(
+        [
+            "decrypt",
+            str(tdf_file),
+            "-o",
+            str(output_file),
+        ]
+    )
+
+    return cmd

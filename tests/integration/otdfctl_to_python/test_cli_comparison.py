@@ -8,7 +8,11 @@ from pathlib import Path
 
 import pytest
 
-from tests.support_cli_args import get_platform_url
+from tests.support_cli_args import (
+    build_otdfctl_decrypt_command,
+    build_otdfctl_encrypt_command,
+    get_platform_url,
+)
 
 platform_url = get_platform_url()
 
@@ -35,20 +39,13 @@ def test_otdfctl_encrypt_python_decrypt(collect_server_logs, temp_credentials_fi
         cli_decrypt_output = temp_path / "decrypted-by-cli.txt"
 
         # Run otdfctl encrypt first to create a TDF file
-        otdfctl_encrypt_cmd = [
-            "otdfctl",
-            "encrypt",
-            "--host",
+        otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
             platform_url,
-            "--with-client-creds-file",
-            str(temp_credentials_file),
-            "--tls-no-verify",
-            "--mime-type",
+            temp_credentials_file,
+            input_file,
+            otdfctl_tdf_output,
             "text/plain",
-            str(input_file),
-            "-o",
-            str(otdfctl_tdf_output),
-        ]
+        )
 
         otdfctl_encrypt_result = subprocess.run(
             otdfctl_encrypt_cmd, capture_output=True, text=True, cwd=temp_path
@@ -63,18 +60,12 @@ def test_otdfctl_encrypt_python_decrypt(collect_server_logs, temp_credentials_fi
         assert otdfctl_tdf_output.stat().st_size > 0, "otdfctl created empty TDF file"
 
         # Now run otdfctl decrypt (this is the reference implementation)
-        otdfctl_decrypt_cmd = [
-            "otdfctl",
-            "decrypt",
-            "--host",
+        otdfctl_decrypt_cmd = build_otdfctl_decrypt_command(
             platform_url,
-            "--with-client-creds-file",
-            str(temp_credentials_file),
-            "--tls-no-verify",
-            str(otdfctl_tdf_output),
-            "-o",
-            str(otdfctl_decrypt_output),
-        ]
+            temp_credentials_file,
+            otdfctl_tdf_output,
+            otdfctl_decrypt_output,
+        )
 
         otdfctl_decrypt_result = subprocess.run(
             otdfctl_decrypt_cmd, capture_output=True, text=True, cwd=temp_path
@@ -203,20 +194,13 @@ def test_otdfctl_encrypt_otdfctl_decrypt(collect_server_logs, temp_credentials_f
         otdfctl_decrypt_output = temp_path / "otdfctl-roundtrip-decrypted.txt"
 
         # Run otdfctl encrypt
-        otdfctl_encrypt_cmd = [
-            "otdfctl",
-            "encrypt",
-            "--host",
+        otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
             platform_url,
-            "--with-client-creds-file",
-            str(temp_credentials_file),
-            "--tls-no-verify",
-            "--mime-type",
+            temp_credentials_file,
+            input_file,
+            otdfctl_tdf_output,
             "text/plain",
-            str(input_file),
-            "-o",
-            str(otdfctl_tdf_output),
-        ]
+        )
 
         otdfctl_encrypt_result = subprocess.run(
             otdfctl_encrypt_cmd, capture_output=True, text=True, cwd=temp_path
@@ -252,18 +236,12 @@ def test_otdfctl_encrypt_otdfctl_decrypt(collect_server_logs, temp_credentials_f
         assert tdf_header == b"PK\x03\x04", "otdfctl output is not a valid ZIP file"
 
         # Run otdfctl decrypt
-        otdfctl_decrypt_cmd = [
-            "otdfctl",
-            "decrypt",
-            "--host",
+        otdfctl_decrypt_cmd = build_otdfctl_decrypt_command(
             platform_url,
-            "--with-client-creds-file",
-            str(temp_credentials_file),
-            "--tls-no-verify",
-            str(otdfctl_tdf_output),
-            "-o",
-            str(otdfctl_decrypt_output),
-        ]
+            temp_credentials_file,
+            otdfctl_tdf_output,
+            otdfctl_decrypt_output,
+        )
 
         otdfctl_decrypt_result = subprocess.run(
             otdfctl_decrypt_cmd, capture_output=True, text=True, cwd=temp_path

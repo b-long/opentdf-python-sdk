@@ -13,6 +13,8 @@ import pytest
 
 from otdf_python.tdf_reader import TDF_MANIFEST_FILE_NAME, TDF_PAYLOAD_FILE_NAME
 from tests.support_cli_args import (
+    build_otdfctl_decrypt_command,
+    build_otdfctl_encrypt_command,
     get_cli_flags,
     get_otdfctl_flags,
     get_platform_url,
@@ -266,18 +268,9 @@ def _run_otdfctl_decrypt(
     """Run otdfctl decrypt on a TDF file and verify the decrypted content matches expected."""
     decrypt_output = temp_path / f"{tdf_path.stem}_decrypted.txt"
 
-    otdfctl_decrypt_cmd = [
-        "otdfctl",
-        "decrypt",
-        str(tdf_path),
-        "--host",
-        platform_url,
-        "--with-client-creds-file",
-        str(creds_file),
-        *otdfctl_flags,
-        "-o",
-        str(decrypt_output),
-    ]
+    otdfctl_decrypt_cmd = build_otdfctl_decrypt_command(
+        platform_url, creds_file, tdf_path, decrypt_output
+    )
 
     otdfctl_decrypt_result = subprocess.run(
         otdfctl_decrypt_cmd,
@@ -381,20 +374,13 @@ def test_otdfctl_encrypt_with_validation(collect_server_logs, temp_credentials_f
         otdfctl_tdf_output = temp_path / "otdfctl_test.txt.tdf"
 
         # Run otdfctl encrypt to create a TDF file
-        otdfctl_encrypt_cmd = [
-            "otdfctl",
-            "encrypt",
-            "--host",
+        otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
             platform_url,
-            "--with-client-creds-file",
-            str(temp_credentials_file),
-            *otdfctl_flags,
-            "--mime-type",
+            temp_credentials_file,
+            input_file,
+            otdfctl_tdf_output,
             "text/plain",
-            str(input_file),
-            "-o",
-            str(otdfctl_tdf_output),
-        ]
+        )
 
         otdfctl_encrypt_result = subprocess.run(
             otdfctl_encrypt_cmd,
@@ -511,20 +497,13 @@ def test_cross_tool_compatibility(collect_server_logs, temp_credentials_file):
         otdfctl_tdf_output = temp_path / "otdfctl_for_python_decrypt.txt.tdf"
 
         # Encrypt with otdfctl
-        otdfctl_encrypt_cmd = [
-            "otdfctl",
-            "encrypt",
-            "--host",
+        otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
             platform_url,
-            "--with-client-creds-file",
-            str(temp_credentials_file),
-            *otdfctl_flags,
-            "--mime-type",
+            temp_credentials_file,
+            input_file,
+            otdfctl_tdf_output,
             "text/plain",
-            str(input_file),
-            "-o",
-            str(otdfctl_tdf_output),
-        ]
+        )
 
         otdfctl_encrypt_result = subprocess.run(
             otdfctl_encrypt_cmd,
