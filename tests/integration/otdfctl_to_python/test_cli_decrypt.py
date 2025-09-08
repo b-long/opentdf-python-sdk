@@ -76,57 +76,66 @@ def test_cli_decrypt_v4_2_2_vs_v4_3_1(all_target_mode_tdf_files, temp_credential
 
 
 @pytest.mark.integration
-def test_cli_decrypt_different_file_types_v4_3_1(
-    tdf_v4_3_1_files, temp_credentials_file
+def test_cli_decrypt_different_file_types(
+    all_target_mode_tdf_files, temp_credentials_file
 ):
     """
     Test CLI decrypt with different file types.
     """
 
-    file_types_to_test = [
-        "text",
-        "binary",
-        "with_attributes",
-    ]  # TODO: Consider adding "empty" file type as well
+    assert "v4.2.2" in all_target_mode_tdf_files
+    assert "v4.3.1" in all_target_mode_tdf_files
 
-    for file_type in file_types_to_test:
-        tdf_path = tdf_v4_3_1_files[file_type]
+    # Check each version has the expected file types
+    for version in ["v4.2.2", "v4.3.1"]:
+        tdf_files = all_target_mode_tdf_files[version]
 
-        # Decrypt the TDF
-        output_file = _run_cli_decrypt(tdf_path, temp_credentials_file)
+        file_types_to_test = [
+            "text",
+            "binary",
+            "with_attributes",
+        ]  # TODO: Consider adding "empty" file type as well
 
-        assert output_file is not None, f"Failed to decrypt {file_type} TDF"
-        assert output_file.exists(), f"{file_type} TDF decrypt output file not created"
+        for file_type in file_types_to_test:
+            tdf_path = tdf_files[file_type]
 
-        # Check file-type specific expectations
-        if file_type == "empty":
-            # Empty files should produce empty output files
-            assert output_file.stat().st_size == 0, (
-                f"{file_type} TDF should produce empty output"
-            )
-        else:
-            # Non-empty files should produce non-empty output
-            assert output_file.stat().st_size > 0, (
-                f"{file_type} TDF produced empty decrypt output"
+            # Decrypt the TDF
+            output_file = _run_cli_decrypt(tdf_path, temp_credentials_file)
+
+            assert output_file is not None, f"Failed to decrypt {file_type} TDF"
+            assert output_file.exists(), (
+                f"{file_type} TDF decrypt output file not created"
             )
 
-        # For attributed files, just ensure they decrypt successfully
-        if file_type == "with_attributes":
-            logger.info(
-                f"Successfully decrypted attributed TDF, output size: {output_file.stat().st_size}"
-            )
+            # Check file-type specific expectations
+            if file_type == "empty":
+                # Empty files should produce empty output files
+                assert output_file.stat().st_size == 0, (
+                    f"{file_type} TDF should produce empty output"
+                )
+            else:
+                # Non-empty files should produce non-empty output
+                assert output_file.stat().st_size > 0, (
+                    f"{file_type} TDF produced empty decrypt output"
+                )
 
-        # For text files, verify the content is readable
-        if file_type == "text":
-            try:
-                content = output_file.read_text()
-                assert len(content) > 0, "Text file should have readable content"
-                logger.info(f"Text content preview: {content[:100]}...")
-            except UnicodeDecodeError:
-                pytest.fail(f"Decrypted {file_type} file should be valid text")
+            # For attributed files, just ensure they decrypt successfully
+            if file_type == "with_attributes":
+                logger.info(
+                    f"Successfully decrypted attributed TDF, output size: {output_file.stat().st_size}"
+                )
 
-        # Clean up output file
-        output_file.unlink()
+            # For text files, verify the content is readable
+            if file_type == "text":
+                try:
+                    content = output_file.read_text()
+                    assert len(content) > 0, "Text file should have readable content"
+                    logger.info(f"Text content preview: {content[:100]}...")
+                except UnicodeDecodeError:
+                    pytest.fail(f"Decrypted {file_type} file should be valid text")
+
+            # Clean up output file
+            output_file.unlink()
 
 
 def _run_cli_decrypt(tdf_path: Path, creds_file: Path) -> Path | None:
@@ -185,57 +194,3 @@ def _run_cli_decrypt(tdf_path: Path, creds_file: Path) -> Path | None:
             output_path.unlink()
 
         raise Exception(f"Failed to decrypt TDF {tdf_path}: {e}") from e
-
-
-@pytest.mark.integration
-def test_cli_decrypt_different_file_types_v4_2_2(
-    tdf_v4_2_2_files, temp_credentials_file
-):
-    """
-    Test CLI decrypt with different file types.
-    """
-
-    file_types_to_test = [
-        "text",
-        "binary",
-        "with_attributes",
-    ]  # TODO: Consider adding "empty" file type as well
-
-    for file_type in file_types_to_test:
-        tdf_path = tdf_v4_2_2_files[file_type]
-
-        # Decrypt the TDF
-        output_file = _run_cli_decrypt(tdf_path, temp_credentials_file)
-
-        assert output_file is not None, f"Failed to decrypt {file_type} TDF"
-        assert output_file.exists(), f"{file_type} TDF decrypt output file not created"
-
-        # Check file-type specific expectations
-        if file_type == "empty":
-            # Empty files should produce empty output files
-            assert output_file.stat().st_size == 0, (
-                f"{file_type} TDF should produce empty output"
-            )
-        else:
-            # Non-empty files should produce non-empty output
-            assert output_file.stat().st_size > 0, (
-                f"{file_type} TDF produced empty decrypt output"
-            )
-
-        # For attributed files, just ensure they decrypt successfully
-        if file_type == "with_attributes":
-            logger.info(
-                f"Successfully decrypted attributed TDF, output size: {output_file.stat().st_size}"
-            )
-
-        # For text files, verify the content is readable
-        if file_type == "text":
-            try:
-                content = output_file.read_text()
-                assert len(content) > 0, "Text file should have readable content"
-                logger.info(f"Text content preview: {content[:100]}...")
-            except UnicodeDecodeError:
-                pytest.fail(f"Decrypted {file_type} file should be valid text")
-
-        # Clean up output file
-        output_file.unlink()

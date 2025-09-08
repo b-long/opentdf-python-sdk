@@ -87,12 +87,11 @@ def test_cli_inspect_v4_2_2_vs_v4_3_1(all_target_mode_tdf_files, temp_credential
 @pytest.mark.integration
 def test_cli_inspect_different_file_types(
     all_target_mode_tdf_files,
-    temp_credentials_file,  # , request
+    temp_credentials_file,
 ):
     """
     Test CLI inspect with different file types.
     """
-    # tdf_files = request.getfixturevalue(tdf_files_fixture)
     assert "v4.2.2" in all_target_mode_tdf_files
     assert "v4.3.1" in all_target_mode_tdf_files
 
