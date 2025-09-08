@@ -75,11 +75,33 @@ jobs:
         run: |
           uv run python -c 'import otdf_python; print("Package imported successfully")'
 
-      - name: Store version
+      # While we improve the release process, prevent publishing to TestPyPI for versions <= 0.3.2
+      - name: Store version and determine if should publish to TestPyPI
+        id: check_version
         shell: bash
         run: |
           PROJECT_VERSION=$(uv version --short)
           echo "PROJECT_VERSION=$PROJECT_VERSION" >> $GITHUB_ENV
+
+          # Remove any alpha/beta/rc suffixes for comparison
+          CLEAN_VERSION=$(echo "$PROJECT_VERSION" | sed 's/[a-zA-Z].*//')
+          echo "clean_version=$CLEAN_VERSION" >> $GITHUB_OUTPUT
+
+          # Convert versions to comparable format (e.g., "0.3.2" -> "000300020000")
+          version_to_number() {
+            echo "$1" | awk -F. '{ printf("%04d%04d%04d\n", $1,$2,$3); }'
+          }
+
+          CURRENT_NUM=$(version_to_number "$CLEAN_VERSION")
+          THRESHOLD_NUM=$(version_to_number "0.3.2")
+
+          if [ "$CURRENT_NUM" -gt "$THRESHOLD_NUM" ]; then
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+            echo "Version $PROJECT_VERSION (clean: $CLEAN_VERSION) is > 0.3.2, will publish to TestPyPI"
+          else
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+            echo "Version $PROJECT_VERSION (clean: $CLEAN_VERSION) is <= 0.3.2, skipping TestPyPI publish"
+          fi
 
       # For develop branch: trigger TestPyPI build (both alpha and stable releases go to TestPyPI from develop)
 
@@ -89,7 +111,7 @@ jobs:
       # Requires GHA token permission (above in YAML) and PyPI management:
       #   https://test.pypi.org/manage/project/otdf-python/settings/publishing/
       - name: Publish package distributions to TestPyPI
-        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/chore/update-docs-and-release-process'
+        if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/chore/update-docs-and-release-process') && steps.check_version.outputs.should_publish == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
