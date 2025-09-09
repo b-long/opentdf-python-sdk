@@ -38,10 +38,10 @@ def test_otdfctl_encrypt_python_decrypt(collect_server_logs, temp_credentials_fi
 
         # Run otdfctl encrypt first to create a TDF file
         otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
-            temp_credentials_file,
-            input_file,
-            otdfctl_tdf_output,
-            "text/plain",
+            creds_file=temp_credentials_file,
+            input_file=input_file,
+            output_file=otdfctl_tdf_output,
+            mime_type="text/plain",
         )
 
         otdfctl_encrypt_result = subprocess.run(
@@ -180,10 +180,10 @@ def test_otdfctl_encrypt_otdfctl_decrypt(collect_server_logs, temp_credentials_f
 
         # Run otdfctl encrypt
         otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
-            temp_credentials_file,
-            input_file,
-            otdfctl_tdf_output,
-            "text/plain",
+            creds_file=temp_credentials_file,
+            input_file=input_file,
+            output_file=otdfctl_tdf_output,
+            mime_type="text/plain",
         )
 
         otdfctl_encrypt_result = subprocess.run(

@@ -39,10 +39,10 @@ class TestTDFReaderIntegration:
 
             # Run otdfctl encrypt
             otdfctl_cmd = build_otdfctl_encrypt_command(
-                temp_credentials_file,
-                input_file,
-                otdfctl_output,
-                "text/plain",
+                creds_file=temp_credentials_file,
+                input_file=input_file,
+                output_file=otdfctl_output,
+                mime_type="text/plain",
             )
 
             otdfctl_encrypt_result = subprocess.run(
@@ -221,10 +221,10 @@ class TestTDFReaderIntegration:
 
                     # Run otdfctl encrypt
                     otdfctl_cmd = build_otdfctl_encrypt_command(
-                        temp_credentials_file,
-                        input_file,
-                        output_file,
-                        test_case["mime_type"],
+                        creds_file=temp_credentials_file,
+                        input_file=input_file,
+                        output_file=output_file,
+                        mime_type=test_case["mime_type"],
                     )
 
                     otdfctl_result = subprocess.run(
