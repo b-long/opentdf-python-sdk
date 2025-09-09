@@ -32,3 +32,15 @@ def handle_subprocess_error(
             f"Scenario failed: '{scenario_name}': "
             f"stdout={result.stdout}, stderr={result.stderr}"
         )
+
+
+def get_testing_environ() -> dict | None:
+    """
+    Set up environment and configuration
+
+    TODO: In the future, remove this function (return None)
+    """
+    # original_env = os.environ.copy()
+    # original_env["GRPC_ENFORCE_ALPN_ENABLED"] = "false"
+    # return original_env
+    return None

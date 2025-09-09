@@ -2,7 +2,6 @@
 Integration Test CLI functionality
 """
 
-import os
 import subprocess
 import tempfile
 from pathlib import Path
@@ -10,14 +9,15 @@ from pathlib import Path
 import pytest
 
 from tests.support_cli_args import build_cli_decrypt_command, build_cli_encrypt_command
-from tests.support_common import get_platform_url, handle_subprocess_error
+from tests.support_common import (
+    get_platform_url,
+    get_testing_environ,
+    handle_subprocess_error,
+)
 from tests.support_otdfctl_args import (
     build_otdfctl_decrypt_command,
     build_otdfctl_encrypt_command,
 )
-
-original_env = os.environ.copy()
-original_env["GRPC_ENFORCE_ALPN_ENABLED"] = "false"
 
 platform_url = get_platform_url()
 
@@ -58,7 +58,7 @@ def test_cli_decrypt_otdfctl_tdf(collect_server_logs, temp_credentials_file):
             capture_output=True,
             text=True,
             cwd=temp_path,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
         # Fail fast on errors
@@ -85,7 +85,7 @@ def test_cli_decrypt_otdfctl_tdf(collect_server_logs, temp_credentials_file):
             capture_output=True,
             text=True,
             cwd=Path(__file__).parent.parent,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
         # Fail fast on errors
@@ -148,7 +148,7 @@ def test_otdfctl_decrypt_comparison(collect_server_logs, temp_credentials_file):
             capture_output=True,
             text=True,
             cwd=temp_path,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
         # Fail fast on errors
@@ -175,7 +175,7 @@ def test_otdfctl_decrypt_comparison(collect_server_logs, temp_credentials_file):
             capture_output=True,
             text=True,
             cwd=temp_path,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
         # Fail fast on errors
@@ -198,7 +198,7 @@ def test_otdfctl_decrypt_comparison(collect_server_logs, temp_credentials_file):
             capture_output=True,
             text=True,
             cwd=Path(__file__).parent.parent,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
         # Fail fast on errors
@@ -281,7 +281,7 @@ def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs, temp_credentials
             capture_output=True,
             text=True,
             cwd=temp_path,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
         # Fail fast on errors
@@ -313,7 +313,7 @@ def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs, temp_credentials
             capture_output=True,
             text=True,
             cwd=temp_path,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
         # Fail fast on errors

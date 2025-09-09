@@ -49,6 +49,7 @@ def build_otdfctl_encrypt_command(
     mime_type: str = "text/plain",
     attributes: list[str] | None = None,
     tdf_type: str | None = None,
+    target_mode: str | None = None,
 ) -> list[str]:
     """Build otdfctl encrypt command.
 
@@ -60,9 +61,8 @@ def build_otdfctl_encrypt_command(
         mime_type: Optional MIME type for the input file
         attributes: Optional list of attributes to apply
         tdf_type: TDF type (e.g., "tdf3", "nano")
+        target_mode: Target TDF spec version (e.g., "v4.2.2", "v4.3.1")
     """
-
-    # FIXME: Add target_mode: Target TDF spec version (e.g., "v4.2.2", "v4.3.1")
 
     cmd = get_otdfctl_base_command(platform_url, creds_file)
     cmd.append("encrypt")
@@ -80,6 +80,9 @@ def build_otdfctl_encrypt_command(
                 tdf_type,
             ]
         )
+
+    if target_mode:
+        cmd.extend(["--target-mode", target_mode])
 
     cmd.extend(
         [

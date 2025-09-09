@@ -4,21 +4,18 @@ Shared fixtures and utilities for integration tests.
 
 import json
 import logging
-import os
 import subprocess
 import tempfile
 from pathlib import Path
 
 import pytest
 
-from tests.support_common import get_platform_url
+from tests.config_pydantic import CONFIG_TDF
+from tests.support_common import get_platform_url, get_testing_environ
 from tests.support_otdfctl_args import build_otdfctl_encrypt_command
 
 logger = logging.getLogger(__name__)
 
-# Set up environment and configuration
-original_env = os.environ.copy()
-original_env["GRPC_ENFORCE_ALPN_ENABLED"] = "false"
 
 platform_url = get_platform_url()
 
@@ -31,9 +28,6 @@ def _generate_target_mode_tdf(
     attributes: list[str] | None = None,
     mime_type: str | None = None,
 ) -> None:
-    """
-    FIXME: Pass target_mode argument for TDF spec version (e.g., "v4.2.2", "v4.3.1")
-    """
     # Ensure output directory exists
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -46,6 +40,7 @@ def _generate_target_mode_tdf(
         mime_type=mime_type if mime_type else "text/plain",
         attributes=attributes if attributes else None,
         tdf_type="tdf3",
+        target_mode=target_mode,
     )
 
     # Run otdfctl command
@@ -53,7 +48,7 @@ def _generate_target_mode_tdf(
         cmd,
         capture_output=True,
         text=True,
-        env=original_env,
+        env=get_testing_environ(),
     )
 
     if result.returncode != 0:
@@ -149,7 +144,9 @@ def _generate_tdf_files_for_target_mode(
                 tdf_path,
                 target_mode,
                 temp_credentials_file,
-                # attributes=[CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1] if config["key"] == "with_attributes" else None,  # Temporarily disabled due to external KAS dependency
+                attributes=[CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1]
+                if config["key"] == "with_attributes"
+                else None,
                 mime_type=config["mime_type"],
             )
             tdf_files[config["key"]] = tdf_path

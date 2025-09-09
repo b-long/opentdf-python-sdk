@@ -3,7 +3,6 @@ Test CLI encryption functionality and TDF validation
 """
 
 import json
-import os
 import subprocess
 import tempfile
 import zipfile
@@ -17,14 +16,15 @@ from tests.support_cli_args import (
     build_cli_encrypt_command,
     get_cli_flags,
 )
-from tests.support_common import get_platform_url, handle_subprocess_error
+from tests.support_common import (
+    get_platform_url,
+    get_testing_environ,
+    handle_subprocess_error,
+)
 from tests.support_otdfctl_args import (
     build_otdfctl_decrypt_command,
     build_otdfctl_encrypt_command,
 )
-
-original_env = os.environ.copy()
-original_env["GRPC_ENFORCE_ALPN_ENABLED"] = "false"
 
 # Determine CLI flags based on platform URL
 cli_flags = get_cli_flags()
@@ -267,7 +267,7 @@ def _run_otdfctl_decrypt(
         capture_output=True,
         text=True,
         cwd=temp_path,
-        env=original_env,
+        env=get_testing_environ(),
     )
 
     handle_subprocess_error(
@@ -314,7 +314,7 @@ def _run_python_cli_decrypt(
         capture_output=True,
         text=True,
         cwd=Path(__file__).parent.parent,
-        env=original_env,
+        env=get_testing_environ(),
     )
 
     handle_subprocess_error(
@@ -367,7 +367,7 @@ def test_otdfctl_encrypt_with_validation(collect_server_logs, temp_credentials_f
             capture_output=True,
             text=True,
             cwd=temp_path,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
         # Handle any encryption errors
@@ -421,7 +421,7 @@ def test_python_encrypt(collect_server_logs, temp_credentials_file):
             capture_output=True,
             text=True,
             cwd=Path(__file__).parent.parent,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
         # Handle any encryption errors
@@ -478,7 +478,7 @@ def test_cross_tool_compatibility(collect_server_logs, temp_credentials_file):
             capture_output=True,
             text=True,
             cwd=temp_path,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
         handle_subprocess_error(
@@ -513,7 +513,7 @@ def test_cross_tool_compatibility(collect_server_logs, temp_credentials_file):
             capture_output=True,
             text=True,
             cwd=Path(__file__).parent.parent,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
         handle_subprocess_error(
@@ -576,7 +576,7 @@ def test_different_content_types(collect_server_logs, temp_credentials_file):
                 capture_output=True,
                 text=True,
                 cwd=Path(__file__).parent.parent,
-                env=original_env,
+                env=get_testing_environ(),
             )
 
             handle_subprocess_error(
@@ -640,7 +640,7 @@ def test_different_content_types_empty(collect_server_logs, temp_credentials_fil
                 capture_output=True,
                 text=True,
                 cwd=Path(__file__).parent.parent,
-                env=original_env,
+                env=get_testing_environ(),
             )
 
             handle_subprocess_error(
