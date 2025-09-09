@@ -1,6 +1,12 @@
+import json
+import logging
+import subprocess
+import sys
 from pathlib import Path
 
 from tests.config_pydantic import CONFIG_TDF
+
+logger = logging.getLogger(__name__)
 
 
 def get_platform_url() -> str:
@@ -68,8 +74,8 @@ def get_otdfctl_base_command(platform_url: str, creds_file: Path) -> list:
 def build_otdfctl_encrypt_command(
     platform_url: str,
     creds_file: Path,
-    input_file,
-    output_file,
+    input_file: Path,
+    output_file: Path,
     mime_type: str = "text/plain",
     attributes: list | None = None,
 ) -> list:
@@ -109,3 +115,46 @@ def build_otdfctl_decrypt_command(
     )
 
     return cmd
+
+
+def run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict | None:
+    """
+    Helper function to run Python CLI inspect command and return parsed JSON result.
+
+    This demonstrates how the CLI inspect functionality could be tested
+    with the new fixtures.
+    """
+    # Determine platform flags
+    platform_url = CONFIG_TDF.OPENTDF_PLATFORM_URL
+    cli_flags = get_cli_flags()
+
+    # Build CLI command
+    cmd = [
+        sys.executable,
+        "-m",
+        "otdf_python.cli",
+        "--platform-url",
+        platform_url,
+        "--with-client-creds-file",
+        str(creds_file),
+        *cli_flags,
+        "inspect",
+        str(tdf_path),
+    ]
+
+    try:
+        # Run the CLI command
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            check=True,
+            cwd=Path(__file__).parent.parent,  # Project root
+        )
+
+        # Parse JSON output
+        return json.loads(result.stdout)
+
+    except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
+        logger.error(f"CLI inspect failed for {tdf_path}: {e}")
+        raise Exception(f"Failed to inspect TDF {tdf_path}: {e}") from e

@@ -2,18 +2,11 @@
 Tests using target mode fixtures, for CLI integration testing.
 """
 
-import json
 import logging
-import subprocess
-import sys
-from pathlib import Path
 
 import pytest
 
-from tests.config_pydantic import CONFIG_TDF
-from tests.support_cli_args import (
-    get_cli_flags,
-)
+from tests.support_cli_args import run_cli_inspect
 
 logger = logging.getLogger(__name__)
 
@@ -33,10 +26,10 @@ def test_cli_inspect_v4_2_2_vs_v4_3_1(all_target_mode_tdf_files, temp_credential
         v4_3_1_tdf = v4_3_1_files[file_type]
 
         # Inspect v4.2.2 TDF
-        v4_2_2_result = _run_cli_inspect(v4_2_2_tdf, temp_credentials_file)
+        v4_2_2_result = run_cli_inspect(v4_2_2_tdf, temp_credentials_file)
 
         # Inspect v4.3.1 TDF
-        v4_3_1_result = _run_cli_inspect(v4_3_1_tdf, temp_credentials_file)
+        v4_3_1_result = run_cli_inspect(v4_3_1_tdf, temp_credentials_file)
 
         # Both should succeed
         assert v4_2_2_result is not None, f"Failed to inspect v4.2.2 {file_type} TDF"
@@ -109,7 +102,7 @@ def test_cli_inspect_different_file_types(
             tdf_path = tdf_files[file_type]
 
             # Inspect the TDF
-            result = _run_cli_inspect(tdf_path, temp_credentials_file)
+            result = run_cli_inspect(tdf_path, temp_credentials_file)
 
             assert result is not None, (
                 f"Failed to inspect {file_type} TDF, TDF version {version}"
@@ -126,46 +119,3 @@ def test_cli_inspect_different_file_types(
                     "keyAccess" in result["manifest"]
                     or "encryptionInformation" in result["manifest"]
                 )
-
-
-def _run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict | None:
-    """
-    Helper function to run Python CLI inspect command and return parsed JSON result.
-
-    This demonstrates how the CLI inspect functionality could be tested
-    with the new fixtures.
-    """
-    # Determine platform flags
-    platform_url = CONFIG_TDF.OPENTDF_PLATFORM_URL
-    cli_flags = get_cli_flags()
-
-    # Build CLI command
-    cmd = [
-        sys.executable,
-        "-m",
-        "otdf_python.cli",
-        "--platform-url",
-        platform_url,
-        "--with-client-creds-file",
-        str(creds_file),
-        *cli_flags,
-        "inspect",
-        str(tdf_path),
-    ]
-
-    try:
-        # Run the CLI command
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            check=True,
-            cwd=Path(__file__).parent.parent.parent,  # Project root
-        )
-
-        # Parse JSON output
-        return json.loads(result.stdout)
-
-    except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
-        logger.error(f"CLI inspect failed for {tdf_path}: {e}")
-        raise Exception(f"Failed to inspect TDF {tdf_path}: {e}") from e
