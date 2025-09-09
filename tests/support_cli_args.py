@@ -117,7 +117,7 @@ def build_otdfctl_decrypt_command(
     return cmd
 
 
-def run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict | None:
+def run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict:
     """
     Helper function to run Python CLI inspect command and return parsed JSON result.
 
