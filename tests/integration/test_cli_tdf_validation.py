@@ -17,7 +17,6 @@ from tests.support_cli_args import (
     get_cli_flags,
 )
 from tests.support_common import (
-    get_platform_url,
     get_testing_environ,
     handle_subprocess_error,
 )
@@ -28,7 +27,6 @@ from tests.support_otdfctl_args import (
 
 # Determine CLI flags based on platform URL
 cli_flags = get_cli_flags()
-platform_url = get_platform_url()
 
 
 def _create_test_input_file(temp_path: Path, content: str) -> Path:
@@ -249,7 +247,6 @@ def _validate_tdf_zip_structure(tdf_path: Path) -> None:
 
 def _run_otdfctl_decrypt(
     tdf_path: Path,
-    platform_url: str,
     creds_file: Path,
     temp_path: Path,
     collect_server_logs,
@@ -259,7 +256,7 @@ def _run_otdfctl_decrypt(
     decrypt_output = temp_path / f"{tdf_path.stem}_decrypted.txt"
 
     otdfctl_decrypt_cmd = build_otdfctl_decrypt_command(
-        platform_url, creds_file, tdf_path, decrypt_output
+        creds_file=creds_file, tdf_file=tdf_path, output_file=decrypt_output
     )
 
     otdfctl_decrypt_result = subprocess.run(
@@ -293,7 +290,6 @@ def _run_otdfctl_decrypt(
 
 def _run_python_cli_decrypt(
     tdf_path: Path,
-    platform_url: str,
     creds_file: Path,
     temp_path: Path,
     collect_server_logs,
@@ -303,7 +299,6 @@ def _run_python_cli_decrypt(
     decrypt_output = temp_path / f"{tdf_path.stem}_python_decrypted.txt"
 
     python_decrypt_cmd = build_cli_decrypt_command(
-        platform_url=platform_url,
         creds_file=creds_file,
         input_file=tdf_path,
         output_file=decrypt_output,
@@ -355,11 +350,10 @@ def test_otdfctl_encrypt_with_validation(collect_server_logs, temp_credentials_f
 
         # Run otdfctl encrypt to create a TDF file
         otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
-            platform_url,
-            temp_credentials_file,
-            input_file,
-            otdfctl_tdf_output,
-            "text/plain",
+            creds_file=temp_credentials_file,
+            input_file=input_file,
+            output_file=otdfctl_tdf_output,
+            mime_type="text/plain",
         )
 
         otdfctl_encrypt_result = subprocess.run(
@@ -382,7 +376,6 @@ def test_otdfctl_encrypt_with_validation(collect_server_logs, temp_credentials_f
         # Test that the TDF can be decrypted successfully
         _run_otdfctl_decrypt(
             otdfctl_tdf_output,
-            platform_url,
             temp_credentials_file,
             temp_path,
             collect_server_logs,
@@ -409,7 +402,6 @@ def test_python_encrypt(collect_server_logs, temp_credentials_file):
         python_tdf_output = temp_path / "python_cli_test.txt.tdf"
 
         python_encrypt_cmd = build_cli_encrypt_command(
-            platform_url=platform_url,
             creds_file=temp_credentials_file,
             input_file=input_file,
             output_file=python_tdf_output,
@@ -436,7 +428,6 @@ def test_python_encrypt(collect_server_logs, temp_credentials_file):
         # Test that the TDF can be decrypted by otdfctl
         _run_otdfctl_decrypt(
             python_tdf_output,
-            platform_url,
             temp_credentials_file,
             temp_path,
             collect_server_logs,
@@ -466,11 +457,10 @@ def test_cross_tool_compatibility(collect_server_logs, temp_credentials_file):
 
         # Encrypt with otdfctl
         otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
-            platform_url,
-            temp_credentials_file,
-            input_file,
-            otdfctl_tdf_output,
-            "text/plain",
+            creds_file=temp_credentials_file,
+            input_file=input_file,
+            output_file=otdfctl_tdf_output,
+            mime_type="text/plain",
         )
 
         otdfctl_encrypt_result = subprocess.run(
@@ -490,7 +480,6 @@ def test_cross_tool_compatibility(collect_server_logs, temp_credentials_file):
         # Decrypt with Python CLI
         _run_python_cli_decrypt(
             otdfctl_tdf_output,
-            platform_url,
             temp_credentials_file,
             temp_path,
             collect_server_logs,
@@ -502,7 +491,6 @@ def test_cross_tool_compatibility(collect_server_logs, temp_credentials_file):
 
         # Encrypt with Python CLI
         python_encrypt_cmd = build_cli_encrypt_command(
-            platform_url=platform_url,
             creds_file=temp_credentials_file,
             input_file=input_file,
             output_file=python_tdf_output,
@@ -525,7 +513,6 @@ def test_cross_tool_compatibility(collect_server_logs, temp_credentials_file):
         # Decrypt with otdfctl
         _run_otdfctl_decrypt(
             python_tdf_output,
-            platform_url,
             temp_credentials_file,
             temp_path,
             collect_server_logs,
@@ -565,7 +552,6 @@ def test_different_content_types(collect_server_logs, temp_credentials_file):
             python_tdf_output = temp_path / f"python_{filename}.tdf"
 
             python_encrypt_cmd = build_cli_encrypt_command(
-                platform_url=platform_url,
                 creds_file=temp_credentials_file,
                 input_file=input_file,
                 output_file=python_tdf_output,
@@ -591,7 +577,6 @@ def test_different_content_types(collect_server_logs, temp_credentials_file):
             # Decrypt and validate content
             _run_otdfctl_decrypt(
                 python_tdf_output,
-                platform_url,
                 temp_credentials_file,
                 temp_path,
                 collect_server_logs,
@@ -629,7 +614,6 @@ def test_different_content_types_empty(collect_server_logs, temp_credentials_fil
             python_tdf_output = temp_path / f"python_{filename}.tdf"
 
             python_encrypt_cmd = build_cli_encrypt_command(
-                platform_url=platform_url,
                 creds_file=temp_credentials_file,
                 input_file=input_file,
                 output_file=python_tdf_output,
@@ -655,7 +639,6 @@ def test_different_content_types_empty(collect_server_logs, temp_credentials_fil
             # Decrypt and validate content
             _run_otdfctl_decrypt(
                 python_tdf_output,
-                platform_url,
                 temp_credentials_file,
                 temp_path,
                 collect_server_logs,

@@ -10,7 +10,6 @@ import pytest
 
 from tests.support_cli_args import build_cli_decrypt_command, build_cli_encrypt_command
 from tests.support_common import (
-    get_platform_url,
     get_testing_environ,
     handle_subprocess_error,
 )
@@ -18,8 +17,6 @@ from tests.support_otdfctl_args import (
     build_otdfctl_decrypt_command,
     build_otdfctl_encrypt_command,
 )
-
-platform_url = get_platform_url()
 
 
 @pytest.mark.integration
@@ -46,11 +43,10 @@ def test_cli_decrypt_otdfctl_tdf(collect_server_logs, temp_credentials_file):
 
         # Run otdfctl encrypt
         otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
-            platform_url,
-            temp_credentials_file,
-            input_file,
-            otdfctl_tdf_output,
-            "text/plain",
+            creds_file=temp_credentials_file,
+            input_file=input_file,
+            output_file=otdfctl_tdf_output,
+            mime_type="text/plain",
         )
 
         otdfctl_result = subprocess.run(
@@ -73,7 +69,6 @@ def test_cli_decrypt_otdfctl_tdf(collect_server_logs, temp_credentials_file):
         assert otdfctl_tdf_output.stat().st_size > 0, "otdfctl created empty TDF file"
 
         cli_decrypt_cmd = build_cli_decrypt_command(
-            platform_url=platform_url,
             creds_file=temp_credentials_file,
             input_file=otdfctl_tdf_output,
             output_file=cli_decrypt_output,
@@ -136,11 +131,10 @@ def test_otdfctl_decrypt_comparison(collect_server_logs, temp_credentials_file):
 
         # Run otdfctl encrypt first to create a TDF file
         otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
-            platform_url,
-            temp_credentials_file,
-            input_file,
-            otdfctl_tdf_output,
-            "text/plain",
+            creds_file=temp_credentials_file,
+            input_file=input_file,
+            output_file=otdfctl_tdf_output,
+            mime_type="text/plain",
         )
 
         otdfctl_encrypt_result = subprocess.run(
@@ -164,7 +158,6 @@ def test_otdfctl_decrypt_comparison(collect_server_logs, temp_credentials_file):
 
         # Now run otdfctl decrypt (this is the reference implementation)
         otdfctl_decrypt_cmd = build_otdfctl_decrypt_command(
-            platform_url,
             temp_credentials_file,
             otdfctl_tdf_output,
             otdfctl_decrypt_output,
@@ -186,7 +179,6 @@ def test_otdfctl_decrypt_comparison(collect_server_logs, temp_credentials_file):
         )
 
         cli_decrypt_cmd = build_cli_decrypt_command(
-            platform_url=platform_url,
             creds_file=temp_credentials_file,
             input_file=otdfctl_tdf_output,
             output_file=cli_decrypt_output,
@@ -269,11 +261,10 @@ def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs, temp_credentials
 
         # Run otdfctl encrypt
         otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
-            platform_url,
-            temp_credentials_file,
-            input_file,
-            otdfctl_tdf_output,
-            "text/plain",
+            creds_file=temp_credentials_file,
+            input_file=input_file,
+            output_file=otdfctl_tdf_output,
+            mime_type="text/plain",
         )
 
         otdfctl_encrypt_result = subprocess.run(
@@ -302,7 +293,6 @@ def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs, temp_credentials
 
         # Run otdfctl decrypt
         otdfctl_decrypt_cmd = build_otdfctl_decrypt_command(
-            platform_url,
             temp_credentials_file,
             otdfctl_tdf_output,
             otdfctl_decrypt_output,
@@ -373,11 +363,10 @@ def test_cli_encrypt_integration(collect_server_logs, temp_credentials_file):
 
         # Run otdfctl encrypt
         otdfctl_cmd = build_otdfctl_encrypt_command(
-            platform_url,
-            temp_credentials_file,
-            input_file,
-            otdfctl_output,
-            "text/plain",
+            creds_file=temp_credentials_file,
+            input_file=input_file,
+            output_file=otdfctl_output,
+            mime_type="text/plain",
         )
 
         otdfctl_result = subprocess.run(
@@ -392,7 +381,6 @@ def test_cli_encrypt_integration(collect_server_logs, temp_credentials_file):
         )
 
         cli_cmd = build_cli_encrypt_command(
-            platform_url=platform_url,
             creds_file=temp_credentials_file,
             input_file=input_file,
             output_file=cli_output,

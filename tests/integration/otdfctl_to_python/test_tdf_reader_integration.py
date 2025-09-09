@@ -14,10 +14,7 @@ from otdf_python.tdf_reader import (
     TDFReader,
 )
 from tests.config_pydantic import CONFIG_TDF
-from tests.support_common import get_platform_url
 from tests.support_otdfctl_args import build_otdfctl_encrypt_command
-
-platform_url = get_platform_url()
 
 
 class TestTDFReaderIntegration:
@@ -42,7 +39,6 @@ class TestTDFReaderIntegration:
 
             # Run otdfctl encrypt
             otdfctl_cmd = build_otdfctl_encrypt_command(
-                platform_url,
                 temp_credentials_file,
                 input_file,
                 otdfctl_output,
@@ -126,12 +122,11 @@ class TestTDFReaderIntegration:
 
             # Run otdfctl encrypt with attributes
             otdfctl_cmd = build_otdfctl_encrypt_command(
-                platform_url,
-                temp_credentials_file,
-                input_file,
-                otdfctl_output,
-                "text/plain",
-                [CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1],
+                creds_file=temp_credentials_file,
+                input_file=input_file,
+                output_file=otdfctl_output,
+                mime_type="text/plain",
+                attributes=[CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1],
             )
 
             otdfctl_result = subprocess.run(
@@ -226,7 +221,6 @@ class TestTDFReaderIntegration:
 
                     # Run otdfctl encrypt
                     otdfctl_cmd = build_otdfctl_encrypt_command(
-                        platform_url,
                         temp_credentials_file,
                         input_file,
                         output_file,

@@ -38,7 +38,6 @@ def run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict:
     This demonstrates how the CLI inspect functionality could be tested
     with the new fixtures.
     """
-    platform_url = get_platform_url()
 
     # Build CLI command
     cmd = [
@@ -46,7 +45,7 @@ def run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict:
         "-m",
         "otdf_python",
         "--platform-url",
-        platform_url,
+        get_platform_url(),
         "--with-client-creds-file",
         str(creds_file),
         *get_cli_flags(),
@@ -73,10 +72,10 @@ def run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict:
 
 
 def build_cli_decrypt_command(
-    platform_url: str,
     creds_file: Path,
     input_file: Path,
     output_file: Path,
+    platform_url: str | None = None,
 ) -> list[str]:
     """Build CLI decrypt command."""
     cmd = [
@@ -84,7 +83,7 @@ def build_cli_decrypt_command(
         "-m",
         "otdf_python",
         "--platform-url",
-        platform_url,
+        platform_url if platform_url is not None else get_platform_url(),
         "--with-client-creds-file",
         str(creds_file),
         *get_cli_flags(),
@@ -100,10 +99,10 @@ def build_cli_decrypt_command(
 
 
 def build_cli_encrypt_command(
-    platform_url: str,
     creds_file: Path,
     input_file: Path,
     output_file: Path,
+    platform_url: str | None = None,
     mime_type: str = "text/plain",
     attributes: list[str] | None = None,
     container_type: str = "tdf",
@@ -113,7 +112,7 @@ def build_cli_encrypt_command(
         "-m",
         "otdf_python",
         "--platform-url",
-        platform_url,
+        platform_url if platform_url is not None else get_platform_url(),
         "--with-client-creds-file",
         str(creds_file),
         *get_cli_flags(),

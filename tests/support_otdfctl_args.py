@@ -29,12 +29,14 @@ def get_otdfctl_flags() -> list[str]:
     return otdfctl_flags
 
 
-def get_otdfctl_base_command(platform_url: str, creds_file: Path) -> list[str]:
+def get_otdfctl_base_command(
+    creds_file: Path, platform_url: str | None = None
+) -> list[str]:
     """Get base otdfctl command with common flags."""
     base_cmd = [
         "otdfctl",
         "--host",
-        platform_url,
+        platform_url if platform_url is not None else get_platform_url(),
         "--with-client-creds-file",
         str(creds_file),
     ]
@@ -46,10 +48,10 @@ def get_otdfctl_base_command(platform_url: str, creds_file: Path) -> list[str]:
 
 
 def build_otdfctl_encrypt_command(
-    platform_url: str,
     creds_file: Path,
     input_file: Path,
     output_file: Path,
+    platform_url: str | None = None,
     mime_type: str = "text/plain",
     attributes: list[str] | None = None,
     tdf_type: str | None = None,
@@ -68,7 +70,7 @@ def build_otdfctl_encrypt_command(
         target_mode: Target TDF spec version (e.g., "v4.2.2", "v4.3.1")
     """
 
-    cmd = get_otdfctl_base_command(platform_url, creds_file)
+    cmd = get_otdfctl_base_command(creds_file, platform_url)
     cmd.append("encrypt")
     cmd.extend(["--mime-type", mime_type])
 
@@ -99,10 +101,10 @@ def build_otdfctl_encrypt_command(
 
 
 def build_otdfctl_decrypt_command(
-    platform_url: str, creds_file: Path, tdf_file: Path, output_file: Path
+    creds_file: Path, tdf_file: Path, output_file: Path, platform_url: str | None = None
 ) -> list[str]:
     """Build otdfctl decrypt command."""
-    cmd = get_otdfctl_base_command(platform_url, creds_file)
+    cmd = get_otdfctl_base_command(creds_file, platform_url)
     cmd.extend(
         [
             "decrypt",

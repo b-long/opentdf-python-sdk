@@ -9,7 +9,6 @@ from pathlib import Path
 
 import pytest
 
-from tests.config_pydantic import CONFIG_TDF
 from tests.support_cli_args import (
     build_cli_decrypt_command,
 )
@@ -143,9 +142,6 @@ def _run_cli_decrypt(tdf_path: Path, creds_file: Path) -> Path | None:
 
     Returns the Path to the decrypted output file if successful, None if failed.
     """
-    # Determine platform flags
-    platform_url = CONFIG_TDF.OPENTDF_PLATFORM_URL
-
     # Create a temporary output file
     with tempfile.NamedTemporaryFile(delete=False, suffix=".decrypted") as temp_file:
         output_path = Path(temp_file.name)
@@ -153,7 +149,6 @@ def _run_cli_decrypt(tdf_path: Path, creds_file: Path) -> Path | None:
     try:
         # Build CLI command
         cmd = build_cli_decrypt_command(
-            platform_url=platform_url,
             creds_file=creds_file,
             input_file=tdf_path,
             output_file=output_path,
