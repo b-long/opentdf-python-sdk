@@ -4,15 +4,13 @@ Tests using target mode fixtures, for CLI integration testing.
 
 import logging
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 
 import pytest
 
-from tests.config_pydantic import CONFIG_TDF
 from tests.support_cli_args import (
-    get_cli_flags,
+    build_cli_decrypt_command,
 )
 
 logger = logging.getLogger(__name__)
@@ -144,30 +142,17 @@ def _run_cli_decrypt(tdf_path: Path, creds_file: Path) -> Path | None:
 
     Returns the Path to the decrypted output file if successful, None if failed.
     """
-    # Determine platform flags
-    platform_url = CONFIG_TDF.OPENTDF_PLATFORM_URL
-    cli_flags = get_cli_flags()
-
     # Create a temporary output file
     with tempfile.NamedTemporaryFile(delete=False, suffix=".decrypted") as temp_file:
         output_path = Path(temp_file.name)
 
     try:
         # Build CLI command
-        cmd = [
-            sys.executable,
-            "-m",
-            "otdf_python.cli",
-            "--platform-url",
-            platform_url,
-            "--with-client-creds-file",
-            str(creds_file),
-            *cli_flags,
-            "decrypt",
-            str(tdf_path),
-            "-o",
-            str(output_path),
-        ]
+        cmd = build_cli_decrypt_command(
+            creds_file=creds_file,
+            input_file=tdf_path,
+            output_file=output_path,
+        )
 
         # Run the CLI command
         result = subprocess.run(

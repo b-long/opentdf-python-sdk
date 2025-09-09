@@ -1,14 +1,10 @@
 #!/bin/bash
 
-
 # Derive additional environment variables
 TOKEN_URL="${OIDC_OP_TOKEN_ENDPOINT}"
 OTDF_HOST_AND_PORT="${OPENTDF_PLATFORM_HOST}"
 OTDF_CLIENT="${OPENTDF_CLIENT_ID}"
 OTDF_CLIENT_SECRET="${OPENTDF_CLIENT_SECRET}"
-
-# Enable debug mode
-DEBUG=1
 
 echo "🔧 Environment Configuration:"
 echo "   TOKEN_URL: ${TOKEN_URL}"
@@ -28,6 +24,8 @@ get_token() {
 
 echo "🔐 Getting access token..."
 BEARER=$( get_token | jq -r '.access_token' )
+# NOTE: It's always okay to print this token, because it will
+# only be valid / available in dummy / dev scenarios
 [[ "${DEBUG:-}" == "1" ]] && echo "Got Access Token: ${BEARER}"
 echo ""
 

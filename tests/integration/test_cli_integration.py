@@ -2,24 +2,25 @@
 Integration Test CLI functionality
 """
 
-import os
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 
 import pytest
 
-from tests.support_cli_args import get_platform_url
-
-original_env = os.environ.copy()
-original_env["GRPC_ENFORCE_ALPN_ENABLED"] = "false"
-
-platform_url = get_platform_url()
+from tests.support_cli_args import build_cli_decrypt_command, build_cli_encrypt_command
+from tests.support_common import (
+    get_testing_environ,
+    handle_subprocess_error,
+)
+from tests.support_otdfctl_args import (
+    build_otdfctl_decrypt_command,
+    build_otdfctl_encrypt_command,
+)
 
 
 @pytest.mark.integration
-def test_cli_decrypt_otdfctl_tdf(temp_credentials_file):
+def test_cli_decrypt_otdfctl_tdf(collect_server_logs, temp_credentials_file):
     """
     Test that the Python CLI can successfully decrypt TDF files created by otdfctl.
     """
@@ -41,64 +42,52 @@ def test_cli_decrypt_otdfctl_tdf(temp_credentials_file):
         cli_decrypt_output = temp_path / "decrypted-by-cli.txt"
 
         # Run otdfctl encrypt
-        otdfctl_encrypt_cmd = [
-            "otdfctl",
-            "encrypt",
-            "--host",
-            platform_url,
-            "--with-client-creds-file",
-            str(temp_credentials_file),
-            "--tls-no-verify",
-            "--mime-type",
-            "text/plain",
-            str(input_file),
-            "-o",
-            str(otdfctl_tdf_output),
-        ]
+        otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
+            creds_file=temp_credentials_file,
+            input_file=input_file,
+            output_file=otdfctl_tdf_output,
+            mime_type="text/plain",
+        )
 
         otdfctl_result = subprocess.run(
             otdfctl_encrypt_cmd,
             capture_output=True,
             text=True,
             cwd=temp_path,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
-        # If otdfctl fails to encrypt, fail fast
-        if otdfctl_result.returncode != 0:
-            raise Exception(f"otdfctl encrypt failed: {otdfctl_result.stderr}")
+        # Fail fast on errors
+        handle_subprocess_error(
+            result=otdfctl_result,
+            collect_server_logs=collect_server_logs,
+            scenario_name="otdfctl encrypt",
+        )
 
         # Verify the TDF file was created
         assert otdfctl_tdf_output.exists(), "otdfctl did not create TDF file"
         assert otdfctl_tdf_output.stat().st_size > 0, "otdfctl created empty TDF file"
 
-        # Run our Python CLI decrypt on the otdfctl-created TDF
-        cli_decrypt_cmd = [
-            sys.executable,
-            "-m",
-            "otdf_python",
-            "--platform-url",
-            platform_url,
-            "--with-client-creds-file",
-            str(temp_credentials_file),
-            "--insecure",  # equivalent to --tls-no-verify
-            "decrypt",
-            str(otdfctl_tdf_output),
-            "-o",
-            str(cli_decrypt_output),
-        ]
+        cli_decrypt_cmd = build_cli_decrypt_command(
+            creds_file=temp_credentials_file,
+            input_file=otdfctl_tdf_output,
+            output_file=cli_decrypt_output,
+        )
 
+        # Run our Python CLI decrypt on the otdfctl-created TDF
         cli_decrypt_result = subprocess.run(
             cli_decrypt_cmd,
             capture_output=True,
             text=True,
             cwd=Path(__file__).parent.parent,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
-        # Check that our CLI succeeded
-        assert cli_decrypt_result.returncode == 0, (
-            f"Python CLI decrypt failed: {cli_decrypt_result.stderr}"
+        # Fail fast on errors
+        handle_subprocess_error(
+            result=cli_decrypt_result,
+            collect_server_logs=collect_server_logs,
+            scenario_name="Python CLI decrypt",
         )
 
         # Verify the decrypted file was created
@@ -141,93 +130,75 @@ def test_otdfctl_decrypt_comparison(collect_server_logs, temp_credentials_file):
         cli_decrypt_output = temp_path / "decrypted-by-cli.txt"
 
         # Run otdfctl encrypt first to create a TDF file
-        otdfctl_encrypt_cmd = [
-            "otdfctl",
-            "encrypt",
-            "--host",
-            platform_url,
-            "--with-client-creds-file",
-            str(temp_credentials_file),
-            "--tls-no-verify",
-            "--mime-type",
-            "text/plain",
-            str(input_file),
-            "-o",
-            str(otdfctl_tdf_output),
-        ]
+        otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
+            creds_file=temp_credentials_file,
+            input_file=input_file,
+            output_file=otdfctl_tdf_output,
+            mime_type="text/plain",
+        )
 
         otdfctl_encrypt_result = subprocess.run(
             otdfctl_encrypt_cmd,
             capture_output=True,
             text=True,
             cwd=temp_path,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
-        # If otdfctl fails to encrypt, fail fast
-        if otdfctl_encrypt_result.returncode != 0:
-            raise Exception(f"otdfctl encrypt failed: {otdfctl_encrypt_result.stderr}")
+        # Fail fast on errors
+        handle_subprocess_error(
+            result=otdfctl_encrypt_result,
+            collect_server_logs=collect_server_logs,
+            scenario_name="otdfctl encrypt",
+        )
 
         # Verify the TDF file was created
         assert otdfctl_tdf_output.exists(), "otdfctl did not create TDF file"
         assert otdfctl_tdf_output.stat().st_size > 0, "otdfctl created empty TDF file"
 
         # Now run otdfctl decrypt (this is the reference implementation)
-        otdfctl_decrypt_cmd = [
-            "otdfctl",
-            "decrypt",
-            "--host",
-            platform_url,
-            "--with-client-creds-file",
-            str(temp_credentials_file),
-            "--tls-no-verify",
-            str(otdfctl_tdf_output),
-            "-o",
-            str(otdfctl_decrypt_output),
-        ]
+        otdfctl_decrypt_cmd = build_otdfctl_decrypt_command(
+            temp_credentials_file,
+            otdfctl_tdf_output,
+            otdfctl_decrypt_output,
+        )
 
         otdfctl_decrypt_result = subprocess.run(
             otdfctl_decrypt_cmd,
             capture_output=True,
             text=True,
             cwd=temp_path,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
-        # Check that otdfctl decrypt succeeded
-        assert otdfctl_decrypt_result.returncode == 0, (
-            f"otdfctl decrypt failed: {otdfctl_decrypt_result.stderr}"
+        # Fail fast on errors
+        handle_subprocess_error(
+            result=otdfctl_decrypt_result,
+            collect_server_logs=collect_server_logs,
+            scenario_name="otdfctl decrypt",
+        )
+
+        cli_decrypt_cmd = build_cli_decrypt_command(
+            creds_file=temp_credentials_file,
+            input_file=otdfctl_tdf_output,
+            output_file=cli_decrypt_output,
         )
 
         # Run our Python CLI decrypt on the same TDF
-        cli_decrypt_cmd = [
-            sys.executable,
-            "-m",
-            "otdf_python",
-            "--platform-url",
-            platform_url,
-            "--with-client-creds-file",
-            str(temp_credentials_file),
-            "--insecure",  # equivalent to --tls-no-verify
-            "decrypt",
-            str(otdfctl_tdf_output),
-            "-o",
-            str(cli_decrypt_output),
-        ]
-
         cli_decrypt_result = subprocess.run(
             cli_decrypt_cmd,
             capture_output=True,
             text=True,
             cwd=Path(__file__).parent.parent,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
-        # Check that our CLI succeeded
-        if cli_decrypt_result.returncode != 0:
-            logs = collect_server_logs()
-            print(f"Server logs when Python CLI decrypt failed:\n{logs}")
-            raise Exception(f"Python CLI decrypt failed: {cli_decrypt_result.stderr}")
+        # Fail fast on errors
+        handle_subprocess_error(
+            result=cli_decrypt_result,
+            collect_server_logs=collect_server_logs,
+            scenario_name="Python CLI decrypt",
+        )
 
         # Verify both decrypted files were created
         assert otdfctl_decrypt_output.exists(), "otdfctl did not create decrypted file"
@@ -289,32 +260,27 @@ def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs, temp_credentials
         otdfctl_decrypt_output = temp_path / "otdfctl-roundtrip-decrypted.txt"
 
         # Run otdfctl encrypt
-        otdfctl_encrypt_cmd = [
-            "otdfctl",
-            "encrypt",
-            "--host",
-            platform_url,
-            "--with-client-creds-file",
-            str(temp_credentials_file),
-            "--tls-no-verify",
-            "--mime-type",
-            "text/plain",
-            str(input_file),
-            "-o",
-            str(otdfctl_tdf_output),
-        ]
+        otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
+            creds_file=temp_credentials_file,
+            input_file=input_file,
+            output_file=otdfctl_tdf_output,
+            mime_type="text/plain",
+        )
 
         otdfctl_encrypt_result = subprocess.run(
             otdfctl_encrypt_cmd,
             capture_output=True,
             text=True,
             cwd=temp_path,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
-        # If otdfctl fails to encrypt, fail fast
-        if otdfctl_encrypt_result.returncode != 0:
-            raise Exception(f"otdfctl encrypt failed: {otdfctl_encrypt_result.stderr}")
+        # Fail fast on errors
+        handle_subprocess_error(
+            result=otdfctl_encrypt_result,
+            collect_server_logs=collect_server_logs,
+            scenario_name="otdfctl encrypt",
+        )
 
         # Verify the TDF file was created
         assert otdfctl_tdf_output.exists(), "otdfctl did not create TDF file"
@@ -326,32 +292,26 @@ def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs, temp_credentials
         assert tdf_header == b"PK\x03\x04", "otdfctl output is not a valid ZIP file"
 
         # Run otdfctl decrypt
-        otdfctl_decrypt_cmd = [
-            "otdfctl",
-            "decrypt",
-            "--host",
-            platform_url,
-            "--with-client-creds-file",
-            str(temp_credentials_file),
-            "--tls-no-verify",
-            str(otdfctl_tdf_output),
-            "-o",
-            str(otdfctl_decrypt_output),
-        ]
+        otdfctl_decrypt_cmd = build_otdfctl_decrypt_command(
+            temp_credentials_file,
+            otdfctl_tdf_output,
+            otdfctl_decrypt_output,
+        )
 
         otdfctl_decrypt_result = subprocess.run(
             otdfctl_decrypt_cmd,
             capture_output=True,
             text=True,
             cwd=temp_path,
-            env=original_env,
+            env=get_testing_environ(),
         )
 
-        # If otdfctl fails to decrypt, fail fast
-        if otdfctl_decrypt_result.returncode != 0:
-            logs = collect_server_logs()
-            print(f"Server logs when otdfctl decrypt failed:\n{logs}")
-            raise Exception(f"otdfctl decrypt failed: {otdfctl_decrypt_result.stderr}")
+        # Fail fast on errors
+        handle_subprocess_error(
+            result=otdfctl_decrypt_result,
+            collect_server_logs=collect_server_logs,
+            scenario_name="otdfctl decrypt",
+        )
 
         # Verify the decrypted file was created
         assert otdfctl_decrypt_output.exists(), "otdfctl did not create decrypted file"
@@ -402,58 +362,43 @@ def test_cli_encrypt_integration(collect_server_logs, temp_credentials_file):
         cli_output = temp_path / "hello-world-cli.txt.tdf"
 
         # Run otdfctl encrypt
-        otdfctl_cmd = [
-            "otdfctl",
-            "encrypt",
-            "--host",
-            platform_url,
-            "--with-client-creds-file",
-            str(temp_credentials_file),
-            "--tls-no-verify",
-            "--mime-type",
-            "text/plain",
-            str(input_file),
-            "-o",
-            str(otdfctl_output),
-        ]
+        otdfctl_cmd = build_otdfctl_encrypt_command(
+            creds_file=temp_credentials_file,
+            input_file=input_file,
+            output_file=otdfctl_output,
+            mime_type="text/plain",
+        )
 
         otdfctl_result = subprocess.run(
             otdfctl_cmd, capture_output=True, text=True, cwd=temp_path
         )
 
-        # If otdfctl fails, skip the test (might be server issues)
-        if otdfctl_result.returncode != 0:
-            raise Exception(f"otdfctl failed: {otdfctl_result.stderr}")
+        # Fail fast on errors
+        handle_subprocess_error(
+            result=otdfctl_result,
+            collect_server_logs=collect_server_logs,
+            scenario_name="otdfctl encrypt",
+        )
+
+        cli_cmd = build_cli_encrypt_command(
+            creds_file=temp_credentials_file,
+            input_file=input_file,
+            output_file=cli_output,
+            mime_type="text/plain",
+            attributes=None,
+        )
 
         # Run our Python CLI encrypt
-        cli_cmd = [
-            sys.executable,
-            "-m",
-            "otdf_python",
-            "--platform-url",
-            platform_url,
-            "--with-client-creds-file",
-            str(temp_credentials_file),
-            "--insecure",  # equivalent to --tls-no-verify
-            "encrypt",
-            "--mime-type",
-            "text/plain",
-            "--container-type",
-            "tdf",  # to match otdfctl behavior
-            str(input_file),
-            "-o",
-            str(cli_output),
-        ]
-
         cli_result = subprocess.run(
             cli_cmd, capture_output=True, text=True, cwd=Path(__file__).parent.parent
         )
 
-        # Check that our CLI succeeded
-        if cli_result.returncode != 0:
-            logs = collect_server_logs()
-            print(f"Server logs when Python CLI encrypt failed:\n{logs}")
-            raise Exception(f"Python CLI failed: {cli_result.stderr}")
+        # Fail fast on errors
+        handle_subprocess_error(
+            result=cli_result,
+            collect_server_logs=collect_server_logs,
+            scenario_name="Python CLI encrypt",
+        )
 
         # Both output files should exist
         assert otdfctl_output.exists(), "otdfctl output file does not exist"

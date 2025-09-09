@@ -14,9 +14,7 @@ from otdf_python.tdf_reader import (
     TDFReader,
 )
 from tests.config_pydantic import CONFIG_TDF
-from tests.support_cli_args import get_platform_url
-
-platform_url = get_platform_url()
+from tests.support_otdfctl_args import build_otdfctl_encrypt_command
 
 
 class TestTDFReaderIntegration:
@@ -40,26 +38,18 @@ class TestTDFReaderIntegration:
             otdfctl_output = temp_path / "test-reader.txt.tdf"
 
             # Run otdfctl encrypt
-            otdfctl_cmd = [
-                "otdfctl",
-                "encrypt",
-                "--host",
-                platform_url,
-                "--with-client-creds-file",
-                str(temp_credentials_file),
-                "--tls-no-verify",
-                "--mime-type",
-                "text/plain",
-                str(input_file),
-                "-o",
-                str(otdfctl_output),
-            ]
+            otdfctl_cmd = build_otdfctl_encrypt_command(
+                creds_file=temp_credentials_file,
+                input_file=input_file,
+                output_file=otdfctl_output,
+                mime_type="text/plain",
+            )
 
             otdfctl_encrypt_result = subprocess.run(
                 otdfctl_cmd, capture_output=True, text=True, cwd=temp_path
             )
 
-            # If otdfctl fails, skip the test (might be server issues)
+            # If otdfctl fails, fail fast
             if otdfctl_encrypt_result.returncode != 0:
                 raise Exception(
                     f"otdfctl encrypt failed: {otdfctl_encrypt_result.stderr}"
@@ -131,29 +121,19 @@ class TestTDFReaderIntegration:
             otdfctl_output = temp_path / "input.txt.tdf"
 
             # Run otdfctl encrypt with attributes
-            otdfctl_cmd = [
-                "otdfctl",
-                "encrypt",
-                "--host",
-                platform_url,
-                "--with-client-creds-file",
-                str(temp_credentials_file),
-                "--tls-no-verify",
-                "--mime-type",
-                "text/plain",
-                "--attr",
-                CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1,
-                str(input_file),
-                "-o",
-                str(otdfctl_output),
-            ]
+            otdfctl_cmd = build_otdfctl_encrypt_command(
+                creds_file=temp_credentials_file,
+                input_file=input_file,
+                output_file=otdfctl_output,
+                mime_type="text/plain",
+                attributes=[CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1],
+            )
 
             otdfctl_result = subprocess.run(
                 otdfctl_cmd, capture_output=True, text=True, cwd=temp_path
             )
 
-            # If otdfctl fails, skip the test
-            # assert otdfctl_result.returncode == 0, "otdfctl encrypt failed"
+            # If otdfctl fails, fail fast
             if otdfctl_result.returncode != 0:
                 raise Exception(
                     f"otdfctl encrypt with attributes failed: {otdfctl_result.stderr}"
@@ -240,20 +220,12 @@ class TestTDFReaderIntegration:
                     output_file = temp_path / f"{test_case['name']}.tdf"
 
                     # Run otdfctl encrypt
-                    otdfctl_cmd = [
-                        "otdfctl",
-                        "encrypt",
-                        "--host",
-                        platform_url,
-                        "--with-client-creds-file",
-                        str(temp_credentials_file),
-                        "--tls-no-verify",
-                        "--mime-type",
-                        test_case["mime_type"],
-                        str(input_file),
-                        "-o",
-                        str(output_file),
-                    ]
+                    otdfctl_cmd = build_otdfctl_encrypt_command(
+                        creds_file=temp_credentials_file,
+                        input_file=input_file,
+                        output_file=output_file,
+                        mime_type=test_case["mime_type"],
+                    )
 
                     otdfctl_result = subprocess.run(
                         otdfctl_cmd, capture_output=True, text=True, cwd=temp_path
