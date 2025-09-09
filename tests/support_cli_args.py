@@ -14,23 +14,6 @@ from tests.support_common import get_platform_url
 logger = logging.getLogger(__name__)
 
 
-def get_otdfctl_flags() -> list[str]:
-    """
-    Determine otdfctl flags based on platform URL
-    """
-    platform_url = get_platform_url()
-    otdfctl_flags = []
-    if platform_url.startswith("http://"):
-        # otdfctl doesn't have a --plaintext flag, just omit --tls-no-verify for HTTP
-        pass
-    else:
-        # For HTTPS, skip TLS verification if INSECURE_SKIP_VERIFY is True
-        if CONFIG_TDF.INSECURE_SKIP_VERIFY:
-            otdfctl_flags = ["--tls-no-verify"]
-
-    return otdfctl_flags
-
-
 def get_cli_flags() -> list[str]:
     """
     Determine Python (cli) flags based on platform URL
@@ -47,67 +30,6 @@ def get_cli_flags() -> list[str]:
             cli_flags = ["--insecure"]  # equivalent to --tls-no-verify
 
     return cli_flags
-
-
-def get_otdfctl_base_command(platform_url: str, creds_file: Path) -> list[str]:
-    """Get base otdfctl command with common flags."""
-    base_cmd = [
-        "otdfctl",
-        "--host",
-        platform_url,
-        "--with-client-creds-file",
-        str(creds_file),
-    ]
-
-    # Add platform-specific flags
-    base_cmd.extend(get_otdfctl_flags())
-
-    return base_cmd
-
-
-def build_otdfctl_encrypt_command(
-    platform_url: str,
-    creds_file: Path,
-    input_file: Path,
-    output_file: Path,
-    mime_type: str = "text/plain",
-    attributes: list[str] | None = None,
-) -> list[str]:
-    """Build otdfctl encrypt command."""
-    cmd = get_otdfctl_base_command(platform_url, creds_file)
-    cmd.append("encrypt")
-    cmd.extend(["--mime-type", mime_type])
-
-    # Add attributes if provided
-    if attributes:
-        for attr in attributes:
-            cmd.extend(["--attr", attr])
-
-    cmd.extend(
-        [
-            str(input_file),
-            "-o",
-            str(output_file),
-        ]
-    )
-    return cmd
-
-
-def build_otdfctl_decrypt_command(
-    platform_url: str, creds_file: Path, tdf_file: Path, output_file: Path
-) -> list[str]:
-    """Build otdfctl decrypt command."""
-    cmd = get_otdfctl_base_command(platform_url, creds_file)
-    cmd.extend(
-        [
-            "decrypt",
-            str(tdf_file),
-            "-o",
-            str(output_file),
-        ]
-    )
-
-    return cmd
 
 
 def run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict:
@@ -151,3 +73,71 @@ def run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict:
     except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
         logger.error(f"CLI inspect failed for {tdf_path}: {e}")
         raise Exception(f"Failed to inspect TDF {tdf_path}: {e}") from e
+
+
+# def run_cli_encrypt() -> subprocess.CompletedProcess
+
+
+def build_cli_decrypt_command(
+    platform_url: str,
+    creds_file: Path,
+    input_file: Path,
+    output_file: Path,
+) -> list[str]:
+    """Build CLI decrypt command."""
+    cmd = [
+        sys.executable,
+        "-m",
+        "otdf_python",
+        "--platform-url",
+        platform_url,
+        "--with-client-creds-file",
+        str(creds_file),
+        "--insecure",
+        "decrypt",
+        str(input_file),
+        "-o",
+        str(output_file),
+    ]
+    return cmd
+
+
+def build_cli_encrypt_command(
+    platform_url: str,
+    creds_file: Path,
+    input_file: Path,
+    output_file: Path,
+    mime_type: str = "text/plain",
+    attributes: list[str] | None = None,
+    container_type: str = "tdf",
+) -> list[str]:
+    cmd = [
+        sys.executable,
+        "-m",
+        "otdf_python",
+        "--platform-url",
+        platform_url,
+        "--with-client-creds-file",
+        str(creds_file),
+        "--insecure",  # equivalent to --tls-no-verify
+        "encrypt",
+        "--mime-type",
+        mime_type,
+        "--container-type",
+        container_type,
+    ]
+
+    # Add attributes if provided
+    if attributes:
+        for attr in attributes:
+            cmd.extend(["--attr", attr])
+
+    cmd.extend(
+        [
+            str(input_file),
+            "-o",
+            str(output_file),
+        ]
+    )
+
+    return cmd

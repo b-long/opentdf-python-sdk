@@ -13,12 +13,14 @@ import pytest
 
 from otdf_python.tdf_reader import TDF_MANIFEST_FILE_NAME, TDF_PAYLOAD_FILE_NAME
 from tests.support_cli_args import (
-    build_otdfctl_decrypt_command,
-    build_otdfctl_encrypt_command,
     get_cli_flags,
-    get_otdfctl_flags,
 )
 from tests.support_common import get_platform_url
+from tests.support_otdfctl_args import (
+    build_otdfctl_decrypt_command,
+    build_otdfctl_encrypt_command,
+    get_otdfctl_flags,
+)
 
 original_env = os.environ.copy()
 original_env["GRPC_ENFORCE_ALPN_ENABLED"] = "false"
