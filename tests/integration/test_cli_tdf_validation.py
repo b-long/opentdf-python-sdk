@@ -21,7 +21,6 @@ from tests.support_common import get_platform_url, handle_subprocess_error
 from tests.support_otdfctl_args import (
     build_otdfctl_decrypt_command,
     build_otdfctl_encrypt_command,
-    get_otdfctl_flags,
 )
 
 original_env = os.environ.copy()
@@ -30,7 +29,6 @@ original_env["GRPC_ENFORCE_ALPN_ENABLED"] = "false"
 # Determine CLI flags based on platform URL
 cli_flags = get_cli_flags()
 platform_url = get_platform_url()
-otdfctl_flags = get_otdfctl_flags()
 
 
 def _create_test_input_file(temp_path: Path, content: str) -> Path:

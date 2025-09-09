@@ -12,17 +12,15 @@ from pathlib import Path
 import pytest
 
 from tests.support_common import get_platform_url
-from tests.support_otdfctl_args import get_otdfctl_flags
+from tests.support_otdfctl_args import build_otdfctl_encrypt_command
 
 logger = logging.getLogger(__name__)
-# from tests.config_pydantic import CONFIG_TDF
 
 # Set up environment and configuration
 original_env = os.environ.copy()
 original_env["GRPC_ENFORCE_ALPN_ENABLED"] = "false"
 
 platform_url = get_platform_url()
-otdfctl_flags = get_otdfctl_flags()
 
 
 def _generate_target_mode_tdf(
@@ -34,46 +32,21 @@ def _generate_target_mode_tdf(
     mime_type: str | None = None,
 ) -> None:
     """
-    Generate a TDF file using otdfctl with a specific target mode.
-
-    Args:
-        input_file: Path to the input file to encrypt
-        output_file: Path where the TDF file should be created
-        target_mode: Target TDF spec version (e.g., "v4.2.2", "v4.3.1")
-        creds_file: Path to credentials file
-        attributes: Optional list of attributes to apply
-        mime_type: Optional MIME type for the input file
+    FIXME: Pass target_mode argument for TDF spec version (e.g., "v4.2.2", "v4.3.1")
     """
     # Ensure output directory exists
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
     # Build otdfctl command
-    cmd = [
-        "otdfctl",
-        "encrypt",
-        "--host",
-        platform_url,
-        "--with-client-creds-file",
-        str(creds_file),
-        *otdfctl_flags,
-        "--tdf-type",
-        "tdf3",
-        "--target-mode",
-        target_mode,
-        "-o",
-        str(output_file),
-    ]
-
-    # Add optional parameters
-    if attributes:
-        for attr in attributes:
-            cmd.extend(["--attr", attr])
-
-    if mime_type:
-        cmd.extend(["--mime-type", mime_type])
-
-    # Add input file
-    cmd.append(str(input_file))
+    cmd = build_otdfctl_encrypt_command(
+        platform_url=platform_url,
+        creds_file=creds_file,
+        input_file=input_file,
+        output_file=output_file,
+        mime_type=mime_type if mime_type else "text/plain",
+        attributes=attributes if attributes else None,
+        tdf_type="tdf3",
+    )
 
     # Run otdfctl command
     result = subprocess.run(

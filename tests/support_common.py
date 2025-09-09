@@ -1,6 +1,8 @@
 import logging
 import subprocess
 
+import pytest
+
 from tests.config_pydantic import CONFIG_TDF
 
 logger = logging.getLogger(__name__)
@@ -26,7 +28,7 @@ def handle_subprocess_error(
         logs = collect_server_logs()
         print(f"Server logs when '{scenario_name}' failed:\n{logs}")
 
-        raise Exception(
+        pytest.fail(
             f"Scenario failed: '{scenario_name}': "
             f"stdout={result.stdout}, stderr={result.stderr}"
         )
