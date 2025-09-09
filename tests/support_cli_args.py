@@ -20,7 +20,7 @@ def get_platform_url() -> str:
     return platform_url
 
 
-def get_otdfctl_flags() -> list:
+def get_otdfctl_flags() -> list[str]:
     """
     Determine otdfctl flags based on platform URL
     """
@@ -37,7 +37,7 @@ def get_otdfctl_flags() -> list:
     return otdfctl_flags
 
 
-def get_cli_flags() -> list:
+def get_cli_flags() -> list[str]:
     """
     Determine Python (cli) flags based on platform URL
     """
@@ -55,7 +55,7 @@ def get_cli_flags() -> list:
     return cli_flags
 
 
-def get_otdfctl_base_command(platform_url: str, creds_file: Path) -> list:
+def get_otdfctl_base_command(platform_url: str, creds_file: Path) -> list[str]:
     """Get base otdfctl command with common flags."""
     base_cmd = [
         "otdfctl",
@@ -77,32 +77,31 @@ def build_otdfctl_encrypt_command(
     input_file: Path,
     output_file: Path,
     mime_type: str = "text/plain",
-    attributes: list | None = None,
-) -> list:
+    attributes: list[str] | None = None,
+) -> list[str]:
     """Build otdfctl encrypt command."""
     cmd = get_otdfctl_base_command(platform_url, creds_file)
-    cmd.extend(
-        [
-            "encrypt",
-            "--mime-type",
-            mime_type,
-            str(input_file),
-            "-o",
-            str(output_file),
-        ]
-    )
+    cmd.append("encrypt")
+    cmd.extend(["--mime-type", mime_type])
 
     # Add attributes if provided
     if attributes:
         for attr in attributes:
             cmd.extend(["--attr", attr])
 
+    cmd.extend(
+        [
+            str(input_file),
+            "-o",
+            str(output_file),
+        ]
+    )
     return cmd
 
 
 def build_otdfctl_decrypt_command(
     platform_url: str, creds_file: Path, tdf_file: Path, output_file: Path
-) -> list:
+) -> list[str]:
     """Build otdfctl decrypt command."""
     cmd = get_otdfctl_base_command(platform_url, creds_file)
     cmd.extend(
