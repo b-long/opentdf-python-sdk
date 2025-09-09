@@ -1,3 +1,7 @@
+"""
+Support functions for constructing CLI arguments for this project's (Python) CLI.
+"""
+
 import json
 import logging
 import subprocess
@@ -5,19 +9,9 @@ import sys
 from pathlib import Path
 
 from tests.config_pydantic import CONFIG_TDF
+from tests.support_common import get_platform_url
 
 logger = logging.getLogger(__name__)
-
-
-def get_platform_url() -> str:
-    # Get platform configuration
-    platform_url = CONFIG_TDF.OPENTDF_PLATFORM_URL
-    if not platform_url:
-        # Fail fast if OPENTDF_PLATFORM_URL is not set
-        raise Exception(
-            "OPENTDF_PLATFORM_URL must be set in config for integration tests"
-        )
-    return platform_url
 
 
 def get_otdfctl_flags() -> list[str]:

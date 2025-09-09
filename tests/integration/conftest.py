@@ -11,7 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from tests.support_cli_args import get_otdfctl_flags, get_platform_url
+from tests.support_cli_args import get_otdfctl_flags
+from tests.support_common import get_platform_url
 
 logger = logging.getLogger(__name__)
 # from tests.config_pydantic import CONFIG_TDF

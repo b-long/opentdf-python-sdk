@@ -14,7 +14,8 @@ from otdf_python.tdf_reader import (
     TDFReader,
 )
 from tests.config_pydantic import CONFIG_TDF
-from tests.support_cli_args import build_otdfctl_encrypt_command, get_platform_url
+from tests.support_cli_args import build_otdfctl_encrypt_command
+from tests.support_common import get_platform_url
 
 platform_url = get_platform_url()
 

@@ -17,8 +17,8 @@ from tests.support_cli_args import (
     build_otdfctl_encrypt_command,
     get_cli_flags,
     get_otdfctl_flags,
-    get_platform_url,
 )
+from tests.support_common import get_platform_url
 
 original_env = os.environ.copy()
 original_env["GRPC_ENFORCE_ALPN_ENABLED"] = "false"
