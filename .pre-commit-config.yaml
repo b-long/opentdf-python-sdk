@@ -40,4 +40,4 @@ repos:
       hooks:
         - id: conventional-pre-commit
           stages: [commit-msg,post-rewrite]
-          args: [--verbose,--scopes=feat,fix,docs,style,test,chore,ci]
+          args: [--verbose,--scopes="feat,fix,docs,style,test,chore,ci"]
