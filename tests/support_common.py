@@ -38,9 +38,9 @@ def get_testing_environ() -> dict | None:
     """
     Set up environment and configuration
 
-    TODO: In the future, remove this function (return None)
+    TODO: YAGNI: this is a hook we could use to modify all testing environments, e.g.
+        env = os.environ.copy()
+        env["GRPC_ENFORCE_ALPN_ENABLED"] = "false"
+        return env
     """
-    # original_env = os.environ.copy()
-    # original_env["GRPC_ENFORCE_ALPN_ENABLED"] = "false"
-    # return original_env
     return None
