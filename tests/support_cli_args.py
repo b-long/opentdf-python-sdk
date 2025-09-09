@@ -16,18 +16,17 @@ logger = logging.getLogger(__name__)
 
 def get_cli_flags() -> list[str]:
     """
-    Determine Python (cli) flags based on platform URL
+    Determine (Python) CLI flags based on platform URL
     """
     platform_url = get_platform_url()
     cli_flags = []
 
     if platform_url.startswith("http://"):
         cli_flags = ["--plaintext"]
-        # otdfctl doesn't have a --plaintext flag, just omit --tls-no-verify for HTTP
     else:
         # For HTTPS, skip TLS verification if INSECURE_SKIP_VERIFY is True
         if CONFIG_TDF.INSECURE_SKIP_VERIFY:
-            cli_flags = ["--insecure"]  # equivalent to --tls-no-verify
+            cli_flags = ["--insecure"]
 
     return cli_flags
 
@@ -41,18 +40,17 @@ def run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict:
     """
     # Determine platform flags
     platform_url = CONFIG_TDF.OPENTDF_PLATFORM_URL
-    cli_flags = get_cli_flags()
 
     # Build CLI command
     cmd = [
         sys.executable,
         "-m",
-        "otdf_python.cli",
+        "otdf_python",
         "--platform-url",
         platform_url,
         "--with-client-creds-file",
         str(creds_file),
-        *cli_flags,
+        *get_cli_flags(),
         "inspect",
         str(tdf_path),
     ]
@@ -93,7 +91,7 @@ def build_cli_decrypt_command(
         platform_url,
         "--with-client-creds-file",
         str(creds_file),
-        "--insecure",
+        *get_cli_flags(),
         "decrypt",
         str(input_file),
         "-o",
@@ -119,7 +117,7 @@ def build_cli_encrypt_command(
         platform_url,
         "--with-client-creds-file",
         str(creds_file),
-        "--insecure",  # equivalent to --tls-no-verify
+        *get_cli_flags(),
         "encrypt",
         "--mime-type",
         mime_type,
