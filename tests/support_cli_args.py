@@ -38,8 +38,7 @@ def run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict:
     This demonstrates how the CLI inspect functionality could be tested
     with the new fixtures.
     """
-    # Determine platform flags
-    platform_url = CONFIG_TDF.OPENTDF_PLATFORM_URL
+    platform_url = get_platform_url()
 
     # Build CLI command
     cmd = [
@@ -73,9 +72,6 @@ def run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict:
         raise Exception(f"Failed to inspect TDF {tdf_path}: {e}") from e
 
 
-# def run_cli_encrypt() -> subprocess.CompletedProcess
-
-
 def build_cli_decrypt_command(
     platform_url: str,
     creds_file: Path,
@@ -98,6 +94,9 @@ def build_cli_decrypt_command(
         str(output_file),
     ]
     return cmd
+
+
+# def run_cli_decrypt() -> subprocess.CompletedProcess
 
 
 def build_cli_encrypt_command(
@@ -139,3 +138,6 @@ def build_cli_encrypt_command(
     )
 
     return cmd
+
+
+# def run_cli_encrypt() -> subprocess.CompletedProcess

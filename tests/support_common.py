@@ -1,4 +1,9 @@
+import logging
+import subprocess
+
 from tests.config_pydantic import CONFIG_TDF
+
+logger = logging.getLogger(__name__)
 
 
 def get_platform_url() -> str:
@@ -10,3 +15,18 @@ def get_platform_url() -> str:
             "OPENTDF_PLATFORM_URL must be set in config for integration tests"
         )
     return platform_url
+
+
+def handle_subprocess_error(
+    result: subprocess.CompletedProcess, collect_server_logs, scenario_name: str
+) -> None:
+    """Handle subprocess errors with proper server log collection and error reporting."""
+    if result.returncode != 0:
+        # Collect server logs for debugging
+        logs = collect_server_logs()
+        print(f"Server logs when '{scenario_name}' failed:\n{logs}")
+
+        raise Exception(
+            f"Scenario failed: '{scenario_name}': "
+            f"stdout={result.stdout}, stderr={result.stderr}"
+        )

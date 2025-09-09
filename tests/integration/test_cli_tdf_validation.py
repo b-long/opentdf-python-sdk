@@ -13,9 +13,11 @@ import pytest
 
 from otdf_python.tdf_reader import TDF_MANIFEST_FILE_NAME, TDF_PAYLOAD_FILE_NAME
 from tests.support_cli_args import (
+    build_cli_decrypt_command,
+    build_cli_encrypt_command,
     get_cli_flags,
 )
-from tests.support_common import get_platform_url
+from tests.support_common import get_platform_url, handle_subprocess_error
 from tests.support_otdfctl_args import (
     build_otdfctl_decrypt_command,
     build_otdfctl_encrypt_command,
@@ -247,18 +249,6 @@ def _validate_tdf_zip_structure(tdf_path: Path) -> None:
         print("=" * 50)
 
 
-def _handle_subprocess_error(
-    result: subprocess.CompletedProcess, collect_server_logs, tool_name: str
-) -> None:
-    """Handle subprocess errors with proper server log collection and error reporting."""
-    if result.returncode != 0:
-        # Collect server logs for debugging
-        logs = collect_server_logs()
-        print(f"Server logs when {tool_name} failed:\n{logs}")
-
-        assert result.returncode == 0, f"{tool_name} failed: {result.stderr}"
-
-
 def _run_otdfctl_decrypt(
     tdf_path: Path,
     platform_url: str,
@@ -282,7 +272,7 @@ def _run_otdfctl_decrypt(
         env=original_env,
     )
 
-    _handle_subprocess_error(
+    handle_subprocess_error(
         otdfctl_decrypt_result, collect_server_logs, "otdfctl decrypt"
     )
 
@@ -314,22 +304,12 @@ def _run_python_cli_decrypt(
     """Run Python CLI decrypt on a TDF file and verify the decrypted content matches expected."""
     decrypt_output = temp_path / f"{tdf_path.stem}_python_decrypted.txt"
 
-    python_decrypt_cmd = [
-        "uv",
-        "run",
-        "python",
-        "-m",
-        "otdf_python",
-        "--platform-url",
-        platform_url,
-        "--with-client-creds-file",
-        str(creds_file),
-        *cli_flags,
-        "decrypt",
-        str(tdf_path),
-        "-o",
-        str(decrypt_output),
-    ]
+    python_decrypt_cmd = build_cli_decrypt_command(
+        platform_url=platform_url,
+        creds_file=creds_file,
+        input_file=tdf_path,
+        output_file=decrypt_output,
+    )
 
     python_decrypt_result = subprocess.run(
         python_decrypt_cmd,
@@ -339,7 +319,7 @@ def _run_python_cli_decrypt(
         env=original_env,
     )
 
-    _handle_subprocess_error(
+    handle_subprocess_error(
         python_decrypt_result, collect_server_logs, "Python CLI decrypt"
     )
 
@@ -393,7 +373,7 @@ def test_otdfctl_encrypt_with_validation(collect_server_logs, temp_credentials_f
         )
 
         # Handle any encryption errors
-        _handle_subprocess_error(
+        handle_subprocess_error(
             otdfctl_encrypt_result, collect_server_logs, "otdfctl encrypt"
         )
 
@@ -430,26 +410,14 @@ def test_python_encrypt(collect_server_logs, temp_credentials_file):
         # Define TDF file created by Python CLI
         python_tdf_output = temp_path / "python_cli_test.txt.tdf"
 
-        # Run Python CLI encrypt to create a TDF file
-        python_encrypt_cmd = [
-            "uv",
-            "run",
-            "python",
-            "-m",
-            "otdf_python",
-            "--platform-url",
-            platform_url,
-            "--with-client-creds-file",
-            str(temp_credentials_file),
-            *cli_flags,
-            "encrypt",
-            "--mime-type",
-            "text/plain",
-            str(input_file),
-            "-o",
-            str(python_tdf_output),
-        ]
+        python_encrypt_cmd = build_cli_encrypt_command(
+            platform_url=platform_url,
+            creds_file=temp_credentials_file,
+            input_file=input_file,
+            output_file=python_tdf_output,
+        )
 
+        # Run Python CLI encrypt to create a TDF file
         python_encrypt_result = subprocess.run(
             python_encrypt_cmd,
             capture_output=True,
@@ -459,7 +427,7 @@ def test_python_encrypt(collect_server_logs, temp_credentials_file):
         )
 
         # Handle any encryption errors
-        _handle_subprocess_error(
+        handle_subprocess_error(
             python_encrypt_result, collect_server_logs, "Python CLI encrypt"
         )
 
@@ -515,7 +483,7 @@ def test_cross_tool_compatibility(collect_server_logs, temp_credentials_file):
             env=original_env,
         )
 
-        _handle_subprocess_error(
+        handle_subprocess_error(
             otdfctl_encrypt_result,
             collect_server_logs,
             "otdfctl encrypt (cross-tool test)",
@@ -535,24 +503,12 @@ def test_cross_tool_compatibility(collect_server_logs, temp_credentials_file):
         python_tdf_output = temp_path / "python_for_otdfctl_decrypt.txt.tdf"
 
         # Encrypt with Python CLI
-        python_encrypt_cmd = [
-            "uv",
-            "run",
-            "python",
-            "-m",
-            "otdf_python",
-            "--platform-url",
-            platform_url,
-            "--with-client-creds-file",
-            str(temp_credentials_file),
-            *cli_flags,
-            "encrypt",
-            "--mime-type",
-            "text/plain",
-            str(input_file),
-            "-o",
-            str(python_tdf_output),
-        ]
+        python_encrypt_cmd = build_cli_encrypt_command(
+            platform_url=platform_url,
+            creds_file=temp_credentials_file,
+            input_file=input_file,
+            output_file=python_tdf_output,
+        )
 
         python_encrypt_result = subprocess.run(
             python_encrypt_cmd,
@@ -562,7 +518,7 @@ def test_cross_tool_compatibility(collect_server_logs, temp_credentials_file):
             env=original_env,
         )
 
-        _handle_subprocess_error(
+        handle_subprocess_error(
             python_encrypt_result,
             collect_server_logs,
             "Python CLI encrypt (cross-tool test)",
@@ -610,24 +566,12 @@ def test_different_content_types(collect_server_logs, temp_credentials_file):
             # Test with Python CLI
             python_tdf_output = temp_path / f"python_{filename}.tdf"
 
-            python_encrypt_cmd = [
-                "uv",
-                "run",
-                "python",
-                "-m",
-                "otdf_python",
-                "--platform-url",
-                platform_url,
-                "--with-client-creds-file",
-                str(temp_credentials_file),
-                *cli_flags,
-                "encrypt",
-                "--mime-type",
-                "text/plain",
-                str(input_file),
-                "-o",
-                str(python_tdf_output),
-            ]
+            python_encrypt_cmd = build_cli_encrypt_command(
+                platform_url=platform_url,
+                creds_file=temp_credentials_file,
+                input_file=input_file,
+                output_file=python_tdf_output,
+            )
 
             python_encrypt_result = subprocess.run(
                 python_encrypt_cmd,
@@ -637,7 +581,7 @@ def test_different_content_types(collect_server_logs, temp_credentials_file):
                 env=original_env,
             )
 
-            _handle_subprocess_error(
+            handle_subprocess_error(
                 python_encrypt_result,
                 collect_server_logs,
                 f"Python CLI encrypt ({filename})",
@@ -686,24 +630,12 @@ def test_different_content_types_empty(collect_server_logs, temp_credentials_fil
             # Test with Python CLI
             python_tdf_output = temp_path / f"python_{filename}.tdf"
 
-            python_encrypt_cmd = [
-                "uv",
-                "run",
-                "python",
-                "-m",
-                "otdf_python",
-                "--platform-url",
-                platform_url,
-                "--with-client-creds-file",
-                str(temp_credentials_file),
-                *cli_flags,
-                "encrypt",
-                "--mime-type",
-                "text/plain",
-                str(input_file),
-                "-o",
-                str(python_tdf_output),
-            ]
+            python_encrypt_cmd = build_cli_encrypt_command(
+                platform_url=platform_url,
+                creds_file=temp_credentials_file,
+                input_file=input_file,
+                output_file=python_tdf_output,
+            )
 
             python_encrypt_result = subprocess.run(
                 python_encrypt_cmd,
@@ -713,7 +645,7 @@ def test_different_content_types_empty(collect_server_logs, temp_credentials_fil
                 env=original_env,
             )
 
-            _handle_subprocess_error(
+            handle_subprocess_error(
                 python_encrypt_result,
                 collect_server_logs,
                 f"Python CLI encrypt ({filename})",
