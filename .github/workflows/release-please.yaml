@@ -45,19 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check if alpha release
-        id: check_alpha
-        run: |
-          # Get the version from the main package
-          VERSION=$(cat .release-please-manifest.json | jq -r '."."')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          if [[ "$VERSION" =~ [0-9]+\.[0-9]+\.[0-9]+a[0-9]+ ]]; then
-            echo "is_alpha=true" >> $GITHUB_OUTPUT
-            echo "Alpha version detected: $VERSION"
-          else
-            echo "is_alpha=false" >> $GITHUB_OUTPUT
-            echo "Stable version detected: $VERSION"
-          fi
+
 
 
       - name: Install uv
@@ -82,6 +70,14 @@ jobs:
         run: |
           PROJECT_VERSION=$(uv version --short)
           echo "PROJECT_VERSION=$PROJECT_VERSION" >> $GITHUB_ENV
+
+          if [[ "$PROJECT_VERSION" =~ [0-9]+\.[0-9]+\.[0-9]+a[0-9]+ ]]; then
+            echo "is_alpha=true" >> $GITHUB_OUTPUT
+            echo "Alpha version detected: $PROJECT_VERSION"
+          else
+            echo "is_alpha=false" >> $GITHUB_OUTPUT
+            echo "Stable version detected: $PROJECT_VERSION"
+          fi
 
           # Remove any alpha/beta/rc suffixes for comparison
           CLEAN_VERSION=$(echo "$PROJECT_VERSION" | sed 's/[a-zA-Z].*//')
