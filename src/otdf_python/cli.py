@@ -355,21 +355,8 @@ def cmd_inspect(args):
     # Validate input file
     input_path = validate_file_exists(args.file)
 
-    # For inspection, try to create authenticated SDK, but allow unauthenticated inspection too
     try:
-        try:
-            sdk = build_sdk(args)
-        except CLIError as auth_error:
-            # If authentication fails, create minimal SDK for basic inspection
-            logger.warning(f"Authentication failed, using minimal SDK: {auth_error}")
-            builder = SDKBuilder()
-            if args.platform_url:
-                builder.set_platform_endpoint(args.platform_url)
-            if hasattr(args, "plaintext") and args.plaintext:
-                builder.use_insecure_plaintext_connection(True)
-            if args.insecure:
-                builder.use_insecure_skip_verify(True)
-            sdk = builder.build()
+        sdk = build_sdk(args)
 
         try:
             # Read encrypted file
