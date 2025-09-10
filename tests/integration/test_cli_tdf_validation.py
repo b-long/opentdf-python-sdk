@@ -250,18 +250,10 @@ def _run_otdfctl_decrypt(
         otdfctl_decrypt_result, collect_server_logs, "otdfctl decrypt"
     )
 
-    validate_plaintext_file_created(path=decrypt_output, scenario="otdfctl")
-
-    # Verify the decrypted content matches expected
-    with open(decrypt_output) as f:
-        decrypted_content = f.read()
-
-    assert decrypted_content == expected_content, (
-        f"Decrypted content does not match original. "
-        f"Expected: '{expected_content}', Got: '{decrypted_content}'"
+    validate_plaintext_file_created(
+        path=decrypt_output, scenario="otdfctl", expected_content=expected_content
     )
 
-    print("✓ otdfctl successfully decrypted TDF with correct content")
     return decrypt_output
 
 
@@ -284,18 +276,9 @@ def _run_python_cli_decrypt(
         python_decrypt_result, collect_server_logs, "Python CLI decrypt"
     )
 
-    validate_plaintext_file_created(path=decrypt_output, scenario="Python CLI")
-
-    # Verify the decrypted content matches expected
-    with open(decrypt_output) as f:
-        decrypted_content = f.read()
-
-    assert decrypted_content == expected_content, (
-        f"Decrypted content does not match original. "
-        f"Expected: '{expected_content}', Got: '{decrypted_content}'"
+    validate_plaintext_file_created(
+        path=decrypt_output, scenario="Python CLI", expected_content=expected_content
     )
-
-    print("✓ Python CLI successfully decrypted TDF with correct content")
     return decrypt_output
 
 

@@ -92,33 +92,15 @@ def test_otdfctl_encrypt_python_decrypt(
             scenario_name="Python CLI decrypt",
         )
 
-        validate_plaintext_file_created(path=otdfctl_decrypt_output, scenario="otdfctl")
-        validate_plaintext_file_created(path=cli_decrypt_output, scenario="Python CLI")
-
-        # Verify both tools produce the same decrypted content
-        with open(otdfctl_decrypt_output) as f:
-            otdfctl_decrypted_content = f.read()
-        with open(cli_decrypt_output) as f:
-            cli_decrypted_content = f.read()
-
-        # Both should match the original content
-        assert otdfctl_decrypted_content == input_content, (
-            f"otdfctl decrypted content does not match original. "
-            f"Expected: '{input_content}', Got: '{otdfctl_decrypted_content}'"
+        validate_plaintext_file_created(
+            path=otdfctl_decrypt_output,
+            scenario="otdfctl",
+            expected_content=input_content,
         )
-        assert cli_decrypted_content == input_content, (
-            f"Python CLI decrypted content does not match original. "
-            f"Expected: '{input_content}', Got: '{cli_decrypted_content}'"
-        )
-
-        # Both tools should produce identical results
-        assert otdfctl_decrypted_content == cli_decrypted_content, (
-            f"Decrypted content differs between tools. "
-            f"otdfctl: '{otdfctl_decrypted_content}', Python CLI: '{cli_decrypted_content}'"
-        )
-
-        print(
-            "✓ Both otdfctl and Python CLI successfully decrypted the TDF with identical results"
+        validate_plaintext_file_created(
+            path=cli_decrypt_output,
+            scenario="Python CLI",
+            expected_content=input_content,
         )
 
 
@@ -176,15 +158,10 @@ def test_otdfctl_encrypt_otdfctl_decrypt(collect_server_logs, temp_credentials_f
             scenario_name="otdfctl decrypt",
         )
 
-        validate_plaintext_file_created(path=otdfctl_decrypt_output, scenario="otdfctl")
-
-        # Verify the decrypted content matches the original
-        with open(otdfctl_decrypt_output) as f:
-            decrypted_content = f.read()
-
-        assert decrypted_content == input_content, (
-            f"otdfctl roundtrip failed - decrypted content does not match original. "
-            f"Expected: '{input_content}', Got: '{decrypted_content}'"
+        validate_plaintext_file_created(
+            path=otdfctl_decrypt_output,
+            scenario="otdfctl",
+            expected_content=input_content,
         )
 
         # Verify file sizes are reasonable
@@ -193,9 +170,6 @@ def test_otdfctl_encrypt_otdfctl_decrypt(collect_server_logs, temp_credentials_f
         decrypted_size = otdfctl_decrypt_output.stat().st_size
 
         assert tdf_size > original_size, "TDF file should be larger than original"
-        assert decrypted_size == original_size, (
-            "Decrypted file should match original size"
-        )
 
         print(
             f"✓ otdfctl roundtrip successful: {original_size} bytes -> {tdf_size} bytes -> {decrypted_size} bytes"

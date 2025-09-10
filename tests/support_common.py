@@ -60,10 +60,20 @@ def validate_tdf3_file(tdf_path: Path, tool_name: str) -> None:
     assert tdf_header == b"PK\x03\x04", f"{tool_name} output is not a valid ZIP file"
 
 
-def validate_plaintext_file_created(path: Path, scenario: str) -> None:
-    """Validate that a non-empty file was created"""
+def validate_plaintext_file_created(
+    path: Path, scenario: str, expected_content: str
+) -> None:
+    """Validate that a non-empty file was created, and contains the expected content"""
     assert path.exists(), f"{scenario=} did not create decrypted file"
     assert path.stat().st_size > 0, f"{scenario=} created empty decrypted file"
+    # Verify scenario produces the expected decrypted content
+    with open(path) as f:
+        decrypted_content = f.read()
+
+    assert decrypted_content == expected_content, (
+        f"otdfctl decrypted content does not match original. "
+        f"Expected: '{expected_content}', Got: '{decrypted_content}'"
+    )
 
 
 def compare_tdf3_file_size(otdfctl_tdf_path: Path, py_cli_tdf_path: Path) -> None:

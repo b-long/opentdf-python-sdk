@@ -80,16 +80,9 @@ def test_cli_decrypt_otdfctl_tdf(
         )
 
         validate_plaintext_file_created(
-            path=cli_decrypt_output, scenario="Python decrypt"
-        )
-
-        # Verify the content matches the original
-        with open(cli_decrypt_output) as f:
-            decrypted_content = f.read()
-
-        assert decrypted_content == input_content, (
-            f"Decrypted content does not match original. "
-            f"Expected: '{input_content}', Got: '{decrypted_content}'"
+            path=cli_decrypt_output,
+            scenario="Python decrypt",
+            expected_content=input_content,
         )
 
 
@@ -167,33 +160,15 @@ def test_otdfctl_decrypt_comparison(
             scenario_name="Python CLI decrypt",
         )
 
-        validate_plaintext_file_created(path=otdfctl_decrypt_output, scenario="otdfctl")
-        validate_plaintext_file_created(path=cli_decrypt_output, scenario="Python CL")
-
-        # Verify both tools produce the same decrypted content
-        with open(otdfctl_decrypt_output) as f:
-            otdfctl_decrypted_content = f.read()
-        with open(cli_decrypt_output) as f:
-            cli_decrypted_content = f.read()
-
-        # Both should match the original content
-        assert otdfctl_decrypted_content == input_content, (
-            f"otdfctl decrypted content does not match original. "
-            f"Expected: '{input_content}', Got: '{otdfctl_decrypted_content}'"
+        validate_plaintext_file_created(
+            path=otdfctl_decrypt_output,
+            scenario="otdfctl",
+            expected_content=input_content,
         )
-        assert cli_decrypted_content == input_content, (
-            f"Python CLI decrypted content does not match original. "
-            f"Expected: '{input_content}', Got: '{cli_decrypted_content}'"
-        )
-
-        # Both tools should produce identical results
-        assert otdfctl_decrypted_content == cli_decrypted_content, (
-            f"Decrypted content differs between tools. "
-            f"otdfctl: '{otdfctl_decrypted_content}', Python CLI: '{cli_decrypted_content}'"
-        )
-
-        print(
-            "✓ Both otdfctl and Python CLI successfully decrypted the TDF with identical results"
+        validate_plaintext_file_created(
+            path=cli_decrypt_output,
+            scenario="Python CL",
+            expected_content=input_content,
         )
 
 
