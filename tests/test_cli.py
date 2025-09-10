@@ -35,7 +35,20 @@ def test_cli_version():
     )
     assert result.returncode == 0
     assert "OpenTDF Python SDK" in result.stdout
-    assert "0.3.2" in result.stdout
+
+    with open(Path(__file__).parent.parent / "pyproject.toml", "rb") as f:
+        # Use tomli for Python < 3.11, tomllib for 3.11+
+        if sys.version_info < (3, 11):
+            import tomli
+
+            pyproject = tomli.load(f)
+        else:
+            import tomllib
+
+            pyproject = tomllib.load(f)
+        expected_version = pyproject["project"]["version"]
+
+    assert expected_version in result.stdout
 
 
 def test_cli_encrypt_help():

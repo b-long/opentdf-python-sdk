@@ -11,7 +11,6 @@
       "extra-files": [
         "pyproject.toml",
         "src/otdf_python/cli.py",
-        "tests/test_cli.py",
         "otdf-python-proto/pyproject.toml",
         {
           "path": "uv.lock",
