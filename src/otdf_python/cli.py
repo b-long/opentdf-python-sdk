@@ -22,7 +22,7 @@ from otdf_python.sdk_exceptions import SDKException
 from otdf_python.tdf import TDFReaderConfig
 
 # Version - get from project metadata
-__version__ = "0.3.2"
+__version__ = "0.3.1"
 
 
 # Set up logging
