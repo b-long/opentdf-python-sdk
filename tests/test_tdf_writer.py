@@ -1,6 +1,7 @@
-import unittest
 import io
+import unittest
 import zipfile
+
 from otdf_python.tdf_writer import TDFWriter
 
 

@@ -1,4 +1,4 @@
-from otdf_python.config import TDFConfig, KASInfo, get_kas_address
+from otdf_python.config import KASInfo, TDFConfig, get_kas_address
 
 
 def test_tdf_config_defaults():

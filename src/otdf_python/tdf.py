@@ -1,31 +1,32 @@
-from typing import BinaryIO, TYPE_CHECKING
-import io
-import os
+import base64
 import hashlib
 import hmac
-import base64
-import zipfile
+import io
 import logging
+import os
+import zipfile
+from typing import TYPE_CHECKING, BinaryIO
 
 if TYPE_CHECKING:
     from otdf_python.kas_client import KASClient
 
+from dataclasses import dataclass
+
+from otdf_python.aesgcm import AesGcm
+from otdf_python.config import TDFConfig
+from otdf_python.key_type_constants import RSA_KEY_TYPE
 from otdf_python.manifest import (
     Manifest,
-    ManifestSegment,
-    ManifestIntegrityInformation,
-    ManifestRootSignature,
     ManifestEncryptionInformation,
-    ManifestPayload,
-    ManifestMethod,
+    ManifestIntegrityInformation,
     ManifestKeyAccess,
+    ManifestMethod,
+    ManifestPayload,
+    ManifestRootSignature,
+    ManifestSegment,
 )
 from otdf_python.policy_stub import NULL_POLICY_UUID
 from otdf_python.tdf_writer import TDFWriter
-from otdf_python.aesgcm import AesGcm
-from dataclasses import dataclass
-from otdf_python.key_type_constants import RSA_KEY_TYPE
-from otdf_python.config import TDFConfig
 
 
 @dataclass
@@ -83,9 +84,10 @@ class TDF:
         return validated_kas_infos
 
     def _wrap_key_for_kas(self, key, kas_infos, policy_json=None):
-        from otdf_python.asym_crypto import AsymEncryption
         import hashlib
         import hmac
+
+        from otdf_python.asym_crypto import AsymEncryption
 
         key_access_objs = []
         for kas in kas_infos:
@@ -161,7 +163,7 @@ class TDF:
 
     def _serialize_policy_object(self, obj):
         """Custom TDF serializer to convert to compatible JSON format."""
-        from otdf_python.policy_object import PolicyBody, AttributeObject
+        from otdf_python.policy_object import AttributeObject, PolicyBody
 
         if isinstance(obj, PolicyBody):
             # Convert data_attributes to dataAttributes and use null instead of empty array
@@ -277,7 +279,7 @@ class TDF:
         self,
         payload: bytes | BinaryIO,
         config: TDFConfig,
-        output_stream: BinaryIO | None = None,
+        output_stream: io.BytesIO | None = None,
     ):
         if output_stream is None:
             output_stream = io.BytesIO()
@@ -375,9 +377,14 @@ class TDF:
         size = writer.finish()
         return manifest, size, output_stream
 
-    def load_tdf(self, tdf_bytes: bytes, config: TDFReaderConfig) -> TDFReader:
+    def load_tdf(
+        self, tdf_data: bytes | io.BytesIO, config: TDFReaderConfig
+    ) -> TDFReader:
         # Extract manifest, unwrap payload key using KAS client
-        with zipfile.ZipFile(io.BytesIO(tdf_bytes), "r") as z:
+        # Handle both bytes and BinaryIO input
+        tdf_bytes_io = io.BytesIO(tdf_data) if isinstance(tdf_data, bytes) else tdf_data
+
+        with zipfile.ZipFile(tdf_bytes_io, "r") as z:
             manifest_json = z.read("0.manifest.json").decode()
             manifest = Manifest.from_json(manifest_json)
 
@@ -419,10 +426,11 @@ class TDF:
         """
         Reads and verifies TDF segments, decrypts if needed, and writes the payload to output_stream.
         """
+        import base64
         import zipfile
+
         from otdf_python.aesgcm import AesGcm
         from otdf_python.asym_crypto import AsymDecryption
-        import base64
 
         with zipfile.ZipFile(io.BytesIO(tdf_bytes), "r") as z:
             manifest_json = z.read("0.manifest.json").decode()

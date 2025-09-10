@@ -5,8 +5,16 @@ This module contains pytest hooks and fixtures that will be automatically
 loaded by pytest when running tests.
 """
 
+from pathlib import Path
+
 import pytest
+
 from tests.server_logs import log_server_logs_on_failure
+
+
+@pytest.fixture(scope="session")
+def project_root(request) -> Path:
+    return request.config.rootpath  # Project root
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
@@ -43,7 +51,6 @@ def pytest_runtest_makereport(item, call):
                 log_server_logs_on_failure(test_name)
 
 
-# Optional: Add a fixture to manually collect logs
 @pytest.fixture
 def collect_server_logs():
     """

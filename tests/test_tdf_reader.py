@@ -4,15 +4,16 @@ Tests for TDFReader.
 
 import io
 import json
-import pytest
 from unittest.mock import MagicMock, patch
 
+import pytest
+
+from otdf_python.policy_object import PolicyObject
 from otdf_python.tdf_reader import (
-    TDFReader,
     TDF_MANIFEST_FILE_NAME,
     TDF_PAYLOAD_FILE_NAME,
+    TDFReader,
 )
-from otdf_python.policy_object import PolicyObject
 
 
 class TestTDFReader:

@@ -1,10 +1,11 @@
 import unittest
+
 from otdf_python.nanotdf_type import (
+    Cipher,
     ECCurve,
-    Protocol,
     IdentifierType,
     PolicyType,
-    Cipher,
+    Protocol,
 )
 
 

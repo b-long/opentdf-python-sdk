@@ -2,9 +2,11 @@
 Unit tests for KASClient.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
 from base64 import b64decode
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 from otdf_python.kas_client import KASClient, KeyAccess
 from otdf_python.kas_key_cache import KASKeyCache
 from otdf_python.sdk_exceptions import SDKException

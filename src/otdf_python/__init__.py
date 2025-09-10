@@ -5,10 +5,10 @@ A Python implementation of the OpenTDF SDK for working with Trusted Data Format 
 Provides both programmatic APIs and command-line interface for encryption and decryption.
 """
 
+from .cli import main as cli_main
+from .config import KASInfo, NanoTDFConfig, TDFConfig
 from .sdk import SDK
 from .sdk_builder import SDKBuilder
-from .config import TDFConfig, NanoTDFConfig, KASInfo
-from .cli import main as cli_main
 
 __all__ = [
     "SDK",

@@ -2,10 +2,10 @@
 TDFReader is responsible for reading and processing Trusted Data Format (TDF) files.
 """
 
-from .zip_reader import ZipReader
-from .sdk_exceptions import SDKException
-from .policy_object import PolicyObject
 from .manifest import Manifest
+from .policy_object import PolicyObject
+from .sdk_exceptions import SDKException
+from .zip_reader import ZipReader
 
 # Constants from TDFWriter
 TDF_MANIFEST_FILE_NAME = "0.manifest.json"
@@ -119,9 +119,9 @@ class TDFReader:
 
             # Convert to PolicyObject
             from otdf_python.policy_object import (
-                PolicyObject,
-                PolicyBody,
                 AttributeObject,
+                PolicyBody,
+                PolicyObject,
             )
 
             # Parse data attributes - handle case where body might be None or have None values

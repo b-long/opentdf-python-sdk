@@ -5,11 +5,12 @@ Integration test: Single attribute encryption/decryption using SDK and otdfctl
 import logging
 import tempfile
 from pathlib import Path
+
 import pytest
 
 from otdf_python.sdk import SDK
-from tests.config_pydantic import CONFIG_TDF
 from otdf_python.sdk_exceptions import SDKException
+from tests.config_pydantic import CONFIG_TDF
 from tests.integration.support_sdk import get_sdk_for_pe
 
 # Test files (adjust paths as needed)

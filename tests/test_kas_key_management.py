@@ -1,11 +1,12 @@
-import unittest
-from unittest.mock import Mock, patch
 import base64
 import os
+import unittest
+from unittest.mock import Mock, patch
+
 import pytest
 
 from otdf_python.kas_client import KASClient, KeyAccess
-from otdf_python.key_type_constants import RSA_KEY_TYPE, EC_KEY_TYPE
+from otdf_python.key_type_constants import EC_KEY_TYPE, RSA_KEY_TYPE
 
 
 class TestKASKeyManagement(unittest.TestCase):

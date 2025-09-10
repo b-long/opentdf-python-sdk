@@ -3,6 +3,7 @@ Integration tests for KASClient.
 """
 
 import pytest
+
 from otdf_python.kas_client import KASClient, KeyAccess
 from otdf_python.kas_key_cache import KASKeyCache
 from otdf_python.sdk_exceptions import SDKException

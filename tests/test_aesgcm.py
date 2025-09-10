@@ -1,6 +1,7 @@
-import unittest
-from otdf_python.aesgcm import AesGcm
 import os
+import unittest
+
+from otdf_python.aesgcm import AesGcm
 
 
 class TestAesGcm(unittest.TestCase):

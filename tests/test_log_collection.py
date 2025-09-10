@@ -5,8 +5,8 @@ Test script to verify server log collection functionality.
 This script tests the server log collection without running full pytest.
 """
 
-from tests.server_logs import collect_server_logs, log_server_logs_on_failure
 from tests.config_pydantic import CONFIG_TESTING
+from tests.server_logs import collect_server_logs, log_server_logs_on_failure
 
 
 def test_log_collection():

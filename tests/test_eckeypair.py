@@ -1,4 +1,5 @@
 import unittest
+
 from otdf_python.eckeypair import ECKeyPair
 
 
