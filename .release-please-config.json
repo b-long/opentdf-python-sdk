@@ -11,20 +11,12 @@
       "extra-files": [
         "pyproject.toml",
         "src/otdf_python/cli.py",
-        "tests/test_cli.py",
-        "RELEASES.md",
+        "otdf-python-proto/pyproject.toml",
         {
           "path": "uv.lock",
           "type": "toml",
           "jsonpath": "$.package[?(@.name.value=='otdf-python')].version"
-        }
-      ]
-    },
-    "otdf-python-proto": {
-      "release-type": "python",
-      "package-name": "otdf-python-proto",
-      "extra-files": [
-        "otdf-python-proto/pyproject.toml",
+        },
         {
           "path": "otdf-python-proto/uv.lock",
           "type": "toml",

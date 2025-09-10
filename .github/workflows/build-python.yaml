@@ -34,9 +34,9 @@ jobs:
           echo "wheel_path=$wheel_path" >> $GITHUB_OUTPUT
         shell: bash
 
-      - name: Upload wheel as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-wheel
-          path: dist/*.whl
-          overwrite: true
+      # - name: Upload wheel as artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: python-wheel
+      #     path: dist/*.whl
+      #     overwrite: true
