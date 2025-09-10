@@ -2,21 +2,27 @@
 Test CLI functionality
 """
 
-import subprocess
 import tempfile
 from pathlib import Path
 
 import pytest
 
-from tests.support_cli_args import build_cli_decrypt_command
+from tests.support_cli_args import run_cli_decrypt
+from tests.support_common import (
+    handle_subprocess_error,
+    validate_plaintext_file_created,
+    validate_tdf3_file,
+)
 from tests.support_otdfctl_args import (
-    build_otdfctl_decrypt_command,
-    build_otdfctl_encrypt_command,
+    run_otdfctl_decrypt_command,
+    run_otdfctl_encrypt_command,
 )
 
 
 @pytest.mark.integration
-def test_otdfctl_encrypt_python_decrypt(collect_server_logs, temp_credentials_file):
+def test_otdfctl_encrypt_python_decrypt(
+    collect_server_logs, temp_credentials_file, project_root
+):
     """Integration test that uses otdfctl for encryption and the Python CLI for decryption"""
 
     # Create temporary directory for work
@@ -37,99 +43,57 @@ def test_otdfctl_encrypt_python_decrypt(collect_server_logs, temp_credentials_fi
         cli_decrypt_output = temp_path / "decrypted-by-cli.txt"
 
         # Run otdfctl encrypt first to create a TDF file
-        otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
+        otdfctl_encrypt_result = run_otdfctl_encrypt_command(
             creds_file=temp_credentials_file,
             input_file=input_file,
             output_file=otdfctl_tdf_output,
             mime_type="text/plain",
+            cwd=temp_path,
         )
 
-        otdfctl_encrypt_result = subprocess.run(
-            otdfctl_encrypt_cmd, capture_output=True, text=True, cwd=temp_path
+        # Fail fast on errors
+        handle_subprocess_error(
+            result=otdfctl_encrypt_result,
+            collect_server_logs=collect_server_logs,
+            scenario_name="otdfctl encrypt",
         )
-
-        # If otdfctl encrypt fails, skip the test (might be server issues)
-        if otdfctl_encrypt_result.returncode != 0:
-            raise Exception(f"otdfctl encrypt failed: {otdfctl_encrypt_result.stderr}")
 
         # Verify the TDF file was created
         assert otdfctl_tdf_output.exists(), "otdfctl did not create TDF file"
         assert otdfctl_tdf_output.stat().st_size > 0, "otdfctl created empty TDF file"
 
         # Now run otdfctl decrypt (this is the reference implementation)
-        otdfctl_decrypt_cmd = build_otdfctl_decrypt_command(
+        otdfctl_decrypt_result = run_otdfctl_decrypt_command(
             temp_credentials_file,
             otdfctl_tdf_output,
             otdfctl_decrypt_output,
+            cwd=temp_path,
         )
 
-        otdfctl_decrypt_result = subprocess.run(
-            otdfctl_decrypt_cmd, capture_output=True, text=True, cwd=temp_path
+        # Fail fast on errors
+        handle_subprocess_error(
+            result=otdfctl_decrypt_result,
+            collect_server_logs=collect_server_logs,
+            scenario_name="otdfctl decrypt",
         )
-
-        # Check that otdfctl decrypt succeeded
-        if otdfctl_decrypt_result.returncode != 0:
-            # Collect server logs for debugging
-            logs = collect_server_logs()
-            print(f"Server logs when otdfctl decrypt failed:\n{logs}")
-
-            # Check if this is a server connectivity issue
-            if (
-                "401 Unauthorized" in otdfctl_decrypt_result.stderr
-                or "token endpoint discovery" in otdfctl_decrypt_result.stderr
-                or "Issuer endpoint must be configured" in otdfctl_decrypt_result.stderr
-            ):
-                pytest.skip(
-                    f"Server connectivity or authentication issue: {otdfctl_decrypt_result.stderr}"
-                )
-            else:
-                assert otdfctl_decrypt_result.returncode == 0, (
-                    f"otdfctl decrypt failed: {otdfctl_decrypt_result.stderr}"
-                )
 
         # Run our Python CLI decrypt on the same TDF
-        cli_decrypt_cmd = build_cli_decrypt_command(
+        cli_decrypt_result = run_cli_decrypt(
             creds_file=temp_credentials_file,
             input_file=otdfctl_tdf_output,
             output_file=cli_decrypt_output,
+            cwd=project_root,
         )
 
-        cli_decrypt_result = subprocess.run(
-            cli_decrypt_cmd,
-            capture_output=True,
-            text=True,
-            cwd=Path(__file__).parent.parent,
+        # Fail fast on errors
+        handle_subprocess_error(
+            result=cli_decrypt_result,
+            collect_server_logs=collect_server_logs,
+            scenario_name="Python CLI decrypt",
         )
 
-        # Check that our CLI succeeded
-        if cli_decrypt_result.returncode != 0:
-            # Collect server logs for debugging
-            logs = collect_server_logs()
-            print(f"Server logs when Python CLI decrypt failed:\n{logs}")
-
-            # Check if this is a server connectivity issue
-            if (
-                "401 Unauthorized" in cli_decrypt_result.stderr
-                or "token endpoint discovery" in cli_decrypt_result.stderr
-                or "Issuer endpoint must be configured" in cli_decrypt_result.stderr
-            ):
-                pytest.skip(
-                    f"Server connectivity or authentication issue: {cli_decrypt_result.stderr}"
-                )
-            else:
-                assert cli_decrypt_result.returncode == 0, (
-                    f"Python CLI decrypt failed: {cli_decrypt_result.stderr}"
-                )
-
-        # Verify both decrypted files were created
-        assert otdfctl_decrypt_output.exists(), "otdfctl did not create decrypted file"
-        assert otdfctl_decrypt_output.stat().st_size > 0, (
-            "otdfctl created empty decrypted file"
-        )
-        assert cli_decrypt_output.exists(), "Python CLI did not create decrypted file"
-        assert cli_decrypt_output.stat().st_size > 0, (
-            "Python CLI created empty decrypted file"
-        )
+        validate_plaintext_file_created(path=otdfctl_decrypt_output, scenario="otdfctl")
+        validate_plaintext_file_created(path=cli_decrypt_output, scenario="Python CLI")
 
         # Verify both tools produce the same decrypted content
         with open(otdfctl_decrypt_output) as f:
@@ -179,82 +143,40 @@ def test_otdfctl_encrypt_otdfctl_decrypt(collect_server_logs, temp_credentials_f
         otdfctl_decrypt_output = temp_path / "otdfctl-roundtrip-decrypted.txt"
 
         # Run otdfctl encrypt
-        otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
+        otdfctl_encrypt_result = run_otdfctl_encrypt_command(
             creds_file=temp_credentials_file,
             input_file=input_file,
             output_file=otdfctl_tdf_output,
             mime_type="text/plain",
+            cwd=temp_path,
         )
 
-        otdfctl_encrypt_result = subprocess.run(
-            otdfctl_encrypt_cmd, capture_output=True, text=True, cwd=temp_path
+        # Fail fast on errors
+        handle_subprocess_error(
+            result=otdfctl_encrypt_result,
+            collect_server_logs=collect_server_logs,
+            scenario_name="otdfctl encrypt",
         )
-
-        # If otdfctl encrypt fails, skip the test (might be server issues)
-        if otdfctl_encrypt_result.returncode != 0:
-            # Collect server logs for debugging
-            logs = collect_server_logs()
-            print(f"Server logs when otdfctl encrypt failed:\n{logs}")
-
-            # Check if this is a server connectivity issue
-            if (
-                "401 Unauthorized" in otdfctl_encrypt_result.stderr
-                or "token endpoint discovery" in otdfctl_encrypt_result.stderr
-                or "Issuer endpoint must be configured" in otdfctl_encrypt_result.stderr
-            ):
-                pytest.skip(
-                    f"Server connectivity or authentication issue: {otdfctl_encrypt_result.stderr}"
-                )
-            else:
-                assert otdfctl_encrypt_result.returncode == 0, (
-                    f"otdfctl encrypt failed: {otdfctl_encrypt_result.stderr}"
-                )
 
         # Verify the TDF file was created
-        assert otdfctl_tdf_output.exists(), "otdfctl did not create TDF file"
-        assert otdfctl_tdf_output.stat().st_size > 0, "otdfctl created empty TDF file"
-
-        # Verify TDF file has correct ZIP signature
-        with open(otdfctl_tdf_output, "rb") as f:
-            tdf_header = f.read(4)
-        assert tdf_header == b"PK\x03\x04", "otdfctl output is not a valid ZIP file"
+        validate_tdf3_file(tdf_path=otdfctl_tdf_output, tool_name="otdfctl")
 
         # Run otdfctl decrypt
-        otdfctl_decrypt_cmd = build_otdfctl_decrypt_command(
+        otdfctl_decrypt_result = run_otdfctl_decrypt_command(
             temp_credentials_file,
             otdfctl_tdf_output,
             otdfctl_decrypt_output,
+            cwd=temp_path,
         )
 
-        otdfctl_decrypt_result = subprocess.run(
-            otdfctl_decrypt_cmd, capture_output=True, text=True, cwd=temp_path
+        # Fail fast on errors
+        handle_subprocess_error(
+            result=otdfctl_decrypt_result,
+            collect_server_logs=collect_server_logs,
+            scenario_name="otdfctl decrypt",
         )
 
-        # Check that otdfctl decrypt succeeded
-        if otdfctl_decrypt_result.returncode != 0:
-            # Collect server logs for debugging
-            logs = collect_server_logs()
-            print(f"Server logs when otdfctl decrypt failed:\n{logs}")
-
-            # Check if this is a server connectivity issue
-            if (
-                "401 Unauthorized" in otdfctl_decrypt_result.stderr
-                or "token endpoint discovery" in otdfctl_decrypt_result.stderr
-                or "Issuer endpoint must be configured" in otdfctl_decrypt_result.stderr
-            ):
-                pytest.skip(
-                    f"Server connectivity or authentication issue: {otdfctl_decrypt_result.stderr}"
-                )
-            else:
-                assert otdfctl_decrypt_result.returncode == 0, (
-                    f"otdfctl decrypt failed: {otdfctl_decrypt_result.stderr}"
-                )
-
-        # Verify the decrypted file was created
-        assert otdfctl_decrypt_output.exists(), "otdfctl did not create decrypted file"
-        assert otdfctl_decrypt_output.stat().st_size > 0, (
-            "otdfctl created empty decrypted file"
-        )
+        validate_plaintext_file_created(path=otdfctl_decrypt_output, scenario="otdfctl")
 
         # Verify the decrypted content matches the original
         with open(otdfctl_decrypt_output) as f:

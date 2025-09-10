@@ -4,7 +4,6 @@ Integration Tests for TDFReader.
 
 import io
 import json
-import subprocess
 import tempfile
 from pathlib import Path
 
@@ -14,14 +13,17 @@ from otdf_python.tdf_reader import (
     TDFReader,
 )
 from tests.config_pydantic import CONFIG_TDF
-from tests.support_otdfctl_args import build_otdfctl_encrypt_command
+from tests.support_common import handle_subprocess_error
+from tests.support_otdfctl_args import run_otdfctl_encrypt_command
 
 
 class TestTDFReaderIntegration:
     """Integration tests for TDFReader with real TDF files created by otdfctl."""
 
     @pytest.mark.integration
-    def test_read_otdfctl_created_tdf_structure(self, temp_credentials_file):
+    def test_read_otdfctl_created_tdf_structure(
+        self, temp_credentials_file, collect_server_logs
+    ):
         """Test that TDFReader can parse the structure of files created by otdfctl."""
 
         # Create temporary directory for work
@@ -38,22 +40,20 @@ class TestTDFReaderIntegration:
             otdfctl_output = temp_path / "test-reader.txt.tdf"
 
             # Run otdfctl encrypt
-            otdfctl_cmd = build_otdfctl_encrypt_command(
+            otdfctl_encrypt_result = run_otdfctl_encrypt_command(
                 creds_file=temp_credentials_file,
                 input_file=input_file,
                 output_file=otdfctl_output,
                 mime_type="text/plain",
+                cwd=temp_path,
             )
 
-            otdfctl_encrypt_result = subprocess.run(
-                otdfctl_cmd, capture_output=True, text=True, cwd=temp_path
+            # Fail fast on errors
+            handle_subprocess_error(
+                result=otdfctl_encrypt_result,
+                collect_server_logs=collect_server_logs,
+                scenario_name="otdfctl encrypt",
             )
-
-            # If otdfctl fails, fail fast
-            if otdfctl_encrypt_result.returncode != 0:
-                raise Exception(
-                    f"otdfctl encrypt failed: {otdfctl_encrypt_result.stderr}"
-                )
 
             # Verify the TDF file was created
             assert otdfctl_output.exists(), "otdfctl did not create TDF file"
@@ -104,7 +104,9 @@ class TestTDFReaderIntegration:
             assert policy_obj is not None, "Should be able to read policy object"
 
     @pytest.mark.integration
-    def test_read_otdfctl_tdf_with_attributes(self, temp_credentials_file):
+    def test_read_otdfctl_tdf_with_attributes(
+        self, temp_credentials_file, collect_server_logs
+    ):
         """Test reading TDF files created by otdfctl with data attributes."""
 
         # Create temporary directory for work
@@ -121,23 +123,21 @@ class TestTDFReaderIntegration:
             otdfctl_output = temp_path / "input.txt.tdf"
 
             # Run otdfctl encrypt with attributes
-            otdfctl_cmd = build_otdfctl_encrypt_command(
+            otdfctl_result = run_otdfctl_encrypt_command(
                 creds_file=temp_credentials_file,
                 input_file=input_file,
                 output_file=otdfctl_output,
                 mime_type="text/plain",
                 attributes=[CONFIG_TDF.TEST_OPENTDF_ATTRIBUTE_1],
+                cwd=temp_path,
             )
 
-            otdfctl_result = subprocess.run(
-                otdfctl_cmd, capture_output=True, text=True, cwd=temp_path
+            # Fail fast on errors
+            handle_subprocess_error(
+                result=otdfctl_result,
+                collect_server_logs=collect_server_logs,
+                scenario_name="otdfctl encrypt with attributest",
             )
-
-            # If otdfctl fails, fail fast
-            if otdfctl_result.returncode != 0:
-                raise Exception(
-                    f"otdfctl encrypt with attributes failed: {otdfctl_result.stderr}"
-                )
 
             # Verify the TDF file was created
             assert otdfctl_output.exists(), "otdfctl did not create TDF file"
@@ -177,7 +177,9 @@ class TestTDFReaderIntegration:
             )
 
     @pytest.mark.integration
-    def test_read_multiple_otdfctl_files(self, temp_credentials_file):
+    def test_read_multiple_otdfctl_files(
+        self, temp_credentials_file, collect_server_logs
+    ):
         """Test reading multiple TDF files of different types created by otdfctl."""
 
         # Create temporary directory for work
@@ -203,80 +205,68 @@ class TestTDFReaderIntegration:
                 },
             ]
 
-            successful_tests = 0
-
             for test_case in test_cases:
-                try:
-                    # Create input file
-                    input_file = temp_path / f"{test_case['name']}.txt"
-                    if isinstance(test_case["content"], bytes):
-                        with open(input_file, "wb") as f:
-                            f.write(test_case["content"])
-                    else:
-                        with open(input_file, "w") as f:
-                            f.write(test_case["content"])
+                # Create input file
+                input_file = temp_path / f"{test_case['name']}.txt"
+                if isinstance(test_case["content"], bytes):
+                    with open(input_file, "wb") as f:
+                        f.write(test_case["content"])
+                else:
+                    with open(input_file, "w") as f:
+                        f.write(test_case["content"])
 
-                    # Define output file
-                    output_file = temp_path / f"{test_case['name']}.tdf"
+                # Define output file
+                output_file = temp_path / f"{test_case['name']}.tdf"
 
-                    # Run otdfctl encrypt
-                    otdfctl_cmd = build_otdfctl_encrypt_command(
-                        creds_file=temp_credentials_file,
-                        input_file=input_file,
-                        output_file=output_file,
-                        mime_type=test_case["mime_type"],
+                # Run otdfctl encrypt
+                otdfctl_result = run_otdfctl_encrypt_command(
+                    creds_file=temp_credentials_file,
+                    input_file=input_file,
+                    output_file=output_file,
+                    mime_type=test_case["mime_type"],
+                    cwd=temp_path,
+                )
+
+                # Fail fast on errors
+                handle_subprocess_error(
+                    result=otdfctl_result,
+                    collect_server_logs=collect_server_logs,
+                    scenario_name=f"Test case {test_case['name']}, otdfctl encrypt",
+                )
+
+                # Test TDFReader on this file
+                with open(output_file, "rb") as f:
+                    tdf_data = f.read()
+
+                reader = TDFReader(io.BytesIO(tdf_data))
+
+                # Basic structure verification
+                manifest_content = reader.manifest()
+                assert manifest_content, (
+                    f"Manifest should not be empty for {test_case['name']}"
+                )
+
+                manifest_json = json.loads(manifest_content)
+                assert "payload" in manifest_json, (
+                    f"Manifest should contain payload for {test_case['name']}"
+                )
+
+                # Verify MIME type is preserved
+                payload_info = manifest_json["payload"]
+                if "mimeType" in payload_info:
+                    assert payload_info["mimeType"] == test_case["mime_type"], (
+                        f"MIME type should be preserved for {test_case['name']}"
                     )
 
-                    otdfctl_result = subprocess.run(
-                        otdfctl_cmd, capture_output=True, text=True, cwd=temp_path
-                    )
+                # Test payload reading
+                payload_buffer = bytearray(1024)
+                bytes_read = reader.read_payload_bytes(payload_buffer)
+                assert bytes_read > 0, (
+                    f"Should read payload bytes for {test_case['name']}"
+                )
 
-                    if otdfctl_result.returncode != 0:
-                        continue  # Skip this test case but don't fail the whole test
-
-                    # Test TDFReader on this file
-                    with open(output_file, "rb") as f:
-                        tdf_data = f.read()
-
-                    reader = TDFReader(io.BytesIO(tdf_data))
-
-                    # Basic structure verification
-                    manifest_content = reader.manifest()
-                    assert manifest_content, (
-                        f"Manifest should not be empty for {test_case['name']}"
-                    )
-
-                    manifest_json = json.loads(manifest_content)
-                    assert "payload" in manifest_json, (
-                        f"Manifest should contain payload for {test_case['name']}"
-                    )
-
-                    # Verify MIME type is preserved
-                    payload_info = manifest_json["payload"]
-                    if "mimeType" in payload_info:
-                        assert payload_info["mimeType"] == test_case["mime_type"], (
-                            f"MIME type should be preserved for {test_case['name']}"
-                        )
-
-                    # Test payload reading
-                    payload_buffer = bytearray(1024)
-                    bytes_read = reader.read_payload_bytes(payload_buffer)
-                    assert bytes_read > 0, (
-                        f"Should read payload bytes for {test_case['name']}"
-                    )
-
-                    # Test policy object reading
-                    policy_obj = reader.read_policy_object()
-                    assert policy_obj is not None, (
-                        f"Should read policy object for {test_case['name']}"
-                    )
-
-                    successful_tests += 1
-
-                except Exception as e:
-                    # Log the error but continue with other test cases
-                    print(f"Test case {test_case['name']} failed: {e}")
-                    continue
-
-            # Require at least one successful test to pass
-            assert successful_tests > 0, "At least one test case should succeed"
+                # Test policy object reading
+                policy_obj = reader.read_policy_object()
+                assert policy_obj is not None, (
+                    f"Should read policy object for {test_case['name']}"
+                )

@@ -9,12 +9,12 @@ import sys
 from pathlib import Path
 
 from tests.config_pydantic import CONFIG_TDF
-from tests.support_common import get_platform_url
+from tests.support_common import get_platform_url, get_testing_environ
 
 logger = logging.getLogger(__name__)
 
 
-def get_cli_flags() -> list[str]:
+def _get_cli_flags() -> list[str]:
     """
     Determine (Python) CLI flags based on platform URL
     """
@@ -31,7 +31,7 @@ def get_cli_flags() -> list[str]:
     return cli_flags
 
 
-def run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict:
+def run_cli_inspect(tdf_path: Path, creds_file: Path, cwd: Path) -> dict:
     """
     Helper function to run Python CLI inspect command and return parsed JSON result.
 
@@ -48,7 +48,7 @@ def run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict:
         get_platform_url(),
         "--with-client-creds-file",
         str(creds_file),
-        *get_cli_flags(),
+        *_get_cli_flags(),
         "inspect",
         str(tdf_path),
     ]
@@ -56,11 +56,7 @@ def run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict:
     try:
         # Run the CLI command
         result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            check=True,
-            cwd=Path(__file__).parent.parent,  # Project root
+            cmd, capture_output=True, text=True, check=True, cwd=cwd
         )
 
         # Parse JSON output
@@ -71,7 +67,7 @@ def run_cli_inspect(tdf_path: Path, creds_file: Path) -> dict:
         raise Exception(f"Failed to inspect TDF {tdf_path}: {e}") from e
 
 
-def build_cli_decrypt_command(
+def _build_cli_decrypt_command(
     creds_file: Path,
     input_file: Path,
     output_file: Path,
@@ -86,7 +82,7 @@ def build_cli_decrypt_command(
         platform_url if platform_url is not None else get_platform_url(),
         "--with-client-creds-file",
         str(creds_file),
-        *get_cli_flags(),
+        *_get_cli_flags(),
         "decrypt",
         str(input_file),
         "-o",
@@ -95,10 +91,29 @@ def build_cli_decrypt_command(
     return cmd
 
 
-# def run_cli_decrypt() -> subprocess.CompletedProcess
+def run_cli_decrypt(
+    creds_file: Path,
+    input_file: Path,
+    output_file: Path,
+    cwd: Path,
+    platform_url: str | None = None,
+) -> subprocess.CompletedProcess:
+    python_decrypt_cmd = _build_cli_decrypt_command(
+        creds_file=creds_file,
+        input_file=input_file,
+        output_file=output_file,
+        platform_url=platform_url,
+    )
+    return subprocess.run(
+        python_decrypt_cmd,
+        capture_output=True,
+        text=True,
+        cwd=cwd,
+        env=get_testing_environ(),
+    )
 
 
-def build_cli_encrypt_command(
+def _build_cli_encrypt_command(
     creds_file: Path,
     input_file: Path,
     output_file: Path,
@@ -115,7 +130,7 @@ def build_cli_encrypt_command(
         platform_url if platform_url is not None else get_platform_url(),
         "--with-client-creds-file",
         str(creds_file),
-        *get_cli_flags(),
+        *_get_cli_flags(),
         "encrypt",
         "--mime-type",
         mime_type,
@@ -139,4 +154,30 @@ def build_cli_encrypt_command(
     return cmd
 
 
-# def run_cli_encrypt() -> subprocess.CompletedProcess
+def run_cli_encrypt(
+    creds_file: Path,
+    input_file: Path,
+    output_file: Path,
+    cwd: Path,
+    platform_url: str | None = None,
+    mime_type: str = "text/plain",
+    attributes: list[str] | None = None,
+    container_type: str = "tdf",
+) -> subprocess.CompletedProcess:
+    python_encrypt_cmd = _build_cli_encrypt_command(
+        creds_file=creds_file,
+        input_file=input_file,
+        output_file=output_file,
+        platform_url=platform_url,
+        mime_type=mime_type,
+        attributes=attributes,
+        container_type=container_type,
+    )
+
+    return subprocess.run(
+        python_encrypt_cmd,
+        capture_output=True,
+        text=True,
+        cwd=cwd,
+        env=get_testing_environ(),
+    )

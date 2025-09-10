@@ -2,25 +2,28 @@
 Integration Test CLI functionality
 """
 
-import subprocess
 import tempfile
 from pathlib import Path
 
 import pytest
 
-from tests.support_cli_args import build_cli_decrypt_command, build_cli_encrypt_command
+from tests.support_cli_args import run_cli_decrypt, run_cli_encrypt
 from tests.support_common import (
-    get_testing_environ,
+    compare_tdf3_file_size,
     handle_subprocess_error,
+    validate_plaintext_file_created,
+    validate_tdf3_file,
 )
 from tests.support_otdfctl_args import (
-    build_otdfctl_decrypt_command,
-    build_otdfctl_encrypt_command,
+    run_otdfctl_decrypt_command,
+    run_otdfctl_encrypt_command,
 )
 
 
 @pytest.mark.integration
-def test_cli_decrypt_otdfctl_tdf(collect_server_logs, temp_credentials_file):
+def test_cli_decrypt_otdfctl_tdf(
+    collect_server_logs, temp_credentials_file, project_root
+):
     """
     Test that the Python CLI can successfully decrypt TDF files created by otdfctl.
     """
@@ -42,19 +45,12 @@ def test_cli_decrypt_otdfctl_tdf(collect_server_logs, temp_credentials_file):
         cli_decrypt_output = temp_path / "decrypted-by-cli.txt"
 
         # Run otdfctl encrypt
-        otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
+        otdfctl_result = run_otdfctl_encrypt_command(
             creds_file=temp_credentials_file,
             input_file=input_file,
             output_file=otdfctl_tdf_output,
             mime_type="text/plain",
-        )
-
-        otdfctl_result = subprocess.run(
-            otdfctl_encrypt_cmd,
-            capture_output=True,
-            text=True,
             cwd=temp_path,
-            env=get_testing_environ(),
         )
 
         # Fail fast on errors
@@ -68,19 +64,12 @@ def test_cli_decrypt_otdfctl_tdf(collect_server_logs, temp_credentials_file):
         assert otdfctl_tdf_output.exists(), "otdfctl did not create TDF file"
         assert otdfctl_tdf_output.stat().st_size > 0, "otdfctl created empty TDF file"
 
-        cli_decrypt_cmd = build_cli_decrypt_command(
+        # Run our Python CLI decrypt on the otdfctl-created TDF
+        cli_decrypt_result = run_cli_decrypt(
             creds_file=temp_credentials_file,
             input_file=otdfctl_tdf_output,
             output_file=cli_decrypt_output,
-        )
-
-        # Run our Python CLI decrypt on the otdfctl-created TDF
-        cli_decrypt_result = subprocess.run(
-            cli_decrypt_cmd,
-            capture_output=True,
-            text=True,
-            cwd=Path(__file__).parent.parent,
-            env=get_testing_environ(),
+            cwd=project_root,
         )
 
         # Fail fast on errors
@@ -90,10 +79,8 @@ def test_cli_decrypt_otdfctl_tdf(collect_server_logs, temp_credentials_file):
             scenario_name="Python CLI decrypt",
         )
 
-        # Verify the decrypted file was created
-        assert cli_decrypt_output.exists(), "Python CLI did not create decrypted file"
-        assert cli_decrypt_output.stat().st_size > 0, (
-            "Python CLI created empty decrypted file"
+        validate_plaintext_file_created(
+            path=cli_decrypt_output, scenario="Python decrypt"
         )
 
         # Verify the content matches the original
@@ -107,7 +94,9 @@ def test_cli_decrypt_otdfctl_tdf(collect_server_logs, temp_credentials_file):
 
 
 @pytest.mark.integration
-def test_otdfctl_decrypt_comparison(collect_server_logs, temp_credentials_file):
+def test_otdfctl_decrypt_comparison(
+    collect_server_logs, temp_credentials_file, project_root
+):
     """
     Test comparative decryption between otdfctl and Python CLI on the same TDF.
     """
@@ -130,19 +119,12 @@ def test_otdfctl_decrypt_comparison(collect_server_logs, temp_credentials_file):
         cli_decrypt_output = temp_path / "decrypted-by-cli.txt"
 
         # Run otdfctl encrypt first to create a TDF file
-        otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
+        otdfctl_encrypt_result = run_otdfctl_encrypt_command(
             creds_file=temp_credentials_file,
             input_file=input_file,
             output_file=otdfctl_tdf_output,
             mime_type="text/plain",
-        )
-
-        otdfctl_encrypt_result = subprocess.run(
-            otdfctl_encrypt_cmd,
-            capture_output=True,
-            text=True,
             cwd=temp_path,
-            env=get_testing_environ(),
         )
 
         # Fail fast on errors
@@ -157,18 +139,11 @@ def test_otdfctl_decrypt_comparison(collect_server_logs, temp_credentials_file):
         assert otdfctl_tdf_output.stat().st_size > 0, "otdfctl created empty TDF file"
 
         # Now run otdfctl decrypt (this is the reference implementation)
-        otdfctl_decrypt_cmd = build_otdfctl_decrypt_command(
+        otdfctl_decrypt_result = run_otdfctl_decrypt_command(
             temp_credentials_file,
             otdfctl_tdf_output,
             otdfctl_decrypt_output,
-        )
-
-        otdfctl_decrypt_result = subprocess.run(
-            otdfctl_decrypt_cmd,
-            capture_output=True,
-            text=True,
             cwd=temp_path,
-            env=get_testing_environ(),
         )
 
         # Fail fast on errors
@@ -178,19 +153,11 @@ def test_otdfctl_decrypt_comparison(collect_server_logs, temp_credentials_file):
             scenario_name="otdfctl decrypt",
         )
 
-        cli_decrypt_cmd = build_cli_decrypt_command(
+        cli_decrypt_result = run_cli_decrypt(
             creds_file=temp_credentials_file,
             input_file=otdfctl_tdf_output,
             output_file=cli_decrypt_output,
-        )
-
-        # Run our Python CLI decrypt on the same TDF
-        cli_decrypt_result = subprocess.run(
-            cli_decrypt_cmd,
-            capture_output=True,
-            text=True,
-            cwd=Path(__file__).parent.parent,
-            env=get_testing_environ(),
+            cwd=project_root,
         )
 
         # Fail fast on errors
@@ -200,15 +167,8 @@ def test_otdfctl_decrypt_comparison(collect_server_logs, temp_credentials_file):
             scenario_name="Python CLI decrypt",
         )
 
-        # Verify both decrypted files were created
-        assert otdfctl_decrypt_output.exists(), "otdfctl did not create decrypted file"
-        assert otdfctl_decrypt_output.stat().st_size > 0, (
-            "otdfctl created empty decrypted file"
-        )
-        assert cli_decrypt_output.exists(), "Python CLI did not create decrypted file"
-        assert cli_decrypt_output.stat().st_size > 0, (
-            "Python CLI created empty decrypted file"
-        )
+        validate_plaintext_file_created(path=otdfctl_decrypt_output, scenario="otdfctl")
+        validate_plaintext_file_created(path=cli_decrypt_output, scenario="Python CL")
 
         # Verify both tools produce the same decrypted content
         with open(otdfctl_decrypt_output) as f:
@@ -260,19 +220,12 @@ def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs, temp_credentials
         otdfctl_decrypt_output = temp_path / "otdfctl-roundtrip-decrypted.txt"
 
         # Run otdfctl encrypt
-        otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
+        otdfctl_encrypt_result = run_otdfctl_encrypt_command(
             creds_file=temp_credentials_file,
             input_file=input_file,
             output_file=otdfctl_tdf_output,
             mime_type="text/plain",
-        )
-
-        otdfctl_encrypt_result = subprocess.run(
-            otdfctl_encrypt_cmd,
-            capture_output=True,
-            text=True,
             cwd=temp_path,
-            env=get_testing_environ(),
         )
 
         # Fail fast on errors
@@ -283,27 +236,14 @@ def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs, temp_credentials
         )
 
         # Verify the TDF file was created
-        assert otdfctl_tdf_output.exists(), "otdfctl did not create TDF file"
-        assert otdfctl_tdf_output.stat().st_size > 0, "otdfctl created empty TDF file"
-
-        # Verify TDF file has correct ZIP signature
-        with open(otdfctl_tdf_output, "rb") as f:
-            tdf_header = f.read(4)
-        assert tdf_header == b"PK\x03\x04", "otdfctl output is not a valid ZIP file"
+        validate_tdf3_file(otdfctl_tdf_output, "otdfctl")
 
         # Run otdfctl decrypt
-        otdfctl_decrypt_cmd = build_otdfctl_decrypt_command(
+        otdfctl_decrypt_result = run_otdfctl_decrypt_command(
             temp_credentials_file,
             otdfctl_tdf_output,
             otdfctl_decrypt_output,
-        )
-
-        otdfctl_decrypt_result = subprocess.run(
-            otdfctl_decrypt_cmd,
-            capture_output=True,
-            text=True,
             cwd=temp_path,
-            env=get_testing_environ(),
         )
 
         # Fail fast on errors
@@ -313,11 +253,7 @@ def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs, temp_credentials
             scenario_name="otdfctl decrypt",
         )
 
-        # Verify the decrypted file was created
-        assert otdfctl_decrypt_output.exists(), "otdfctl did not create decrypted file"
-        assert otdfctl_decrypt_output.stat().st_size > 0, (
-            "otdfctl created empty decrypted file"
-        )
+        validate_plaintext_file_created(path=otdfctl_decrypt_output, scenario="otdfctl")
 
         # Verify the decrypted content matches the original
         with open(otdfctl_decrypt_output) as f:
@@ -344,7 +280,9 @@ def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs, temp_credentials
 
 
 @pytest.mark.integration
-def test_cli_encrypt_integration(collect_server_logs, temp_credentials_file):
+def test_cli_encrypt_integration(
+    collect_server_logs, temp_credentials_file, project_root
+):
     """Integration test comparing our CLI with otdfctl"""
 
     # Create temporary directory for work
@@ -362,15 +300,12 @@ def test_cli_encrypt_integration(collect_server_logs, temp_credentials_file):
         cli_output = temp_path / "hello-world-cli.txt.tdf"
 
         # Run otdfctl encrypt
-        otdfctl_cmd = build_otdfctl_encrypt_command(
+        otdfctl_result = run_otdfctl_encrypt_command(
             creds_file=temp_credentials_file,
             input_file=input_file,
             output_file=otdfctl_output,
             mime_type="text/plain",
-        )
-
-        otdfctl_result = subprocess.run(
-            otdfctl_cmd, capture_output=True, text=True, cwd=temp_path
+            cwd=temp_path,
         )
 
         # Fail fast on errors
@@ -380,17 +315,14 @@ def test_cli_encrypt_integration(collect_server_logs, temp_credentials_file):
             scenario_name="otdfctl encrypt",
         )
 
-        cli_cmd = build_cli_encrypt_command(
+        # Run our Python CLI encrypt
+        cli_result = run_cli_encrypt(
             creds_file=temp_credentials_file,
             input_file=input_file,
             output_file=cli_output,
             mime_type="text/plain",
             attributes=None,
-        )
-
-        # Run our Python CLI encrypt
-        cli_result = subprocess.run(
-            cli_cmd, capture_output=True, text=True, cwd=Path(__file__).parent.parent
+            cwd=project_root,
         )
 
         # Fail fast on errors
@@ -400,29 +332,7 @@ def test_cli_encrypt_integration(collect_server_logs, temp_credentials_file):
             scenario_name="Python CLI encrypt",
         )
 
-        # Both output files should exist
-        assert otdfctl_output.exists(), "otdfctl output file does not exist"
-        assert cli_output.exists(), "Python CLI output file does not exist"
+        validate_tdf3_file(otdfctl_output, "otdfctl")
+        validate_tdf3_file(cli_output, "Python CLI")
 
-        # Both files should be non-empty and similar in size
-        otdfctl_size = otdfctl_output.stat().st_size
-        cli_size = cli_output.stat().st_size
-
-        assert otdfctl_size > 0, "otdfctl output is empty"
-        assert cli_size > 0, "Python CLI output is empty"
-
-        # Files should be reasonably similar in size (within 50% of each other)
-        # This accounts for potential differences in metadata or formatting
-        size_diff_ratio = abs(otdfctl_size - cli_size) / max(otdfctl_size, cli_size)
-        assert size_diff_ratio < 0.3, (
-            f"File sizes too different: otdfctl={otdfctl_size}, cli={cli_size}"
-        )
-
-        # Both files should start with ZIP signature (TDF format)
-        with open(otdfctl_output, "rb") as f:
-            otdfctl_header = f.read(4)
-        with open(cli_output, "rb") as f:
-            cli_header = f.read(4)
-
-        assert otdfctl_header == b"PK\x03\x04", "otdfctl output is not a valid ZIP file"
-        assert cli_header == b"PK\x03\x04", "Python CLI output is not a valid ZIP file"
+        compare_tdf3_file_size(otdfctl_output, cli_output)

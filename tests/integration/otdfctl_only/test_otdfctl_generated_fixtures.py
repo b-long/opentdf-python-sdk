@@ -1,6 +1,6 @@
-from pathlib import Path
-
 import pytest
+
+from tests.support_common import validate_tdf3_file
 
 
 @pytest.mark.integration
@@ -80,15 +80,15 @@ def test_sample_file_contents(sample_input_files):
 
 
 @pytest.mark.integration
-def test_target_mode_fixtures_exist(all_target_mode_tdf_files):
+def test_target_mode_fixtures_exist(all_target_mode_tdf_files, known_target_modes):
     """Test that target mode fixtures generate TDF files correctly."""
     # Check that we have both versions
     assert "v4.2.2" in all_target_mode_tdf_files
     assert "v4.3.1" in all_target_mode_tdf_files
 
     # Check each version has the expected file types
-    for version in ["v4.2.2", "v4.3.1"]:
-        tdf_files = all_target_mode_tdf_files[version]
+    for target_mode in known_target_modes:
+        tdf_files = all_target_mode_tdf_files[target_mode]
 
         # Check all expected file types exist
         expected_types = [
@@ -97,18 +97,14 @@ def test_target_mode_fixtures_exist(all_target_mode_tdf_files):
             "with_attributes",
         ]  # Consider 'empty' as well
         for file_type in expected_types:
-            assert file_type in tdf_files, f"Missing {file_type} TDF for {version}"
+            assert file_type in tdf_files, f"Missing {file_type} TDF for {target_mode}"
 
             # Check the TDF file exists and is not empty
             tdf_path = tdf_files[file_type]
-            assert isinstance(tdf_path, Path)
-            assert tdf_path.exists(), f"TDF file does not exist: {tdf_path}"
-            assert tdf_path.stat().st_size > 0, f"TDF file is empty: {tdf_path}"
-
-            # Check it's a valid ZIP file (TDF format)
-            with open(tdf_path, "rb") as f:
-                header = f.read(4)
-            assert header == b"PK\x03\x04", f"TDF file is not a valid ZIP: {tdf_path}"
+            validate_tdf3_file(
+                tdf_path,
+                f"otdfctl generated using target-mode {target_mode} {file_type}",
+            )
 
 
 @pytest.mark.integration

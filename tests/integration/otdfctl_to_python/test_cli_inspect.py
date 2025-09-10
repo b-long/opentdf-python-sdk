@@ -12,7 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.mark.integration
-def test_cli_inspect_v4_2_2_vs_v4_3_1(all_target_mode_tdf_files, temp_credentials_file):
+def test_cli_inspect_v4_2_2_vs_v4_3_1(
+    all_target_mode_tdf_files, temp_credentials_file, project_root
+):
     """
     Test Python CLI inspect with various TDF versions created by otdfctl.
     """
@@ -26,10 +28,10 @@ def test_cli_inspect_v4_2_2_vs_v4_3_1(all_target_mode_tdf_files, temp_credential
         v4_3_1_tdf = v4_3_1_files[file_type]
 
         # Inspect v4.2.2 TDF
-        v4_2_2_result = run_cli_inspect(v4_2_2_tdf, temp_credentials_file)
+        v4_2_2_result = run_cli_inspect(v4_2_2_tdf, temp_credentials_file, project_root)
 
         # Inspect v4.3.1 TDF
-        v4_3_1_result = run_cli_inspect(v4_3_1_tdf, temp_credentials_file)
+        v4_3_1_result = run_cli_inspect(v4_3_1_tdf, temp_credentials_file, project_root)
 
         # Both should succeed
         assert v4_2_2_result is not None, f"Failed to inspect v4.2.2 {file_type} TDF"
@@ -79,8 +81,7 @@ def test_cli_inspect_v4_2_2_vs_v4_3_1(all_target_mode_tdf_files, temp_credential
 
 @pytest.mark.integration
 def test_cli_inspect_different_file_types(
-    all_target_mode_tdf_files,
-    temp_credentials_file,
+    all_target_mode_tdf_files, temp_credentials_file, project_root, known_target_modes
 ):
     """
     Test CLI inspect with different file types.
@@ -89,8 +90,8 @@ def test_cli_inspect_different_file_types(
     assert "v4.3.1" in all_target_mode_tdf_files
 
     # Check each version has the expected file types
-    for version in ["v4.2.2", "v4.3.1"]:
-        tdf_files = all_target_mode_tdf_files[version]
+    for target_mode in known_target_modes:
+        tdf_files = all_target_mode_tdf_files[target_mode]
 
         file_types_to_test = [
             "text",
@@ -102,10 +103,10 @@ def test_cli_inspect_different_file_types(
             tdf_path = tdf_files[file_type]
 
             # Inspect the TDF
-            result = run_cli_inspect(tdf_path, temp_credentials_file)
+            result = run_cli_inspect(tdf_path, temp_credentials_file, project_root)
 
             assert result is not None, (
-                f"Failed to inspect {file_type} TDF, TDF version {version}"
+                f"Failed to inspect {file_type} TDF, TDF version {target_mode}"
             )
             assert "manifest" in result, f"{file_type} TDF inspection missing manifest"
 
