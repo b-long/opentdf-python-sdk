@@ -11,11 +11,15 @@
       "extra-files": [
         "pyproject.toml",
         "src/otdf_python/cli.py",
-        "otdf-python-proto/pyproject.toml",
         {
           "path": "uv.lock",
           "type": "toml",
           "jsonpath": "$.package[?(@.name.value=='otdf-python')].version"
+        },
+        {
+          "path": "otdf-python-proto/pyproject.toml",
+          "type": "toml",
+          "jsonpath": "$.project[?(@.name.value=='otdf-python-proto')].version"
         },
         {
           "path": "otdf-python-proto/uv.lock",

@@ -1,6 +1,6 @@
 [project]
 name = "otdf-python-proto"
-version = "0.3.2"
+version = "0.3.1"
 description = "Generated protobuf files for OpenTDF Python SDK"
 readme = "README.md"
 authors = [

@@ -9,6 +9,10 @@ Unofficial OpenTDF SDK for Python
 - **Flexible Configuration**: Support for various authentication methods and platform endpoints
 - **Comprehensive Testing**: Full test suite with unit and integration tests
 
+## Legacy Version
+
+A legacy version (0.2.x) of this project is available for users who need the previous implementation. For more information, see [LEGACY_VERSION.md](docs/LEGACY_VERSION.md) or visit the [legacy branch on GitHub](https://github.com/b-long/opentdf-python-sdk/tree/0.2.x).
+
 ## Prerequisites
 
 This project uses [uv](https://docs.astral.sh/uv/) for dependency management and task running.
@@ -170,30 +174,6 @@ with open("decrypted.txt", "wb") as f:
 
 # Don't forget to close the SDK when done
 sdk.close()
-```
-
-### NanoTDF Support
-
-```python
-from io import BytesIO
-from otdf_python.config import NanoTDFConfig
-
-# Create NanoTDF configuration
-config = NanoTDFConfig(
-    attributes=["https://example.com/attr/classification/value/public"],
-    ecc_mode="ecdsa"  # or "gmac"
-)
-
-# Encrypt to NanoTDF format
-input_data = b"Hello, World!"
-output_stream = BytesIO()
-size = sdk.create_nano_tdf(BytesIO(input_data), output_stream, config)
-encrypted_data = output_stream.getvalue()
-
-# Decrypt NanoTDF
-decrypted_stream = BytesIO()
-sdk.read_nano_tdf(BytesIO(encrypted_data), decrypted_stream, config)
-decrypted_data = decrypted_stream.getvalue()
 ```
 
 ## Project Structure
