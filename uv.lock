@@ -707,6 +707,7 @@ dev = [
     { name = "pytest" },
     { name = "respx" },
     { name = "ruff" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
 
 [package.metadata]
@@ -729,6 +730,7 @@ dev = [
     { name = "pytest", specifier = ">=8.4.1" },
     { name = "respx", specifier = ">=0.21.1" },
     { name = "ruff", specifier = ">=0.12.10" },
+    { name = "tomli", marker = "python_full_version < '3.11'", specifier = ">=2.2.1" },
 ]
 
 [[package]]

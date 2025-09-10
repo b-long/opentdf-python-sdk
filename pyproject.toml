@@ -38,6 +38,7 @@ dev = [
     "pytest>=8.4.1",
     "respx>=0.21.1",
     "ruff>=0.12.10",
+    "tomli>=2.2.1 ; python_full_version < '3.11'",
 ]
 
 [tool.pytest.ini_options]
