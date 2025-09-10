@@ -1,6 +1,6 @@
 # Legacy Version
 
-The legacy version of this project is available for now using the Github branch: `0.2.x`.
+The legacy version of this project is available using the Github branch: `0.2.x`.
 
 You can access it directly via the following link:
 https://github.com/b-long/opentdf-python-sdk/tree/0.2.x

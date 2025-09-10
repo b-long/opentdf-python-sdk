@@ -9,6 +9,10 @@ Unofficial OpenTDF SDK for Python
 - **Flexible Configuration**: Support for various authentication methods and platform endpoints
 - **Comprehensive Testing**: Full test suite with unit and integration tests
 
+## Legacy Version
+
+A legacy version (0.2.x) of this project is available for users who need the previous implementation. For more information, see [LEGACY_VERSION.md](docs/LEGACY_VERSION.md) or visit the [legacy branch on GitHub](https://github.com/b-long/opentdf-python-sdk/tree/0.2.x).
+
 ## Prerequisites
 
 This project uses [uv](https://docs.astral.sh/uv/) for dependency management and task running.
