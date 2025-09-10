@@ -228,15 +228,10 @@ def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs, temp_credentials
             scenario_name="otdfctl decrypt",
         )
 
-        validate_plaintext_file_created(path=otdfctl_decrypt_output, scenario="otdfctl")
-
-        # Verify the decrypted content matches the original
-        with open(otdfctl_decrypt_output) as f:
-            decrypted_content = f.read()
-
-        assert decrypted_content == input_content, (
-            f"otdfctl roundtrip failed - decrypted content does not match original. "
-            f"Expected: '{input_content}', Got: '{decrypted_content}'"
+        validate_plaintext_file_created(
+            path=otdfctl_decrypt_output,
+            scenario="otdfctl",
+            expected_content=input_content,
         )
 
         # Verify file sizes are reasonable
