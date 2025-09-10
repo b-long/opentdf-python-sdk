@@ -14,12 +14,8 @@ def test_test_data_directory_structure(tdf_v4_2_2_files, tdf_v4_3_1_files):
             f"v4.2.2 TDF file key should exist: {file_key}"
         )
         tdf_file_path = tdf_v4_2_2_files[file_key]
-        assert tdf_file_path.exists(), f"v4.2.2 TDF file should exist: {tdf_file_path}"
-        assert tdf_file_path.suffix == ".tdf", (
-            f"File should have .tdf extension: {tdf_file_path}"
-        )
-        assert tdf_file_path.stat().st_size > 0, (
-            f"TDF file should not be empty: {tdf_file_path}"
+        validate_tdf3_file(
+            tdf_file_path, f"otdfctl generated using target mode v4.2.2 {file_key}"
         )
 
     # Check v4.3.1 TDF files exist and are valid
@@ -29,12 +25,8 @@ def test_test_data_directory_structure(tdf_v4_2_2_files, tdf_v4_3_1_files):
             f"v4.3.1 TDF file key should exist: {file_key}"
         )
         tdf_file_path = tdf_v4_3_1_files[file_key]
-        assert tdf_file_path.exists(), f"v4.3.1 TDF file should exist: {tdf_file_path}"
-        assert tdf_file_path.suffix == ".tdf", (
-            f"File should have .tdf extension: {tdf_file_path}"
-        )
-        assert tdf_file_path.stat().st_size > 0, (
-            f"TDF file should not be empty: {tdf_file_path}"
+        validate_tdf3_file(
+            tdf_file_path, f"otdfctl generated using target mode v4.3.1 {file_key}"
         )
 
     # Verify the TDF files are in the correct directory structure

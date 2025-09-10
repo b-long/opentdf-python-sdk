@@ -60,9 +60,7 @@ def test_cli_decrypt_otdfctl_tdf(
             scenario_name="otdfctl encrypt",
         )
 
-        # Verify the TDF file was created
-        assert otdfctl_tdf_output.exists(), "otdfctl did not create TDF file"
-        assert otdfctl_tdf_output.stat().st_size > 0, "otdfctl created empty TDF file"
+        validate_tdf3_file(otdfctl_tdf_output, "otdfctl")
 
         # Run our Python CLI decrypt on the otdfctl-created TDF
         cli_decrypt_result = run_cli_decrypt(
@@ -127,9 +125,7 @@ def test_otdfctl_decrypt_comparison(
             scenario_name="otdfctl encrypt",
         )
 
-        # Verify the TDF file was created
-        assert otdfctl_tdf_output.exists(), "otdfctl did not create TDF file"
-        assert otdfctl_tdf_output.stat().st_size > 0, "otdfctl created empty TDF file"
+        validate_tdf3_file(otdfctl_tdf_output, "otdfctl")
 
         # Now run otdfctl decrypt (this is the reference implementation)
         otdfctl_decrypt_result = run_otdfctl_decrypt_command(

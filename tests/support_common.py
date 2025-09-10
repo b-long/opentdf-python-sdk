@@ -58,6 +58,7 @@ def validate_tdf3_file(tdf_path: Path, tool_name: str) -> None:
     with open(tdf_path, "rb") as f:
         tdf_header = f.read(4)
     assert tdf_header == b"PK\x03\x04", f"{tool_name} output is not a valid ZIP file"
+    assert tdf_path.suffix == ".tdf", f"File should have .tdf extension: {tdf_path}"
 
 
 def validate_plaintext_file_created(
