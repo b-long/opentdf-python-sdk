@@ -163,7 +163,7 @@ def test_otdfctl_decrypt_comparison(
         )
         validate_plaintext_file_created(
             path=cli_decrypt_output,
-            scenario="Python CL",
+            scenario="Python CLI",
             expected_content=input_content,
         )
 
