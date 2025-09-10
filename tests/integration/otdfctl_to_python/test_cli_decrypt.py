@@ -10,14 +10,17 @@ from pathlib import Path
 import pytest
 
 from tests.support_cli_args import (
-    build_cli_decrypt_command,
+    run_cli_decrypt,
 )
+from tests.support_common import handle_subprocess_error
 
 logger = logging.getLogger(__name__)
 
 
 @pytest.mark.integration
-def test_cli_decrypt_v4_2_2_vs_v4_3_1(all_target_mode_tdf_files, temp_credentials_file):
+def test_cli_decrypt_v4_2_2_vs_v4_3_1(
+    all_target_mode_tdf_files, temp_credentials_file, collect_server_logs, project_root
+):
     """
     Test Python CLI decrypt with various TDF versions created by otdfctl.
     """
@@ -31,10 +34,14 @@ def test_cli_decrypt_v4_2_2_vs_v4_3_1(all_target_mode_tdf_files, temp_credential
         v4_3_1_tdf = v4_3_1_files[file_type]
 
         # Decrypt v4.2.2 TDF
-        v4_2_2_output = _run_cli_decrypt(v4_2_2_tdf, temp_credentials_file)
+        v4_2_2_output = _run_cli_decrypt(
+            v4_2_2_tdf, temp_credentials_file, project_root, collect_server_logs
+        )
 
         # Decrypt v4.3.1 TDF
-        v4_3_1_output = _run_cli_decrypt(v4_3_1_tdf, temp_credentials_file)
+        v4_3_1_output = _run_cli_decrypt(
+            v4_3_1_tdf, temp_credentials_file, project_root, collect_server_logs
+        )
 
         # Both should succeed and produce output files
         assert v4_2_2_output is not None, f"Failed to decrypt v4.2.2 {file_type} TDF"
@@ -75,7 +82,11 @@ def test_cli_decrypt_v4_2_2_vs_v4_3_1(all_target_mode_tdf_files, temp_credential
 
 @pytest.mark.integration
 def test_cli_decrypt_different_file_types(
-    all_target_mode_tdf_files, temp_credentials_file
+    all_target_mode_tdf_files,
+    temp_credentials_file,
+    collect_server_logs,
+    project_root,
+    known_target_modes,
 ):
     """
     Test CLI decrypt with different file types.
@@ -85,8 +96,8 @@ def test_cli_decrypt_different_file_types(
     assert "v4.3.1" in all_target_mode_tdf_files
 
     # Check each version has the expected file types
-    for version in ["v4.2.2", "v4.3.1"]:
-        tdf_files = all_target_mode_tdf_files[version]
+    for target_mode in known_target_modes:
+        tdf_files = all_target_mode_tdf_files[target_mode]
 
         file_types_to_test = [
             "text",
@@ -98,7 +109,9 @@ def test_cli_decrypt_different_file_types(
             tdf_path = tdf_files[file_type]
 
             # Decrypt the TDF
-            output_file = _run_cli_decrypt(tdf_path, temp_credentials_file)
+            output_file = _run_cli_decrypt(
+                tdf_path, temp_credentials_file, project_root, collect_server_logs
+            )
 
             assert output_file is not None, f"Failed to decrypt {file_type} TDF"
             assert output_file.exists(), (
@@ -136,7 +149,9 @@ def test_cli_decrypt_different_file_types(
             output_file.unlink()
 
 
-def _run_cli_decrypt(tdf_path: Path, creds_file: Path) -> Path | None:
+def _run_cli_decrypt(
+    tdf_path: Path, creds_file: Path, cwd: Path, collect_server_logs
+) -> Path | None:
     """
     Helper function to run Python CLI decrypt command and return the output file path.
 
@@ -148,24 +163,19 @@ def _run_cli_decrypt(tdf_path: Path, creds_file: Path) -> Path | None:
 
     try:
         # Build CLI command
-        cmd = build_cli_decrypt_command(
+        cli_decrypt_result = run_cli_decrypt(
             creds_file=creds_file,
             input_file=tdf_path,
             output_file=output_path,
+            cwd=cwd,
         )
 
-        # Run the CLI command
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            check=True,
-            cwd=Path(__file__).parent.parent.parent,  # Project root
+        # Fail fast on errors
+        handle_subprocess_error(
+            result=cli_decrypt_result,
+            collect_server_logs=collect_server_logs,
+            scenario_name="Python CLI decrypt",
         )
-
-        logger.debug(f"CLI decrypt succeeded for {tdf_path}")
-        if result.stdout:
-            logger.debug(f"CLI stdout: {result.stdout}")
 
         return output_path
 

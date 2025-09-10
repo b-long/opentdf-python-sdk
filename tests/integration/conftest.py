@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.support_otdfctl_args import generate_tdf_files_for_target_mode
+from tests.support_otdfctl_args import otdfctl_generate_tdf_files_for_target_mode
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ def sample_input_files(test_data_dir):
 @pytest.fixture(scope="session")
 def tdf_v4_2_2_files(temp_credentials_file, test_data_dir, sample_input_files):
     """Generate TDF files with target mode v4.2.2."""
-    tdf_files = generate_tdf_files_for_target_mode(
+    tdf_files = otdfctl_generate_tdf_files_for_target_mode(
         "v4.2.2", temp_credentials_file, test_data_dir, sample_input_files
     )
     yield tdf_files
@@ -54,7 +54,7 @@ def tdf_v4_2_2_files(temp_credentials_file, test_data_dir, sample_input_files):
 @pytest.fixture(scope="session")
 def tdf_v4_3_1_files(temp_credentials_file, test_data_dir, sample_input_files):
     """Generate TDF files with target mode v4.3.1."""
-    tdf_files = generate_tdf_files_for_target_mode(
+    tdf_files = otdfctl_generate_tdf_files_for_target_mode(
         "v4.3.1", temp_credentials_file, test_data_dir, sample_input_files
     )
     yield tdf_files
@@ -67,3 +67,8 @@ def all_target_mode_tdf_files(tdf_v4_2_2_files, tdf_v4_3_1_files):
         "v4.2.2": tdf_v4_2_2_files,
         "v4.3.1": tdf_v4_3_1_files,
     }
+
+
+@pytest.fixture(scope="session")
+def known_target_modes():
+    return ["v4.2.2", "v4.3.1"]

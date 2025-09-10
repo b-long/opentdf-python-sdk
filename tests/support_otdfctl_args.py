@@ -47,7 +47,7 @@ def get_otdfctl_base_command(
     return base_cmd
 
 
-def build_otdfctl_encrypt_command(
+def _build_otdfctl_encrypt_command(
     creds_file: Path,
     input_file: Path,
     output_file: Path,
@@ -100,7 +100,37 @@ def build_otdfctl_encrypt_command(
     return cmd
 
 
-def build_otdfctl_decrypt_command(
+def run_otdfctl_encrypt_command(
+    creds_file: Path,
+    input_file: Path,
+    output_file: Path,
+    cwd: Path,
+    platform_url: str | None = None,
+    mime_type: str = "text/plain",
+    attributes: list[str] | None = None,
+    tdf_type: str | None = None,
+    target_mode: str | None = None,
+) -> subprocess.CompletedProcess:
+    otdfctl_encrypt_cmd = _build_otdfctl_encrypt_command(
+        creds_file=creds_file,
+        input_file=input_file,
+        output_file=output_file,
+        platform_url=platform_url,
+        mime_type=mime_type,
+        attributes=attributes,
+        tdf_type=tdf_type,
+        target_mode=target_mode,
+    )
+    return subprocess.run(
+        otdfctl_encrypt_cmd,
+        capture_output=True,
+        text=True,
+        cwd=cwd,
+        env=get_testing_environ(),
+    )
+
+
+def _build_otdfctl_decrypt_command(
     creds_file: Path, tdf_file: Path, output_file: Path, platform_url: str | None = None
 ) -> list[str]:
     """Build otdfctl decrypt command."""
@@ -117,6 +147,29 @@ def build_otdfctl_decrypt_command(
     return cmd
 
 
+def run_otdfctl_decrypt_command(
+    creds_file: Path,
+    tdf_file: Path,
+    output_file: Path,
+    cwd: Path,
+    platform_url: str | None = None,
+) -> subprocess.CompletedProcess:
+    otdfctl_decrypt_cmd = _build_otdfctl_decrypt_command(
+        creds_file=creds_file,
+        tdf_file=tdf_file,
+        output_file=output_file,
+        platform_url=platform_url,
+    )
+
+    return subprocess.run(
+        otdfctl_decrypt_cmd,
+        capture_output=True,
+        text=True,
+        cwd=cwd,
+        env=get_testing_environ(),
+    )
+
+
 def _generate_target_mode_tdf(
     input_file: Path,
     output_file: Path,
@@ -129,7 +182,7 @@ def _generate_target_mode_tdf(
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
     # Build otdfctl command
-    cmd = build_otdfctl_encrypt_command(
+    cmd = _build_otdfctl_encrypt_command(
         platform_url=get_platform_url(),
         creds_file=creds_file,
         input_file=input_file,
@@ -156,7 +209,7 @@ def _generate_target_mode_tdf(
         )
 
 
-def generate_tdf_files_for_target_mode(
+def otdfctl_generate_tdf_files_for_target_mode(
     target_mode: str,
     temp_credentials_file: Path,
     test_data_dir: Path,

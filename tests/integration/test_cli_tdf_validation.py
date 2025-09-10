@@ -3,7 +3,6 @@ Test CLI encryption functionality and TDF validation
 """
 
 import json
-import subprocess
 import tempfile
 import zipfile
 from pathlib import Path
@@ -12,21 +11,18 @@ import pytest
 
 from otdf_python.tdf_reader import TDF_MANIFEST_FILE_NAME, TDF_PAYLOAD_FILE_NAME
 from tests.support_cli_args import (
-    build_cli_decrypt_command,
-    build_cli_encrypt_command,
-    get_cli_flags,
+    run_cli_decrypt,
+    run_cli_encrypt,
 )
 from tests.support_common import (
-    get_testing_environ,
     handle_subprocess_error,
+    validate_plaintext_file_created,
+    validate_tdf3_file,
 )
 from tests.support_otdfctl_args import (
-    build_otdfctl_decrypt_command,
-    build_otdfctl_encrypt_command,
+    run_otdfctl_decrypt_command,
+    run_otdfctl_encrypt_command,
 )
-
-# Determine CLI flags based on platform URL
-cli_flags = get_cli_flags()
 
 
 def _create_test_input_file(temp_path: Path, content: str) -> Path:
@@ -35,18 +31,6 @@ def _create_test_input_file(temp_path: Path, content: str) -> Path:
     with open(input_file, "w") as f:
         f.write(content)
     return input_file
-
-
-def _validate_tdf_file(tdf_path: Path, tool_name: str) -> None:
-    """Validate that a TDF file exists, is not empty, and has correct ZIP structure."""
-    assert tdf_path.exists(), f"{tool_name} did not create TDF file"
-    assert tdf_path.stat().st_size > 0, f"{tool_name} created empty TDF file"
-    assert zipfile.is_zipfile(tdf_path), f"{tool_name} output is not a valid ZIP file"
-
-    # Verify TDF file has correct ZIP signature
-    with open(tdf_path, "rb") as f:
-        tdf_header = f.read(4)
-    assert tdf_header == b"PK\x03\x04", f"{tool_name} output is not a valid ZIP file"
 
 
 def _validate_key_access_objects(key_access: list) -> None:
@@ -255,36 +239,21 @@ def _run_otdfctl_decrypt(
     """Run otdfctl decrypt on a TDF file and verify the decrypted content matches expected."""
     decrypt_output = temp_path / f"{tdf_path.stem}_decrypted.txt"
 
-    otdfctl_decrypt_cmd = build_otdfctl_decrypt_command(
-        creds_file=creds_file, tdf_file=tdf_path, output_file=decrypt_output
-    )
-
-    otdfctl_decrypt_result = subprocess.run(
-        otdfctl_decrypt_cmd,
-        capture_output=True,
-        text=True,
+    otdfctl_decrypt_result = run_otdfctl_decrypt_command(
+        creds_file=creds_file,
+        tdf_file=tdf_path,
+        output_file=decrypt_output,
         cwd=temp_path,
-        env=get_testing_environ(),
     )
 
     handle_subprocess_error(
         otdfctl_decrypt_result, collect_server_logs, "otdfctl decrypt"
     )
 
-    # Verify the decrypted file was created
-    assert decrypt_output.exists(), "otdfctl did not create decrypted file"
-    assert decrypt_output.stat().st_size > 0, "otdfctl created empty decrypted file"
-
-    # Verify the decrypted content matches expected
-    with open(decrypt_output) as f:
-        decrypted_content = f.read()
-
-    assert decrypted_content == expected_content, (
-        f"Decrypted content does not match original. "
-        f"Expected: '{expected_content}', Got: '{decrypted_content}'"
+    validate_plaintext_file_created(
+        path=decrypt_output, scenario="otdfctl", expected_content=expected_content
     )
 
-    print("✓ otdfctl successfully decrypted TDF with correct content")
     return decrypt_output
 
 
@@ -294,42 +263,22 @@ def _run_python_cli_decrypt(
     temp_path: Path,
     collect_server_logs,
     expected_content: str,
+    cwd: Path,
 ) -> Path:
     """Run Python CLI decrypt on a TDF file and verify the decrypted content matches expected."""
     decrypt_output = temp_path / f"{tdf_path.stem}_python_decrypted.txt"
 
-    python_decrypt_cmd = build_cli_decrypt_command(
-        creds_file=creds_file,
-        input_file=tdf_path,
-        output_file=decrypt_output,
-    )
-
-    python_decrypt_result = subprocess.run(
-        python_decrypt_cmd,
-        capture_output=True,
-        text=True,
-        cwd=Path(__file__).parent.parent,
-        env=get_testing_environ(),
+    python_decrypt_result = run_cli_decrypt(
+        creds_file=creds_file, input_file=tdf_path, output_file=decrypt_output, cwd=cwd
     )
 
     handle_subprocess_error(
         python_decrypt_result, collect_server_logs, "Python CLI decrypt"
     )
 
-    # Verify the decrypted file was created
-    assert decrypt_output.exists(), "Python CLI did not create decrypted file"
-    assert decrypt_output.stat().st_size > 0, "Python CLI created empty decrypted file"
-
-    # Verify the decrypted content matches expected
-    with open(decrypt_output) as f:
-        decrypted_content = f.read()
-
-    assert decrypted_content == expected_content, (
-        f"Decrypted content does not match original. "
-        f"Expected: '{expected_content}', Got: '{decrypted_content}'"
+    validate_plaintext_file_created(
+        path=decrypt_output, scenario="Python CLI", expected_content=expected_content
     )
-
-    print("✓ Python CLI successfully decrypted TDF with correct content")
     return decrypt_output
 
 
@@ -349,19 +298,12 @@ def test_otdfctl_encrypt_with_validation(collect_server_logs, temp_credentials_f
         otdfctl_tdf_output = temp_path / "otdfctl_test.txt.tdf"
 
         # Run otdfctl encrypt to create a TDF file
-        otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
+        otdfctl_encrypt_result = run_otdfctl_encrypt_command(
             creds_file=temp_credentials_file,
             input_file=input_file,
             output_file=otdfctl_tdf_output,
             mime_type="text/plain",
-        )
-
-        otdfctl_encrypt_result = subprocess.run(
-            otdfctl_encrypt_cmd,
-            capture_output=True,
-            text=True,
             cwd=temp_path,
-            env=get_testing_environ(),
         )
 
         # Handle any encryption errors
@@ -370,7 +312,7 @@ def test_otdfctl_encrypt_with_validation(collect_server_logs, temp_credentials_f
         )
 
         # Validate the TDF file structure
-        _validate_tdf_file(otdfctl_tdf_output, "otdfctl")
+        validate_tdf3_file(otdfctl_tdf_output, "otdfctl")
         _validate_tdf_zip_structure(otdfctl_tdf_output)
 
         # Test that the TDF can be decrypted successfully
@@ -387,7 +329,7 @@ def test_otdfctl_encrypt_with_validation(collect_server_logs, temp_credentials_f
 
 
 @pytest.mark.integration
-def test_python_encrypt(collect_server_logs, temp_credentials_file):
+def test_python_encrypt(collect_server_logs, temp_credentials_file, project_root):
     """Integration test that uses Python CLI for encryption only and verifies the TDF can be inspected"""
 
     # Create temporary directory for work
@@ -401,19 +343,12 @@ def test_python_encrypt(collect_server_logs, temp_credentials_file):
         # Define TDF file created by Python CLI
         python_tdf_output = temp_path / "python_cli_test.txt.tdf"
 
-        python_encrypt_cmd = build_cli_encrypt_command(
+        # Run Python CLI encrypt to create a TDF file
+        python_encrypt_result = run_cli_encrypt(
             creds_file=temp_credentials_file,
             input_file=input_file,
             output_file=python_tdf_output,
-        )
-
-        # Run Python CLI encrypt to create a TDF file
-        python_encrypt_result = subprocess.run(
-            python_encrypt_cmd,
-            capture_output=True,
-            text=True,
-            cwd=Path(__file__).parent.parent,
-            env=get_testing_environ(),
+            cwd=project_root,
         )
 
         # Handle any encryption errors
@@ -422,7 +357,7 @@ def test_python_encrypt(collect_server_logs, temp_credentials_file):
         )
 
         # Validate the TDF file structure
-        _validate_tdf_file(python_tdf_output, "Python CLI")
+        validate_tdf3_file(python_tdf_output, "Python CLI")
         _validate_tdf_zip_structure(python_tdf_output)
 
         # Test that the TDF can be decrypted by otdfctl
@@ -441,7 +376,9 @@ def test_python_encrypt(collect_server_logs, temp_credentials_file):
 
 
 @pytest.mark.integration
-def test_cross_tool_compatibility(collect_server_logs, temp_credentials_file):
+def test_cross_tool_compatibility(
+    collect_server_logs, temp_credentials_file, project_root
+):
     """Test that TDFs created by one tool can be decrypted by the other."""
 
     # Create temporary directory for work
@@ -456,19 +393,12 @@ def test_cross_tool_compatibility(collect_server_logs, temp_credentials_file):
         otdfctl_tdf_output = temp_path / "otdfctl_for_python_decrypt.txt.tdf"
 
         # Encrypt with otdfctl
-        otdfctl_encrypt_cmd = build_otdfctl_encrypt_command(
+        otdfctl_encrypt_result = run_otdfctl_encrypt_command(
             creds_file=temp_credentials_file,
             input_file=input_file,
             output_file=otdfctl_tdf_output,
             mime_type="text/plain",
-        )
-
-        otdfctl_encrypt_result = subprocess.run(
-            otdfctl_encrypt_cmd,
-            capture_output=True,
-            text=True,
             cwd=temp_path,
-            env=get_testing_environ(),
         )
 
         handle_subprocess_error(
@@ -484,24 +414,18 @@ def test_cross_tool_compatibility(collect_server_logs, temp_credentials_file):
             temp_path,
             collect_server_logs,
             input_content,
+            project_root,
         )
 
         # Test 2: Python CLI encrypt -> otdfctl decrypt
         python_tdf_output = temp_path / "python_for_otdfctl_decrypt.txt.tdf"
 
         # Encrypt with Python CLI
-        python_encrypt_cmd = build_cli_encrypt_command(
+        python_encrypt_result = run_cli_encrypt(
             creds_file=temp_credentials_file,
             input_file=input_file,
             output_file=python_tdf_output,
-        )
-
-        python_encrypt_result = subprocess.run(
-            python_encrypt_cmd,
-            capture_output=True,
-            text=True,
-            cwd=Path(__file__).parent.parent,
-            env=get_testing_environ(),
+            cwd=project_root,
         )
 
         handle_subprocess_error(
@@ -525,7 +449,9 @@ def test_cross_tool_compatibility(collect_server_logs, temp_credentials_file):
 
 
 @pytest.mark.integration
-def test_different_content_types(collect_server_logs, temp_credentials_file):
+def test_different_content_types(
+    collect_server_logs, temp_credentials_file, project_root
+):
     """Test encryption/decryption with different types of content."""
 
     test_cases = [
@@ -551,18 +477,11 @@ def test_different_content_types(collect_server_logs, temp_credentials_file):
             # Test with Python CLI
             python_tdf_output = temp_path / f"python_{filename}.tdf"
 
-            python_encrypt_cmd = build_cli_encrypt_command(
+            python_encrypt_result = run_cli_encrypt(
                 creds_file=temp_credentials_file,
                 input_file=input_file,
                 output_file=python_tdf_output,
-            )
-
-            python_encrypt_result = subprocess.run(
-                python_encrypt_cmd,
-                capture_output=True,
-                text=True,
-                cwd=Path(__file__).parent.parent,
-                env=get_testing_environ(),
+                cwd=project_root,
             )
 
             handle_subprocess_error(
@@ -572,7 +491,7 @@ def test_different_content_types(collect_server_logs, temp_credentials_file):
             )
 
             # Validate TDF structure
-            _validate_tdf_file(python_tdf_output, f"Python CLI ({filename})")
+            validate_tdf3_file(python_tdf_output, f"Python CLI ({filename})")
 
             # Decrypt and validate content
             _run_otdfctl_decrypt(
@@ -590,7 +509,9 @@ def test_different_content_types(collect_server_logs, temp_credentials_file):
 
 @pytest.mark.skip("Skipping test for now due to known issues with empty content")
 @pytest.mark.integration
-def test_different_content_types_empty(collect_server_logs, temp_credentials_file):
+def test_different_content_types_empty(
+    collect_server_logs, temp_credentials_file, project_root
+):
     """Test encryption/decryption with different types of content."""
 
     test_cases = [
@@ -613,18 +534,11 @@ def test_different_content_types_empty(collect_server_logs, temp_credentials_fil
             # Test with Python CLI
             python_tdf_output = temp_path / f"python_{filename}.tdf"
 
-            python_encrypt_cmd = build_cli_encrypt_command(
+            python_encrypt_result = run_cli_encrypt(
                 creds_file=temp_credentials_file,
                 input_file=input_file,
                 output_file=python_tdf_output,
-            )
-
-            python_encrypt_result = subprocess.run(
-                python_encrypt_cmd,
-                capture_output=True,
-                text=True,
-                cwd=Path(__file__).parent.parent,
-                env=get_testing_environ(),
+                cwd=project_root,
             )
 
             handle_subprocess_error(
@@ -634,7 +548,7 @@ def test_different_content_types_empty(collect_server_logs, temp_credentials_fil
             )
 
             # Validate TDF structure
-            _validate_tdf_file(python_tdf_output, f"Python CLI ({filename})")
+            validate_tdf3_file(python_tdf_output, f"Python CLI ({filename})")
 
             # Decrypt and validate content
             _run_otdfctl_decrypt(
