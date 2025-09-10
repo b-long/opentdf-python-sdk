@@ -172,30 +172,6 @@ with open("decrypted.txt", "wb") as f:
 sdk.close()
 ```
 
-### NanoTDF Support
-
-```python
-from io import BytesIO
-from otdf_python.config import NanoTDFConfig
-
-# Create NanoTDF configuration
-config = NanoTDFConfig(
-    attributes=["https://example.com/attr/classification/value/public"],
-    ecc_mode="ecdsa"  # or "gmac"
-)
-
-# Encrypt to NanoTDF format
-input_data = b"Hello, World!"
-output_stream = BytesIO()
-size = sdk.create_nano_tdf(BytesIO(input_data), output_stream, config)
-encrypted_data = output_stream.getvalue()
-
-# Decrypt NanoTDF
-decrypted_stream = BytesIO()
-sdk.read_nano_tdf(BytesIO(encrypted_data), decrypted_stream, config)
-decrypted_data = decrypted_stream.getvalue()
-```
-
 ## Project Structure
 
 ```
