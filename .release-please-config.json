@@ -19,7 +19,7 @@
         {
           "path": "otdf-python-proto/pyproject.toml",
           "type": "toml",
-          "jsonpath": "$.project[?(@.name.value=='otdf-python-proto')].version"
+          "jsonpath": "$.project[?(@.name=='otdf-python-proto')].version"
         },
         {
           "path": "otdf-python-proto/uv.lock",
