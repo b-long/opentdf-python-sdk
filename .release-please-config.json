@@ -8,7 +8,14 @@
       "package-name": "otdf-python",
       "extra-files": [
         "pyproject.toml",
-        "src/otdf_python/cli.py",
+        {
+          "path": "src/otdf_python/cli.py",
+          "type": "python"
+        },
+        {
+          "path": "otdf-python-proto/src/otdf_python_proto/__init__.py",
+          "type": "python"
+        },
         {
           "path": "uv.lock",
           "type": "toml",
