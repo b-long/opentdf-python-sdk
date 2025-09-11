@@ -23,7 +23,7 @@ from otdf_python.sdk_exceptions import SDKException
 from otdf_python.tdf import TDFReaderConfig
 
 try:
-    __version__ = metadata.version("otdf-python-proto")
+    __version__ = metadata.version("otdf-python")
 except metadata.PackageNotFoundError:
     # package is not installed, e.g., in development
     __version__ = "0.0.0"
