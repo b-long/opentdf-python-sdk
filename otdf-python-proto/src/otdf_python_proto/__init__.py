@@ -4,8 +4,13 @@ This package contains generated Python code from OpenTDF protocol buffer definit
 It includes modules for authorization, common types, entities, policy management,
 and other OpenTDF services.
 """
+from importlib import metadata
 
-__version__ = "0.3.0"
+try:
+    __version__ = metadata.version("otdf-python-proto")
+except metadata.PackageNotFoundError:
+    # package is not installed, e.g., in development
+    __version__ = "0.0.0"
 
 # Import submodules to make them available
 from . import authorization

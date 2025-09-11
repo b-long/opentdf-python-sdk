@@ -12,6 +12,7 @@ import json
 import logging
 import sys
 from dataclasses import asdict
+from importlib import metadata
 from io import BytesIO
 from pathlib import Path
 
@@ -21,8 +22,11 @@ from otdf_python.sdk_builder import SDKBuilder
 from otdf_python.sdk_exceptions import SDKException
 from otdf_python.tdf import TDFReaderConfig
 
-# Version - get from project metadata
-__version__ = "0.3.0"
+try:
+    __version__ = metadata.version("otdf-python")
+except metadata.PackageNotFoundError:
+    # package is not installed, e.g., in development
+    __version__ = "0.0.0"
 
 
 # Set up logging
