@@ -22,4 +22,3 @@
 * release 0.3.0a11 ([ce8a520](https://github.com/b-long/opentdf-python-sdk/commit/ce8a52064969aa5e27876c4454d2e32b42a36f5b))
 * release 0.3.1 ([c1395b1](https://github.com/b-long/opentdf-python-sdk/commit/c1395b1ff6bf02ffb24f20e7d45ca0869ae033f5))
 
-## Changelog
