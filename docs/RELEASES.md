@@ -164,14 +164,6 @@ git push origin main
 # Release Please will create a patch release
 ```
 
-### Rollback Bad Release
-```bash
-# Yank from PyPI (makes unavailable for new installs)
-pip install twine
-twine check dist/*
-# Contact PyPI admins if needed for yanking
-```
-
 ## Configuration Files
 
 - `.release-please-config.json`: Main configuration
