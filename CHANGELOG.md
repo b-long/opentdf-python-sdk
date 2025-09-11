@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.3.0...otdf-python-v1.0.0) (2025-09-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* rewrite in pure Python ([#62](https://github.com/b-long/opentdf-python-sdk/issues/62))
+
+### Features
+
+* configure release-please ([#74](https://github.com/b-long/opentdf-python-sdk/issues/74)) ([439becd](https://github.com/b-long/opentdf-python-sdk/commit/439becd82a5faf834a190516b64e21aa331c0176))
+* rewrite in pure Python ([#62](https://github.com/b-long/opentdf-python-sdk/issues/62)) ([2a9c1fa](https://github.com/b-long/opentdf-python-sdk/commit/2a9c1fa6331c8b82efcc23b24e21461e4c443fcd))
+* Update to latest SDK ([#73](https://github.com/b-long/opentdf-python-sdk/issues/73)) ([9c0329e](https://github.com/b-long/opentdf-python-sdk/commit/9c0329ec76d4dea53ac66b5342d3cce6ec249d58))
+
 ## [0.3.1](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.3.0...otdf-python-v0.3.1) (2025-09-11)
 
 
