@@ -5,7 +5,6 @@ on:
     branches:
       - main
       - develop
-      - chore/update-docs-and-release-process
   workflow_dispatch:
 
 permissions:
@@ -107,7 +106,7 @@ jobs:
       # Requires GHA token permission (above in YAML) and PyPI management:
       #   https://test.pypi.org/manage/project/otdf-python/settings/publishing/
       - name: Publish package distributions to TestPyPI
-        if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/chore/update-docs-and-release-process') && steps.check_version.outputs.should_publish == 'true'
+        if: github.ref == 'refs/heads/develop' && steps.check_version.outputs.should_publish == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
