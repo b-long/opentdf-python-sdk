@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.3.1...otdf-python-v0.3.2) (2025-09-11)
+
+
+### Bug Fixes
+
+* fix .release-please-config.json file ([#97](https://github.com/b-long/opentdf-python-sdk/issues/97)) ([085f056](https://github.com/b-long/opentdf-python-sdk/commit/085f0564a44e4828c4bddfd67f6ecedbe72a6395))
+
 ## [0.3.1](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.3.0...otdf-python-v0.3.1) (2025-09-11)
 
 
