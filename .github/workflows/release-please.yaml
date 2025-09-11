@@ -5,7 +5,6 @@ on:
     branches:
       - main
       - develop
-      - chore/update-docs-and-release-process
   workflow_dispatch:
 
 permissions:
@@ -22,15 +21,35 @@ jobs:
     needs: test-suite
     if: needs.test-suite.outputs.tests_passed == 'true'
     outputs:
-      releases_created: ${{ steps.release.outputs.releases_created }}
-      paths_released: ${{ steps.release.outputs.paths_released }}
+      releases_created: ${{ steps.release-develop.outputs.releases_created || steps.release-main.outputs.releases_created }}
+      paths_released: ${{ steps.release-develop.outputs.paths_released || steps.release-main.outputs.paths_released }}
     steps:
+      - uses: actions/checkout@v4
+
+      # Create temporary prerelease config for develop branch
+      - name: Create prerelease config for develop
+        if: github.ref == 'refs/heads/develop'
+        run: |
+          cat .release-please-config.json | jq '. + {"prerelease": true, "prerelease-type": "alpha"}' > .release-please-config-develop.json
+
+      # Release-please for develop branch (creates alpha prereleases)
       - uses: googleapis/release-please-action@v4
-        id: release
+        if: github.ref == 'refs/heads/develop'
+        id: release-develop
+        with:
+          config-file: .release-please-config-develop.json
+          manifest-file: .release-please-manifest.json
+          target-branch: develop
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Release-please for main branch (creates stable releases)
+      - uses: googleapis/release-please-action@v4
+        if: github.ref == 'refs/heads/main'
+        id: release-main
         with:
           config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
-          target-branch: develop # FIXME: Change to 'main' after initial setup
+          target-branch: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
   # Trigger appropriate publish workflows based on release type
@@ -44,9 +63,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-
-
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
@@ -99,7 +115,7 @@ jobs:
             echo "Version $PROJECT_VERSION (clean: $CLEAN_VERSION) is <= 0.3.2, skipping TestPyPI publish"
           fi
 
-      # For develop branch: trigger TestPyPI build (both alpha and stable releases go to TestPyPI from develop)
+      # For develop branch: trigger TestPyPI build (alpha prereleases go to TestPyPI from develop)
 
       # Publish with "trusted publisher" mechanism:
       # https://docs.pypi.org/trusted-publishers/
@@ -107,14 +123,14 @@ jobs:
       # Requires GHA token permission (above in YAML) and PyPI management:
       #   https://test.pypi.org/manage/project/otdf-python/settings/publishing/
       - name: Publish package distributions to TestPyPI
-        if: (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/chore/update-docs-and-release-process') && steps.check_version.outputs.should_publish == 'true'
+        if: github.ref == 'refs/heads/develop' && steps.check_version.outputs.should_publish == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
           verbose: true
           packages-dir: dist/
 
-      # For main branch: trigger PyPI build (both alpha and stable releases go to PyPI from main)
+      # For main branch: trigger PyPI build (stable releases go to PyPI from main)
       # Publish with "trusted publisher" mechanism:
       # https://docs.pypi.org/trusted-publishers/
       #

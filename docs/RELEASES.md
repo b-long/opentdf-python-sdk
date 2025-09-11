@@ -1,259 +1,132 @@
-# Release Process for Maintainers
+# Release Process for OpenTDF Python SDK
 
-This document provides comprehensive guidance for maintainers on the OpenTDF Python SDK release process, including both automated releases and feature branch testing.
+This document describes the automated release process for the OpenTDF Python SDK using Release Please and GitHub Actions.
 
-## Legacy Version
+## Overview
 
-**NOTE:** For the legacy (`gopy`-based) version of this project, please refer to the [LEGACY_VERSION.md](./LEGACY_VERSION.md) file.
+The OpenTDF Python SDK uses a **dual-branch release strategy** with automated publishing:
 
-## Release Overview
+- **`develop` branch**: Creates alpha prereleases (e.g., `v1.0.0-alpha.1`) → Published to TestPyPI
+- **`main` branch**: Creates stable releases (e.g., `v1.0.0`) → Published to PyPI
 
-The OpenTDF Python SDK uses **Release Please** for automated version management and publishing. The system supports:
+This ensures that alpha and stable releases have distinct version numbers and publishing destinations, preventing conflicts between development and production releases.
 
-- **Alpha releases** (e.g., `0.3.0a9`): Automated publishing to both test.pypi.org and pypi.org
-- **Stable releases** (e.g., `0.3.0`): Automated publishing to pypi.org only
-- **Feature branch testing**: Manual alpha releases from development branches
+## Branch Strategy
 
-## Current Version Status
+### Develop Branch (Alpha Releases)
+- **Purpose**: Development and testing
+- **Release Type**: Alpha prereleases (`v1.0.0-alpha.1`, `v1.0.0-alpha.2`, etc.)
+- **GitHub Status**: Marked as "pre-release"
+- **Publishing Target**: TestPyPI (test.pypi.org)
+- **Trigger**: Push to `develop` branch with conventional commits
 
-```bash
-# Check current version
-uv version --short
+### Main Branch (Stable Releases)
+- **Purpose**: Production releases
+- **Release Type**: Stable releases (`v1.0.0`, `v1.0.1`, etc.)
+- **GitHub Status**: Marked as stable release
+- **Publishing Target**: PyPI (pypi.org)
+- **Trigger**: Push to `main` branch with conventional commits
 
-# Preview next alpha version
-uv version --bump alpha --dry-run
-
-# Preview next stable version
-uv version --bump minor --dry-run  # or patch/major
-```
-
-## Automated Release Process (Main Branch)
+## Automated Release Process
 
 ### Prerequisites
 
 ✅ **All tests must pass** before any release:
-- Unit tests: `uv run pytest tests/`
-- Integration tests: `uv run pytest tests/ -m integration`
-- Linting: `uv run ruff check` and `uv run ruff format`
-- Platform integration tests (via GitHub Actions)
+- Unit tests via GitHub Actions test suite
+- Integration tests
+- Code quality checks (linting, formatting)
 
-### Standard Release Flow
+### For Alpha Releases (Develop Branch)
 
-1. **Commit with Conventional Commit Messages** to `main` branch:
+1. **Commit with Conventional Commit Messages** to `develop` branch:
    ```bash
+   git checkout develop
    git commit -m "feat: add new encryption algorithm support"
    git commit -m "fix: resolve TDF decryption issue with large files"
-   git commit -m "docs: update SDK configuration examples"
+   git push origin develop
    ```
 
-2. **Push to Main**:
+2. **Automated Process**:
+   - Release Please creates a PR with alpha version bump and changelog
+   - Once PR is merged, GitHub Actions automatically:
+     - Runs full test suite
+     - Builds the package
+     - Creates GitHub release marked as "pre-release"
+     - Publishes to TestPyPI (if version > 0.3.2)
+
+### For Stable Releases (Main Branch)
+
+1. **Merge from develop** (or commit directly):
    ```bash
+   git checkout main
+   git merge develop
+   # OR make direct commits with conventional commit messages
+   git commit -m "feat: stable feature ready for production"
    git push origin main
    ```
 
-3. **Automated Process**:
-   - Release Please creates a PR with version bump and changelog
+2. **Automated Process**:
+   - Release Please creates a PR with stable version bump and changelog
    - Once PR is merged, GitHub Actions automatically:
-     - Runs full test suite (unit, integration, platform tests)
-     - Builds wheels for multiple platforms (macOS, Linux x86_64, Linux ARM)
-     - Publishes to PyPI (alpha versions go to both test.pypi.org and pypi.org)
-     - Creates GitHub release with artifacts
+     - Runs full test suite
+     - Builds the package
+     - Creates GitHub release marked as stable
+     - Publishes to PyPI
 
-### Release Type Determination
+## Version Numbering
 
-The system automatically determines release type based on version format:
+### Alpha Versions (from develop)
+- Format: `vX.Y.Z-alpha.N` (e.g., `v1.0.0-alpha.1`, `v1.0.0-alpha.2`)
+- Automatically incremented by Release Please
+- Marked as pre-release on GitHub
+- Published to TestPyPI
 
-- **Alpha**: `X.Y.ZaN` (e.g., `0.3.0a9`) → Published to test.pypi.org + pypi.org
-- **Stable**: `X.Y.Z` (e.g., `0.3.0`) → Published to pypi.org only
+### Stable Versions (from main)
+- Format: `vX.Y.Z` (e.g., `v1.0.0`, `v1.0.1`)
+- Follow semantic versioning
+- Marked as stable release on GitHub
+- Published to PyPI
 
-## Manual Release Management
-
-### Bootstrap Release Please (First Time Setup)
-
-If this is the first time setting up Release Please:
-
-```bash
-# Bootstrap Release Please for the repository
-npx release-please bootstrap \
-  --repo-url=b-long/opentdf-python-sdk \
-  --release-type=python
-
-# This creates the initial configuration files and release PR
-```
-
-### Preview Release Changes
-
-```bash
-# See what Release Please would create (after bootstrap)
-npx release-please release-pr \
-  --repo-url=b-long/opentdf-python-sdk \
-  --config-file=.release-please-config.json \
-  --manifest-file=.release-please-manifest.json
-```
-
-### Manual Release Creation
-
-```bash
-# Manually trigger GitHub release (if needed)
-npx release-please github-release \
-  --repo-url=b-long/opentdf-python-sdk \
-  --config-file=.release-please-config.json \
-  --manifest-file=.release-please-manifest.json
-```
-
-### Workflow Dispatch
+## Manual Release Triggers
 
 You can manually trigger releases via GitHub Actions:
-- Go to Actions → "Release Please" → "Run workflow"
-- Or Actions → "PyPIBuild" → "Run workflow"
+- Go to **Actions** → **"Release Please"** → **"Run workflow"**
+- Select the appropriate branch (`develop` for alpha, `main` for stable)
 
-## Feature Branch Alpha Releases (For Testing)
+## Conventional Commit Messages
 
-### When to Use Feature Branch Releases
+Release Please determines version bumps based on commit message types:
 
-Use this approach when you need to test changes before merging to main:
-- Testing breaking changes with external users
-- Validating integration with downstream systems
-- Providing preview releases for feedback
+- `feat:` → Minor version bump (new features)
+- `fix:` → Patch version bump (bug fixes)
+- `BREAKING CHANGE:` → Major version bump (breaking changes)
+- `docs:`, `chore:`, `style:` → No version bump
 
-### Process for Feature Branch Releases
-
-1. **Create Feature Branch**:
-   ```bash
-   git checkout -b feature/new-encryption-method
-   # Make your changes
-   git commit -m "feat: implement new encryption method"
-   ```
-
-2. **Manually Bump Version** (create unique alpha version):
-   ```bash
-   # Option A: Use uv to bump version in pyproject.toml
-   uv version --bump alpha
-
-   # Option B: Edit pyproject.toml directly to create unique alpha
-   # If current is 0.3.0a9, you might use 0.3.0a9.dev1 or 0.3.1a1
-   ```
-
-3. **Update Version Files**:
-   ```bash
-   # Update any version references in extra files
-   # (Release Please normally handles this)
-   sed -i 's/0.3.0a9/0.3.0a9.dev1/g' src/otdf_python/cli.py
-   ```
-
-4. **Commit Version Changes**:
-   ```bash
-   git add .
-   git commit -m "chore: bump version for feature testing to 0.3.0a9.dev1"
-   ```
-
-5. **Push Feature Branch**:
-   ```bash
-   git push origin feature/new-encryption-method
-   ```
-
-6. **Manual Build and Publish**:
-
-   **Option A: GitHub Actions (Recommended)**
-   - Push to a temporary branch that matches main branch patterns
-   - Or trigger workflow dispatch with your branch
-
-   **Option B: Local Build** (for internal testing):
-   ```bash
-   # Build wheel locally
-   uv build
-
-   # Install for testing
-   pip install dist/otdf_python-0.3.0a9.dev1-*.whl
-
-   # Or upload to test.pypi.org manually
-   uv publish --repository testpypi dist/*
-   ```
-
-### Feature Branch Naming Convention
-
-For feature branches that need releases, use clear naming:
-- `feature/new-encryption-method`
-- `experimental/performance-improvements`
-- `preview/api-v2`
-
-### Cleanup After Feature Branch Testing
-
+Examples:
 ```bash
-# After merging feature to main, clean up
-git branch -d feature/new-encryption-method
-git push origin --delete feature/new-encryption-method
-
-# The main branch release will supersede the feature branch alpha
+git commit -m "feat: add support for new TDF format"          # Minor bump
+git commit -m "fix: resolve memory leak in encryption"       # Patch bump
+git commit -m "feat!: redesign SDK API (BREAKING CHANGE)"    # Major bump
 ```
 
-## Version Numbering Strategy
+## Testing Process
 
-### Alpha Versions
-- **Sequential alphas**: `0.3.0a1`, `0.3.0a2`, `0.3.0a3`...
-- **Feature branch alphas**: `0.3.0a9.dev1`, `0.3.1a1.dev1`
-- **Experimental**: `0.4.0a1.experimental`
-
-### Stable Versions
-- **Patch releases**: `0.3.0` → `0.3.1` (bug fixes)
-- **Minor releases**: `0.3.0` → `0.4.0` (new features)
-- **Major releases**: `0.3.0` → `1.0.0` (breaking changes)
-
-## Testing Release Candidates
-
-### Before Publishing
+### Testing Alpha Releases
 ```bash
-# Run full test suite
-uv run pytest tests/ -v
+# Install from TestPyPI
+pip install --index-url https://test.pypi.org/simple/ otdf-python==1.0.0a1
 
-# Run integration tests
-uv run pytest tests/ -m integration -v
-
-# Check code quality
-uv run ruff check
-uv run ruff format --check
-
-# Type checking (if configured)
-uvx ty check src/
+# Test functionality
+python -c "import otdf_python; print('Alpha version works!')"
 ```
 
-### After Publishing
+### Testing Stable Releases
 ```bash
-# Test installation from PyPI
-pip install otdf-python==0.3.0a9
+# Install from PyPI
+pip install otdf-python==1.0.0
 
-# Test basic functionality
-python -c "import otdf_python; print('Import successful')"
-
-# Run smoke tests
-uv run pytest tests/test_sdk.py::test_basic_functionality
-```
-
-## Troubleshooting Releases
-
-### Failed Test Suite
-```bash
-# Check what failed
-uv run pytest tests/ -v --tb=short
-
-# Fix issues and re-run
-uv run pytest tests/ -v
-```
-
-### Failed Build
-- Check GitHub Actions logs
-- Verify all platforms build successfully
-- Ensure version format is correct
-
-### Failed PyPI Upload
-- Verify PyPI trusted publisher setup
-- Check for version conflicts
-- Ensure all required metadata is present
-
-### Version Conflicts
-```bash
-# If version already exists on PyPI
-uv version --bump patch  # increment to next available version
+# Test functionality
+python -c "import otdf_python; print('Stable version works!')"
 ```
 
 ## Multi-Package Releases
@@ -262,72 +135,45 @@ This repository manages two packages:
 - `otdf-python` (main SDK)
 - `otdf-python-proto` (protobuf submodule)
 
-Both packages should maintain version sync. Release Please handles this automatically for main branch releases.
+Release Please automatically updates version references in both packages using the `extra-files` configuration.
 
-## Security Considerations
+## Troubleshooting
 
-- Never commit API keys or credentials
-- Trusted publishing prevents credential management
-- All releases require passing security tests
-- Alpha releases are publicly available on PyPI
+### No Release Created
+- Verify commits use conventional commit format
+- Check that tests pass in GitHub Actions
+- Ensure commits were pushed to the correct branch
 
-## Rollback Procedures
+### Failed Publishing
+- Check GitHub Actions logs for detailed error messages
+- Verify PyPI trusted publisher configuration
+- Ensure version doesn't already exist on the target repository
 
-### Yanking a Bad Release
+### Version Conflicts
+- Alpha and stable releases use different version formats, preventing conflicts
+- If conflicts occur, check the Release Please manifest and config files
+
+## Emergency Procedures
+
+### Hotfix for Stable Release
 ```bash
-# Yank from PyPI (makes it unavailable for new installs)
-uv publish --yank "0.3.0a9" --reason "Critical security issue"
-
-# Create hotfix release
+# Create hotfix directly on main
 git checkout main
-# Make fixes
-git commit -m "fix: critical security issue"
-# Follow normal release process
+git commit -m "fix: critical security vulnerability"
+git push origin main
+# Release Please will create a patch release
 ```
 
-### Emergency Hotfix
-```bash
-# Create hotfix branch from last good release
-git checkout v0.3.0
-git checkout -b hotfix/security-fix
+## Configuration Files
 
-# Make minimal fix
-git commit -m "fix: security vulnerability"
+- `.release-please-config.json`: Main configuration
+- `.release-please-manifest.json`: Version tracking
+- `.github/workflows/release-please.yaml`: GitHub Actions workflow
 
-# Merge back to main and release
-git checkout main
-git merge hotfix/security-fix
-# Follow normal release process
-```
-
-## Release Checklist for Maintainers
-
-### Pre-Release
-- [ ] All tests passing locally
-- [ ] Integration tests passing
-- [ ] Documentation updated
-- [ ] CHANGELOG reviewed
-- [ ] Version bump appropriate
-- [ ] No security issues
-
-### During Release
-- [ ] GitHub Actions tests pass
-- [ ] Build artifacts created successfully
-- [ ] PyPI upload successful
-- [ ] GitHub release created
-
-### Post-Release
-- [ ] Test installation from PyPI
-- [ ] Verify SDK functionality
-- [ ] Update any dependent projects
-- [ ] Communicate release to users
-- [ ] Monitor for issues
-
-## Support and Escalation
+## Support
 
 For release issues:
-1. Check GitHub Actions logs
-2. Review PyPI trusted publisher setup
-3. Verify release-please configuration
+1. Check GitHub Actions logs in the "Release Please" workflow
+2. Review the Release Please documentation
+3. Create a GitHub issue with workflow logs
 4. Contact repository maintainers
-5. Create GitHub issue for persistent problems
