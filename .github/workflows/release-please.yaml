@@ -30,14 +30,16 @@ jobs:
       - name: Create prerelease config for develop
         if: github.ref == 'refs/heads/develop'
         run: |
-          cat .release-please-config.json | jq '. + {"prerelease": true, "prerelease-type": "alpha"}' > .release-please-config-develop.json
+          # Add prerelease settings to the root package (path: ".")
+          cat .release-please-config.json | jq '.packages["."] += {"prerelease": true, "prerelease-type": "alpha"}' > temp-config.json
+          mv temp-config.json .release-please-config.json
 
       # Release-please for develop branch (creates alpha prereleases)
       - uses: googleapis/release-please-action@v4
         if: github.ref == 'refs/heads/develop'
         id: release-develop
         with:
-          config-file: .release-please-config-develop.json
+          config-file: .release-please-config.json
           manifest-file: .release-please-manifest.json
           target-branch: develop
           token: ${{ secrets.GITHUB_TOKEN }}
