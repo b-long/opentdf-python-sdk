@@ -26,22 +26,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Create temporary prerelease config and manifest for develop branch
-      - name: Create prerelease config for develop
-        if: github.ref == 'refs/heads/develop'
-        run: |
-          # Add prerelease settings to the root package (path: ".")
-          cat .release-please-config.json | jq '.packages["."] += {"prerelease": true, "prerelease-type": "alpha"}' > .release-please-config-develop.json
-
-          # Create a separate manifest for develop that tracks the last alpha version
-          # We need to determine what the last alpha version should be based on the current state
-          CURRENT_VERSION=$(cat .release-please-manifest.json | jq -r '."."')
-          echo "Current develop manifest version: $CURRENT_VERSION"
-
-          # For develop branch, we want to track alpha versions separately
-          # Since develop has been releasing stable versions, we need to set up proper alpha tracking
-          echo "{\".\": \"$CURRENT_VERSION\"}" > .release-please-manifest-develop.json
-
       # Release-please for develop branch (creates alpha prereleases)
       - uses: googleapis/release-please-action@v4
         if: github.ref == 'refs/heads/develop'

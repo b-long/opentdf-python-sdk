@@ -54,6 +54,8 @@ This ensures that alpha and stable releases have distinct version numbers and pu
      - Creates GitHub release marked as "pre-release"
      - Publishes to TestPyPI (if version > 0.3.2)
 
+**Note**: The develop branch uses separate configuration files (`.release-please-config-develop.json` and `.release-please-manifest-develop.json`) to ensure proper alpha version tracking independent of the main branch.
+
 ### For Stable Releases (Main Branch)
 
 1. **Merge from develop** (or commit directly):
@@ -75,17 +77,32 @@ This ensures that alpha and stable releases have distinct version numbers and pu
 
 ## Version Numbering
 
+### How Version Tracking Works
+
+Release Please uses manifest files to track the "last released version" for each branch:
+
+- **`.release-please-manifest.json`**: Tracks the last stable release from main branch
+- **`.release-please-manifest-develop.json`**: Tracks the last alpha release from develop branch
+
+When Release Please runs, it:
+1. Reads the manifest to find the last released version
+2. Analyzes conventional commits since that version
+3. Calculates the next version based on commit types (feat, fix, etc.)
+4. For develop branch: Applies alpha suffix due to prerelease configuration
+
 ### Alpha Versions (from develop)
-- Format: `vX.Y.Z-alpha.N` (e.g., `v1.0.0-alpha.1`, `v1.0.0-alpha.2`)
-- Automatically incremented by Release Please
+- Format: `vX.Y.Z-alpha.N` (e.g., `v0.3.1-alpha.1`, `v0.3.1-alpha.2`)
+- Automatically incremented by Release Please using separate configuration files
 - Marked as pre-release on GitHub
 - Published to TestPyPI
+- Tracked independently from main branch versions
 
 ### Stable Versions (from main)
-- Format: `vX.Y.Z` (e.g., `v1.0.0`, `v1.0.1`)
+- Format: `vX.Y.Z` (e.g., `v0.3.1`, `v0.3.2`)
 - Follow semantic versioning
 - Marked as stable release on GitHub
 - Published to PyPI
+- Use main branch configuration files
 
 ## Manual Release Triggers
 
@@ -113,8 +130,8 @@ git commit -m "feat!: redesign SDK API (BREAKING CHANGE)"    # Major bump
 
 ### Testing Alpha Releases
 ```bash
-# Install from TestPyPI
-pip install --index-url https://test.pypi.org/simple/ otdf-python==1.0.0a1
+# Install from TestPyPI (alpha versions use the format X.Y.Z-alphaX)
+pip install --index-url https://test.pypi.org/simple/ otdf-python==0.3.1a1
 
 # Test functionality
 python -c "import otdf_python; print('Alpha version works!')"
@@ -123,7 +140,7 @@ python -c "import otdf_python; print('Alpha version works!')"
 ### Testing Stable Releases
 ```bash
 # Install from PyPI
-pip install otdf-python==1.0.0
+pip install otdf-python==0.3.1
 
 # Test functionality
 python -c "import otdf_python; print('Stable version works!')"
@@ -149,9 +166,16 @@ Release Please automatically updates version references in both packages using t
 - Verify PyPI trusted publisher configuration
 - Ensure version doesn't already exist on the target repository
 
+### Release Please Configuration Errors
+- **Error: "Missing required manifest versions"**: Ensure both `.release-please-config-develop.json` and `.release-please-manifest-develop.json` are committed to the repository
+- **Dynamic file creation errors**: The develop-specific configuration files must exist in the repository, not generated at runtime
+- **Wrong branch configuration**: Verify the workflow uses the correct config and manifest files for each branch
+
 ### Version Conflicts
-- Alpha and stable releases use different version formats, preventing conflicts
-- If conflicts occur, check the Release Please manifest and config files
+- Alpha and stable releases use separate configuration and manifest files to prevent conflicts
+- Develop branch uses `.release-please-config-develop.json` and `.release-please-manifest-develop.json`
+- Main branch uses `.release-please-config.json` and `.release-please-manifest.json`
+- If conflicts occur, check the appropriate Release Please configuration files for the target branch
 
 ## Emergency Procedures
 
@@ -166,8 +190,10 @@ git push origin main
 
 ## Configuration Files
 
-- `.release-please-config.json`: Main configuration
-- `.release-please-manifest.json`: Version tracking
+- `.release-please-config.json`: Main branch release configuration (stable releases)
+- `.release-please-manifest.json`: Main branch version tracking
+- `.release-please-config-develop.json`: Develop branch release configuration (alpha releases)
+- `.release-please-manifest-develop.json`: Develop branch version tracking
 - `.github/workflows/release-please.yaml`: GitHub Actions workflow
 
 ## Support
