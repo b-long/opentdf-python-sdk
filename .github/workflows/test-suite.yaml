@@ -1,0 +1,121 @@
+name: Test Suite
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+  workflow_call:
+    outputs:
+      tests_passed:
+        description: "Whether all tests passed"
+        value: ${{ jobs.report.outputs.success }}
+  workflow_dispatch:
+
+jobs:
+  # Step 1: Fast lint and format checks (fail fast on code style)
+  lint-check:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Run linting (fail fast)
+        run: |
+          uv sync --frozen
+          uv run ruff check
+          uv run ruff format --check
+
+  # Step 2: Build (only after linting passes)
+  build:
+    runs-on: ubuntu-22.04
+    needs: lint-check
+    outputs:
+      wheel: ${{ steps.find_wheel.outputs.wheel_path }}
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Build otdf-python wheel using uv
+        run: |
+          uv sync --frozen
+          uv build
+        shell: bash
+
+      - name: Find built wheel
+        id: find_wheel
+        run: |
+          wheel_path=$(ls dist/*.whl | head -n1)
+          echo "wheel_path=$wheel_path" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Upload wheel as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-wheel
+          path: dist/*.whl
+
+  # Step 3: Unit tests (only after build succeeds)
+  unit-tests:
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Run unit tests
+        run: |
+          uv sync --frozen
+          uv run pytest -m "not integration" --tb=short -v tests/
+
+  # Step 4: Integration tests (only after unit tests pass)
+  integration-tests:
+    strategy:
+      fail-fast: true
+      matrix:
+        python3_version: ["3.10", "3.11", "3.12", "3.13"]
+    needs: [build, unit-tests]
+    uses: ./.github/workflows/platform-integration-test.yaml
+    with:
+      wheel: ${{ needs.build.outputs.wheel }}
+      python_version: ${{ matrix.python3_version }}
+
+  report:
+    runs-on: ubuntu-22.04
+    needs: [lint-check, build, unit-tests, integration-tests]
+    if: always()
+    outputs:
+      success: ${{ steps.check.outputs.success }}
+    steps:
+      - name: Check all jobs succeeded
+        id: check
+        run: |
+          if [[ "${{ needs.lint-check.result }}" == "success" && "${{ needs.build.result }}" == "success" && "${{ needs.unit-tests.result }}" == "success" && "${{ needs.integration-tests.result }}" == "success" ]]; then
+            echo "success=true" >> $GITHUB_OUTPUT
+            echo "✅ All tests passed!"
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+            echo "❌ Some tests failed:"
+            echo "  Lint Check: ${{ needs.lint-check.result }}"
+            echo "  Build: ${{ needs.build.result }}"
+            echo "  Unit Tests: ${{ needs.unit-tests.result }}"
+            echo "  Integration Tests: ${{ needs.integration-tests.result }}"
+            exit 1
+          fi

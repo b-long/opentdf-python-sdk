@@ -1,0 +1,5 @@
+Hello, World! This is a test text file for TDF target mode testing.
+It contains multiple lines to test various scenarios.
+Line 3 with special characters: àáâãäå
+Line 4 with numbers: 123456789
+Final line with punctuation: !@#$%^&*()_+

@@ -3,17 +3,15 @@
 #
 # Except, that this is a "Composite Action", and specifies 'shell: bash' for
 # each 'run:' step.
-name: "Platform Integration testing"
+name: "NEW: Platform Integration testing"
 
 on:
   workflow_call:
     inputs:
       wheel:
-        description: The Python wheel to test
         required: true
         type: string
       python_version:
-        description: The wheel's Python version (like "3.12" or "3.13")
         required: true
         type: string
 
@@ -26,18 +24,6 @@ jobs:
     steps:
       - name: Checkout this repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
-
-      - uses: actions/cache/restore@v4
-        with:
-          path: dist/otdf_python-0.2.20-py3-none-any.whl
-          key: ${{ runner.os }}${{ inputs.python_version }}-data-${{ github.sha }}
-
-      - name: Prove that the input file is available
-        shell: bash
-        run: |
-          ls -la
-          ls -la "${{ inputs.wheel }}"
-          du -sh "${{ inputs.wheel }}"
 
       # - uses: bufbuild/buf-setup-action@382440cdb8ec7bc25a68d7b4711163d95f7cc3aa
       #   with:
@@ -69,7 +55,39 @@ jobs:
         shell: bash
         run: |
           .github/scripts/init-temp-keys.sh
-          cp opentdf-dev.yaml opentdf.yaml
+          # Edit Keycloak sample file for our use case
+          yq -i '.realms[0].clients[0].client.directAccessGrantsEnabled = true | .realms[0].clients[0].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
+          yq -i '.realms[0].clients[1].client.directAccessGrantsEnabled = true | .realms[0].clients[1].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
+          yq -i '.realms[0].clients[4].client.directAccessGrantsEnabled = true | .realms[0].clients[4].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
+
+          cp opentdf-example.yaml opentdf.yaml
+          # Edit 'opentdf.yaml' for our use case
+          yq -i 'del(.db) | .services.entityresolution.url = "http://localhost:8888/auth" | .server.auth.issuer = "http://localhost:8888/auth/realms/opentdf"' opentdf.yaml
+          # The above expression can also be written as 3 separate commands:
+          # yq -i 'del(.db)' opentdf.yaml
+          # yq -i '.services.entityresolution.url = "http://localhost:8888/auth"' opentdf.yaml
+          # yq -i '.server.auth.issuer = "http://localhost:8888/auth/realms/opentdf"' opentdf.yaml
+          yq -i '
+          .server.cryptoProvider = {
+            "type": "standard",
+            "standard": {
+              "keys": [
+                {
+                  "kid": "r1",
+                  "alg": "rsa:2048",
+                  "private": "kas-private.pem",
+                  "cert": "kas-cert.pem"
+                },
+                {
+                  "kid": "e1",
+                  "alg": "ec:secp256r1",
+                  "private": "kas-ec-private.pem",
+                  "cert": "kas-ec-cert.pem"
+                }
+              ]
+            }
+          }
+          ' opentdf.yaml
           sudo chmod -R 777 ./keys
         working-directory: platform
       # - name: Trust the locally issued cert
@@ -113,31 +131,65 @@ jobs:
           grpcurl -plaintext localhost:8080 list && \
           grpcurl -plaintext localhost:8080 kas.AccessService/PublicKey
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-            python-version: ${{ inputs.python_version }}
+      - name: Install otdfctl
+        run: go install github.com/opentdf/otdfctl@latest
+        shell: bash
 
-      - name: Validate the Python SDK
+      - name: Create creds.json for otdfctl
+        run: echo -n '{"clientId":"opentdf-sdk","clientSecret":"secret"}' > creds.json
+        shell: bash
+
+      - name: Create a plaintext file
+        run: echo "integration test secret" > secret.txt
+        shell: bash
+
+      - name: Encrypt file with otdfctl (no attributes)
+        run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
+          otdfctl encrypt -o secret.txt.tdf --host http://localhost:8080 --tls-no-verify --with-client-creds-file creds.json secret.txt
+        shell: bash
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Run all tests, minus integration tests
         env:
-          OPENTDF_CLIENT_ID: "opentdf-sdk"
+          OPENTDF_CLIENT_ID: "opentdf"
           OPENTDF_CLIENT_SECRET: "secret"
-          OPENTDF_HOSTNAME: "http://localhost:8080"
+          OPENTDF_HOSTNAME: "localhost:8080"
           OIDC_TOKEN_ENDPOINT: "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
           OPENTDF_KAS_URL: "http://localhost:8080/kas"
           INSECURE_SKIP_VERIFY: "TRUE"
+          TEST_OPENTDF_ATTRIBUTE_1: "https://example.net/attr/attr1/value/value1"
+          TEST_OPENTDF_ATTRIBUTE_2: "https://example.com/attr/attr1/value/value1"
         run: |
-          mkdir validation
-          wheel="$(basename ${{ inputs.wheel }} )"
-          cp -v "${{ inputs.wheel }}" validation/
-          cp -v validate_otdf_python.py validation/
-          cd validation
-          python -m venv .venv
-          source .venv/bin/activate
-          pip install ./"$wheel"
-          python validate_otdf_python.py
+          uv sync
+          # Skip the tests marked "integration"
+          uv run pytest -m "not integration" --tb=short -vv tests
+        shell: bash
 
+      - name: Run integration tests
+        env:
+          OPENTDF_CLIENT_ID: "opentdf"
+          OPENTDF_CLIENT_SECRET: "secret"
+          OPENTDF_PLATFORM_HOST: "localhost:8080"
+          OPENTDF_PLATFORM_URL: "http://localhost:8080"
+          OIDC_OP_TOKEN_ENDPOINT: "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
+          OPENTDF_KAS_URL: "http://localhost:8080/kas"
+          INSECURE_SKIP_VERIFY: "TRUE"
+          TEST_OPENTDF_ATTRIBUTE_1: "https://example.net/attr/attr1/value/value1"
+          TEST_OPENTDF_ATTRIBUTE_2: "https://example.com/attr/attr1/value/value1"
+        run: |
+          # Run check_entitlements.sh
+          ./.github/check_entitlements.sh
 
+          uv sync
+          # Skip the tests marked "integration"
+          uv run pytest -m "integration" --tb=short -vv tests
+        shell: bash
 
   # platform-xtest:
   #   permissions:

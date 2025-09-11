@@ -1,0 +1,32 @@
+[project]
+name = "otdf-python-proto"
+version = "0.3.1"
+description = "Generated protobuf files for OpenTDF Python SDK"
+readme = "README.md"
+authors = [
+    { name = "b-long", email = "b-long@users.noreply.github.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "connect-python[compiler]>=0.4.2",
+    "protobuf>=6.31.1",
+    "googleapis-common-protos>=1.66.0",
+    # Legacy gRPC support (may be removed in future versions)
+    "grpcio>=1.74.0",
+    "grpcio-tools>=1.74.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "mypy-protobuf>=3.6.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/otdf_python_proto"]
+
+[tool.hatch.metadata]
+allow-direct-references = true

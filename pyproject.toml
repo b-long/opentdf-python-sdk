@@ -1,30 +1,84 @@
 [project]
 name = "otdf-python"
-# Should match 'setup.py' version number (used for gopy/pybindgen)
-version = "0.2.20"
-description = "Unofficial OpenTDF SDK for Python."
-authors = [
-    {name="b-long", email="b-long@users.noreply.github.com"}
-]
+version = "0.3.1"
+description = "Unofficial OpenTDF SDK for Python"
 readme = "README.md"
+authors = [
+    { name = "b-long", email = "b-long@users.noreply.github.com" }
+]
 requires-python = ">=3.10"
+dependencies = [
+    "cryptography>=45.0.4",
+    "connect-python[compiler]>=0.4.2",
+    "httpx>=0.28.1",
+    "protobuf>=6.31.1",
+    "pyjwt>=2.10.1",
+    "typing-extensions>=4.14.1",
+    # Legacy gRPC support (may be removed in future versions)
+    "grpcio>=1.74.0",
+    "grpcio-tools>=1.74.0",
+    "grpcio-status>=1.74.0",
+    "protoc-gen-openapiv2>=0.0.1",
+]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[dependencies]
-wheel = "^0.45.0"
-pybindgen = "^0.22.1"
+[tool.hatch.build.targets.wheel]
+packages = [
+    "src/otdf_python",
+    "otdf-python-proto/src/otdf_python_proto",
+]
 
-[tool.poetry]
-package-mode = false
-version = "0.2.20"
 
-[tool.poetry.dependencies]
-python = ">=3.10,<3.14"
-wheel = "^0.45.0"
-pybindgen = "^0.22.1"
+[dependency-groups]
+dev = [
+    "pydantic-settings>=2.10.1",
+    "pytest>=8.4.1",
+    "respx>=0.21.1",
+    "ruff>=0.12.10",
+    "tomli>=2.2.1 ; python_full_version < '3.11'",
+]
 
-[tool.poetry.group.dev.dependencies]
-pytest = ">=8.1"
+[tool.pytest.ini_options]
+markers = [
+    "integration: mark a test as an integration test."
+]
+testpaths = ["tests"]
+norecursedirs = ["otdf-python-proto"]
+
+[tool.ruff]
+line-length = 88
+
+# See https://docs.astral.sh/ruff/rules/
+# for rule information.
+#  E501: Line too long (black enforces this for us)
+lint.ignore = [
+    "E501",
+]
+lint.select = [
+    # pycodestyle checks.
+    "E",
+    "W",
+    # pyflakes checks.
+    "F",
+    # flake8-bugbear checks.
+    "B0",
+    # flake8-comprehensions checks.
+    "C4",
+    # McCabe complexity
+    "C90",
+    # isort
+    "I",
+    # Performance-related rules
+    "PERF",      # Ruff's performance rules
+    # Additional useful rules
+    "UP",        # pyupgrade (modern Python features)
+    "SIM",       # flake8-simplify (simplifications)
+    "RUF",       # Ruff-specific rules
+    "FURB",      # refurb (FURB)
+    "PT018",     # flake8-pytest-style (pytest style)
+]
+# Ignore generated files
+extend-exclude = ["otdf-python-proto/src/"]

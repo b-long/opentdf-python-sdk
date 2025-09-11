@@ -1,44 +1,42 @@
----
-name: Build Python package(s)
-
+# Build otdf-python wheel using uv and output the wheel path for downstream workflows
+name: "Build Python Wheel"
 on:
-    push:
-        branches:
-            - disabled
+  push:
+    branches:
+      - chore/rewrite
+  pull_request:
 
 jobs:
-    build:
+  build:
+    runs-on: ubuntu-22.04
+    outputs:
+      wheel: ${{ steps.find_wheel.outputs.wheel_path }}
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
 
-        runs-on: ubuntu-22.04
-        strategy:
-            matrix:
-                go-version: [1.24.x]
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
-        steps:
-            - uses: actions/checkout@v4
-      # - name: Setup Go
-      #   uses: actions/setup-go@v4
+      - name: Build otdf-python wheel using uv
+        run: |
+          uv sync --frozen
+          uv build
+        shell: bash
+
+      - name: Find built wheel
+        id: find_wheel
+        run: |
+          wheel_path=$(ls dist/*.whl | head -n1)
+          echo "wheel_path=$wheel_path" >> $GITHUB_OUTPUT
+        shell: bash
+
+      # - name: Upload wheel as artifact
+      #   uses: actions/upload-artifact@v4
       #   with:
-      #     go-version: ${{ matrix.go-version }}
-      #     cache-dependency-path: go.sum
-      # - name: Install dependencies
-      #   run: go get .
-      # - name: Test with Go
-      #   run: go test -timeout 40s -run ^TestHello$ gotdf_python -count=1 # go test
-
-            - name: Set up Python
-              uses: actions/setup-python@v4
-              with:
-                  python-version: '3.12'
-            - name: Install dependencies
-              run: |
-                  pip install poetry
-            - name: Invoke pylint with all dependencies
-              run: |
-                  # Since we don't have our wheel build / install configured yet we use '--no-root'
-                  poetry install --no-root
-
-                  # poetry install
-
-                  # Bring this back later
-                  # poetry run pytest tests/
+      #     name: python-wheel
+      #     path: dist/*.whl
+      #     overwrite: true

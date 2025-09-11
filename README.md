@@ -1,182 +1,212 @@
-# opentdf-python-sdk
+# OpenTDF Python SDK
 
 Unofficial OpenTDF SDK for Python
 
-[![Tests](https://github.com/b-long/opentdf-python-sdk/workflows/PyPIBuild/badge.svg)](https://github.com/b-long/opentdf-python-sdk/actions?query=workflow%3APyPIBuild)
 
-This project is powered by gopy, which generates (and compiles) a CPython extension module from a go package.  The `gopy`
-tool unlocks performance, flexibility, and excellent Developer Experience to Python end-users.  Read more about
-[`gopy` on Github](https://github.com/go-python/gopy).
+## Features
 
-## Adding features
+- **TDF Encryption/Decryption**: Create and decrypt TDF files with policy-based access control
+- **Flexible Configuration**: Support for various authentication methods and platform endpoints
+- **Comprehensive Testing**: Full test suite with unit and integration tests
 
-If you wish to expand the functionality of `otdf-python`:
+## Legacy Version
 
-1. Create a fork/branch
-1. Add new capabilities (e.g. in `main.go`)
-1. Add a test (e.g. in `otdf_python_test.go`)
-1. Commit your changes, push, and open a Pull Request via
-the Github project: https://github.com/b-long/opentdf-python-sdk
+A legacy version (0.2.x) of this project is available for users who need the previous implementation. For more information, see [LEGACY_VERSION.md](docs/LEGACY_VERSION.md) or visit the [legacy branch on GitHub](https://github.com/b-long/opentdf-python-sdk/tree/0.2.x).
+
+## Prerequisites
+
+This project uses [uv](https://docs.astral.sh/uv/) for dependency management and task running.
+
+### Installing uv
+
+Install `uv` using one of the following methods:
+
+**macOS/Linux:**
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+**Windows:**
+```powershell
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+**Using Homebrew (macOS):**
+```bash
+brew install uv
+```
+
+For more installation options, see the [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/).
+
+## Development Setup
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd opentdf-python-sdk
+```
+
+2. Install dependencies:
+```bash
+uv sync
+```
+
+## Running Tests
+
+Run the full test suite:
+```bash
+uv run pytest tests/
+```
+
+Run specific test files:
+```bash
+uv run pytest tests/test_sdk.py
+```
+
+Run tests with verbose output:
+```bash
+uv run pytest tests/ -v
+```
+
+Run integration tests only:
+```bash
+uv run pytest tests/ -m integration
+```
 
 ## Installation
 
-Install from the [Python Package Index (PyPI)](https://pypi.org):
-
+Install from PyPI:
 ```bash
-# Install the latest from pypi.org
-pip install otdf_python
-
-# Install a pinned version
-pip install otdf-python==0.2.20
-
-# Install a pinned version, from test.pypi.org
-pip install -i https://test.pypi.org/simple/ otdf-python==0.2.20
+pip install otdf-python
 ```
 
-## Usage
 
-Simple usage examples are given below.  In addition, we recommend you also:
+## Protobuf & Connect RPC Generation
 
-1. See the contents of [`main.go` on Github](https://github.com/b-long/opentdf-python-sdk/blob/main/main.go).  ✨ Note that all Upper-case functions are available in Python.
-1. See the contents of [`validate_otdf_python.py` on Github](https://github.com/b-long/opentdf-python-sdk/blob/main/validate_otdf_python.py).
+This project uses a dedicated submodule, `otdf-python-proto/`, for generating Python protobuf files and Connect RPC clients from OpenTDF platform proto definitions.
 
-### Example: Configuration
+### Regenerating Protobuf & Connect RPC Files
 
-Creating a helper function may simplify the usage of `otdf-python`.
+From the submodule:
+```bash
+cd otdf-python-proto
+uv run python scripts/generate_connect_proto.py
+```
 
-For example:
+See [`otdf-python-proto/README.md`](otdf-python-proto/README.md) and [`PROTOBUF_SETUP.md`](PROTOBUF_SETUP.md) for details.
+
+## Quick Start
+
+### Basic Configuration
 
 ```python
-def _get_configuration() -> OpentdfConfig:
-    """
-    The config returned is used for both encryption and decryption.
-    """
-    print("Preparing 'OpentdfConfig' object")
-    from otdf_python.gotdf_python import OpentdfConfig
+from otdf_python.sdk_builder import SDKBuilder
 
-    platformEndpoint = "platform.opentdf.local"
-    keycloakEndpoint = "keycloak.opentdf.local/auth
+# Create and configure SDK using builder pattern
+builder = SDKBuilder()
+builder.set_platform_endpoint("https://platform.example.com")
+builder.client_secret("your-client-id", "your-client-secret")
 
-    # Create config
-    config: OpentdfConfig = OpentdfConfig(
-        ClientId="opentdf-sdk",
-        ClientSecret="secret",
-        PlatformEndpoint=platformEndpoint,
-        TokenEndpoint=f"http://{keycloakEndpoint}/realms/opentdf/protocol/openid-connect/token",
-        KasUrl=f"http://{platformEndpoint}/kas",
-    )
-
-    # NOTE: Structs from golang can be printed, like below
-    # print(config)
-    print("Returning 'OpentdfConfig'")
-
-    return config
+# Build the SDK instance
+sdk = builder.build()
 ```
 
-
-### Example: Encrypt a string
+### Advanced Configuration
 
 ```python
-from otdf_python.gotdf_python import EncryptString
-from otdf_python.go import Slice_string
+from otdf_python.sdk_builder import SDKBuilder
 
-# Depends on the '_get_opentdf_config()' given
-# in the README above
-config: OpentdfConfig = _get_opentdf_config()
+# Create SDK with additional configuration options
+builder = SDKBuilder()
+builder.set_platform_endpoint("https://platform.example.com")
+builder.set_issuer_endpoint("https://auth.example.com")
+builder.client_secret("your-client-id", "your-client-secret")
 
-# da = Slice_string(
-#     [
-#         "https://example.com/attr/attr1/value/value1",
-#         "https://example.com/attr/attr1/value/value2",
-#     ]
-# )
-da = Slice_string([])
+# Examples, for local development
 
-tdf_manifest_json = EncryptString(
-    inputText="Hello from Python",
-    config=config,
-    dataAttributes=da,
-    authScopes=Slice_string(["email"]),
-)
+# Use HTTP instead of HTTPS
+builder.use_insecure_plaintext_connection(True)
+
+# Or
+# Skip TLS verification
+builder.use_insecure_skip_verify(True)
+
+# Build the SDK instance
+sdk = builder.build()
 ```
 
-### Example: Encrypt a file
+### Encrypt Data
 
 ```python
-from otdf_python.gotdf_python import EncryptFile
-from otdf_python.go import Slice_string
+from io import BytesIO
 
-# Depends on the '_get_opentdf_config()' given
-# in the README above
-config: OpentdfConfig = _get_opentdf_config()
+# Create TDF configuration with attributes
+config = sdk.new_tdf_config(attributes=["https://example.com/attr/classification/value/public"])
 
-with tempfile.TemporaryDirectory() as tmpDir:
-    print("Created temporary directory", tmpDir)
+# Encrypt data to TDF format
+input_data = b"Hello, World!"
+output_stream = BytesIO()
+manifest, size, _ = sdk.create_tdf(BytesIO(input_data), config, output_stream)
+encrypted_data = output_stream.getvalue()
 
-    config: OpentdfConfig = _get_configuration()
-
-    SOME_ENCRYPTED_FILE = Path(tmpDir) / "some-file.tdf"
-
-    if SOME_ENCRYPTED_FILE.exists():
-        SOME_ENCRYPTED_FILE.unlink()
-
-    if SOME_ENCRYPTED_FILE.exists():
-        raise ValueError(
-            "The output path should not exist before calling 'EncryptFile()'."
-        )
-
-    SOME_PLAINTEXT_FILE = Path(tmpDir) / "new-file.txt"
-    SOME_PLAINTEXT_FILE.write_text("Hello world")
-
-    from otdf_python.go import Slice_string
-
-    # da = Slice_string(
-    #     [
-    #         "https://example.com/attr/attr1/value/value1",
-    #         "https://example.com/attr/attr1/value/value2",
-    #     ]
-    # )
-    da = Slice_string([])
-    outputFilePath = EncryptFile(
-        inputFilePath=str(SOME_PLAINTEXT_FILE),
-        outputFilePath=str(SOME_ENCRYPTED_FILE),
-        config=config,
-        dataAttributes=da,
-        authScopes=Slice_string(["email"]),
-    )
-
-    print(f"The output file was written to destination path: {outputFilePath}")
-
+# Save encrypted data to file
+with open("encrypted.tdf", "wb") as f:
+    f.write(encrypted_data)
 ```
 
-### Example: Decrypt a file
+### Decrypt Data
 
 ```python
-from otdf_python.gotdf_python import EncryptFile
-from otdf_python.go import Slice_string
+from otdf_python.tdf import TDFReaderConfig
 
-# Depends on the '_get_opentdf_config()' given
-# in the README above
-config: OpentdfConfig = _get_opentdf_config()
+# Read encrypted TDF file
+with open("encrypted.tdf", "rb") as f:
+    encrypted_data = f.read()
 
-def decrypt_file(input_file_path: Path, output_file_path: Path) -> Path:
-    if output_file_path.exists():
-        output_file_path.unlink()
+# Decrypt TDF
+reader_config = TDFReaderConfig()
+tdf_reader = sdk.load_tdf(encrypted_data, reader_config)
+decrypted_data = tdf_reader.payload
 
-    if output_file_path.exists():
-        raise ValueError(
-            "The output path should not exist before calling 'DecryptFile()'."
-        )
+# Save decrypted data
+with open("decrypted.txt", "wb") as f:
+    f.write(decrypted_data)
 
-    outputFilePath = DecryptFile(
-        inputFilePath=str(input_file_path),
-        outputFilePath=str(output_file_path),
-        config=config,
-    )
-
-    output = Path(outputFilePath)
-    if not output.exists():
-        raise ValueError("DecryptFile() did not create the output file")
-
-    return output
+# Don't forget to close the SDK when done
+sdk.close()
 ```
+
+## Project Structure
+
+```
+src/otdf_python/
+├── sdk.py                  # Main SDK interface
+├── config.py               # Configuration management
+├── tdf.py                  # TDF format handling
+├── nanotdf.py              # NanoTDF format handling
+├── crypto_utils.py         # Cryptographic utilities
+├── kas_client.py           # Key Access Service client
+└── ...                     # Additional modules
+tests/
+└── ...                     # Various tests
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make your changes
+4. Run tests: `uv run pytest tests/`
+5. Commit your changes: `git commit -am 'Add feature'`
+6. Push to the branch: `git push origin feature-name`
+7. Submit a pull request
+
+### Release Process
+
+For maintainers and contributors working on releases:
+- See [RELEASES.md](RELEASES.md) for comprehensive release documentation
+- Feature branch alpha releases available for testing changes before merge
+- Automated releases via Release Please on the main branch
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

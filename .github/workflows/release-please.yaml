@@ -1,0 +1,139 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # Run full test suite before any release operations
+  test-suite:
+    uses: ./.github/workflows/test-suite.yaml
+
+  release-please:
+    runs-on: ubuntu-latest
+    needs: test-suite
+    if: needs.test-suite.outputs.tests_passed == 'true'
+    outputs:
+      releases_created: ${{ steps.release-develop.outputs.releases_created || steps.release-main.outputs.releases_created }}
+      paths_released: ${{ steps.release-develop.outputs.paths_released || steps.release-main.outputs.paths_released }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Release-please for develop branch (creates alpha prereleases)
+      - uses: googleapis/release-please-action@v4
+        if: github.ref == 'refs/heads/develop'
+        id: release-develop
+        with:
+          config-file: .release-please-config-develop.json
+          manifest-file: .release-please-manifest-develop.json
+          target-branch: develop
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Release-please for main branch (creates stable releases)
+      - uses: googleapis/release-please-action@v4
+        if: github.ref == 'refs/heads/main'
+        id: release-main
+        with:
+          config-file: .release-please-config.json
+          manifest-file: .release-please-manifest.json
+          target-branch: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  # Trigger appropriate publish workflows based on release type
+  trigger-publish:
+    permissions:
+      contents: write
+      # This permission is mandatory for PyPI's trusted publishing
+      id-token: write
+    needs: release-please
+    if: ${{ needs.release-please.outputs.releases_created }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+
+      - name: Build package
+        shell: bash
+        run: |
+          uv build
+
+      - name: Test import
+        shell: bash
+        run: |
+          uv run python -c 'import otdf_python; print("Package imported successfully")'
+
+      # While we improve the release process, prevent publishing to TestPyPI for versions <= 0.3.2
+      - name: Store version and determine if should publish to TestPyPI
+        id: check_version
+        shell: bash
+        run: |
+          PROJECT_VERSION=$(uv version --short)
+          echo "PROJECT_VERSION=$PROJECT_VERSION" >> $GITHUB_ENV
+
+          if [[ "$PROJECT_VERSION" =~ [0-9]+\.[0-9]+\.[0-9]+a[0-9]+ ]]; then
+            echo "is_alpha=true" >> $GITHUB_OUTPUT
+            echo "Alpha version detected: $PROJECT_VERSION"
+          else
+            echo "is_alpha=false" >> $GITHUB_OUTPUT
+            echo "Stable version detected: $PROJECT_VERSION"
+          fi
+
+          # Remove any alpha/beta/rc suffixes for comparison
+          CLEAN_VERSION=$(echo "$PROJECT_VERSION" | sed 's/[a-zA-Z].*//')
+          echo "clean_version=$CLEAN_VERSION" >> $GITHUB_OUTPUT
+
+          # Convert versions to comparable format (e.g., "0.3.2" -> "000300020000")
+          version_to_number() {
+            echo "$1" | awk -F. '{ printf("%04d%04d%04d\n", $1,$2,$3); }'
+          }
+
+          CURRENT_NUM=$(version_to_number "$CLEAN_VERSION")
+          THRESHOLD_NUM=$(version_to_number "0.3.2")
+
+          if [ "$CURRENT_NUM" -gt "$THRESHOLD_NUM" ]; then
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+            echo "Version $PROJECT_VERSION (clean: $CLEAN_VERSION) is > 0.3.2, will publish to TestPyPI"
+          else
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+            echo "Version $PROJECT_VERSION (clean: $CLEAN_VERSION) is <= 0.3.2, skipping TestPyPI publish"
+          fi
+
+      # For develop branch: trigger TestPyPI build (alpha prereleases go to TestPyPI from develop)
+
+      # Publish with "trusted publisher" mechanism:
+      # https://docs.pypi.org/trusted-publishers/
+      #
+      # Requires GHA token permission (above in YAML) and PyPI management:
+      #   https://test.pypi.org/manage/project/otdf-python/settings/publishing/
+      - name: Publish package distributions to TestPyPI
+        if: github.ref == 'refs/heads/develop' && steps.check_version.outputs.should_publish == 'true'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          verbose: true
+          packages-dir: dist/
+
+      # For main branch: trigger PyPI build (stable releases go to PyPI from main)
+      # Publish with "trusted publisher" mechanism:
+      # https://docs.pypi.org/trusted-publishers/
+      #
+      # Requires GHA token permission (above in YAML) and PyPI management:
+      #   https://pypi.org/manage/project/otdf-python/settings/publishing/
+      - name: Publish package distributions to PyPI
+        if: github.ref == 'refs/heads/main'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # repository-url: https://pypi.org/legacy/
+          packages-dir: dist/
+          verbose: true

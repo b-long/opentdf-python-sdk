@@ -4,55 +4,45 @@ default_install_hook_types:
   - commit-msg
   - post-rewrite
 exclude: |
-    (?x)^(
-        otdf_python/.*
-    )$
+  (?x)^(
+    otdf_python/.*
+    | otdf-python-proto/proto-files/.*
+    | otdf-python-proto/generated/.*
+    | otdf-python-proto/src/otdf_python_proto/.*
+    | otdf-python-proto/buf.yaml
+    | otdf-python-proto/buf.gen.yaml
+  )$
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks#
 repos:
-    - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v6.0.0
-      hooks:
-          - id: check-yaml
-          - id: end-of-file-fixer
-          - id: trailing-whitespace
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        args:
+          [
+            "--ignore-words-list",
+            "b-long, otdf_python",
+            "--skip=uv.lock,otdf-python-proto/uv.lock",
+          ]
 
-    # - repo: https://github.com/tekwizely/pre-commit-golang
-    #   rev: master
-    #   hooks:
-    #       - id: go-lint
-
-    - repo: https://github.com/dnephin/pre-commit-golang
-      rev: v0.5.1
-      hooks:
-          - id: go-fmt
-
-          - id: go-vet
-          # - id: golangci-lint
-            # timeout is needed for CI
-            # args: [-E, gosec, -E, goconst, -E, govet, --timeout, 300s]
-          # - id: go-imports
-          # - id: go-cyclo
-          #   args: [-over=15]
-          # - id: validate-toml
-          - id: no-go-testing
-    - repo: https://github.com/codespell-project/codespell
-      rev: v2.4.1
-      hooks:
-          - id: codespell
-            args: ["--ignore-words-list", "b-long, otdf_python", "--skip=go.sum,otdf_python/"]
-
-    - repo: https://github.com/astral-sh/ruff-pre-commit
-      # Ruff version.
-      rev: v0.12.12
-      hooks:
-        # Run the linter.
-        - id: ruff
-        # Run the formatter.
-        - id: ruff-format
-    - repo: https://github.com/compilerla/conventional-pre-commit
-      rev: v4.2.0
-      hooks:
-        - id: conventional-pre-commit
-          stages: [commit-msg,post-rewrite]
-          args: [--verbose,--scopes=feat,fix,docs,style,test,chore,ci]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.12.12
+    hooks:
+      # Run the linter.
+      - id: ruff-check
+      # Run the formatter.
+      - id: ruff-format
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.2.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [--verbose, --scopes="feat, fix, docs, style, test, chore, ci"]
