@@ -13,7 +13,6 @@ from pathlib import Path
 
 import pytest
 
-from otdf_python.tdf import TDFReaderConfig
 from tests.integration.support_sdk import get_sdk
 
 # Set up detailed logging
@@ -52,13 +51,8 @@ def decrypt_file(encrypted_path: Path) -> Path:
 
     output_path = encrypted_path.with_suffix(".decrypted")
     with open(encrypted_path, "rb") as infile, open(output_path, "wb") as outfile:
-        # Include attributes for policy enforcement
-        reader_config = TDFReaderConfig(
-            attributes=_test_attributes  # Same attributes used in encrypt_file
-        )
-
         # Use KAS client for key unwrapping
-        reader = sdk.load_tdf_with_config(infile.read(), reader_config)
+        reader = sdk.load_tdf(infile.read())
         # TDFReader is a dataclass with payload attribute
         outfile.write(reader.payload)
     return output_path

@@ -25,7 +25,7 @@ def decrypt(input_path: Path, output_path: Path, sdk: SDK):
     with open(input_path, "rb") as infile, open(output_path, "wb") as outfile:
         try:
             logger.debug("Decrypting TDF")
-            tdf_reader = sdk.load_tdf_without_config(infile.read())
+            tdf_reader = sdk.load_tdf(infile.read())
             # Access payload directly from TDFReader
             payload_bytes = tdf_reader.payload
             outfile.write(payload_bytes)
