@@ -348,11 +348,13 @@ class SDK(AbstractContextManager):
         """Returns the platform URL if set"""
         return self.platform_url
 
-    def load_tdf_with_config(
-        self, tdf_data: bytes | BinaryIO | BytesIO, config: TDFReaderConfig
+    def load_tdf(
+        self,
+        tdf_data: bytes | BinaryIO | BytesIO,
+        config: TDFReaderConfig | None = None,
     ) -> TDFReader:
         """
-        Loads a TDF from the provided data according to the config.
+        Loads a TDF from the provided data, optionally according to the config.
 
         Args:
             tdf_data: The TDF data as bytes, file object, or BytesIO
@@ -365,26 +367,10 @@ class SDK(AbstractContextManager):
             SDKException: If there's an error loading the TDF
         """
         tdf = TDF(self.services)
+        if config is None:
+            config = TDFReaderConfig()
+
         return tdf.load_tdf(tdf_data, config)
-
-    def load_tdf_without_config(
-        self, tdf_data: bytes | BinaryIO | BytesIO
-    ) -> TDFReader:
-        """
-        Loads a TDF from the provided data.
-
-        Args:
-            tdf_data: The TDF data as bytes, file object, or BytesIO
-
-        Returns:
-            TDFReader: Contains payload and manifest
-
-        Raises:
-            SDKException: If there's an error loading the TDF
-        """
-        tdf = TDF(self.services)
-        default = TDFReaderConfig()
-        return tdf.load_tdf(tdf_data, default)
 
     def create_tdf(
         self,

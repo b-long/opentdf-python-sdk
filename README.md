@@ -90,8 +90,7 @@ with open("encrypted.tdf", "rb") as f:
     encrypted_data = f.read()
 
 # Decrypt TDF
-reader_config = TDFReaderConfig()
-tdf_reader = sdk.load_tdf(encrypted_data, reader_config)
+tdf_reader = sdk.load_tdf(encrypted_data)
 decrypted_data = tdf_reader.payload
 
 # Save decrypted data
