@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -euo pipefail
 
 # Derive additional environment variables
 TOKEN_URL="${OIDC_OP_TOKEN_ENDPOINT}"
@@ -24,6 +26,11 @@ get_token() {
 
 echo "🔐 Getting access token..."
 BEARER=$( get_token | jq -r '.access_token' )
+if [ -z "$BEARER" ]; then
+    echo "❌ Failed to get access token."
+    exit 1
+fi
+
 # NOTE: It's always okay to print this token, because it will
 # only be valid / available in dummy / dev scenarios
 [[ "${DEBUG:-}" == "1" ]] && echo "Got Access Token: ${BEARER}"
