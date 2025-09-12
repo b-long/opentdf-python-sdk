@@ -20,7 +20,6 @@ from otdf_python.config import KASInfo, NanoTDFConfig, TDFConfig
 from otdf_python.sdk import SDK
 from otdf_python.sdk_builder import SDKBuilder
 from otdf_python.sdk_exceptions import SDKException
-from otdf_python.tdf import TDFReaderConfig
 
 try:
     __version__ = metadata.version("otdf-python")
@@ -333,8 +332,7 @@ def cmd_decrypt(args):
             if encrypted_data.startswith(b"PK"):
                 # Regular TDF (ZIP format)
                 logger.debug("Decrypting TDF")
-                reader_config = TDFReaderConfig()
-                tdf_reader = sdk.load_tdf(encrypted_data, reader_config)
+                tdf_reader = sdk.load_tdf(encrypted_data)
                 payload_bytes = tdf_reader.payload
                 output_file.write(payload_bytes)
                 logger.info("Successfully decrypted TDF")
