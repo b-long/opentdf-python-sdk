@@ -154,6 +154,7 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
+          python-version: ${{ inputs.python_version }}
 
       - name: Run all tests, minus integration tests
         env:
