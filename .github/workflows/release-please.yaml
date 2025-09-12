@@ -46,14 +46,14 @@ jobs:
           target-branch: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  # Trigger appropriate publish workflows based on release type
-  trigger-publish:
+  # Publish packages only when releases are actually created by release-please
+  publish:
     permissions:
       contents: write
       # This permission is mandatory for PyPI's trusted publishing
       id-token: write
     needs: release-please
-    if: ${{ needs.release-please.outputs.releases_created }}
+    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
