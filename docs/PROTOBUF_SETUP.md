@@ -4,18 +4,18 @@ This document explains the protobuf generation sub-module that was created for t
 
 ## Overview
 
-A dedicated sub-module (`proto-gen/`) has been created to handle downloading and generating protobuf files from the OpenTDF platform. This provides a clean separation of concerns and makes it easy to update protobuf definitions.
+A dedicated sub-module (`otdf-python-proto/`) has been created to handle downloading and generating protobuf files from the OpenTDF platform. This provides a clean separation of concerns and makes it easy to update protobuf definitions.
 
 ## Structure
 
 ```
 opentdf-python-sdk.rewrite/
-├── proto-gen/                     # Protobuf generation sub-module
+├── otdf-python-proto/             # Protobuf generation sub-module
 │   ├── pyproject.toml             # Sub-module dependencies
 │   ├── README.md                  # Sub-module documentation
 │   ├── proto-files/               # Raw .proto files
-│   │   ├── kas.proto             # Downloaded from OpenTDF platform
-│   │   └── kas_simplified.proto   # Simplified version (auto-generated)
+│   │   ├── kas.proto              # Downloaded from OpenTDF platform
+│   │   └── ...                    # Other .proto files
 │   ├── generated/                 # Generated Python files
 │   │   ├── __init__.py
 │   │   ├── kas_pb2.py            # Generated protobuf classes
@@ -33,7 +33,7 @@ opentdf-python-sdk.rewrite/
 
 ### 1. Downloaded Proto File ✅
 - Downloaded the latest `kas.proto` file from: `https://raw.githubusercontent.com/opentdf/platform/refs/tags/service/v0.8.0/service/kas/kas.proto`
-- Stored in `proto-gen/proto-files/kas.proto`
+- Stored in `otdf-python-proto/proto-files/kas.proto`
 
 ### 2. Built Usable Library ✅
 - Created a robust protobuf generation system using `uv run python -m grpc_tools.protoc`
@@ -66,9 +66,9 @@ From the main project root:
 ./scripts/update-proto.sh
 ```
 
-From the proto-gen sub-module:
+From the otdf-python-proto sub-module:
 ```bash
-cd proto-gen
+cd otdf-python-proto
 uv run python scripts/generate_proto.py
 ```
 
@@ -76,7 +76,7 @@ uv run python scripts/generate_proto.py
 
 1. Download the latest proto file:
 ```bash
-curl -o proto-gen/proto-files/kas.proto https://raw.githubusercontent.com/opentdf/platform/refs/tags/service/v0.8.0/service/kas/kas.proto
+curl -o otdf-python-proto/proto-files/kas.proto https://raw.githubusercontent.com/opentdf/platform/refs/tags/service/v0.8.0/service/kas/kas.proto
 ```
 
 2. Regenerate the Python files:
