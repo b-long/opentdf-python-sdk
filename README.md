@@ -83,8 +83,6 @@ with open("encrypted.tdf", "wb") as f:
 ### Decrypt Data
 
 ```python
-from otdf_python.tdf import TDFReaderConfig
-
 # Read encrypted TDF file
 with open("encrypted.tdf", "rb") as f:
     encrypted_data = f.read()
