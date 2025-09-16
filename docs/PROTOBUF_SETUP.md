@@ -48,7 +48,7 @@ opentdf-python-sdk/
 - Handles import issues gracefully
 
 ### Multiple Ways to Generate
-1. **Python script**: `uv run python scripts/generate_proto.py`
+1. **Python script**: `uv run python scripts/generate_connect_proto.py`
 2. **Shell script**: `./scripts/build_proto.sh`
 3. **Convenience script**: `./scripts/update-proto.sh` (from main project)
 
