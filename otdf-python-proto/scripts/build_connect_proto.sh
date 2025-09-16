@@ -87,7 +87,7 @@ if [[ $? -eq 0 ]]; then
     echo "  python examples/connect_rpc_client_example.py"
     echo ""
     echo "For more information, see:"
-    echo "  - CONNECT_RPC_SETUP.md"
+    echo "  - CONNECT_RPC.md"
     echo "  - https://connectrpc.com/docs/"
 else
     echo "✗ Connect RPC generation failed!"
