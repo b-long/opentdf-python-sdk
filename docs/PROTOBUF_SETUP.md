@@ -9,7 +9,7 @@ A dedicated sub-module (`otdf-python-proto/`) has been created to handle downloa
 ## Structure
 
 ```
-opentdf-python-sdk.rewrite/
+opentdf-python-sdk/
 ├── otdf-python-proto/             # Protobuf generation sub-module
 │   ├── pyproject.toml             # Sub-module dependencies
 │   ├── README.md                  # Sub-module documentation
