@@ -47,7 +47,7 @@ Connect RPC clients support standard HTTP authentication:
 ```python
 import httpx
 
-# Create authenticated HTTP client
+# Create authenticated HTTP client, assuming `token` holds your auth token
 http_client = httpx.Client(
     headers={"Authorization": f"Bearer {token}"}
 )
@@ -79,7 +79,7 @@ uv run python scripts/generate_connect_proto.py --download
 
 ### Requirements
 
-- `buf` tool: `brew install bufbuild/buf/buf`
+- `buf` tool: `brew install bufbuild/buf/buf` (or see [official installation guide](https://buf.build/docs/installation))
 - Python dependencies managed by `uv`
 
 ## Benefits Over gRPC
@@ -122,7 +122,7 @@ def test_connect_rpc_client():
             headers={'Content-Type': 'application/proto'}
         )
     )
-    
+
     client = kas_connect.KeyAccessServiceClient(base_url="https://example.com")
     # Test client calls...
 ```
