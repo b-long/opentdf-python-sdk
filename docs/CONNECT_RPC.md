@@ -135,7 +135,8 @@ Connect RPC provides structured error handling through standard HTTP status code
 from connectrpc import ConnectError
 
 try:
-    response = client.some_method(request)
+    # Assuming `kas_client` and `request` are defined as in previous examples
+    response = kas_client.rewrap(request)
 except ConnectError as e:
     print(f"Connect RPC error: {e.code} - {e.message}")
     # Handle specific error types
