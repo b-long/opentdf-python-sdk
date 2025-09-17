@@ -1,9 +1,6 @@
 # Build otdf-python wheel using uv and output the wheel path for downstream workflows
 name: "Build Python Wheel"
 on:
-  push:
-    branches:
-      - chore/rewrite
   pull_request:
 
 jobs:
