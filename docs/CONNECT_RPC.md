@@ -104,11 +104,23 @@ Connect RPC clients can be easily mocked and tested using standard HTTP testing 
 ```python
 import httpx
 import respx
+from otdf_python_proto.kas import kas_pb2, kas_connect
 
 @respx.mock
 def test_connect_rpc_client():
-    respx.post("https://example.com/rewrap").mock(
-        return_value=httpx.Response(200, json={"key": "decrypted"})
+    # 1. Create a sample protobuf response message
+    expected_response = kas_pb2.RewrapResponse(
+        entity_wrapped_key=b'some-unwrapped-key'
+    )
+
+    # 2. Mock the correct Connect RPC endpoint URL
+    respx.post("https://example.com/kas.AccessService/Rewrap").mock(
+        return_value=httpx.Response(
+            200,
+            # 3. Return the serialized protobuf message as content
+            content=expected_response.SerializeToString(),
+            headers={'Content-Type': 'application/proto'}
+        )
     )
     
     client = kas_connect.KeyAccessServiceClient(base_url="https://example.com")
@@ -134,3 +146,10 @@ except ConnectError as e:
 - Use connection pooling with `httpx.Client` for better performance
 - Configure appropriate timeouts for your use case
 - Consider using binary encoding for high-throughput scenarios
+
+## Additional Resources
+
+For more information, see:
+- [Connect RPC Documentation](https://connectrpc.com/docs/)
+- [Connect Python Repository](https://github.com/connectrpc/connect-python)
+- [OpenTDF Platform](https://github.com/opentdf/platform)
