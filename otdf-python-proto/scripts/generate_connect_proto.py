@@ -96,10 +96,10 @@ def copy_opentdf_proto_files(proto_gen_dir: Path) -> bool:
                     print(f"  Copying {relative_path}...")
 
                     # Copy the file content
-                    with open(proto_file) as src:
+                    with proto_file.open() as src:
                         content = src.read()
 
-                    with open(dest_path, "w") as dst:
+                    with dest_path.open("w") as dst:
                         dst.write(content)
 
                     copied_files += 1
@@ -155,7 +155,7 @@ def run_buf_generate(proto_gen_dir: Path) -> bool:
 
         # Update buf.gen.yaml with the correct path
         buf_gen_path = proto_gen_dir / "buf.gen.yaml"
-        with open(buf_gen_path) as f:
+        with buf_gen_path.open() as f:
             content = f.read()
 
         # Replace the local plugin path
@@ -163,7 +163,7 @@ def run_buf_generate(proto_gen_dir: Path) -> bool:
             "- local: protoc-gen-connect_python", f"- local: {connect_plugin_path}"
         )
 
-        with open(buf_gen_path, "w") as f:
+        with buf_gen_path.open("w") as f:
             f.write(updated_content)
 
         # Run buf generate
@@ -221,7 +221,7 @@ def _fix_ignore_if_default_value(proto_files_dir):
     # Iterate all .proto files in the directory
     for proto_file in proto_files_dir.glob("**/*.proto"):
         try:
-            with open(proto_file, "r") as file:  # noqa: UP015
+            with proto_file.open("r") as file:
                 content = file.read()
 
             # Replace the old enum value with the new one
@@ -230,7 +230,7 @@ def _fix_ignore_if_default_value(proto_files_dir):
             )
 
             # Write the updated content back to the file
-            with open(proto_file, "w") as file:
+            with proto_file.open("w") as file:
                 file.write(updated_content)
 
             print(f"Updated {proto_file.name} to use IGNORE_IF_ZERO_VALUE")

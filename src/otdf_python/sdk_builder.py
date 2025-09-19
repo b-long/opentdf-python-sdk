@@ -4,9 +4,9 @@ Provides methods to configure and build SDK instances.
 """
 
 import logging
-import os
 import ssl
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -77,9 +77,10 @@ class SDKBuilder:
         self.cert_paths = []
 
         # Find all .pem and .crt files in the directory
-        for filename in os.listdir(certs_dir_path):
-            if filename.endswith(".pem") or filename.endswith(".crt"):
-                self.cert_paths.append(os.path.join(certs_dir_path, filename))
+        certs_path = Path(certs_dir_path)
+        for cert_file in certs_path.iterdir():
+            if cert_file.suffix in (".pem", ".crt"):
+                self.cert_paths.append(str(cert_file))
 
         # Create SSL context with these certificates
         if self.cert_paths:

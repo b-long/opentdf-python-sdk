@@ -7,10 +7,10 @@ the use_plaintext setting when converting URLs.
 """
 
 # Allow importing from src directory
-import os
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, str(Path(__file__).parent / ".."))
 
 from src.otdf_python.kas_client import KASClient
 

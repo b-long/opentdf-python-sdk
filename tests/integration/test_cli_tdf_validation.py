@@ -28,7 +28,7 @@ from tests.support_otdfctl_args import (
 def _create_test_input_file(temp_path: Path, content: str) -> Path:
     """Create a test input file with the given content."""
     input_file = temp_path / "input.txt"
-    with open(input_file, "w") as f:
+    with input_file.open("w") as f:
         f.write(content)
     return input_file
 
@@ -471,7 +471,7 @@ def test_different_content_types(
             # Create input file
             input_file = temp_path / filename
             # Use binary mode for consistent handling of all content types
-            with open(input_file, "w", encoding="utf-8") as f:
+            with input_file.open("w", encoding="utf-8") as f:
                 f.write(content)
 
             # Test with Python CLI
@@ -528,7 +528,7 @@ def test_different_content_types_empty(
             # Create input file
             input_file = temp_path / filename
             # Use binary mode for consistent handling of all content types
-            with open(input_file, "w", encoding="utf-8") as f:
+            with input_file.open("w", encoding="utf-8") as f:
                 f.write(content)
 
             # Test with Python CLI

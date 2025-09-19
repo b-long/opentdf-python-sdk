@@ -35,7 +35,7 @@ def test_cli_decrypt_otdfctl_tdf(
         # Create input file
         input_file = temp_path / "input.txt"
         input_content = "Hello, World! This is a test for decryption."
-        with open(input_file, "w") as f:
+        with input_file.open("w") as f:
             f.write(input_content)
 
         # Define TDF file created by otdfctl
@@ -99,7 +99,7 @@ def test_otdfctl_decrypt_comparison(
         # Create input file
         input_file = temp_path / "input.txt"
         input_content = "Hello, World! This is a test for otdfctl decrypt comparison."
-        with open(input_file, "w") as f:
+        with input_file.open("w") as f:
             f.write(input_content)
 
         # Define TDF file created by otdfctl
@@ -183,7 +183,7 @@ def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs, temp_credentials
         input_content = (
             "Hello, World! This is a test for otdfctl roundtrip encryption/decryption."
         )
-        with open(input_file, "w") as f:
+        with input_file.open("w") as f:
             f.write(input_content)
 
         # Define TDF file and decrypted output
@@ -258,7 +258,7 @@ def test_cli_encrypt_integration(
         # Create input file
         input_file = temp_path / "input.txt"
         input_content = "Hello, World"
-        with open(input_file, "w") as f:
+        with input_file.open("w") as f:
             f.write(input_content)
 
         # Define output files

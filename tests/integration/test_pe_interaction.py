@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 def decrypt(input_path: Path, output_path: Path, sdk: SDK):
     # Determine output
-    with open(input_path, "rb") as infile, open(output_path, "wb") as outfile:
+    with input_path.open("rb") as infile, output_path.open("wb") as outfile:
         try:
             logger.debug("Decrypting TDF")
             tdf_reader = sdk.load_tdf(infile.read())
@@ -57,7 +57,7 @@ def test_single_attribute_encryption_decryption():
         input_path = Path(INPUT_FILE)
 
         output_path = input_path.with_suffix(input_path.suffix + ".tdf")
-        with open(input_path, "rb") as infile, open(output_path, "wb") as outfile:
+        with input_path.open("rb") as infile, output_path.open("wb") as outfile:
             sdk.create_tdf(infile.read(), config, output_stream=outfile)
 
         TDF_FILE = output_path
@@ -69,7 +69,7 @@ def test_single_attribute_encryption_decryption():
         DECRYPTED_FILE_SDK.touch()  # Ensure the file exists
 
         decrypt(TDF_FILE, DECRYPTED_FILE_SDK, sdk)
-        with open(INPUT_FILE, "rb") as f1, open(DECRYPTED_FILE_SDK, "rb") as f2:
+        with INPUT_FILE.open("rb") as f1, DECRYPTED_FILE_SDK.open("rb") as f2:
             assert f1.read() == f2.read(), "SDK decrypted output does not match input"
 
         # # Decrypt with otdfctl

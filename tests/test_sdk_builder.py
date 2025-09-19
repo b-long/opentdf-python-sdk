@@ -2,8 +2,8 @@
 Tests for the SDKBuilder class.
 """
 
-import os
 import tempfile
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -103,10 +103,11 @@ def test_ssl_context_from_directory():
     # Create temporary directory with cert files
     with tempfile.TemporaryDirectory() as tmpdirname:
         # Create dummy cert files
+        tmpdir_path = Path(tmpdirname)
         with (
-            open(os.path.join(tmpdirname, "cert1.pem"), "w") as f1,
-            open(os.path.join(tmpdirname, "cert2.crt"), "w") as f2,
-            open(os.path.join(tmpdirname, "not_a_cert.txt"), "w") as f3,
+            (tmpdir_path / "cert1.pem").open("w") as f1,
+            (tmpdir_path / "cert2.crt").open("w") as f2,
+            (tmpdir_path / "not_a_cert.txt").open("w") as f3,
         ):
             f1.write("dummy cert")
             f2.write("dummy cert")

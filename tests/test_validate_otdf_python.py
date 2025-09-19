@@ -40,7 +40,7 @@ def encrypt_file(input_path: Path) -> Path:
     sdk, tdf_config = _get_sdk_and_tdf_config()
 
     output_path = input_path.with_suffix(input_path.suffix + ".tdf")
-    with open(input_path, "rb") as infile, open(output_path, "wb") as outfile:
+    with input_path.open("rb") as infile, output_path.open("wb") as outfile:
         sdk.create_tdf(infile.read(), tdf_config, output_stream=outfile)
     return output_path
 
@@ -50,7 +50,7 @@ def decrypt_file(encrypted_path: Path) -> Path:
     sdk = get_sdk()
 
     output_path = encrypted_path.with_suffix(".decrypted")
-    with open(encrypted_path, "rb") as infile, open(output_path, "wb") as outfile:
+    with encrypted_path.open("rb") as infile, output_path.open("wb") as outfile:
         # Use KAS client for key unwrapping
         reader = sdk.load_tdf(infile.read())
         # TDFReader is a dataclass with payload attribute
@@ -140,9 +140,9 @@ def verify_encrypt_decrypt_file() -> None:
                 assert decrypted_path.exists()
 
                 # Validate content
-                with open(input_file, "rb") as f:
+                with input_file.open("rb") as f:
                     original = f.read()
-                with open(decrypted_path, "rb") as f:
+                with decrypted_path.open("rb") as f:
                     decrypted = f.read()
                 assert original == decrypted, "Decrypted content doesn't match original"
 
