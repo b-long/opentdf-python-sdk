@@ -27,7 +27,7 @@ class TestCryptoUtils(unittest.TestCase):
         self.assertIn("BEGIN PRIVATE KEY", priv_pem)
 
     def test_rsa_key_type_check(self):
-        priv, pub = CryptoUtils.generate_rsa_keypair()
+        _priv, _pub = CryptoUtils.generate_rsa_keypair()
         with self.assertRaises(ValueError):
             CryptoUtils.get_rsa_public_key_pem("notakey")
         with self.assertRaises(ValueError):

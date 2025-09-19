@@ -78,7 +78,7 @@ class TestTDFReader:
 
     def test_manifest(self, mock_zip_reader):
         """Test getting the manifest content."""
-        mock_reader, manifest_data, _ = mock_zip_reader
+        mock_reader, _manifest_data, _ = mock_zip_reader
         manifest_content = json.dumps({"test": "manifest"})
 
         reader = TDFReader(io.BytesIO(b"fake tdf data"))
@@ -108,7 +108,7 @@ class TestTDFReader:
     @patch("otdf_python.tdf_reader.Manifest")
     def test_read_policy_object(self, mock_manifest, mock_zip_reader):
         """Test reading the policy object from the manifest."""
-        mock_reader, manifest_data, _ = mock_zip_reader
+        mock_reader, _manifest_data, _ = mock_zip_reader
 
         # Create a realistic manifest with a base64 encoded policy
         import base64

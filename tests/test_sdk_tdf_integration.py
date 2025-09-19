@@ -14,7 +14,7 @@ def test_sdk_create_tdf_with_builder():
     from otdf_python.kas_info import KASInfo
 
     # Generate key pair for testing
-    kas_private_key, kas_public_key = generate_rsa_keypair()
+    _kas_private_key, kas_public_key = generate_rsa_keypair()
 
     # Create SDK with builder
     sdk = SDKBuilder().set_platform_endpoint("https://example.kas.com").build()
@@ -37,7 +37,7 @@ def test_sdk_create_tdf_with_builder():
     output = io.BytesIO()
 
     # This should not raise an AttributeError or ValueError
-    manifest, size, out_stream = sdk.create_tdf(payload, config, output_stream=output)
+    _manifest, size, out_stream = sdk.create_tdf(payload, config, output_stream=output)
 
     # Basic validations
     assert size > 0
@@ -50,7 +50,7 @@ def test_validate_otdf_python_script():
     from otdf_python.kas_info import KASInfo
 
     # Generate key pair for testing
-    kas_private_key, kas_public_key = generate_rsa_keypair()
+    _kas_private_key, kas_public_key = generate_rsa_keypair()
 
     # Create SDK with builder
     sdk = SDKBuilder().set_platform_endpoint("https://default.kas.example.com").build()
@@ -74,7 +74,7 @@ def test_validate_otdf_python_script():
     output = io.BytesIO()
 
     # This should not raise an AttributeError or ValueError
-    manifest, size, out_stream = sdk.create_tdf(payload, config, output_stream=output)
+    _manifest, size, out_stream = sdk.create_tdf(payload, config, output_stream=output)
 
     # Basic validations
     assert size > 0
