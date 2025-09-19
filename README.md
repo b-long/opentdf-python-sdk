@@ -95,8 +95,6 @@ decrypted_data = tdf_reader.payload
 with open("decrypted.txt", "wb") as f:
     f.write(decrypted_data)
 
-# Don't forget to close the SDK when done
-sdk.close()
 ```
 
 ## Project Structure
