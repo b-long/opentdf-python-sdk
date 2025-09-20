@@ -17,7 +17,7 @@ See [CONNECT_RPC.md](../docs/CONNECT_RPC.md) for additional information.
 ## Structure
 
 - `proto-files/`: Contains the raw .proto files downloaded from the OpenTDF platform
-- `generated/`: Contains the generated Python protobuf and Connect RPC client files
+- `src/otdf_python_proto/`: Contains the generated Python protobuf and Connect RPC client files
 - `scripts/`: Contains build scripts for generating protobuf and Connect RPC files
 - `buf.yaml`: Buf configuration for proto validation and management
 - `buf.gen.yaml`: Buf generation configuration for Connect RPC and protobuf
@@ -40,10 +40,10 @@ Or use the convenience script:
 ```
 
 This generates:
-- `generated/*_connect.py` - Connect RPC clients (preferred)
-- `generated/*_pb2.py` - Standard protobuf classes
-- `generated/*_pb2.pyi` - Type stubs for better IDE support
-- `generated/legacy_grpc/*_pb2_grpc.py` - Legacy gRPC clients (backward compatibility)
+- `src/otdf_python_proto/**/*_connect.py` - Connect RPC clients (preferred)
+- `src/otdf_python_proto/**/*_pb2.py` - Standard protobuf classes
+- `src/otdf_python_proto/**/*_pb2.pyi` - Type stubs for better IDE support
+- `src/otdf_python_proto/legacy_grpc/**/*_pb2_grpc.py` - Legacy gRPC clients (backward compatibility)
 
 ### Legacy gRPC Generation
 
