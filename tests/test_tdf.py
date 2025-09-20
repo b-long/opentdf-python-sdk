@@ -49,7 +49,7 @@ def test_tdf_multi_kas_roundtrip():
     kas2 = KASInfo(url="https://kas2.example.com", public_key=pub2, kid="kas2")
 
     config = TDFConfig(kas_info_list=[kas1, kas2])
-    manifest, size, out = tdf.create_tdf(payload, config)
+    _manifest, _size, out = tdf.create_tdf(payload, config)
     data = out.getvalue() if hasattr(out, "getvalue") else out.read()
     # Should be able to decrypt with either KAS private key
     for priv in (priv1, priv2):

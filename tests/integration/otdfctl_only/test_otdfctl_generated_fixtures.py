@@ -48,7 +48,7 @@ def test_sample_file_contents(sample_input_files):
     # Check text file has content
     text_file = sample_input_files["text"]
     assert text_file.exists(), f"Text file should exist: {text_file}"
-    with open(text_file) as f:
+    with text_file.open() as f:
         content = f.read()
     assert "Hello, World!" in content
     assert len(content) > 0
@@ -66,7 +66,7 @@ def test_sample_file_contents(sample_input_files):
     # Check attributes file has content
     attr_file = sample_input_files["with_attributes"]
     assert attr_file.exists(), f"Attributes file should exist: {attr_file}"
-    with open(attr_file) as f:
+    with attr_file.open() as f:
         content = f.read()
     assert "Classification: SECRET" in content
 

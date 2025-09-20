@@ -6,12 +6,6 @@ This script tests the _normalize_kas_url method to ensure it properly respects
 the use_plaintext setting when converting URLs.
 """
 
-# Allow importing from src directory
-import os
-import sys
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
 from src.otdf_python.kas_client import KASClient
 
 

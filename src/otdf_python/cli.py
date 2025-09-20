@@ -88,7 +88,7 @@ def load_client_credentials(creds_file_path: str) -> tuple[str, str]:
                 "CRITICAL", f"Credentials file does not exist: {creds_file_path}"
             )
 
-        with open(creds_path) as f:
+        with creds_path.open() as f:
             creds = json.load(f)
 
         client_id = creds.get("clientId")
@@ -223,13 +223,13 @@ def cmd_encrypt(args):
 
     try:
         # Read input file
-        with open(input_path, "rb") as input_file:
+        with input_path.open("rb") as input_file:
             payload = input_file.read()
 
         # Determine output
         if args.output:
             output_path = Path(args.output)
-            with open(output_path, "wb") as output_file:
+            with output_path.open("wb") as output_file:
                 try:
                     # Create appropriate config based on container type
                     container_type = getattr(args, "container_type", "tdf")
@@ -247,7 +247,7 @@ def cmd_encrypt(args):
                         logger.debug("Creating TDF")
                         config = create_tdf_config(sdk, args)
                         output_stream = BytesIO()
-                        manifest, size, _ = sdk.create_tdf(
+                        _manifest, size, _ = sdk.create_tdf(
                             BytesIO(payload), config, output_stream
                         )
                         output_file.write(output_stream.getvalue())
@@ -274,7 +274,7 @@ def cmd_encrypt(args):
                 logger.debug("Creating TDF")
                 config = create_tdf_config(sdk, args)
                 output_stream = BytesIO()
-                manifest, size, _ = sdk.create_tdf(
+                _manifest, size, _ = sdk.create_tdf(
                     BytesIO(payload), config, output_stream
                 )
                 output_file.write(output_stream.getvalue())
@@ -296,13 +296,13 @@ def cmd_decrypt(args):
 
     try:
         # Read encrypted file
-        with open(input_path, "rb") as input_file:
+        with input_path.open("rb") as input_file:
             encrypted_data = input_file.read()
 
         # Determine output
         if args.output:
             output_path = Path(args.output)
-            with open(output_path, "wb") as output_file:
+            with output_path.open("wb") as output_file:
                 try:
                     # Try to determine if it's a NanoTDF or regular TDF
                     # NanoTDFs have a specific header format, regular TDFs are ZIP files
@@ -359,7 +359,7 @@ def cmd_inspect(args):
 
         try:
             # Read encrypted file
-            with open(input_path, "rb") as input_file:
+            with input_path.open("rb") as input_file:
                 encrypted_data = input_file.read()
 
             if encrypted_data.startswith(b"PK"):
@@ -400,7 +400,7 @@ def cmd_inspect(args):
     except Exception as e:
         # If we can't inspect due to auth issues, show what we can
         logger.warning(f"Limited inspection due to: {e}")
-        with open(input_path, "rb") as input_file:
+        with input_path.open("rb") as input_file:
             encrypted_data = input_file.read()
 
         file_type = "TDF" if encrypted_data.startswith(b"PK") else "NanoTDF"

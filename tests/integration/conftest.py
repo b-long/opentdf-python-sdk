@@ -20,7 +20,7 @@ def temp_credentials_file():
     with tempfile.TemporaryDirectory() as temp_dir:
         creds_file = Path(temp_dir) / "creds.json"
         creds_data = {"clientId": "opentdf", "clientSecret": "secret"}
-        with open(creds_file, "w") as f:
+        with creds_file.open("w") as f:
             json.dump(creds_data, f)
         yield creds_file
 

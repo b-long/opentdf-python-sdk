@@ -51,7 +51,7 @@ class Header:
         # MAGIC_NUMBER_AND_VERSION (3 bytes)
         offset += 3
         # ResourceLocator
-        kas_locator, kas_size = ResourceLocator.from_bytes_with_size(buffer[offset:])
+        _kas_locator, kas_size = ResourceLocator.from_bytes_with_size(buffer[offset:])
         offset += kas_size
         # ECC mode (1 byte)
         ecc_mode = ECCMode(buffer[offset])
@@ -59,7 +59,7 @@ class Header:
         # Payload config (1 byte)
         offset += 1
         # PolicyInfo
-        policy_info, policy_size = PolicyInfo.from_bytes_with_size(
+        _policy_info, policy_size = PolicyInfo.from_bytes_with_size(
             buffer[offset:], ecc_mode
         )
         offset += policy_size

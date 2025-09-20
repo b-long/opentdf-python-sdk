@@ -2,7 +2,6 @@
 Test CLI functionality
 """
 
-import os
 import subprocess
 import sys
 import tempfile
@@ -37,7 +36,7 @@ def test_cli_version(project_root):
     assert result.returncode == 0
     assert "OpenTDF Python SDK" in result.stdout
 
-    with open(Path(__file__).parent.parent / "pyproject.toml", "rb") as f:
+    with (Path(__file__).parent.parent / "pyproject.toml").open("rb") as f:
         # Use tomli for Python < 3.11, tomllib for 3.11+
         if sys.version_info < (3, 11):
             import tomli
@@ -110,7 +109,7 @@ def test_cli_encrypt_missing_auth(project_root):
         assert "Authentication required" in result.stderr
         assert "--with-client-creds-file" in result.stderr
     finally:
-        os.unlink(temp_file)
+        Path(temp_file).unlink()
 
 
 def test_cli_encrypt_missing_creds_file(project_root):
@@ -137,7 +136,7 @@ def test_cli_encrypt_missing_creds_file(project_root):
         assert result.returncode == 1
         assert "Credentials file does not exist" in result.stderr
     finally:
-        os.unlink(temp_file)
+        Path(temp_file).unlink()
 
 
 def test_cli_encrypt_invalid_creds_file(project_root):
@@ -168,8 +167,8 @@ def test_cli_encrypt_invalid_creds_file(project_root):
         assert result.returncode == 1
         assert "must contain 'clientId' and 'clientSecret' fields" in result.stderr
     finally:
-        os.unlink(temp_file)
-        os.unlink(creds_file)
+        Path(temp_file).unlink()
+        Path(creds_file).unlink()
 
 
 def test_cli_decrypt_missing_file(project_root):

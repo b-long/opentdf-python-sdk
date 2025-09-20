@@ -73,6 +73,7 @@ lint.select = [
     "I",
     # Performance-related rules
     "PERF",      # Ruff's performance rules
+    "PTH",       # pathlib (path handling)
     # Additional useful rules
     "UP",        # pyupgrade (modern Python features)
     "SIM",       # flake8-simplify (simplifications)

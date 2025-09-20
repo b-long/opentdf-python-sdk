@@ -55,7 +55,7 @@ def validate_tdf3_file(tdf_path: Path, tool_name: str) -> None:
     assert zipfile.is_zipfile(tdf_path), f"{tool_name} output is not a valid ZIP file"
 
     # Verify TDF file has correct ZIP signature
-    with open(tdf_path, "rb") as f:
+    with tdf_path.open("rb") as f:
         tdf_header = f.read(4)
     assert tdf_header == b"PK\x03\x04", f"{tool_name} output is not a valid ZIP file"
     assert tdf_path.suffix == ".tdf", f"File should have .tdf extension: {tdf_path}"
@@ -68,7 +68,7 @@ def validate_plaintext_file_created(
     assert path.exists(), f"{scenario=} did not create decrypted file"
     assert path.stat().st_size > 0, f"{scenario=} created empty decrypted file"
     # Verify scenario produces the expected decrypted content
-    with open(path) as f:
+    with path.open() as f:
         decrypted_content = f.read()
 
     assert decrypted_content == expected_content, (

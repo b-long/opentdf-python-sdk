@@ -32,7 +32,7 @@ def test_otdfctl_encrypt_python_decrypt(
         # Create input file
         input_file = temp_path / "input.txt"
         input_content = "Hello, World! This is a test for otdfctl decrypt comparison."
-        with open(input_file, "w") as f:
+        with input_file.open("w") as f:
             f.write(input_content)
 
         # Define TDF file created by otdfctl
@@ -115,7 +115,7 @@ def test_otdfctl_encrypt_otdfctl_decrypt(collect_server_logs, temp_credentials_f
         input_content = (
             "Hello, World! This is a test for otdfctl roundtrip encryption/decryption."
         )
-        with open(input_file, "w") as f:
+        with input_file.open("w") as f:
             f.write(input_content)
 
         # Define TDF file and decrypted output

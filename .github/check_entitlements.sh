@@ -17,7 +17,6 @@ echo ""
 
 get_token() {
     curl -k --location "$TOKEN_URL" \
-    --header "X-VirtruPubKey;" \
     --header "Content-Type: application/x-www-form-urlencoded" \
     --data-urlencode "grant_type=client_credentials" \
     --data-urlencode "client_id=$OTDF_CLIENT" \

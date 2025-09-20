@@ -24,7 +24,7 @@ def test_manifest_field_format():
     test_data = b"Hello World"
     tdf_instance = TDF()
     config.policy_object = {"uuid": "test-uuid", "body": {"dissem": ["test"]}}
-    manifest, size, output_stream = tdf_instance.create_tdf(
+    manifest, _size, _output_stream = tdf_instance.create_tdf(
         payload=test_data, config=config
     )
 
@@ -82,7 +82,7 @@ def test_manifest_roundtrip_serialization():
     test_data = b"Hello World"
     tdf_instance = TDF()
     config.policy_object = {"uuid": "test-uuid", "body": {"dissem": ["test"]}}
-    manifest, size, output_stream = tdf_instance.create_tdf(
+    manifest, _size, _output_stream = tdf_instance.create_tdf(
         payload=test_data, config=config
     )
 

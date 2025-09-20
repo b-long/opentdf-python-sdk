@@ -1,6 +1,7 @@
 import io
 import random
 import unittest
+from pathlib import Path
 
 from otdf_python.zip_reader import ZipReader
 from otdf_python.zip_writer import ZipWriter
@@ -33,7 +34,7 @@ class TestZipReader(unittest.TestCase):
         reader = ZipReader(io.BytesIO(data))
         with tempfile.TemporaryDirectory() as tmpdir:
             out_path = reader.extract("baz.txt", tmpdir)
-            with open(out_path, "rb") as f:
+            with Path(out_path).open("rb") as f:
                 self.assertEqual(f.read(), b"baz")
         reader.close()
 

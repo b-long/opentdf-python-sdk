@@ -33,7 +33,7 @@ class TestTDFReaderIntegration:
             # Create input file
             input_file = temp_path / "input.txt"
             input_content = "Hello, World! This is test data for TDFReader integration."
-            with open(input_file, "w") as f:
+            with input_file.open("w") as f:
                 f.write(input_content)
 
             # Define output files
@@ -60,7 +60,7 @@ class TestTDFReaderIntegration:
             assert otdfctl_output.stat().st_size > 0, "otdfctl created empty TDF file"
 
             # Test that TDFReader can open and read the structure
-            with open(otdfctl_output, "rb") as f:
+            with otdfctl_output.open("rb") as f:
                 tdf_data = f.read()
 
             # Initialize TDFReader
@@ -116,7 +116,7 @@ class TestTDFReaderIntegration:
             # Create input file
             input_file = temp_path / "input.txt"
             input_content = "This is input data for testing attributes."
-            with open(input_file, "w") as f:
+            with input_file.open("w") as f:
                 f.write(input_content)
 
             # Define output file
@@ -143,7 +143,7 @@ class TestTDFReaderIntegration:
             assert otdfctl_output.exists(), "otdfctl did not create TDF file"
 
             # Test that TDFReader can read the file with attributes
-            with open(otdfctl_output, "rb") as f:
+            with otdfctl_output.open("rb") as f:
                 tdf_data = f.read()
 
             reader = TDFReader(io.BytesIO(tdf_data))
@@ -209,10 +209,10 @@ class TestTDFReaderIntegration:
                 # Create input file
                 input_file = temp_path / f"{test_case['name']}.txt"
                 if isinstance(test_case["content"], bytes):
-                    with open(input_file, "wb") as f:
+                    with input_file.open("wb") as f:
                         f.write(test_case["content"])
                 else:
-                    with open(input_file, "w") as f:
+                    with input_file.open("w") as f:
                         f.write(test_case["content"])
 
                 # Define output file
@@ -235,7 +235,7 @@ class TestTDFReaderIntegration:
                 )
 
                 # Test TDFReader on this file
-                with open(output_file, "rb") as f:
+                with output_file.open("rb") as f:
                     tdf_data = f.read()
 
                 reader = TDFReader(io.BytesIO(tdf_data))

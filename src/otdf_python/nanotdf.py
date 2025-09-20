@@ -300,7 +300,7 @@ class NanoTDF:
         iv, ciphertext = self._encrypt_payload(payload, key)
 
         # Wrap key if needed
-        wrapped_key, kas_public_key = self._wrap_key_if_needed(key, config)
+        wrapped_key, _kas_public_key = self._wrap_key_if_needed(key, config)
 
         # Compose the complete NanoTDF: [IV][CIPHERTEXT][WRAPPED_KEY][WRAPPED_KEY_LEN]
         if wrapped_key:
