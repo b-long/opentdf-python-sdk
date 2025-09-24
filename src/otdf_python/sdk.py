@@ -12,36 +12,6 @@ from otdf_python.sdk_exceptions import SDKException
 from otdf_python.tdf import TDF, TDFReader, TDFReaderConfig
 
 
-# Stubs for service client interfaces (to be implemented)
-class AttributesServiceClientInterface: ...
-
-
-class NamespaceServiceClientInterface: ...
-
-
-class SubjectMappingServiceClientInterface: ...
-
-
-class ResourceMappingServiceClientInterface: ...
-
-
-class AuthorizationServiceClientInterface: ...
-
-
-class KeyAccessServerRegistryServiceClientInterface: ...
-
-
-# Placeholder for ProtocolClient and Interceptor
-class ProtocolClient: ...
-
-
-class Interceptor: ...  # Can be dict in Python implementation
-
-
-# Placeholder for TrustManager
-class TrustManager: ...
-
-
 class KAS(AbstractContextManager):
     """
     KAS (Key Access Service) interface to define methods related to key access and management.
@@ -251,30 +221,6 @@ class SDK(AbstractContextManager):
         The Services interface provides access to various platform service clients and KAS.
         """
 
-        def attributes(self) -> AttributesServiceClientInterface:
-            """Returns the attributes service client"""
-            raise NotImplementedError
-
-        def namespaces(self) -> NamespaceServiceClientInterface:
-            """Returns the namespaces service client"""
-            raise NotImplementedError
-
-        def subject_mappings(self) -> SubjectMappingServiceClientInterface:
-            """Returns the subject mappings service client"""
-            raise NotImplementedError
-
-        def resource_mappings(self) -> ResourceMappingServiceClientInterface:
-            """Returns the resource mappings service client"""
-            raise NotImplementedError
-
-        def authorization(self) -> AuthorizationServiceClientInterface:
-            """Returns the authorization service client"""
-            raise NotImplementedError
-
-        def kas_registry(self) -> KeyAccessServerRegistryServiceClientInterface:
-            """Returns the KAS registry service client"""
-            raise NotImplementedError
-
         def kas(self) -> KAS:
             """
             Returns the KAS client for key access operations.
@@ -292,9 +238,6 @@ class SDK(AbstractContextManager):
     def __init__(
         self,
         services: "SDK.Services",
-        trust_manager: TrustManager | None = None,
-        auth_interceptor: Interceptor | dict[str, str] | None = None,
-        platform_services_client: ProtocolClient | None = None,
         platform_url: str | None = None,
         ssl_verify: bool = True,
         use_plaintext: bool = False,
@@ -305,16 +248,12 @@ class SDK(AbstractContextManager):
         Args:
             services: The services interface implementation
             trust_manager: Optional trust manager for SSL validation
-            auth_interceptor: Optional auth interceptor for API requests
             platform_services_client: Optional client for platform services
             platform_url: Optional platform base URL
             ssl_verify: Whether to verify SSL certificates (default: True)
             use_plaintext: Whether to use HTTP instead of HTTPS (default: False)
         """
         self.services = services
-        self.trust_manager = trust_manager
-        self.auth_interceptor = auth_interceptor
-        self.platform_services_client = platform_services_client
         self.platform_url = platform_url
         self.ssl_verify = ssl_verify
         self._use_plaintext = use_plaintext
@@ -331,18 +270,6 @@ class SDK(AbstractContextManager):
     def get_services(self) -> "SDK.Services":
         """Returns the services interface"""
         return self.services
-
-    def get_trust_manager(self) -> TrustManager | None:
-        """Returns the trust manager if set"""
-        return self.trust_manager
-
-    def get_auth_interceptor(self) -> Interceptor | dict[str, str] | None:
-        """Returns the auth interceptor if set"""
-        return self.auth_interceptor
-
-    def get_platform_services_client(self) -> ProtocolClient | None:
-        """Returns the platform services client if set"""
-        return self.platform_services_client
 
     def get_platform_url(self) -> str | None:
         """Returns the platform URL if set"""
