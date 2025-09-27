@@ -433,16 +433,12 @@ class SDKBuilder:
         if not self.platform_endpoint:
             raise AutoConfigureException("Platform endpoint is not set")
 
-        # Create the auth interceptor
-        auth_interceptor = self._create_auth_interceptor()
-
         # Create services
         services = self._create_services()
 
         # Return the SDK instance, platform_url is set for new_tdf_config
         return SDK(
             services=services,
-            auth_interceptor=auth_interceptor,
             platform_url=self.platform_endpoint,
             ssl_verify=not self.insecure_skip_verify,
             use_plaintext=getattr(self, "use_plaintext", False),

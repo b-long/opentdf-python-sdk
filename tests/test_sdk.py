@@ -17,7 +17,6 @@ def test_sdk_init_and_close():
     services = DummyServices()
     sdk = SDK(services)
     assert sdk.get_services() is services
-    assert sdk.get_platform_services_client() is None
     assert sdk.get_platform_url() is None
     # Test context manager exit calls close
     with SDK(services):
