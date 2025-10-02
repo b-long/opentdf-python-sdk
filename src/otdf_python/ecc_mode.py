@@ -30,3 +30,15 @@ class ECCMode:
     def get_ecc_mode_as_byte(self) -> int:
         # Most significant bit: use_ecdsa_binding, lower 3 bits: curve_mode
         return ((1 if self.use_ecdsa_binding else 0) << 7) | (self.curve_mode & 0x07)
+
+    @staticmethod
+    def from_string(curve_str: str) -> "ECCMode":
+        """Create ECCMode from curve string like 'secp256r1' or 'secp384r1'."""
+        curve_map = {
+            "secp256r1": 0,
+            "secp384r1": 1,
+            "secp521r1": 2,
+            "secp256k1": 3,
+        }
+        curve_mode = curve_map.get(curve_str.lower(), 0)
+        return ECCMode(curve_mode, False)

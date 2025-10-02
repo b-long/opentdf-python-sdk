@@ -313,7 +313,7 @@ class NanoTDF:
         output_stream.write(nano_tdf_data)
         return len(header_bytes) + len(nano_tdf_data)
 
-    def read_nano_tdf(
+    def read_nano_tdf(  # noqa: C901
         self,
         nano_tdf_data: bytes | BytesIO,
         output_stream: BinaryIO,
@@ -388,7 +388,20 @@ class NanoTDF:
                 key = asym.decrypt(wrapped_key)
             ciphertext = payload[3 : -(2 + wrapped_key_len)]
         else:
-            key = config.get("key")
+            # No wrapped key - need symmetric key from config
+            key = None
+            if isinstance(config, dict):
+                key = config.get("key")
+            elif (
+                config
+                and hasattr(config, "cipher")
+                and config.cipher
+                and isinstance(config.cipher, str)
+                and all(c in "0123456789abcdefABCDEF" for c in config.cipher)
+            ):
+                # Try to get key from cipher field if it's hex
+                key = bytes.fromhex(config.cipher)
+
             if not key:
                 raise InvalidNanoTDFConfig("Missing decryption key in config.")
             ciphertext = payload[3:-2]
