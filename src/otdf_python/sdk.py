@@ -247,8 +247,6 @@ class SDK(AbstractContextManager):
 
         Args:
             services: The services interface implementation
-            trust_manager: Optional trust manager for SSL validation
-            platform_services_client: Optional client for platform services
             platform_url: Optional platform base URL
             ssl_verify: Whether to verify SSL certificates (default: True)
             use_plaintext: Whether to use HTTP instead of HTTPS (default: False)
