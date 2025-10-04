@@ -2,6 +2,10 @@
 
 ## [0.3.4](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.3.3...otdf-python-v0.3.4) (2025-10-04)
 
+### Chores
+
+* chore: remove placeholders  ([#110](https://github.com/b-long/opentdf-python-sdk/issues/110)) 
+
 
 ### Bug Fixes
 
