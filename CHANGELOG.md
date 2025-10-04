@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.4](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.3.3...otdf-python-v0.3.4) (2025-10-04)
+
+
+### Bug Fixes
+
+* update ruff ([#108](https://github.com/b-long/opentdf-python-sdk/issues/108)) ([5e4c796](https://github.com/b-long/opentdf-python-sdk/commit/5e4c796a8c1fc10b206cd2769f7c8548903ad3c1))
+
 ## [0.3.3](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.3.2...otdf-python-v0.3.3) (2025-09-17)
 
 
