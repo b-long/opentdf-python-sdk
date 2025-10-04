@@ -7,7 +7,6 @@ import logging
 import ssl
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 import httpx
 
@@ -344,32 +343,6 @@ class SDKBuilder:
         except Exception as e:
             raise AutoConfigureException(f"Error during token acquisition: {e!s}")
 
-    def _create_auth_interceptor(self) -> Any:
-        """
-        Creates an authentication interceptor for API requests (httpx).
-        Returns:
-            Any: An auth interceptor object
-        Raises:
-            AutoConfigureException: If auth configuration fails
-        """
-        # For now, this is just a placeholder returning a dict with auth headers
-        # In a real implementation, this would create a proper interceptor object
-        # that injects auth headers into httpx requests
-
-        token = None
-
-        if self.auth_token:
-            # Use provided token
-            token = self.auth_token
-        elif self.oauth_config:
-            # Get token from OAuth
-            token = self._get_token_from_client_credentials()
-
-        if token:
-            return {"Authorization": f"Bearer {token}"}
-
-        return None
-
     def _create_services(self) -> SDK.Services:
         """
         Creates service client instances.
@@ -383,13 +356,11 @@ class SDKBuilder:
         # connecting to the platform endpoints
 
         ssl_verify = not self.insecure_skip_verify
-        auth_interceptor = self._create_auth_interceptor()
 
         class ServicesImpl(SDK.Services):
             def __init__(self, builder_instance):
                 self.closed = False
                 self._ssl_verify = ssl_verify
-                self._auth_headers = auth_interceptor if auth_interceptor else {}
                 self._builder = builder_instance
 
             def kas(self) -> KAS:
@@ -433,16 +404,12 @@ class SDKBuilder:
         if not self.platform_endpoint:
             raise AutoConfigureException("Platform endpoint is not set")
 
-        # Create the auth interceptor
-        auth_interceptor = self._create_auth_interceptor()
-
         # Create services
         services = self._create_services()
 
         # Return the SDK instance, platform_url is set for new_tdf_config
         return SDK(
             services=services,
-            auth_interceptor=auth_interceptor,
             platform_url=self.platform_endpoint,
             ssl_verify=not self.insecure_skip_verify,
             use_plaintext=getattr(self, "use_plaintext", False),

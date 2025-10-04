@@ -1,13 +1,4 @@
-from otdf_python.sdk import (
-    KAS,
-    SDK,
-    AttributesServiceClientInterface,
-    AuthorizationServiceClientInterface,
-    KeyAccessServerRegistryServiceClientInterface,
-    NamespaceServiceClientInterface,
-    ResourceMappingServiceClientInterface,
-    SubjectMappingServiceClientInterface,
-)
+from otdf_python.sdk import KAS, SDK
 
 
 class MockKAS(KAS):
@@ -28,24 +19,6 @@ class MockKAS(KAS):
 
 
 class MockServices(SDK.Services):
-    def attributes(self):
-        return AttributesServiceClientInterface()
-
-    def namespaces(self):
-        return NamespaceServiceClientInterface()
-
-    def subject_mappings(self):
-        return SubjectMappingServiceClientInterface()
-
-    def resource_mappings(self):
-        return ResourceMappingServiceClientInterface()
-
-    def authorization(self):
-        return AuthorizationServiceClientInterface()
-
-    def kas_registry(self):
-        return KeyAccessServerRegistryServiceClientInterface()
-
     def kas(self):
         return MockKAS()
 

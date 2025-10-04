@@ -211,5 +211,4 @@ def test_build_success():
         # Verify the SDK was created correctly
         assert isinstance(sdk, SDK)
         assert sdk.platform_url == "https://example.com"
-        assert sdk.auth_interceptor == {"Authorization": "Bearer test-token"}
         assert sdk.get_services() is mock_services

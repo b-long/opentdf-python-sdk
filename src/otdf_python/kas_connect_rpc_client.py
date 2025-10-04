@@ -9,6 +9,8 @@ import urllib3
 from otdf_python_proto.kas import kas_pb2
 from otdf_python_proto.kas.kas_pb2_connect import AccessServiceClient
 
+from otdf_python.auth_headers import AuthHeaders
+
 from .sdk_exceptions import SDKException
 
 
@@ -69,7 +71,11 @@ class KASConnectRPCClient:
             Dictionary with authentication headers or None
         """
         if access_token:
-            return {"Authorization": f"Bearer {access_token}"}
+            auth_headers = AuthHeaders(
+                auth_header=f"Bearer {access_token}",
+                dpop_header="",  # Empty for now, ready for future DPoP support
+            )
+            return auth_headers.to_dict()
         return None
 
     def get_public_key(self, normalized_kas_url, kas_info, access_token=None):
