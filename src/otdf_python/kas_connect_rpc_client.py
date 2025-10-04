@@ -69,7 +69,13 @@ class KASConnectRPCClient:
             Dictionary with authentication headers or None
         """
         if access_token:
-            return {"Authorization": f"Bearer {access_token}"}
+            from otdf_python.auth_headers import AuthHeaders
+
+            auth_headers = AuthHeaders(
+                auth_header=f"Bearer {access_token}",
+                dpop_header="",  # Empty for now, ready for future DPoP support
+            )
+            return auth_headers.to_dict()
         return None
 
     def get_public_key(self, normalized_kas_url, kas_info, access_token=None):

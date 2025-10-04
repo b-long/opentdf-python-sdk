@@ -13,6 +13,27 @@ class TestAuthHeaders(unittest.TestCase):
         self.assertEqual(headers.get_auth_header(), "Bearer token123")
         self.assertEqual(headers.get_dpop_header(), "dpop456")
 
+    def test_auth_headers_to_dict_with_dpop(self):
+        headers = AuthHeaders("Bearer token123", "dpop456")
+        headers_dict = headers.to_dict()
+        self.assertEqual(headers_dict["Authorization"], "Bearer token123")
+        self.assertEqual(headers_dict["DPoP"], "dpop456")
+        self.assertEqual(len(headers_dict), 2)
+
+    def test_auth_headers_to_dict_without_dpop(self):
+        headers = AuthHeaders("Bearer token123", "")
+        headers_dict = headers.to_dict()
+        self.assertEqual(headers_dict["Authorization"], "Bearer token123")
+        self.assertNotIn("DPoP", headers_dict)
+        self.assertEqual(len(headers_dict), 1)
+
+    def test_auth_headers_default_dpop(self):
+        headers = AuthHeaders("Bearer token123")
+        self.assertEqual(headers.dpop_header, "")
+        headers_dict = headers.to_dict()
+        self.assertEqual(headers_dict["Authorization"], "Bearer token123")
+        self.assertNotIn("DPoP", headers_dict)
+
 
 class TestKASInfo(unittest.TestCase):
     def test_kas_info_clone(self):
