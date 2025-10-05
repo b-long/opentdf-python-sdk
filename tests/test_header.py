@@ -15,9 +15,10 @@ class TestHeader(unittest.TestCase):
         payload_config = SymmetricAndPayloadConfig(
             cipher_type=2, signature_ecc_mode=1, has_signature=False
         )
-        policy_info = PolicyInfo(
-            policy_type=1, has_ecdsa_binding=True, body=b"body", binding=b"bind"
-        )
+        # PolicyInfo now only has policy_type and body (binding is separate in Header)
+        policy_info = PolicyInfo(policy_type=1, body=b"body")
+        # Binding is now a separate field in Header
+        policy_binding = b"bind1234"  # GMAC is 8 bytes
         # Use correct ephemeral key length for curve_mode=1 (secp384r1): 49 bytes
         ephemeral_key = b"e" * 49
 
@@ -25,12 +26,14 @@ class TestHeader(unittest.TestCase):
         header.set_ecc_mode(ecc_mode)
         header.set_payload_config(payload_config)
         header.set_policy_info(policy_info)
+        header.policy_binding = policy_binding
         header.set_ephemeral_key(ephemeral_key)
 
         self.assertEqual(header.get_kas_locator(), kas_locator)
         self.assertEqual(header.get_ecc_mode(), ecc_mode)
         self.assertEqual(header.get_payload_config(), payload_config)
         self.assertEqual(header.get_policy_info(), policy_info)
+        self.assertEqual(header.policy_binding, policy_binding)
         self.assertEqual(header.get_ephemeral_key(), ephemeral_key)
 
 
