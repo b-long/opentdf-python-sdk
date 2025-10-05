@@ -35,9 +35,6 @@ def test_nanotdf_invalid_magic():
         nanotdf.read_nanotdf(bad_bytes, config)
 
 
-@pytest.mark.skip(
-    "This test is skipped because NanoTDF encryption/decryption is not implemented yet."
-)
 @pytest.mark.integration
 def test_nanotdf_integration_encrypt_decrypt():
     # Load environment variables for integration
@@ -47,24 +44,16 @@ def test_nanotdf_integration_encrypt_decrypt():
     # Create KAS info from configuration
     kas_info = KASInfo(url=CONFIG_TDF.KAS_ENDPOINT)
 
-    # Create KAS client with SSL verification disabled for testing
-    # from otdf_python.kas_client import KASClient
-    # client = KASClient(
-    #     kas_url=CONFIG_TDF.KAS_ENDPOINT,
-    #     verify_ssl=not CONFIG_TDF.INSECURE_SKIP_VERIFY,
-    #     use_plaintext=bool(CONFIG_TDF.OPENTDF_PLATFORM_URL.startswith("http://")),
-    # )
-
     nanotdf = NanoTDF()
     data = b"test data"
-    config = NanoTDFConfig(kas_info_list=[kas_info])
-    # These will raise NotImplementedError until implemented
-    try:
-        nanotdf_bytes = nanotdf.create_nanotdf(data, config)
-    except NotImplementedError:
-        pytest.skip("NanoTDF encryption not implemented yet.")
-    try:
-        decrypted = nanotdf.read_nanotdf(nanotdf_bytes, config)
-    except NotImplementedError:
-        pytest.skip("NanoTDF decryption not implemented yet.")
+
+    # Generate a key and include it in config for both encrypt and decrypt
+    # Note: In a real scenario with KAS integration, the key would be wrapped
+    # and unwrapped via KAS. For now, we're testing the basic encrypt/decrypt flow.
+    key = secrets.token_bytes(32)
+    config = NanoTDFConfig(kas_info_list=[kas_info], cipher=key.hex())
+
+    # Create and read NanoTDF
+    nanotdf_bytes = nanotdf.create_nanotdf(data, config)
+    decrypted = nanotdf.read_nanotdf(nanotdf_bytes, config)
     assert decrypted == data

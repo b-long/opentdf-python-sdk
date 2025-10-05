@@ -1,3 +1,4 @@
+import contextlib
 import hashlib
 import json
 import secrets
@@ -206,7 +207,7 @@ class NanoTDF:
         self, key: bytes, config: NanoTDFConfig
     ) -> tuple[bytes, bytes | None]:
         """
-        Wrap encryption key if KAS public key is provided.
+        Wrap encryption key if KAS public key is provided or can be fetched.
 
         Args:
             key: The encryption key
@@ -215,15 +216,31 @@ class NanoTDF:
         Returns:
             tuple: (wrapped_key, kas_public_key)
         """
+        import logging
+
         kas_public_key = None
         wrapped_key = None
 
         if config.kas_info_list and len(config.kas_info_list) > 0:
-            # Get the first KASInfo with a public_key
+            # Get the first KASInfo with a public_key or fetch it
             for kas_info in config.kas_info_list:
                 if kas_info.public_key:
                     kas_public_key = kas_info.public_key
                     break
+                elif self.services:
+                    # Try to fetch public key from KAS service
+                    try:
+                        logging.info(f"Fetching public key from KAS: {kas_info.url}")
+                        updated_kas = self.services.kas().get_public_key(kas_info)
+                        kas_public_key = updated_kas.public_key
+                        # Update the config with the fetched public key
+                        kas_info.public_key = kas_public_key
+                        break
+                    except Exception as e:
+                        logging.warning(
+                            f"Failed to fetch public key from KAS {kas_info.url}: {e}"
+                        )
+                        # Continue to next KAS or proceed without wrapping
 
         if kas_public_key:
             from cryptography.hazmat.backends import default_backend
@@ -240,6 +257,11 @@ class NanoTDF:
                     algorithm=hashes.SHA1(),
                     label=None,
                 ),
+            )
+            logging.info("Successfully wrapped NanoTDF key with KAS public key")
+        else:
+            logging.warning(
+                "No KAS public key available - creating NanoTDF without key wrapping"
             )
 
         return wrapped_key, kas_public_key
@@ -265,7 +287,9 @@ class NanoTDF:
         self, payload: bytes | BytesIO, output_stream: BinaryIO, config: NanoTDFConfig
     ) -> int:
         """
-        Creates a NanoTDF with the provided payload and writes it to the output stream.
+        Stream-based NanoTDF creation - writes encrypted payload to an output stream.
+
+        For convenience method that returns bytes, use create_nanotdf() instead.
         Supports KAS key wrapping if KAS info with public key is provided in config.
 
         Args:
@@ -313,22 +337,112 @@ class NanoTDF:
         output_stream.write(nano_tdf_data)
         return len(header_bytes) + len(nano_tdf_data)
 
+    def _kas_unwrap(
+        self, nano_tdf_data: bytes, header_len: int, wrapped_key: bytes
+    ) -> bytes | None:
+        try:
+            # Parse header to get policy and KAS URL
+            import base64
+            import logging
+
+            from otdf_python.header import Header
+            from otdf_python.kas_client import KeyAccess
+
+            header_obj = Header.from_bytes(nano_tdf_data[:header_len])
+            kas_locator = header_obj.kas_locator
+            # policy_info = header_obj.policy_info
+
+            # Get KAS URL from KAS locator
+            kas_url = kas_locator.get_resource_url()
+
+            # Extract policy JSON from policy info
+            # PolicyInfo has the policy body, need to get it properly
+            policy_json = "{}"  # Default empty policy for now
+            # TODO: Extract actual policy from policy_info if needed
+
+            # Get KAS client from services
+            kas_client = self.services.kas()
+
+            # Create a KeyAccess object for the unwrap call
+            # For NanoTDF, the wrapped key is at the end of the payload
+            key_access = KeyAccess(
+                url=kas_url,
+                wrapped_key=base64.b64encode(wrapped_key).decode("utf-8"),
+                ephemeral_public_key=None,  # NanoTDF uses different key wrapping
+            )
+
+            # Call KAS unwrap (same as TDF does)
+            # The KAS client will handle the rewrap protocol
+            # Use RSA as default session key type for NanoTDF
+            from otdf_python.key_type_constants import RSA_KEY_TYPE
+
+            key = kas_client.unwrap(key_access, policy_json, RSA_KEY_TYPE)
+
+            logging.info("Successfully unwrapped NanoTDF key using KAS")
+
+        except Exception as e:
+            # If KAS unwrap fails, log and fall through to local unwrap methods
+            import logging
+
+            logging.warning(f"KAS unwrap failed for NanoTDF: {e}, trying local unwrap")
+            key = None
+
+        return key
+
+    def _local_unwrap(self, wrapped_key: bytes, config: NanoTDFConfig) -> bytes:
+        """Unwrap key locally using private key or mock unwrap (for testing/offline use)."""
+        kas_private_key = None
+        # Try to get from cipher field if it looks like a PEM key
+        if (
+            config.cipher
+            and isinstance(config.cipher, str)
+            and "-----BEGIN" in config.cipher
+        ):
+            kas_private_key = config.cipher
+
+        # Check if mock unwrap is enabled in config string
+        kas_mock_unwrap = False
+        if config.config and "mock_unwrap=true" in config.config.lower():
+            kas_mock_unwrap = True
+
+        if not kas_private_key and not kas_mock_unwrap:
+            raise InvalidNanoTDFConfig(
+                "Unable to unwrap NanoTDF key: KAS unwrap failed and no local private key available. "
+                "Ensure SDK has valid credentials or provide kas_private_key in config for offline use."
+            )
+
+        if kas_mock_unwrap:
+            # Use the KAS mock unwrap_nanotdf logic
+            from otdf_python.sdk import KAS
+
+            return KAS().unwrap_nanotdf(
+                curve=None,
+                header=None,
+                kas_url=None,
+                wrapped_key=wrapped_key,
+                kas_private_key=kas_private_key,
+                mock=True,
+            )
+        else:
+            asym = AsymDecryption(kas_private_key)
+            return asym.decrypt(wrapped_key)
+
     def read_nano_tdf(
         self,
         nano_tdf_data: bytes | BytesIO,
         output_stream: BinaryIO,
         config: NanoTDFConfig,
-        platform_url: str | None = None,
     ) -> None:
         """
-        Reads a NanoTDF and writes the payload to the output stream.
+        Stream-based NanoTDF decryption - writes decrypted payload to an output stream.
+
+        For convenience method that returns bytes, use read_nanotdf() instead.
         Supports KAS key unwrapping if kas_private_key is provided in config.
 
         Args:
             nano_tdf_data: The NanoTDF data as bytes or BytesIO
             output_stream: The output stream to write the payload to
             config: Configuration for the NanoTDF reader
-            platform_url: Optional platform URL for KAS resolution
 
         Raises:
             InvalidNanoTDFConfig: If the NanoTDF format is invalid or config is missing required info
@@ -354,41 +468,22 @@ class NanoTDF:
         if wrapped_key_len > 0:
             wrapped_key = payload[-(2 + wrapped_key_len) : -2]
 
-            # Get private key and mock unwrap config
-            kas_private_key = None
-            # Try to get from cipher field if it looks like a PEM key
-            if (
-                config.cipher
-                and isinstance(config.cipher, str)
-                and "-----BEGIN" in config.cipher
-            ):
-                kas_private_key = config.cipher
+            # Try to unwrap using KAS service if available
+            key = None
+            if self.services:
+                key = self._kas_unwrap(nano_tdf_data, header_len, wrapped_key)
 
-            # Check if mock unwrap is enabled in config string
-            kas_mock_unwrap = False
-            if config.config and "mock_unwrap=true" in config.config.lower():
-                kas_mock_unwrap = True
+            # If KAS unwrap didn't work, try local unwrap methods (for testing/offline use)
+            if key is None:
+                key = self._local_unwrap(wrapped_key, config)
 
-            if not kas_private_key and not kas_mock_unwrap:
-                raise InvalidNanoTDFConfig("Missing kas_private_key for unwrap.")
-            if kas_mock_unwrap:
-                # Use the KAS mock unwrap_nanotdf logic
-                from otdf_python.sdk import KAS
-
-                key = KAS().unwrap_nanotdf(
-                    curve=None,
-                    header=None,
-                    kas_url=None,
-                    wrapped_key=wrapped_key,
-                    kas_private_key=kas_private_key,
-                    mock=True,
-                )
-            else:
-                asym = AsymDecryption(kas_private_key)
-                key = asym.decrypt(wrapped_key)
             ciphertext = payload[3 : -(2 + wrapped_key_len)]
         else:
-            key = config.get("key")
+            # No wrapped key - need symmetric key from config
+            key = None
+            if config and hasattr(config, "cipher") and isinstance(config.cipher, str):
+                with contextlib.suppress(ValueError):
+                    key = bytes.fromhex(config.cipher)
             if not key:
                 raise InvalidNanoTDFConfig("Missing decryption key in config.")
             ciphertext = payload[3:-2]
@@ -440,7 +535,11 @@ class NanoTDF:
         return key, config
 
     def create_nanotdf(self, data: bytes, config: dict | NanoTDFConfig) -> bytes:
-        """Create a NanoTDF from input data using the provided configuration."""
+        """
+        Convenience method - creates a NanoTDF and returns the encrypted bytes.
+
+        For stream-based version, use create_nano_tdf() instead.
+        """
         if len(data) > self.K_MAX_TDF_SIZE:
             raise NanoTDFMaxSizeLimit("exceeds max size for nano tdf")
 
@@ -514,7 +613,11 @@ class NanoTDF:
     def read_nanotdf(
         self, nanotdf_bytes: bytes, config: dict | NanoTDFConfig | None = None
     ) -> bytes:
-        """Read and decrypt a NanoTDF, returning the original plaintext data."""
+        """
+        Convenience method - decrypts a NanoTDF and returns the plaintext bytes.
+
+        For stream-based version, use read_nano_tdf() instead.
+        """
         output = BytesIO()
         from otdf_python.header import Header  # Local import to avoid circular import
 
