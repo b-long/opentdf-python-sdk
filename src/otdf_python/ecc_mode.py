@@ -38,7 +38,8 @@ class ECCMode:
             "secp256r1": 0,
             "secp384r1": 1,
             "secp521r1": 2,
-            "secp256k1": 3,
         }
-        curve_mode = curve_map.get(curve_str.lower(), 0)
+        curve_mode = curve_map.get(curve_str.lower())
+        if curve_mode is None:
+            raise ValueError(f"Unsupported curve string: '{curve_str}'")
         return ECCMode(curve_mode, False)

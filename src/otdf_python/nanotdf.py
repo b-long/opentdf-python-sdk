@@ -1,3 +1,4 @@
+import contextlib
 import hashlib
 import json
 import secrets
@@ -265,7 +266,9 @@ class NanoTDF:
         self, payload: bytes | BytesIO, output_stream: BinaryIO, config: NanoTDFConfig
     ) -> int:
         """
-        Creates a NanoTDF with the provided payload and writes it to the output stream.
+        Stream-based NanoTDF creation - writes encrypted payload to an output stream.
+
+        For convenience method that returns bytes, use create_nanotdf() instead.
         Supports KAS key wrapping if KAS info with public key is provided in config.
 
         Args:
@@ -313,7 +316,7 @@ class NanoTDF:
         output_stream.write(nano_tdf_data)
         return len(header_bytes) + len(nano_tdf_data)
 
-    def read_nano_tdf(  # noqa: C901
+    def read_nano_tdf(
         self,
         nano_tdf_data: bytes | BytesIO,
         output_stream: BinaryIO,
@@ -321,7 +324,9 @@ class NanoTDF:
         platform_url: str | None = None,
     ) -> None:
         """
-        Reads a NanoTDF and writes the payload to the output stream.
+        Stream-based NanoTDF decryption - writes decrypted payload to an output stream.
+
+        For convenience method that returns bytes, use read_nanotdf() instead.
         Supports KAS key unwrapping if kas_private_key is provided in config.
 
         Args:
@@ -390,18 +395,9 @@ class NanoTDF:
         else:
             # No wrapped key - need symmetric key from config
             key = None
-            if isinstance(config, dict):
-                key = config.get("key")
-            elif (
-                config
-                and hasattr(config, "cipher")
-                and config.cipher
-                and isinstance(config.cipher, str)
-                and all(c in "0123456789abcdefABCDEF" for c in config.cipher)
-            ):
-                # Try to get key from cipher field if it's hex
-                key = bytes.fromhex(config.cipher)
-
+            if config and hasattr(config, "cipher") and isinstance(config.cipher, str):
+                with contextlib.suppress(ValueError):
+                    key = bytes.fromhex(config.cipher)
             if not key:
                 raise InvalidNanoTDFConfig("Missing decryption key in config.")
             ciphertext = payload[3:-2]
@@ -453,7 +449,11 @@ class NanoTDF:
         return key, config
 
     def create_nanotdf(self, data: bytes, config: dict | NanoTDFConfig) -> bytes:
-        """Create a NanoTDF from input data using the provided configuration."""
+        """
+        Convenience method - creates a NanoTDF and returns the encrypted bytes.
+
+        For stream-based version, use create_nano_tdf() instead.
+        """
         if len(data) > self.K_MAX_TDF_SIZE:
             raise NanoTDFMaxSizeLimit("exceeds max size for nano tdf")
 
@@ -527,7 +527,11 @@ class NanoTDF:
     def read_nanotdf(
         self, nanotdf_bytes: bytes, config: dict | NanoTDFConfig | None = None
     ) -> bytes:
-        """Read and decrypt a NanoTDF, returning the original plaintext data."""
+        """
+        Convenience method - decrypts a NanoTDF and returns the plaintext bytes.
+
+        For stream-based version, use read_nano_tdf() instead.
+        """
         output = BytesIO()
         from otdf_python.header import Header  # Local import to avoid circular import
 
