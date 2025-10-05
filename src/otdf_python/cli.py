@@ -201,6 +201,13 @@ def create_nano_tdf_config(sdk: SDK, args) -> NanoTDFConfig:
         kas_endpoints = parse_kas_endpoints(args.kas_endpoint)
         kas_info_list = [KASInfo(url=kas_url) for kas_url in kas_endpoints]
         config.kas_info_list.extend(kas_info_list)
+    elif args.platform_url:
+        # If no explicit KAS endpoint provided, derive from platform URL
+        # This matches the default KAS path convention
+        kas_url = args.platform_url.rstrip("/") + "/kas"
+        logger.debug(f"Deriving KAS endpoint from platform URL: {kas_url}")
+        kas_info = KASInfo(url=kas_url)
+        config.kas_info_list.append(kas_info)
 
     if hasattr(args, "policy_binding") and args.policy_binding:
         if args.policy_binding.lower() == "ecdsa":

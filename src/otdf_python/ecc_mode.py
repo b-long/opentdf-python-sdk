@@ -1,4 +1,13 @@
+from typing import ClassVar
+
+
 class ECCMode:
+    _CURVE_MAP: ClassVar[dict[str, int]] = {
+        "secp256r1": 0,
+        "secp384r1": 1,
+        "secp521r1": 2,
+    }
+
     def __init__(self, curve_mode: int = 0, use_ecdsa_binding: bool = False):
         self.curve_mode = curve_mode
         self.use_ecdsa_binding = use_ecdsa_binding
@@ -33,13 +42,15 @@ class ECCMode:
 
     @staticmethod
     def from_string(curve_str: str) -> "ECCMode":
-        """Create ECCMode from curve string like 'secp256r1' or 'secp384r1'."""
-        curve_map = {
-            "secp256r1": 0,
-            "secp384r1": 1,
-            "secp521r1": 2,
-        }
-        curve_mode = curve_map.get(curve_str.lower())
+        """Create ECCMode from curve string like 'secp256r1' or 'secp384r1', or policy binding type like 'gmac' or 'ecdsa'."""
+        # Handle policy binding types
+        if curve_str.lower() == "gmac":
+            return ECCMode(0, False)  # GMAC binding with default secp256r1 curve
+        elif curve_str.lower() == "ecdsa":
+            return ECCMode(0, True)  # ECDSA binding with default secp256r1 curve
+
+        # Handle curve names
+        curve_mode = ECCMode._CURVE_MAP.get(curve_str.lower())
         if curve_mode is None:
             raise ValueError(f"Unsupported curve string: '{curve_str}'")
         return ECCMode(curve_mode, False)
