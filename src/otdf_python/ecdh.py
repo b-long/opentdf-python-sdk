@@ -20,7 +20,6 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives.serialization import (
     Encoding,
-    PrivateFormat,
     PublicFormat,
 )
 
@@ -43,7 +42,9 @@ COMPRESSED_KEY_SIZES = {
 # HKDF salt for NanoTDF key derivation
 # Per spec: "salt value derived from magic number/version"
 # This is the SHA-256 hash of the NanoTDF magic number and version
-NANOTDF_HKDF_SALT = bytes.fromhex("3de3ca1e50cf62d8b6aba603a96fca6761387a7ac86c3d3afe85ae2d1812edfc")
+NANOTDF_HKDF_SALT = bytes.fromhex(
+    "3de3ca1e50cf62d8b6aba603a96fca6761387a7ac86c3d3afe85ae2d1812edfc"
+)
 
 
 class ECDHError(Exception):
@@ -197,7 +198,10 @@ def derive_shared_secret(
 
 
 def derive_key_from_shared_secret(
-    shared_secret: bytes, key_length: int = 32, salt: bytes | None = None, info: bytes = b""
+    shared_secret: bytes,
+    key_length: int = 32,
+    salt: bytes | None = None,
+    info: bytes = b"",
 ) -> bytes:
     """
     Derive a symmetric encryption key from the ECDH shared secret using HKDF.
@@ -265,9 +269,7 @@ def encrypt_key_with_ecdh(
         raise InvalidKeyError(f"Failed to load recipient's public key: {e}")
 
     # Generate ephemeral keypair
-    ephemeral_private_key, ephemeral_public_key = generate_ephemeral_keypair(
-        curve_name
-    )
+    ephemeral_private_key, ephemeral_public_key = generate_ephemeral_keypair(curve_name)
 
     # Derive shared secret
     shared_secret = derive_shared_secret(ephemeral_private_key, recipient_public_key)

@@ -60,13 +60,13 @@ class ResourceLocator:
             return self.IDENTIFIER_NONE, b""
         elif id_len <= 2:
             # Pad to 2 bytes
-            return self.IDENTIFIER_2_BYTES, id_bytes.ljust(2, b'\x00')
+            return self.IDENTIFIER_2_BYTES, id_bytes.ljust(2, b"\x00")
         elif id_len <= 8:
             # Pad to 8 bytes
-            return self.IDENTIFIER_8_BYTES, id_bytes.ljust(8, b'\x00')
+            return self.IDENTIFIER_8_BYTES, id_bytes.ljust(8, b"\x00")
         elif id_len <= 32:
             # Pad to 32 bytes
-            return self.IDENTIFIER_32_BYTES, id_bytes.ljust(32, b'\x00')
+            return self.IDENTIFIER_32_BYTES, id_bytes.ljust(32, b"\x00")
         else:
             raise ValueError(f"Identifier too long: {id_len} bytes (max 32)")
 
@@ -84,7 +84,9 @@ class ResourceLocator:
         identifier_enum, identifier_bytes = self._get_identifier_bytes()
 
         if len(body_bytes) > 255:
-            raise ValueError(f"Resource Locator body too long: {len(body_bytes)} bytes (max 255)")
+            raise ValueError(
+                f"Resource Locator body too long: {len(body_bytes)} bytes (max 255)"
+            )
 
         # Byte 0: protocol in bits 0-3, identifier length in bits 4-7
         protocol_and_id = (identifier_enum << 4) | protocol
@@ -103,7 +105,7 @@ class ResourceLocator:
         return len(data)
 
     @staticmethod
-    def from_bytes_with_size(buffer: bytes):
+    def from_bytes_with_size(buffer: bytes):  # noqa: C901
         """
         Parse NanoTDF Resource Locator from bytes per spec.
 
@@ -125,7 +127,9 @@ class ResourceLocator:
         body_len = buffer[1]
 
         if len(buffer) < 2 + body_len:
-            raise ValueError(f"Buffer too short for ResourceLocator body (need {2 + body_len}, have {len(buffer)})")
+            raise ValueError(
+                f"Buffer too short for ResourceLocator body (need {2 + body_len}, have {len(buffer)})"
+            )
 
         # Parse body (URL path)
         body_bytes = buffer[2 : 2 + body_len]
@@ -153,12 +157,14 @@ class ResourceLocator:
             raise ValueError(f"Invalid identifier length enum: {identifier_enum}")
 
         if len(buffer) < offset + identifier_len:
-            raise ValueError(f"Buffer too short for ResourceLocator identifier (need {offset + identifier_len}, have {len(buffer)})")
+            raise ValueError(
+                f"Buffer too short for ResourceLocator identifier (need {offset + identifier_len}, have {len(buffer)})"
+            )
 
         if identifier_len > 0:
             identifier_bytes = buffer[offset : offset + identifier_len]
             # Remove padding
-            identifier = identifier_bytes.rstrip(b'\x00').decode()
+            identifier = identifier_bytes.rstrip(b"\x00").decode()
         else:
             identifier = ""
 

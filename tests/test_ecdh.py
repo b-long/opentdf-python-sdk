@@ -3,13 +3,11 @@ Unit tests for ECDH key exchange module.
 """
 
 import pytest
-from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
 from otdf_python.ecdh import (
     COMPRESSED_KEY_SIZES,
-    ECDHError,
     InvalidKeyError,
     UnsupportedCurveError,
     compress_public_key,
@@ -51,7 +49,7 @@ class TestCurveOperations:
         """Test that curve names are case-insensitive."""
         curve1 = get_curve("SECP256R1")
         curve2 = get_curve("secp256r1")
-        assert type(curve1) == type(curve2)
+        assert type(curve1) is type(curve2)
 
     def test_get_curve_unsupported(self):
         """Test that unsupported curves raise an error."""
@@ -151,7 +149,7 @@ class TestPublicKeyCompression:
         """Test that decompressing invalid data raises an error."""
         with pytest.raises(InvalidKeyError):
             # Invalid compressed point (wrong prefix)
-            decompress_public_key(b"\xFF" + b"\x00" * 32, "secp256r1")
+            decompress_public_key(b"\xff" + b"\x00" * 32, "secp256r1")
 
 
 class TestSharedSecret:
@@ -242,7 +240,7 @@ class TestHighLevelEncryption:
     def test_encrypt_key_with_ecdh(self):
         """Test the high-level encryption function."""
         # Generate a recipient keypair (e.g., KAS)
-        recipient_private, recipient_public = generate_ephemeral_keypair("secp256r1")
+        _recipient_private, recipient_public = generate_ephemeral_keypair("secp256r1")
 
         # Get PEM format
         recipient_public_pem = recipient_public.public_bytes(
@@ -262,7 +260,7 @@ class TestHighLevelEncryption:
     def test_encrypt_key_all_curves(self):
         """Test encryption with all supported curves."""
         for curve_name in ["secp256r1", "secp384r1", "secp521r1", "secp256k1"]:
-            recipient_private, recipient_public = generate_ephemeral_keypair(
+            _recipient_private, recipient_public = generate_ephemeral_keypair(
                 curve_name
             )
             recipient_public_pem = recipient_public.public_bytes(
@@ -319,9 +317,7 @@ class TestHighLevelDecryption:
     def test_decrypt_key_all_curves(self):
         """Test decryption with all supported curves."""
         for curve_name in ["secp256r1", "secp384r1", "secp521r1", "secp256k1"]:
-            recipient_private, recipient_public = generate_ephemeral_keypair(
-                curve_name
-            )
+            recipient_private, recipient_public = generate_ephemeral_keypair(curve_name)
 
             recipient_public_pem = recipient_public.public_bytes(
                 encoding=serialization.Encoding.PEM,

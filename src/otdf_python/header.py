@@ -152,7 +152,7 @@ class Header:
             offset += len(self.policy_binding)
         else:
             # Write zeros if no binding provided
-            buffer[offset : offset + 8] = b'\x00' * 8
+            buffer[offset : offset + 8] = b"\x00" * 8
             offset += 8
         # Ephemeral key
         buffer[offset : offset + len(self.ephemeral_key)] = self.ephemeral_key

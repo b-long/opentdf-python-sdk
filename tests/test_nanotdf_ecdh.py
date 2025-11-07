@@ -6,7 +6,6 @@ import io
 
 import pytest
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import ec
 
 from otdf_python.config import KASInfo, NanoTDFConfig
 from otdf_python.ecdh import generate_ephemeral_keypair
@@ -42,7 +41,9 @@ class TestNanoTDFWithECDH:
         payload = b"Hello NanoTDF with ECDH!"
 
         # Create configuration with KAS public key
-        kas_info = KASInfo(url="https://kas.example.com", public_key=recipient_public_pem)
+        kas_info = KASInfo(
+            url="https://kas.example.com", public_key=recipient_public_pem
+        )
         config_encrypt = NanoTDFConfig(kas_info_list=[kas_info], ecc_mode="secp256r1")
 
         # Encrypt
@@ -52,7 +53,9 @@ class TestNanoTDFWithECDH:
 
         # Verify encryption worked
         assert size > 0
-        assert len(encrypted_data) > len(payload)  # Should be larger due to header + IV + MAC
+        assert len(encrypted_data) > len(
+            payload
+        )  # Should be larger due to header + IV + MAC
 
         # Decrypt with recipient's private key
         config_decrypt = NanoTDFConfig(cipher=recipient_private_pem)
@@ -130,7 +133,9 @@ class TestNanoTDFWithECDH:
         nanotdf = NanoTDF()
         payload = b"Sensitive data with attributes"
 
-        kas_info = KASInfo(url="https://kas.example.com", public_key=recipient_public_pem)
+        kas_info = KASInfo(
+            url="https://kas.example.com", public_key=recipient_public_pem
+        )
         attributes = [
             "https://example.com/attr/classification/secret",
             "https://example.com/attr/country/us",
@@ -175,7 +180,9 @@ class TestNanoTDFWithECDH:
         nanotdf = NanoTDF()
         payload = b"Same payload"
 
-        kas_info = KASInfo(url="https://kas.example.com", public_key=recipient_public_pem)
+        kas_info = KASInfo(
+            url="https://kas.example.com", public_key=recipient_public_pem
+        )
         config_encrypt = NanoTDFConfig(kas_info_list=[kas_info], ecc_mode="secp256r1")
 
         # First encryption
@@ -224,7 +231,9 @@ class TestNanoTDFWithECDH:
         nanotdf = NanoTDF()
         payload = b"Secret message"
 
-        kas_info = KASInfo(url="https://kas.example.com", public_key=recipient_public_pem)
+        kas_info = KASInfo(
+            url="https://kas.example.com", public_key=recipient_public_pem
+        )
         config_encrypt = NanoTDFConfig(kas_info_list=[kas_info], ecc_mode="secp256r1")
 
         encrypted_stream = io.BytesIO()
@@ -236,7 +245,8 @@ class TestNanoTDFWithECDH:
         decrypted_stream = io.BytesIO()
 
         # Should fail (authentication error from AES-GCM)
-        with pytest.raises(Exception):  # Will be cryptography.exceptions.InvalidTag
+        # Will be cryptography.exceptions.InvalidTag
+        with pytest.raises(Exception):  # noqa: B017
             nanotdf.read_nano_tdf(encrypted_data, decrypted_stream, config_decrypt)
 
     def test_nanotdf_ecdh_large_payload(self):
@@ -261,7 +271,9 @@ class TestNanoTDFWithECDH:
         nanotdf = NanoTDF()
         payload = b"X" * (1024 * 1024)
 
-        kas_info = KASInfo(url="https://kas.example.com", public_key=recipient_public_pem)
+        kas_info = KASInfo(
+            url="https://kas.example.com", public_key=recipient_public_pem
+        )
         config_encrypt = NanoTDFConfig(kas_info_list=[kas_info], ecc_mode="secp256r1")
 
         # Encrypt
