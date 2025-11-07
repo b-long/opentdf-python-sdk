@@ -9,7 +9,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-from otdf_python.asym_crypto import AsymDecryption, AsymEncryption
+from otdf_python.asym_crypto import AsymDecryption
 from otdf_python.collection_store import CollectionStore, NoOpCollectionStore
 from otdf_python.config import KASInfo, NanoTDFConfig
 from otdf_python.constants import MAGIC_NUMBER_AND_VERSION
@@ -435,24 +435,12 @@ class NanoTDF:
         (
             derived_key,
             ephemeral_public_key_compressed,
-            kas_public_key,
+            kas_public_key,  # noqa: RUF059
         ) = self._derive_key_with_ecdh(config)
 
-        # Determine if we're using RSA wrapping or ECDH
-        use_rsa_wrapping = False
-
-        if kas_public_key and not ephemeral_public_key_compressed:
-            # We have a KAS key but no ephemeral key - this means RSA mode
-            use_rsa_wrapping = True
-
-        # If ECDH or RSA worked, use the derived key; otherwise use/generate symmetric key
+        # Use ECDH-derived key if available; otherwise use/generate symmetric key
         # Fallback to symmetric key (for testing or when KAS is not available)
         key = derived_key or self._prepare_encryption_key(config)
-
-        # If using RSA wrapping, wrap the symmetric key
-        if use_rsa_wrapping and kas_public_key:
-            asym_enc = AsymEncryption(kas_public_key)
-            asym_enc.encrypt(key)
 
         # Create header with ephemeral public key (if ECDH was used)
         header_bytes = self._create_header(

@@ -107,6 +107,16 @@ class Header:
     def get_policy_info(self) -> PolicyInfo | None:
         return self.policy_info
 
+    def set_policy_binding(self, policy_binding: bytes):
+        if len(policy_binding) != 8:
+            raise ValueError(
+                f"Policy binding must be exactly 8 bytes (GMAC), got {len(policy_binding)}"
+            )
+        self.policy_binding = policy_binding
+
+    def get_policy_binding(self) -> bytes | None:
+        return self.policy_binding
+
     def set_ephemeral_key(self, ephemeral_key: bytes):
         if self.ecc_mode is not None:
             expected_size = ECCMode.get_ec_compressed_pubkey_size(
@@ -148,8 +158,12 @@ class Header:
         offset += n
         # Policy binding (GMAC - 8 bytes)
         if self.policy_binding:
-            buffer[offset : offset + len(self.policy_binding)] = self.policy_binding
-            offset += len(self.policy_binding)
+            if len(self.policy_binding) != 8:
+                raise ValueError(
+                    f"Policy binding must be exactly 8 bytes (GMAC), got {len(self.policy_binding)}"
+                )
+            buffer[offset : offset + 8] = self.policy_binding
+            offset += 8
         else:
             # Write zeros if no binding provided
             buffer[offset : offset + 8] = b"\x00" * 8
