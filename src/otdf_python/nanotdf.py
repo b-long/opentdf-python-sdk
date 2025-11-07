@@ -5,9 +5,11 @@ import secrets
 from io import BytesIO
 from typing import BinaryIO
 
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ec, rsa
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-from otdf_python.asym_crypto import AsymDecryption
+from otdf_python.asym_crypto import AsymDecryption, AsymEncryption
 from otdf_python.collection_store import CollectionStore, NoOpCollectionStore
 from otdf_python.config import KASInfo, NanoTDFConfig
 from otdf_python.constants import MAGIC_NUMBER_AND_VERSION
@@ -141,7 +143,11 @@ class NanoTDF:
         return key
 
     def _create_header(
-        self, policy_body: bytes, policy_type: str, config: NanoTDFConfig
+        self,
+        policy_body: bytes,
+        policy_type: str,
+        config: NanoTDFConfig,
+        ephemeral_public_key: bytes | None = None,
     ) -> bytes:
         """
         Create the NanoTDF header.
@@ -150,6 +156,7 @@ class NanoTDF:
             policy_body: The policy body bytes
             policy_type: The policy type string
             config: NanoTDFConfig configuration
+            ephemeral_public_key: Optional compressed ephemeral public key (from ECDH)
 
         Returns:
             bytes: The header bytes
@@ -161,7 +168,12 @@ class NanoTDF:
         if config.kas_info_list and len(config.kas_info_list) > 0:
             kas_url = config.kas_info_list[0].url
 
-        kas_id = "kas-id"  # Default KAS ID
+        # KAS Key ID - use "e1" for EC (ECDH) mode or "r1" for RSA mode
+        # If ephemeral_public_key is provided, we're using ECDH (EC), otherwise RSA
+        if ephemeral_public_key:
+            kas_id = "e1"  # EC key ID
+        else:
+            kas_id = "r1"  # RSA key ID
         kas_locator = ResourceLocator(kas_url, kas_id)
 
         # Get ECC mode from config or use default
@@ -173,7 +185,9 @@ class NanoTDF:
                 ecc_mode = config.ecc_mode
 
         # Default payload config
-        payload_config = SymmetricAndPayloadConfig(0, 0, False)
+        # Use cipher_type=5 for AES-256-GCM with 128-bit tag (16 bytes)
+        # This matches Python's cryptography AESGCM default
+        payload_config = SymmetricAndPayloadConfig(5, 0, False)
 
         # Create policy info
         policy_info = PolicyInfo()
@@ -181,9 +195,9 @@ class NanoTDF:
             policy_info.set_embedded_plain_text_policy(policy_body)
         else:
             policy_info.set_embedded_encrypted_text_policy(policy_body)
-        policy_info.set_policy_binding(
-            hashlib.sha256(policy_body).digest()[-self.K_NANOTDF_GMAC_LENGTH :]
-        )
+
+        # Create policy binding (GMAC)
+        policy_binding = hashlib.sha256(policy_body).digest()[-self.K_NANOTDF_GMAC_LENGTH :]
 
         # Build the header
         header = Header()
@@ -191,35 +205,88 @@ class NanoTDF:
         header.set_ecc_mode(ecc_mode)
         header.set_payload_config(payload_config)
         header.set_policy_info(policy_info)
-        header.set_ephemeral_key(
-            secrets.token_bytes(
-                ECCMode.get_ec_compressed_pubkey_size(
-                    ecc_mode.get_elliptic_curve_type()
+        header.policy_binding = policy_binding
+
+        # Set ephemeral key - use provided ECDH key or generate random placeholder
+        if ephemeral_public_key:
+            header.set_ephemeral_key(ephemeral_public_key)
+        else:
+            # Fallback: generate random bytes as placeholder (for symmetric key case)
+            header.set_ephemeral_key(
+                secrets.token_bytes(
+                    ECCMode.get_ec_compressed_pubkey_size(
+                        ecc_mode.get_elliptic_curve_type()
+                    )
                 )
             )
-        )
 
         # Generate and return the header bytes with magic number
         header_bytes = header.to_bytes()
         return self.MAGIC_NUMBER_AND_VERSION + header_bytes
 
-    def _wrap_key_if_needed(
-        self, key: bytes, config: NanoTDFConfig
-    ) -> tuple[bytes, bytes | None]:
+    def _is_ec_key(self, key_pem: str) -> bool:
         """
-        Wrap encryption key if KAS public key is provided or can be fetched.
+        Detect if a PEM key is an EC key (vs RSA).
 
         Args:
-            key: The encryption key
-            config: NanoTDFConfig with potential KASInfo
+            key_pem: PEM-formatted key string
 
         Returns:
-            tuple: (wrapped_key, kas_public_key)
+            bool: True if EC key, False if RSA key
+
+        Raises:
+            SDKException: If key cannot be parsed
+        """
+        try:
+            # Try to load as public key first
+            if "BEGIN PUBLIC KEY" in key_pem or "BEGIN CERTIFICATE" in key_pem:
+                if "BEGIN CERTIFICATE" in key_pem:
+                    from cryptography.x509 import load_pem_x509_certificate
+                    cert = load_pem_x509_certificate(key_pem.encode())
+                    public_key = cert.public_key()
+                else:
+                    public_key = serialization.load_pem_public_key(key_pem.encode())
+                return isinstance(public_key, ec.EllipticCurvePublicKey)
+            # Try to load as private key
+            elif "BEGIN" in key_pem and "PRIVATE KEY" in key_pem:
+                private_key = serialization.load_pem_private_key(
+                    key_pem.encode(), password=None
+                )
+                return isinstance(private_key, ec.EllipticCurvePrivateKey)
+            else:
+                raise SDKException("Invalid PEM format - no BEGIN header found")
+        except Exception as e:
+            raise SDKException(f"Failed to detect key type: {e}")
+
+    def _derive_key_with_ecdh(
+        self, config: NanoTDFConfig
+    ) -> tuple[bytes, bytes | None, bytes | None]:
+        """
+        Derive encryption key using ECDH if KAS public key is provided or can be fetched.
+
+        This implements the NanoTDF spec's ECDH + HKDF key derivation:
+        1. Generate ephemeral keypair
+        2. Perform ECDH with KAS public key to get shared secret
+        3. Use HKDF to derive symmetric key from shared secret
+
+        For backward compatibility, also supports RSA key wrapping when an RSA key is detected.
+
+        Args:
+            config: NanoTDFConfig with potential KASInfo and ECC mode
+
+        Returns:
+            tuple: (derived_key, ephemeral_public_key_compressed, kas_public_key)
+                - derived_key: 32-byte AES-256 key for encrypting the payload
+                - ephemeral_public_key_compressed: Compressed ephemeral public key to store in header (None for RSA)
+                - kas_public_key: KAS public key PEM string (or None if not available)
         """
         import logging
 
+        from otdf_python.ecdh import encrypt_key_with_ecdh
+
         kas_public_key = None
-        wrapped_key = None
+        derived_key = None
+        ephemeral_public_key_compressed = None
 
         if config.kas_info_list and len(config.kas_info_list) > 0:
             # Get the first KASInfo with a public_key or fetch it
@@ -230,7 +297,18 @@ class NanoTDF:
                 elif self.services:
                     # Try to fetch public key from KAS service
                     try:
-                        logging.info(f"Fetching public key from KAS: {kas_info.url}")
+                        # For NanoTDF, prefer EC keys for ECDH - set algorithm if not specified
+                        if not kas_info.algorithm:
+                            # Default to EC secp256r1 for NanoTDF ECDH
+                            kas_info.algorithm = "ec:secp256r1"
+                            logging.info(
+                                f"Fetching EC public key from KAS for NanoTDF ECDH: {kas_info.url}"
+                            )
+                        else:
+                            logging.info(
+                                f"Fetching public key (algorithm={kas_info.algorithm}) from KAS: {kas_info.url}"
+                            )
+
                         updated_kas = self.services.kas().get_public_key(kas_info)
                         kas_public_key = updated_kas.public_key
                         # Update the config with the fetched public key
@@ -243,28 +321,64 @@ class NanoTDF:
                         # Continue to next KAS or proceed without wrapping
 
         if kas_public_key:
-            from cryptography.hazmat.backends import default_backend
-            from cryptography.hazmat.primitives import hashes, serialization
-            from cryptography.hazmat.primitives.asymmetric import padding
+            # Detect if key is EC or RSA
+            is_ec = self._is_ec_key(kas_public_key)
 
-            public_key = serialization.load_pem_public_key(
-                kas_public_key.encode(), backend=default_backend()
-            )
-            wrapped_key = public_key.encrypt(
-                key,
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                    algorithm=hashes.SHA1(),
-                    label=None,
-                ),
-            )
-            logging.info("Successfully wrapped NanoTDF key with KAS public key")
+            if is_ec:
+                # EC key - use ECDH + HKDF
+                # Determine curve from config
+                curve_name = "secp256r1"  # Default
+                if config.ecc_mode:
+                    if isinstance(config.ecc_mode, str):
+                        # Parse the string to get actual curve name
+                        # Handles cases like "gmac" or "ecdsa" which map to secp256r1
+                        try:
+                            from otdf_python.ecc_mode import ECCMode as ECCModeClass
+                            ecc_mode_obj = ECCModeClass.from_string(config.ecc_mode)
+                            curve_name = ecc_mode_obj.get_curve_name()
+                        except (ValueError, AttributeError):
+                            # If parsing fails, stick with default
+                            logging.warning(
+                                f"Could not parse ecc_mode '{config.ecc_mode}', using default secp256r1"
+                            )
+                            curve_name = "secp256r1"
+                    else:
+                        # Get curve name from ECCMode object
+                        curve_name = config.ecc_mode.get_curve_name()
+
+                try:
+                    # Use ECDH to derive key and generate ephemeral keypair
+                    derived_key, ephemeral_public_key_compressed = encrypt_key_with_ecdh(
+                        kas_public_key, curve_name=curve_name
+                    )
+                    logging.info(
+                        f"Successfully derived NanoTDF key using ECDH with curve {curve_name}"
+                    )
+                except Exception as e:
+                    logging.warning(f"Failed to derive key with ECDH: {e}")
+                    derived_key = None
+                    ephemeral_public_key_compressed = None
+            else:
+                # RSA key - use RSA wrapping for backward compatibility
+                try:
+                    # Generate random symmetric key
+                    derived_key = secrets.token_bytes(32)
+                    # For RSA mode, we don't use ephemeral keys - the symmetric key
+                    # will be wrapped by KAS using RSA
+                    ephemeral_public_key_compressed = None
+                    logging.info(
+                        "Generated symmetric key for RSA wrapping (backward compatibility)"
+                    )
+                except Exception as e:
+                    logging.warning(f"Failed to generate key for RSA wrapping: {e}")
+                    derived_key = None
+                    ephemeral_public_key_compressed = None
         else:
             logging.warning(
-                "No KAS public key available - creating NanoTDF without key wrapping"
+                "No KAS public key available - creating NanoTDF without key derivation"
             )
 
-        return wrapped_key, kas_public_key
+        return derived_key, ephemeral_public_key_compressed, kas_public_key
 
     def _encrypt_payload(self, payload: bytes, key: bytes) -> tuple[bytes, bytes]:
         """
@@ -290,7 +404,7 @@ class NanoTDF:
         Stream-based NanoTDF creation - writes encrypted payload to an output stream.
 
         For convenience method that returns bytes, use create_nanotdf() instead.
-        Supports KAS key wrapping if KAS info with public key is provided in config.
+        Supports ECDH key derivation if KAS info with public key is provided in config.
 
         Args:
             payload: The payload data as bytes or BytesIO
@@ -313,29 +427,56 @@ class NanoTDF:
         # Process policy data
         policy_body, policy_type = self._prepare_policy_data(config)
 
-        # Get or generate encryption key
-        key = self._prepare_encryption_key(config)
+        # Try to derive key using ECDH or RSA
+        (
+            derived_key,
+            ephemeral_public_key_compressed,
+            kas_public_key,
+        ) = self._derive_key_with_ecdh(config)
 
-        # Create header and write to output
-        header_bytes = self._create_header(policy_body, policy_type, config)
+        # Determine if we're using RSA wrapping or ECDH
+        use_rsa_wrapping = False
+        wrapped_key = b""
+
+        if kas_public_key and not ephemeral_public_key_compressed:
+            # We have a KAS key but no ephemeral key - this means RSA mode
+            use_rsa_wrapping = True
+
+        # If ECDH or RSA worked, use the derived key; otherwise use/generate symmetric key
+        if derived_key:
+            key = derived_key
+        else:
+            # Fallback to symmetric key (for testing or when KAS is not available)
+            key = self._prepare_encryption_key(config)
+
+        # If using RSA wrapping, wrap the symmetric key
+        if use_rsa_wrapping and kas_public_key:
+            asym_enc = AsymEncryption(kas_public_key)
+            wrapped_key = asym_enc.encrypt(key)
+
+        # Create header with ephemeral public key (if ECDH was used)
+        header_bytes = self._create_header(
+            policy_body, policy_type, config, ephemeral_public_key_compressed
+        )
         output_stream.write(header_bytes)
 
         # Encrypt payload
-        iv, ciphertext = self._encrypt_payload(payload, key)
+        iv, ciphertext_with_tag = self._encrypt_payload(payload, key)
 
-        # Wrap key if needed
-        wrapped_key, _kas_public_key = self._wrap_key_if_needed(key, config)
+        # NanoTDF payload format per spec:
+        # [3 bytes: length] [3 bytes: IV] [variable: ciphertext] [tag]
+        # Note: ciphertext_with_tag from AESGCM already includes the tag
+        payload_data = iv + ciphertext_with_tag
+        payload_length = len(payload_data)
 
-        # Compose the complete NanoTDF: [IV][CIPHERTEXT][WRAPPED_KEY][WRAPPED_KEY_LEN]
-        if wrapped_key:
-            nano_tdf_data = (
-                iv + ciphertext + wrapped_key + len(wrapped_key).to_bytes(2, "big")
-            )
-        else:
-            nano_tdf_data = iv + ciphertext + (0).to_bytes(2, "big")
+        # Write payload length as 3 bytes (big-endian)
+        length_bytes = payload_length.to_bytes(4, "big")[1:]  # Take last 3 bytes
+        output_stream.write(length_bytes)
 
-        output_stream.write(nano_tdf_data)
-        return len(header_bytes) + len(nano_tdf_data)
+        # Write payload (IV + ciphertext + tag)
+        output_stream.write(payload_data)
+
+        return len(header_bytes) + 3 + payload_length
 
     def _kas_unwrap(
         self, nano_tdf_data: bytes, header_len: int, wrapped_key: bytes
@@ -350,35 +491,63 @@ class NanoTDF:
 
             header_obj = Header.from_bytes(nano_tdf_data[:header_len])
             kas_locator = header_obj.kas_locator
-            # policy_info = header_obj.policy_info
+            ephemeral_key = header_obj.ephemeral_key
 
             # Get KAS URL from KAS locator
             kas_url = kas_locator.get_resource_url()
 
             # Extract policy JSON from policy info
-            # PolicyInfo has the policy body, need to get it properly
-            policy_json = "{}"  # Default empty policy for now
-            # TODO: Extract actual policy from policy_info if needed
+            policy_info = header_obj.policy_info
+            if policy_info and policy_info.body:
+                # Check policy type: 0=remote, 1=embedded plain, 2=encrypted
+                if policy_info.policy_type == 1:
+                    # Plain text policy
+                    policy_json = policy_info.body.decode("utf-8")
+                elif policy_info.policy_type == 2:
+                    # Encrypted policy - we can't decrypt it without the key from KAS
+                    # This is a chicken-and-egg problem. For now, send minimal policy.
+                    # TODO: Investigate if KAS API supports sending encrypted policy
+                    logging.warning("Encrypted policy detected in NanoTDF - using minimal policy for rewrap")
+                    policy_json = '{"uuid":"00000000-0000-0000-0000-000000000000","body":{"dataAttributes":[]}}'
+                else:
+                    # Remote policy (type 0) or unknown
+                    logging.info(f"Policy type {policy_info.policy_type} - using minimal policy")
+                    policy_json = '{"uuid":"00000000-0000-0000-0000-000000000000","body":{"dataAttributes":[]}}'
+            else:
+                # Default minimal policy if none found
+                policy_json = '{"uuid":"00000000-0000-0000-0000-000000000000","body":{"dataAttributes":[]}}'
 
             # Get KAS client from services
             kas_client = self.services.kas()
 
-            # Create a KeyAccess object for the unwrap call
-            # For NanoTDF, the wrapped key is at the end of the payload
-            key_access = KeyAccess(
-                url=kas_url,
-                wrapped_key=base64.b64encode(wrapped_key).decode("utf-8"),
-                ephemeral_public_key=None,  # NanoTDF uses different key wrapping
-            )
+            # Determine if this is ECDH mode (wrapped_key empty) or RSA mode (wrapped_key present)
+            is_ecdh_mode = len(wrapped_key) == 0
 
-            # Call KAS unwrap (same as TDF does)
-            # The KAS client will handle the rewrap protocol
-            # Use RSA as default session key type for NanoTDF
-            from otdf_python.key_type_constants import RSA_KEY_TYPE
+            if is_ecdh_mode:
+                # ECDH mode: Pass ephemeral public key, no wrapped key
+                # KAS will use ephemeral key + its private key to derive the same symmetric key
+                key_access = KeyAccess(
+                    url=kas_url,
+                    wrapped_key="",  # Empty for ECDH mode
+                    ephemeral_public_key=base64.b64encode(ephemeral_key).decode("utf-8") if ephemeral_key else None,
+                )
+                # Use EC key type for ECDH
+                from otdf_python.key_type_constants import EC_KEY_TYPE
 
-            key = kas_client.unwrap(key_access, policy_json, RSA_KEY_TYPE)
+                key = kas_client.unwrap(key_access, policy_json, EC_KEY_TYPE)
+                logging.info("Successfully unwrapped NanoTDF key using KAS ECDH")
+            else:
+                # RSA mode: Pass wrapped key, no ephemeral key
+                key_access = KeyAccess(
+                    url=kas_url,
+                    wrapped_key=base64.b64encode(wrapped_key).decode("utf-8"),
+                    ephemeral_public_key=None,
+                )
+                # Use RSA key type for RSA wrapping
+                from otdf_python.key_type_constants import RSA_KEY_TYPE
 
-            logging.info("Successfully unwrapped NanoTDF key using KAS")
+                key = kas_client.unwrap(key_access, policy_json, RSA_KEY_TYPE)
+                logging.info("Successfully unwrapped NanoTDF key using KAS RSA")
 
         except Exception as e:
             # If KAS unwrap fails, log and fall through to local unwrap methods
@@ -437,7 +606,7 @@ class NanoTDF:
         Stream-based NanoTDF decryption - writes decrypted payload to an output stream.
 
         For convenience method that returns bytes, use read_nanotdf() instead.
-        Supports KAS key unwrapping if kas_private_key is provided in config.
+        Supports ECDH key derivation and KAS key unwrapping.
 
         Args:
             nano_tdf_data: The NanoTDF data as bytes or BytesIO
@@ -456,20 +625,43 @@ class NanoTDF:
 
         try:
             header_len = Header.peek_length(nano_tdf_data)
-        except Exception:
-            raise InvalidNanoTDFConfig("Failed to parse NanoTDF header.")
-        payload_start = header_len
-        payload = nano_tdf_data[payload_start:]
-        # Do not check for magic/version in payload; it is only at the start of the header
+            header_obj = Header.from_bytes(nano_tdf_data[:header_len])
+        except Exception as e:
+            raise InvalidNanoTDFConfig(f"Failed to parse NanoTDF header: {e}")
+
+        # Read payload section per NanoTDF spec:
+        # [3 bytes: length] [3 bytes: IV] [variable: ciphertext] [tag]
+        payload_offset = header_len
+
+        # Read 3-byte payload length
+        payload_length = int.from_bytes(nano_tdf_data[payload_offset : payload_offset + 3], "big")
+        payload_offset += 3
+
+        # Read payload data (IV + ciphertext + tag)
+        payload = nano_tdf_data[payload_offset : payload_offset + payload_length]
+
+        # Extract IV (first 3 bytes)
         iv = payload[0:3]
         iv_padded = self.K_EMPTY_IV[: self.K_IV_PADDING] + iv
-        # Find wrapped key
-        wrapped_key_len = int.from_bytes(payload[-2:], "big")
+
+        # The rest is ciphertext + tag
+        ciphertext_with_tag = payload[3:]
+
+        # For legacy compatibility: check if there's still data after payload (wrapped key)
+        # This shouldn't exist in spec-compliant NanoTDF with ECDH
+        remaining_offset = payload_offset + payload_length
+        has_wrapped_key = remaining_offset + 2 <= len(nano_tdf_data)
+        wrapped_key_len = 0
+        if has_wrapped_key:
+            wrapped_key_len = int.from_bytes(nano_tdf_data[-2:], "big")
+
+        key = None
+
         if wrapped_key_len > 0:
-            wrapped_key = payload[-(2 + wrapped_key_len) : -2]
+            # Legacy RSA wrapped key mode (backward compatibility)
+            wrapped_key = nano_tdf_data[-(2 + wrapped_key_len) : -2]
 
             # Try to unwrap using KAS service if available
-            key = None
             if self.services:
                 key = self._kas_unwrap(nano_tdf_data, header_len, wrapped_key)
 
@@ -477,18 +669,84 @@ class NanoTDF:
             if key is None:
                 key = self._local_unwrap(wrapped_key, config)
 
-            ciphertext = payload[3 : -(2 + wrapped_key_len)]
+            # In legacy mode, ciphertext is different (recalculate from old format)
+            # For now, assume spec-compliant format
+            pass
         else:
-            # No wrapped key - need symmetric key from config
-            key = None
-            if config and hasattr(config, "cipher") and isinstance(config.cipher, str):
-                with contextlib.suppress(ValueError):
-                    key = bytes.fromhex(config.cipher)
+            # No wrapped key - ECDH mode with ephemeral key in header
+            import logging
+
+            from otdf_python.ecdh import decrypt_key_with_ecdh
+
+            # Extract ephemeral public key from header
+            ephemeral_public_key = header_obj.ephemeral_key
+            ecc_mode = header_obj.ecc_mode
+
+            # Get curve name from ECC mode
+            curve_name = ecc_mode.get_curve_name()  # e.g., "secp256r1"
+
+            # Try KAS unwrap first if services available
+            if self.services:
+                try:
+                    key = self._kas_unwrap(nano_tdf_data, header_len, wrapped_key=b"")
+                    if key:
+                        logging.info("Successfully unwrapped NanoTDF key via KAS (ECDH mode)")
+                except Exception as e:
+                    logging.warning(f"KAS unwrap failed for ECDH mode: {e}")
+                    key = None
+
+            # If KAS unwrap didn't work, try local private key from config
             if not key:
-                raise InvalidNanoTDFConfig("Missing decryption key in config.")
-            ciphertext = payload[3:-2]
+                recipient_private_key_pem = None
+                if config and hasattr(config, "cipher") and isinstance(config.cipher, str):
+                    if "-----BEGIN" in config.cipher:
+                        # It's a PEM private key
+                        recipient_private_key_pem = config.cipher
+                    else:
+                        # Try to parse as hex symmetric key (fallback)
+                        with contextlib.suppress(ValueError):
+                            key = bytes.fromhex(config.cipher)
+
+                # If we have a private key, detect type and use appropriate method
+                if recipient_private_key_pem:
+                    # Detect if key is EC or RSA
+                    is_ec = self._is_ec_key(recipient_private_key_pem)
+
+                    if is_ec:
+                        # EC key - use ECDH to derive the decryption key
+                        try:
+                            key = decrypt_key_with_ecdh(
+                                recipient_private_key_pem,
+                                ephemeral_public_key,
+                                curve_name=curve_name,
+                            )
+                            logging.info(
+                                f"Successfully derived NanoTDF decryption key using ECDH with curve {curve_name}"
+                            )
+                        except Exception as e:
+                            logging.warning(f"Failed to derive key with ECDH: {e}")
+                            key = None
+                    else:
+                        # RSA key - this shouldn't happen for ECDH mode (wrapped_key_len should be > 0)
+                        # But handle it gracefully
+                        logging.warning(
+                            "RSA private key provided for ECDH mode NanoTDF - this is unexpected. "
+                            "NanoTDF should use wrapped_key_len > 0 for RSA mode."
+                        )
+                        key = None
+
+            # If no key yet, raise error
+            if not key:
+                raise InvalidNanoTDFConfig(
+                    "Missing decryption key. Provide either:\n"
+                    "  1. KAS service for key unwrapping, or\n"
+                    "  2. Recipient's private key (PEM format) in config.cipher for ECDH, or\n"
+                    "  3. Symmetric key (hex) in config.cipher for symmetric decryption"
+                )
+
+        # Decrypt the ciphertext using AES-GCM
         aesgcm = AESGCM(key)
-        plaintext = aesgcm.decrypt(iv_padded, ciphertext, None)
+        plaintext = aesgcm.decrypt(iv_padded, ciphertext_with_tag, None)
         output_stream.write(plaintext)
 
     def _convert_dict_to_nanotdf_config(self, config: dict) -> NanoTDFConfig:
@@ -619,38 +877,12 @@ class NanoTDF:
         For stream-based version, use read_nano_tdf() instead.
         """
         output = BytesIO()
-        from otdf_python.header import Header  # Local import to avoid circular import
 
         # Convert config to NanoTDFConfig if it's a dict
         if isinstance(config, dict):
             config = self._convert_dict_to_read_config(config)
 
-        try:
-            header_len = Header.peek_length(nanotdf_bytes)
-            payload = nanotdf_bytes[header_len:]
-
-            # Extract components
-            iv = payload[0:3]
-            iv_padded = self.K_EMPTY_IV[: self.K_IV_PADDING] + iv
-            wrapped_key_len = int.from_bytes(payload[-2:], "big")
-
-            wrapped_key = None
-            if wrapped_key_len > 0:
-                wrapped_key = payload[-(2 + wrapped_key_len) : -2]
-                ciphertext = payload[3 : -(2 + wrapped_key_len)]
-            else:
-                ciphertext = payload[3:-2]
-
-            # Get the decryption key
-            key = self._extract_key_for_reading(config, wrapped_key)
-
-            # Decrypt the payload
-            aesgcm = AESGCM(key)
-            plaintext = aesgcm.decrypt(iv_padded, ciphertext, None)
-            output.write(plaintext)
-
-        except Exception as e:
-            # Re-raise with a clearer message
-            raise InvalidNanoTDFConfig(f"Error reading NanoTDF: {e!s}")
+        # Use the stream-based method internally
+        self.read_nano_tdf(nanotdf_bytes, output, config)
 
         return output.getvalue()

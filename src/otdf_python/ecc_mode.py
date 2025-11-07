@@ -6,6 +6,7 @@ class ECCMode:
         "secp256r1": 0,
         "secp384r1": 1,
         "secp521r1": 2,
+        "secp256k1": 3,
     }
 
     def __init__(self, curve_mode: int = 0, use_ecdsa_binding: bool = False):
@@ -24,15 +25,25 @@ class ECCMode:
     def get_elliptic_curve_type(self) -> int:
         return self.curve_mode
 
+    def get_curve_name(self) -> str:
+        """Get the curve name as a string (e.g., 'secp256r1')."""
+        for name, mode in self._CURVE_MAP.items():
+            if mode == self.curve_mode:
+                return name
+        # Default to secp256r1 if not found
+        return "secp256r1"
+
     @staticmethod
     def get_ec_compressed_pubkey_size(curve_type: int) -> int:
-        # 0: secp256r1, 1: secp384r1, 2: secp521r1
+        # 0: secp256r1, 1: secp384r1, 2: secp521r1, 3: secp256k1
         if curve_type == 0:
-            return 33
+            return 33  # secp256r1
         elif curve_type == 1:
-            return 49
+            return 49  # secp384r1
         elif curve_type == 2:
-            return 67
+            return 67  # secp521r1
+        elif curve_type == 3:
+            return 33  # secp256k1 (same size as secp256r1)
         else:
             raise ValueError("Unsupported ECC algorithm.")
 
