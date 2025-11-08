@@ -470,78 +470,40 @@ class NanoTDF:
         self, nano_tdf_data: bytes, header_len: int, wrapped_key: bytes
     ) -> bytes | None:
         try:
-            # Parse header to get policy and KAS URL
-            import base64
+            # For NanoTDF, send the entire header to KAS
+            # KAS will extract the policy, ephemeral key, and perform ECDH
             import logging
 
             from otdf_python.header import Header
             from otdf_python.kas_client import KeyAccess
 
-            header_obj = Header.from_bytes(nano_tdf_data[:header_len])
-            kas_locator = header_obj.kas_locator
-            ephemeral_key = header_obj.ephemeral_key
+            # Extract header bytes (excluding magic number/version which is at start of nano_tdf_data)
+            # The header starts at offset 0 (magic number) and goes for header_len bytes
+            header_bytes = nano_tdf_data[:header_len]
 
-            # Get KAS URL from KAS locator
-            kas_url = kas_locator.get_resource_url()
-
-            # Extract policy JSON from policy info
-            policy_info = header_obj.policy_info
-            if policy_info and policy_info.body:
-                # Check policy type: 0=remote, 1=embedded plain, 2=encrypted
-                if policy_info.policy_type == 1:
-                    # Plain text policy
-                    policy_json = policy_info.body.decode("utf-8")
-                elif policy_info.policy_type == 2:
-                    # Encrypted policy - we can't decrypt it without the key from KAS
-                    # This is a chicken-and-egg problem. For now, send minimal policy.
-                    # TODO: Investigate if KAS API supports sending encrypted policy
-                    logging.warning(
-                        "Encrypted policy detected in NanoTDF - using minimal policy for rewrap"
-                    )
-                    policy_json = '{"uuid":"00000000-0000-0000-0000-000000000000","body":{"dataAttributes":[]}}'
-                else:
-                    # Remote policy (type 0) or unknown
-                    logging.info(
-                        f"Policy type {policy_info.policy_type} - using minimal policy"
-                    )
-                    policy_json = '{"uuid":"00000000-0000-0000-0000-000000000000","body":{"dataAttributes":[]}}'
-            else:
-                # Default minimal policy if none found
-                policy_json = '{"uuid":"00000000-0000-0000-0000-000000000000","body":{"dataAttributes":[]}}'
+            # Parse just to get KAS URL (we still need this for routing)
+            header_obj = Header.from_bytes(header_bytes)
+            kas_url = header_obj.kas_locator.get_resource_url()
 
             # Get KAS client from services
             kas_client = self.services.kas()
 
-            # Determine if this is ECDH mode (wrapped_key empty) or RSA mode (wrapped_key present)
-            is_ecdh_mode = len(wrapped_key) == 0
+            # For NanoTDF: Pass header bytes to KAS
+            # KAS will extract ephemeral key, decrypt policy if needed, and derive/unwrap the key
+            # Use minimal policy JSON since KAS will extract it from the header
+            policy_json = '{"uuid":"00000000-0000-0000-0000-000000000000","body":{"dataAttributes":[]}}'
 
-            if is_ecdh_mode:
-                # ECDH mode: Pass ephemeral public key, no wrapped key
-                # KAS will use ephemeral key + its private key to derive the same symmetric key
-                key_access = KeyAccess(
-                    url=kas_url,
-                    wrapped_key="",  # Empty for ECDH mode
-                    ephemeral_public_key=base64.b64encode(ephemeral_key).decode("utf-8")
-                    if ephemeral_key
-                    else None,
-                )
-                # Use EC key type for ECDH
-                from otdf_python.key_type_constants import EC_KEY_TYPE
+            key_access = KeyAccess(
+                url=kas_url,
+                wrapped_key="",  # NanoTDF uses ECDH, not wrapped keys
+                header=header_bytes,  # Send entire header to KAS
+            )
 
-                key = kas_client.unwrap(key_access, policy_json, EC_KEY_TYPE)
-                logging.info("Successfully unwrapped NanoTDF key using KAS ECDH")
-            else:
-                # RSA mode: Pass wrapped key, no ephemeral key
-                key_access = KeyAccess(
-                    url=kas_url,
-                    wrapped_key=base64.b64encode(wrapped_key).decode("utf-8"),
-                    ephemeral_public_key=None,
-                )
-                # Use RSA key type for RSA wrapping
-                from otdf_python.key_type_constants import RSA_KEY_TYPE
+            # Use EC key type for NanoTDF (always uses ECDH)
+            from otdf_python.key_type_constants import EC_KEY_TYPE
 
-                key = kas_client.unwrap(key_access, policy_json, RSA_KEY_TYPE)
-                logging.info("Successfully unwrapped NanoTDF key using KAS RSA")
+            key = kas_client.unwrap(key_access, policy_json, EC_KEY_TYPE)
+            logging.info("Successfully unwrapped NanoTDF key using KAS with header")
 
         except Exception as e:
             # If KAS unwrap fails, log and fall through to local unwrap methods
@@ -747,8 +709,49 @@ class NanoTDF:
                 )
 
         # Decrypt the ciphertext using AES-GCM
-        aesgcm = AESGCM(key)
-        plaintext = aesgcm.decrypt(iv_padded, ciphertext_with_tag, None)
+        # Use cipher type from header to determine tag size
+        import logging
+
+        tag_size_map = {
+            0: 8,  # 64-bit
+            1: 12,  # 96-bit
+            2: 13,  # 104-bit
+            3: 14,  # 112-bit
+            4: 15,  # 120-bit
+            5: 16,  # 128-bit
+        }
+
+        cipher_type = (
+            header_obj.payload_config.get_cipher_type()
+            if header_obj.payload_config
+            else 5
+        )
+        tag_size = tag_size_map.get(cipher_type, 16)
+
+        logging.info(
+            f"Decrypting payload: key_len={len(key)}, key_hex={key.hex()[:40]}..., iv_3byte={iv.hex()}, iv_padded={iv_padded.hex()}, cipher_type={cipher_type}, tag_size={tag_size}, ciphertext_len={len(ciphertext_with_tag)}"
+        )
+
+        # For variable tag sizes, use lower-level Cipher API
+        from cryptography.hazmat.backends import default_backend
+        from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+
+        # Split ciphertext and tag
+        ciphertext = ciphertext_with_tag[:-tag_size]
+        tag = ciphertext_with_tag[-tag_size:]
+
+        logging.info(
+            f"Split: ciphertext={len(ciphertext)} bytes, tag={len(tag)} bytes ({tag.hex()})"
+        )
+
+        # Create cipher with GCM mode specifying tag and min_tag_length
+        cipher = Cipher(
+            algorithms.AES(key),
+            modes.GCM(iv_padded, tag=tag, min_tag_length=tag_size),
+            backend=default_backend(),
+        )
+        decryptor = cipher.decryptor()
+        plaintext = decryptor.update(ciphertext) + decryptor.finalize()
         output_stream.write(plaintext)
 
     def _convert_dict_to_nanotdf_config(self, config: dict) -> NanoTDFConfig:

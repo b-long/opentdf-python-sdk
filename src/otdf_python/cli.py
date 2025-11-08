@@ -561,7 +561,7 @@ def main():
         sys.exit(1)
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
-        logger.debug("", exc_info=True)
+        logger.error("", exc_info=True)  # Always print traceback for unexpected errors
         sys.exit(1)
 
 
