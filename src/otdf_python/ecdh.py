@@ -23,21 +23,7 @@ from cryptography.hazmat.primitives.serialization import (
     PublicFormat,
 )
 
-# Mapping from curve names to cryptography curve objects
-CURVE_MAP = {
-    "secp256r1": ec.SECP256R1(),
-    "secp384r1": ec.SECP384R1(),
-    "secp521r1": ec.SECP521R1(),
-    "secp256k1": ec.SECP256K1(),
-}
-
-# Compressed public key sizes for each curve
-COMPRESSED_KEY_SIZES = {
-    "secp256r1": 33,  # 1 byte prefix + 32 bytes
-    "secp384r1": 49,  # 1 byte prefix + 48 bytes
-    "secp521r1": 67,  # 1 byte prefix + 66 bytes
-    "secp256k1": 33,  # 1 byte prefix + 32 bytes
-}
+from otdf_python.ecc_constants import ECCConstants
 
 # HKDF salt for NanoTDF key derivation
 # Per spec: "salt value derived from magic number/version"
@@ -78,13 +64,11 @@ def get_curve(curve_name: str) -> ec.EllipticCurve:
     Raises:
         UnsupportedCurveError: If the curve is not supported
     """
-    curve_name_lower = curve_name.lower()
-    if curve_name_lower not in CURVE_MAP:
-        raise UnsupportedCurveError(
-            f"Unsupported curve: {curve_name}. "
-            f"Supported curves: {', '.join(CURVE_MAP.keys())}"
-        )
-    return CURVE_MAP[curve_name_lower]
+    try:
+        # Delegate to ECCConstants for the authoritative mapping
+        return ECCConstants.get_curve_object(curve_name)
+    except ValueError as e:
+        raise UnsupportedCurveError(str(e)) from e
 
 
 def get_compressed_key_size(curve_name: str) -> int:
@@ -100,10 +84,11 @@ def get_compressed_key_size(curve_name: str) -> int:
     Raises:
         UnsupportedCurveError: If the curve is not supported
     """
-    curve_name_lower = curve_name.lower()
-    if curve_name_lower not in COMPRESSED_KEY_SIZES:
-        raise UnsupportedCurveError(f"Unsupported curve: {curve_name}")
-    return COMPRESSED_KEY_SIZES[curve_name_lower]
+    try:
+        # Delegate to ECCConstants for the authoritative mapping
+        return ECCConstants.get_compressed_key_size_by_name(curve_name)
+    except ValueError as e:
+        raise UnsupportedCurveError(str(e)) from e
 
 
 def generate_ephemeral_keypair(

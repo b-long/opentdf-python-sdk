@@ -6,8 +6,8 @@ import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
+from otdf_python.ecc_constants import ECCConstants
 from otdf_python.ecdh import (
-    COMPRESSED_KEY_SIZES,
     InvalidKeyError,
     UnsupportedCurveError,
     compress_public_key,
@@ -112,7 +112,10 @@ class TestPublicKeyCompression:
 
     def test_compress_all_curves(self):
         """Test compressing public keys for all curves."""
-        for curve_name, expected_size in COMPRESSED_KEY_SIZES.items():
+        for (
+            curve_name,
+            expected_size,
+        ) in ECCConstants.COMPRESSED_KEY_SIZE_BY_NAME.items():
             _, public_key = generate_ephemeral_keypair(curve_name)
             compressed = compress_public_key(public_key)
             assert len(compressed) == expected_size
@@ -273,7 +276,7 @@ class TestHighLevelEncryption:
             )
 
             assert len(derived_key) == 32
-            expected_size = COMPRESSED_KEY_SIZES[curve_name]
+            expected_size = ECCConstants.COMPRESSED_KEY_SIZE_BY_NAME[curve_name]
             assert len(compressed_ephemeral_key) == expected_size
 
     def test_encrypt_key_invalid_recipient_key(self):
