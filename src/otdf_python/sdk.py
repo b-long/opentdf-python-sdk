@@ -119,7 +119,7 @@ class KAS(AbstractContextManager):
             Unwrapped key as bytes
         """
         if mock and wrapped_key and kas_private_key:
-            from .asym_decryption import AsymDecryption
+            from .asym_crypto import AsymDecryption
 
             asym = AsymDecryption(private_key_pem=kas_private_key)
             return asym.decrypt(wrapped_key)

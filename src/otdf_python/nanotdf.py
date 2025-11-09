@@ -9,7 +9,6 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-from otdf_python.asym_crypto import AsymDecryption
 from otdf_python.collection_store import CollectionStore, NoOpCollectionStore
 from otdf_python.config import KASInfo, NanoTDFConfig
 from otdf_python.constants import MAGIC_NUMBER_AND_VERSION
@@ -20,6 +19,8 @@ from otdf_python.policy_stub import NULL_POLICY_UUID
 from otdf_python.resource_locator import ResourceLocator
 from otdf_python.sdk_exceptions import SDKException
 from otdf_python.symmetric_and_payload_config import SymmetricAndPayloadConfig
+
+from .asym_crypto import AsymDecryption
 
 
 class NanoTDFException(SDKException):

@@ -38,7 +38,7 @@ class TestKASKeyManagement(unittest.TestCase):
 
             # Also patch the decrypt method to return a predictable value
             with patch(
-                "otdf_python.asym_decryption.AsymDecryption.decrypt",
+                "otdf_python.asym_crypto.AsymDecryption.decrypt",
                 return_value=b"test_key",
             ):
                 # Call unwrap
