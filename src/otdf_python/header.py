@@ -6,6 +6,9 @@ from otdf_python.symmetric_and_payload_config import SymmetricAndPayloadConfig
 
 
 class Header:
+    # Size of GMAC (Galois Message Authentication Code) for policy binding
+    GMAC_SIZE = 8
+
     def __init__(self):
         self.kas_locator: ResourceLocator | None = None
         self.ecc_mode: ECCMode | None = None
@@ -35,11 +38,10 @@ class Header:
 
         # Read policy binding (GMAC - 8 bytes fixed size)
         # Note: ECDSA binding not yet supported in this implementation
-        GMAC_SIZE = 8
-        policy_binding = buffer[offset : offset + GMAC_SIZE]
-        if len(policy_binding) != GMAC_SIZE:
+        policy_binding = buffer[offset : offset + cls.GMAC_SIZE]
+        if len(policy_binding) != cls.GMAC_SIZE:
             raise ValueError("Failed to read policy binding - invalid buffer size.")
-        offset += GMAC_SIZE
+        offset += cls.GMAC_SIZE
 
         compressed_pubkey_size = ECCMode.get_ec_compressed_pubkey_size(
             ecc_mode.get_elliptic_curve_type()
@@ -75,7 +77,7 @@ class Header:
         )
         offset += policy_size
         # Policy binding (GMAC - 8 bytes)
-        offset += 8
+        offset += Header.GMAC_SIZE
         # Ephemeral key (size depends on curve)
         compressed_pubkey_size = ECCMode.get_ec_compressed_pubkey_size(
             ecc_mode.get_elliptic_curve_type()
@@ -108,9 +110,9 @@ class Header:
         return self.policy_info
 
     def set_policy_binding(self, policy_binding: bytes):
-        if len(policy_binding) != 8:
+        if len(policy_binding) != self.GMAC_SIZE:
             raise ValueError(
-                f"Policy binding must be exactly 8 bytes (GMAC), got {len(policy_binding)}"
+                f"Policy binding must be exactly {self.GMAC_SIZE} bytes (GMAC), got {len(policy_binding)}"
             )
         self.policy_binding = policy_binding
 
@@ -135,7 +137,7 @@ class Header:
         total += 1  # ECC mode
         total += 1  # payload config
         total += self.policy_info.get_total_size() if self.policy_info else 0
-        total += 8  # policy binding (GMAC)
+        total += self.GMAC_SIZE  # policy binding (GMAC)
         total += len(self.ephemeral_key) if self.ephemeral_key else 0
         return total
 
@@ -158,16 +160,16 @@ class Header:
         offset += n
         # Policy binding (GMAC - 8 bytes)
         if self.policy_binding:
-            if len(self.policy_binding) != 8:
+            if len(self.policy_binding) != self.GMAC_SIZE:
                 raise ValueError(
-                    f"Policy binding must be exactly 8 bytes (GMAC), got {len(self.policy_binding)}"
+                    f"Policy binding must be exactly {self.GMAC_SIZE} bytes (GMAC), got {len(self.policy_binding)}"
                 )
-            buffer[offset : offset + 8] = self.policy_binding
-            offset += 8
+            buffer[offset : offset + self.GMAC_SIZE] = self.policy_binding
+            offset += self.GMAC_SIZE
         else:
             # Write zeros if no binding provided
-            buffer[offset : offset + 8] = b"\x00" * 8
-            offset += 8
+            buffer[offset : offset + self.GMAC_SIZE] = b"\x00" * self.GMAC_SIZE
+            offset += self.GMAC_SIZE
         # Ephemeral key
         buffer[offset : offset + len(self.ephemeral_key)] = self.ephemeral_key
         offset += len(self.ephemeral_key)
