@@ -12,7 +12,7 @@ from dataclasses import dataclass
 
 import jwt
 
-from .asym_decryption import AsymDecryption
+from .asym_crypto import AsymDecryption
 from .crypto_utils import CryptoUtils
 from .kas_connect_rpc_client import KASConnectRPCClient
 from .kas_key_cache import KASKeyCache
@@ -25,6 +25,7 @@ class KeyAccess:
     url: str
     wrapped_key: str
     ephemeral_public_key: str | None = None
+    header: bytes | None = None  # For NanoTDF: entire header including ephemeral key
 
 
 class KASClient:
@@ -139,16 +140,16 @@ class KASClient:
         except Exception as e:
             raise SDKException("error creating KAS address", e)
 
-    def _create_signed_request_jwt(self, policy_json, client_public_key, key_access):  # noqa: C901
+    def _get_wrapped_key_base64(self, key_access):
         """
-        Create a signed JWT for the rewrap request.
-        The JWT is signed with the DPoP private key.
-        """
-        # Handle both ManifestKeyAccess (new camelCase and old snake_case) and simple KeyAccess (for tests)
-        # TODO: This can probably be simplified to only camelCase
+        Extract and normalize the wrapped key to base64-encoded string.
 
-        # Ensure wrappedKey is a base64-encoded string
-        # Note: wrappedKey from manifest is already base64-encoded
+        Args:
+            key_access: KeyAccess object
+
+        Returns:
+            Base64-encoded wrapped key string
+        """
         wrapped_key = getattr(key_access, "wrappedKey", None) or getattr(
             key_access, "wrapped_key", None
         )
@@ -157,11 +158,24 @@ class KASClient:
 
         if isinstance(wrapped_key, bytes):
             # Only encode if it's raw bytes (shouldn't happen from manifest)
-            wrapped_key = base64.b64encode(wrapped_key).decode("utf-8")
+            return base64.b64encode(wrapped_key).decode("utf-8")
         elif not isinstance(wrapped_key, str):
             # Convert to string if it's something else
-            wrapped_key = str(wrapped_key)
+            return str(wrapped_key)
         # If it's already a string (from manifest), use it as-is since it's already base64-encoded
+        return wrapped_key
+
+    def _build_key_access_dict(self, key_access):
+        """
+        Build key access dictionary from KeyAccess object, handling both old and new field names.
+
+        Args:
+            key_access: KeyAccess object
+
+        Returns:
+            Dictionary with key access information
+        """
+        wrapped_key = self._get_wrapped_key_base64(key_access)
 
         key_access_dict = {
             "url": key_access.url,
@@ -172,89 +186,162 @@ class KASClient:
         key_type = getattr(key_access, "type", None) or getattr(
             key_access, "key_type", None
         )
-        if key_type is not None:
-            key_access_dict["type"] = key_type
-        else:
-            key_access_dict["type"] = "wrapped"  # Default type for tests
+        key_access_dict["type"] = key_type if key_type is not None else "wrapped"
 
         protocol = getattr(key_access, "protocol", None)
-        if protocol is not None:
-            key_access_dict["protocol"] = protocol
-        else:
-            key_access_dict["protocol"] = "kas"  # Default protocol for tests
+        key_access_dict["protocol"] = protocol if protocol is not None else "kas"
 
-        # Optional fields - handle both old and new field names, only include if they exist and are not None
+        # Add optional fields
+        self._add_optional_fields(key_access_dict, key_access)
+
+        return key_access_dict
+
+    def _add_optional_fields(self, key_access_dict, key_access):
+        """
+        Add optional fields to key access dictionary.
+
+        Args:
+            key_access_dict: Dictionary to add fields to
+            key_access: KeyAccess object to extract fields from
+        """
+        # Policy binding
         policy_binding = getattr(key_access, "policyBinding", None) or getattr(
             key_access, "policy_binding", None
         )
         if policy_binding is not None:
-            # Policy binding hash should be kept as base64-encoded
-            # The server expects base64-encoded hash values in the JWT request
             key_access_dict["policyBinding"] = policy_binding
 
+        # Encrypted metadata
         encrypted_metadata = getattr(key_access, "encryptedMetadata", None) or getattr(
             key_access, "encrypted_metadata", None
         )
         if encrypted_metadata is not None:
             key_access_dict["encryptedMetadata"] = encrypted_metadata
 
-        kid = getattr(key_access, "kid", None)
-        if kid is not None:
-            key_access_dict["kid"] = kid
+        # Simple optional fields
+        for field in ["kid", "sid"]:
+            value = getattr(key_access, field, None)
+            if value is not None:
+                key_access_dict[field] = value
 
-        sid = getattr(key_access, "sid", None)
-        if sid is not None:
-            key_access_dict["sid"] = sid
-
+        # Schema version
         schema_version = getattr(key_access, "schemaVersion", None) or getattr(
             key_access, "schema_version", None
         )
         if schema_version is not None:
             key_access_dict["schemaVersion"] = schema_version
 
+        # Ephemeral public key
         ephemeral_public_key = getattr(
             key_access, "ephemeralPublicKey", None
         ) or getattr(key_access, "ephemeral_public_key", None)
         if ephemeral_public_key is not None:
             key_access_dict["ephemeralPublicKey"] = ephemeral_public_key
 
-        # Get current timestamp in seconds since epoch (UNIX timestamp)
-        now = int(time.time())
+        # NanoTDF header
+        header = getattr(key_access, "header", None)
+        if header is not None:
+            key_access_dict["header"] = base64.b64encode(header).decode("utf-8")
 
-        # The server expects a JWT with a requestBody field containing the UnsignedRewrapRequest
-        # Create the request body that matches UnsignedRewrapRequest protobuf structure
-        # Use the v2 format with explicit policy ID and requests array for cross-tool compatibility
+    def _get_algorithm_from_session_key_type(self, session_key_type):
+        """
+        Convert session key type to algorithm string for KAS.
 
-        # Use "policy" as policy ID for compatibility with otdfctl
+        Args:
+            session_key_type: Session key type (EC_KEY_TYPE or RSA_KEY_TYPE)
+
+        Returns:
+            Algorithm string or None
+        """
+        if session_key_type == EC_KEY_TYPE:
+            return "ec:secp256r1"  # Default EC curve for NanoTDF
+        elif session_key_type == RSA_KEY_TYPE:
+            return "rsa:2048"  # Default RSA key size
+        return None
+
+    def _build_rewrap_request(
+        self, policy_json, client_public_key, key_access_dict, algorithm, has_header
+    ):
+        """
+        Build the unsigned rewrap request structure.
+
+        Args:
+            policy_json: Policy JSON string
+            client_public_key: Client public key PEM string
+            key_access_dict: Key access dictionary
+            algorithm: Algorithm string (e.g., "ec:secp256r1" or "rsa:2048")
+            has_header: Whether NanoTDF header is present
+
+        Returns:
+            Dictionary with unsigned rewrap request
+        """
         import json
 
         policy_uuid = "policy"  # otdfctl uses "policy" as the policy ID
-
-        # For v2 format, the policy body must be base64-encoded
         policy_base64 = base64.b64encode(policy_json.encode("utf-8")).decode("utf-8")
 
-        unsigned_rewrap_request = {
-            "clientPublicKey": client_public_key,  # Maps to client_public_key
-            "requests": [
-                {  # Maps to requests array (v2 format)
-                    "keyAccessObjects": [
-                        {
-                            "keyAccessObjectId": "kao-0",  # Standard KAO ID
-                            "keyAccessObject": key_access_dict,
-                        }
-                    ],
-                    "policy": {
-                        "id": policy_uuid,  # Use the UUID from policy as the policy ID
-                        "body": policy_base64,  # Base64-encoded policy JSON
-                    },
+        # Build the request object
+        request_item = {
+            "keyAccessObjects": [
+                {
+                    "keyAccessObjectId": "kao-0",  # Standard KAO ID
+                    "keyAccessObject": key_access_dict,
                 }
             ],
-            "keyAccess": key_access_dict,
-            "policy": policy_base64,
+            "policy": {
+                "id": policy_uuid,
+            },
         }
 
-        # Convert to JSON string
-        request_body_json = json.dumps(unsigned_rewrap_request)
+        # Only include policy body if header is NOT provided (standard TDF)
+        if not has_header:
+            request_item["policy"]["body"] = policy_base64
+
+        # Add algorithm if provided (required for NanoTDF/ECDH)
+        if algorithm:
+            request_item["algorithm"] = algorithm
+
+        unsigned_rewrap_request = {
+            "clientPublicKey": client_public_key,
+            "requests": [request_item],
+            "keyAccess": key_access_dict,
+        }
+
+        # Only include legacy policy field for standard TDF (not NanoTDF with header)
+        if not has_header:
+            unsigned_rewrap_request["policy"] = policy_base64
+
+        return json.dumps(unsigned_rewrap_request)
+
+    def _create_signed_request_jwt(
+        self, policy_json, client_public_key, key_access, session_key_type=None
+    ):
+        """
+        Create a signed JWT for the rewrap request.
+        The JWT is signed with the DPoP private key.
+
+        Args:
+            policy_json: Policy JSON string
+            client_public_key: Client public key PEM string
+            key_access: KeyAccess object
+            session_key_type: Optional session key type (RSA_KEY_TYPE or EC_KEY_TYPE)
+        """
+        # Build key access dictionary handling both old and new field names
+        key_access_dict = self._build_key_access_dict(key_access)
+
+        # Get current timestamp
+        now = int(time.time())
+
+        # Convert session_key_type to algorithm string for KAS
+        algorithm = self._get_algorithm_from_session_key_type(session_key_type)
+
+        # Check if header is present (for NanoTDF)
+        has_header = getattr(key_access, "header", None) is not None
+
+        # Build the unsigned rewrap request
+        request_body_json = self._build_rewrap_request(
+            policy_json, client_public_key, key_access_dict, algorithm, has_header
+        )
 
         # JWT payload with requestBody field containing the JSON string
         payload = {
@@ -264,9 +351,7 @@ class KASClient:
         }
 
         # Sign the JWT with the DPoP private key (RS256)
-        signed_jwt = jwt.encode(payload, self._dpop_private_key_pem, algorithm="RS256")
-
-        return signed_jwt
+        return jwt.encode(payload, self._dpop_private_key_pem, algorithm="RS256")
 
     def _create_connect_rpc_signed_token(self, key_access, policy_json):
         """
@@ -506,11 +591,13 @@ class KASClient:
                 self.decryptor = AsymDecryption(private_key_pem)
                 self.client_public_key = CryptoUtils.get_rsa_public_key_pem(public_key)
         else:
-            # For EC keys, generate fresh key pair each time
-            # TODO: Implement proper EC key handling
-            private_key, public_key = CryptoUtils.generate_rsa_keypair()
-            private_key_pem = CryptoUtils.get_rsa_private_key_pem(private_key)
-            self.client_public_key = CryptoUtils.get_rsa_public_key_pem(public_key)
+            # For EC keys (NanoTDF/ECDH), still need RSA keypair for encrypting the rewrap response
+            # KAS uses client public key to encrypt the symmetric key it derived via ECDH
+            if self.decryptor is None:
+                private_key, public_key = CryptoUtils.generate_rsa_keypair()
+                private_key_pem = CryptoUtils.get_rsa_private_key_pem(private_key)
+                self.decryptor = AsymDecryption(private_key_pem)
+                self.client_public_key = CryptoUtils.get_rsa_public_key_pem(public_key)
 
     def _parse_and_decrypt_response(self, response):
         """
@@ -559,14 +646,22 @@ class KASClient:
             policy_json,
             self.client_public_key,
             key_access,  # Use ephemeral key, not DPoP key
+            session_key_type,  # Pass algorithm type for NanoTDF
         )
 
         # Call Connect RPC unwrap
-        return self._unwrap_with_connect_rpc(key_access, signed_token)
+        return self._unwrap_with_connect_rpc(key_access, signed_token, session_key_type)
 
-    def _unwrap_with_connect_rpc(self, key_access, signed_token) -> bytes:
+    def _unwrap_with_connect_rpc(
+        self, key_access, signed_token, session_key_type=None
+    ) -> bytes:
         """
         Connect RPC method for unwrapping keys.
+
+        Args:
+            key_access: KeyAccess object
+            signed_token: Signed JWT token
+            session_key_type: Optional session key type (RSA_KEY_TYPE or EC_KEY_TYPE)
         """
 
         # Get access token for authentication if token source is available
@@ -586,12 +681,23 @@ class KASClient:
                 normalized_kas_url, key_access, signed_token, access_token
             )
 
-            # Decrypt the wrapped key
+            # Both ECDH and RSA modes return an RSA-encrypted key
+            # For ECDH (EC_KEY_TYPE): KAS performs ECDH to derive symmetric key, then RSA-encrypts it with client public key
+            # For RSA (RSA_KEY_TYPE): KAS RSA-decrypts wrapped key, then RSA-encrypts it with client public key
+            # In both cases, we need to RSA-decrypt using our client private key
             if not self.decryptor:
                 raise SDKException("Decryptor not initialized")
 
             result = self.decryptor.decrypt(entity_wrapped_key)
-            logging.info("Connect RPC rewrap succeeded")
+
+            if session_key_type == EC_KEY_TYPE:
+                logging.info(
+                    f"Connect RPC rewrap succeeded (ECDH - KAS derived key via ECDH, length={len(result)} bytes)"
+                )
+            else:
+                logging.info(
+                    f"Connect RPC rewrap succeeded (RSA - length={len(result)} bytes)"
+                )
             return result
 
         except Exception as e:

@@ -2,7 +2,7 @@ import io
 
 import pytest
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import ec
 
 from otdf_python.config import KASInfo, NanoTDFConfig
 from otdf_python.nanotdf import NanoTDF
@@ -10,8 +10,8 @@ from otdf_python.nanotdf import NanoTDF
 
 @pytest.mark.integration
 def test_nanotdf_kas_roundtrip():
-    # Generate RSA keypair
-    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    # Generate EC keypair (NanoTDF uses ECDH, not RSA)
+    private_key = ec.generate_private_key(ec.SECP256R1())
     private_pem = private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.PKCS8,

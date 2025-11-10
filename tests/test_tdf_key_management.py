@@ -120,7 +120,7 @@ class TestTDFKeyManagement(unittest.TestCase):
         """Test loading a TDF with a provided KAS private key (testing mode)."""
         # Patch AsymDecryption
         with patch(
-            "otdf_python.asym_decryption.AsymDecryption"
+            "otdf_python.asym_crypto.AsymDecryption"
         ) as mock_asym_decryption_class:
             mock_asym_decryption = Mock()
             mock_asym_decryption.decrypt.return_value = b"x" * 32  # 32-byte key

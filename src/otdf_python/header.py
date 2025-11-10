@@ -6,11 +6,15 @@ from otdf_python.symmetric_and_payload_config import SymmetricAndPayloadConfig
 
 
 class Header:
+    # Size of GMAC (Galois Message Authentication Code) for policy binding
+    GMAC_SIZE = 8
+
     def __init__(self):
         self.kas_locator: ResourceLocator | None = None
         self.ecc_mode: ECCMode | None = None
         self.payload_config: SymmetricAndPayloadConfig | None = None
         self.policy_info: PolicyInfo | None = None
+        self.policy_binding: bytes | None = None
         self.ephemeral_key: bytes | None = None
 
     @classmethod
@@ -31,6 +35,14 @@ class Header:
             buffer[offset:], ecc_mode
         )
         offset += policy_size
+
+        # Read policy binding (GMAC - 8 bytes fixed size)
+        # Note: ECDSA binding not yet supported in this implementation
+        policy_binding = buffer[offset : offset + cls.GMAC_SIZE]
+        if len(policy_binding) != cls.GMAC_SIZE:
+            raise ValueError("Failed to read policy binding - invalid buffer size.")
+        offset += cls.GMAC_SIZE
+
         compressed_pubkey_size = ECCMode.get_ec_compressed_pubkey_size(
             ecc_mode.get_elliptic_curve_type()
         )
@@ -42,6 +54,7 @@ class Header:
         obj.ecc_mode = ecc_mode
         obj.payload_config = payload_config
         obj.policy_info = policy_info
+        obj.policy_binding = policy_binding
         obj.ephemeral_key = ephemeral_key
         return obj
 
@@ -63,6 +76,8 @@ class Header:
             buffer[offset:], ecc_mode
         )
         offset += policy_size
+        # Policy binding (GMAC - 8 bytes)
+        offset += Header.GMAC_SIZE
         # Ephemeral key (size depends on curve)
         compressed_pubkey_size = ECCMode.get_ec_compressed_pubkey_size(
             ecc_mode.get_elliptic_curve_type()
@@ -94,6 +109,16 @@ class Header:
     def get_policy_info(self) -> PolicyInfo | None:
         return self.policy_info
 
+    def set_policy_binding(self, policy_binding: bytes):
+        if len(policy_binding) != self.GMAC_SIZE:
+            raise ValueError(
+                f"Policy binding must be exactly {self.GMAC_SIZE} bytes (GMAC), got {len(policy_binding)}"
+            )
+        self.policy_binding = policy_binding
+
+    def get_policy_binding(self) -> bytes | None:
+        return self.policy_binding
+
     def set_ephemeral_key(self, ephemeral_key: bytes):
         if self.ecc_mode is not None:
             expected_size = ECCMode.get_ec_compressed_pubkey_size(
@@ -112,6 +137,7 @@ class Header:
         total += 1  # ECC mode
         total += 1  # payload config
         total += self.policy_info.get_total_size() if self.policy_info else 0
+        total += self.GMAC_SIZE  # policy binding (GMAC)
         total += len(self.ephemeral_key) if self.ephemeral_key else 0
         return total
 
@@ -132,6 +158,18 @@ class Header:
         # PolicyInfo
         n = self.policy_info.write_into_buffer(buffer, offset)
         offset += n
+        # Policy binding (GMAC - 8 bytes)
+        if self.policy_binding:
+            if len(self.policy_binding) != self.GMAC_SIZE:
+                raise ValueError(
+                    f"Policy binding must be exactly {self.GMAC_SIZE} bytes (GMAC), got {len(self.policy_binding)}"
+                )
+            buffer[offset : offset + self.GMAC_SIZE] = self.policy_binding
+            offset += self.GMAC_SIZE
+        else:
+            # Write zeros if no binding provided
+            buffer[offset : offset + self.GMAC_SIZE] = b"\x00" * self.GMAC_SIZE
+            offset += self.GMAC_SIZE
         # Ephemeral key
         buffer[offset : offset + len(self.ephemeral_key)] = self.ephemeral_key
         offset += len(self.ephemeral_key)

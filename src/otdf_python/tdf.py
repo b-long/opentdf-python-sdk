@@ -87,7 +87,7 @@ class TDF:
         import hashlib
         import hmac
 
-        from otdf_python.asym_crypto import AsymEncryption
+        from .asym_crypto import AsymEncryption
 
         key_access_objs = []
         for kas in kas_infos:
@@ -188,7 +188,7 @@ class TDF:
         """
         Unwraps the key locally using a provided private key (used for testing)
         """
-        from otdf_python.asym_decryption import AsymDecryption
+        from .asym_crypto import AsymDecryption
 
         key = None
         for ka in key_access_objs:
@@ -430,7 +430,8 @@ class TDF:
         import zipfile
 
         from otdf_python.aesgcm import AesGcm
-        from otdf_python.asym_crypto import AsymDecryption
+
+        from .asym_crypto import AsymDecryption
 
         with zipfile.ZipFile(io.BytesIO(tdf_bytes), "r") as z:
             manifest_json = z.read("0.manifest.json").decode()
