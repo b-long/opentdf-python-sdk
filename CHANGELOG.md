@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.5](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.3.4...otdf-python-v0.3.5) (2025-11-10)
+
+
+### Bug Fixes
+
+* NanoTDF support ([#114](https://github.com/b-long/opentdf-python-sdk/issues/114)) ([8f09297](https://github.com/b-long/opentdf-python-sdk/commit/8f092976f6473db7738a86d7ec30dc9ebbcb6a3a))
+
 ## [0.3.4](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.3.3...otdf-python-v0.3.4) (2025-10-04)
 
 ### Chores
