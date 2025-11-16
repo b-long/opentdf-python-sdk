@@ -11,7 +11,7 @@
 
 ### Chores
 
-* chore: remove placeholders  ([#110](https://github.com/b-long/opentdf-python-sdk/issues/110)) 
+* chore: remove placeholders  ([#110](https://github.com/b-long/opentdf-python-sdk/issues/110))
 
 
 ### Bug Fixes
