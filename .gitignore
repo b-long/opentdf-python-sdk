@@ -4,6 +4,10 @@
 platform/
 tests/integration/test_data/v4.2.2/*tdf
 tests/integration/test_data/v4.3.1/*tdf
+
+# For integration testing, etc.
+.vagrant/
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
