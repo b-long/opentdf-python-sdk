@@ -8,7 +8,7 @@ authors = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "connect-python[compiler]>=0.4.2",
+    "connect-python[compiler]>=0.4.2,<0.5",
     "protobuf>=6.31.1",
     "googleapis-common-protos>=1.66.0",
     # Legacy gRPC support (may be removed in future versions)
