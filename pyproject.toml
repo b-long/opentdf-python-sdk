@@ -7,9 +7,25 @@ authors = [
     { name = "b-long", email = "b-long@users.noreply.github.com" }
 ]
 requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+
 dependencies = [
     "cryptography>=45.0.4",
-    "connect-python[compiler]>=0.4.2",
+    "connect-python[compiler]>=0.4.2,<0.5",
     "httpx>=0.28.1",
     "protobuf>=6.31.1",
     "pyjwt>=2.10.1",
@@ -20,6 +36,11 @@ dependencies = [
     "grpcio-status>=1.74.0",
     "protoc-gen-openapiv2>=0.0.1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/b-long/opentdf-python-sdk"
+Repository = "https://github.com/b-long/opentdf-python-sdk"
+Issues = "https://github.com/b-long/opentdf-python-sdk/issues"
 
 [build-system]
 requires = ["hatchling"]
