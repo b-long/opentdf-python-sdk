@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.3.5...otdf-python-v0.4.0) (2025-11-20)
+
+
+### Features
+
+* add Python 3.14 support & fix pre-commit ([#117](https://github.com/b-long/opentdf-python-sdk/issues/117)) ([b89edfc](https://github.com/b-long/opentdf-python-sdk/commit/b89edfc70b13139691b7d2a11b256f59b457176d))
+
 ## [0.3.5](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.3.4...otdf-python-v0.3.5) (2025-11-10)
 
 
