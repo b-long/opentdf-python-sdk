@@ -20,7 +20,7 @@ def check_for_otdfctl():
             capture_output=True,
             check=True,
         )
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    except (subprocess.CalledProcessError, FileNotFoundError) as err:
         raise Exception(
             "otdfctl command not found on system. Please install otdfctl to run this test."
-        )
+        ) from err

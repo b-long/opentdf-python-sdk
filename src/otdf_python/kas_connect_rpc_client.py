@@ -138,7 +138,7 @@ class KASConnectRPCClient:
                 f"Connect RPC public key request failed: {type(e).__name__}: {e}"
             )
             logging.error(f"Full traceback: {error_details}")
-            raise SDKException(f"Connect RPC public key request failed: {e}")
+            raise SDKException(f"Connect RPC public key request failed: {e}") from e
 
     def unwrap_key(
         self, normalized_kas_url, key_access, signed_token, access_token=None
@@ -210,4 +210,4 @@ class KASConnectRPCClient:
 
         except Exception as e:
             logging.error(f"Connect RPC rewrap failed: {e}")
-            raise SDKException(f"Connect RPC rewrap failed: {e}")
+            raise SDKException(f"Connect RPC rewrap failed: {e}") from e

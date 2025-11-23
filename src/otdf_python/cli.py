@@ -105,11 +105,11 @@ def load_client_credentials(creds_file_path: str) -> tuple[str, str]:
     except json.JSONDecodeError as e:
         raise CLIError(
             "CRITICAL", f"Invalid JSON in credentials file {creds_file_path}: {e}"
-        )
+        ) from e
     except Exception as e:
         raise CLIError(
             "CRITICAL", f"Error reading credentials file {creds_file_path}: {e}"
-        )
+        ) from e
 
 
 def build_sdk(args) -> SDK:

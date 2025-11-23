@@ -60,7 +60,7 @@ class AsymDecryption:
                         decoded, password=None, backend=default_backend()
                     )
             except Exception as e:
-                raise SDKException(f"Failed to load private key: {e}")
+                raise SDKException(f"Failed to load private key: {e}") from e
         else:
             self.private_key = None
 
@@ -89,7 +89,7 @@ class AsymDecryption:
                 ),
             )
         except Exception as e:
-            raise SDKException(f"Error performing decryption: {e}")
+            raise SDKException(f"Error performing decryption: {e}") from e
 
 
 class AsymEncryption:
@@ -141,7 +141,7 @@ class AsymEncryption:
                             decoded, backend=default_backend()
                         )
             except Exception as e:
-                raise SDKException(f"Failed to load public key: {e}")
+                raise SDKException(f"Failed to load public key: {e}") from e
         else:
             self.public_key = None
 
@@ -176,7 +176,7 @@ class AsymEncryption:
                 ),
             )
         except Exception as e:
-            raise SDKException(f"Error performing encryption: {e}")
+            raise SDKException(f"Error performing encryption: {e}") from e
 
     def public_key_in_pem_format(self) -> str:
         """
@@ -195,4 +195,4 @@ class AsymEncryption:
             )
             return pem.decode()
         except Exception as e:
-            raise SDKException(f"Error exporting public key to PEM: {e}")
+            raise SDKException(f"Error exporting public key to PEM: {e}") from e

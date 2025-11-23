@@ -78,7 +78,7 @@ class KASClient:
             # Parse the URL
             parsed = urlparse(url)
         except Exception as e:
-            raise SDKException(f"error trying to parse URL [{url}]", e)
+            raise SDKException(f"error trying to parse URL [{url}]: {e}") from e
 
         # Check if we have a host or if this is likely a hostname:port combination
         if parsed.hostname is None:
@@ -100,10 +100,10 @@ class KASClient:
                 try:
                     port = int(port_str)
                     return f"{scheme}://{host}:{port}"
-                except ValueError:
+                except ValueError as err:
                     raise SDKException(
                         f"error trying to create URL for host and port [{url}]"
-                    )
+                    ) from err
             else:
                 # Hostname with or without path, add default port
                 if "/" in url:
@@ -116,7 +116,7 @@ class KASClient:
         except Exception as e:
             raise SDKException(
                 f"error trying to create URL for host and port [{url}]", e
-            )
+            ) from e
 
     def _handle_existing_scheme(self, parsed) -> str:
         """Handle URLs with existing scheme by normalizing protocol and port."""
@@ -138,7 +138,7 @@ class KASClient:
             logging.debug(f"normalized url [{parsed.geturl()}] to [{normalized_url}]")
             return normalized_url
         except Exception as e:
-            raise SDKException("error creating KAS address", e)
+            raise SDKException(f"error creating KAS address: {e}") from e
 
     def _get_wrapped_key_base64(self, key_access):
         """
@@ -483,7 +483,7 @@ class KASClient:
                 f"Connect RPC public key request failed: {type(e).__name__}: {e}"
             )
             logging.error(f"Full traceback: {error_details}")
-            raise SDKException(f"Connect RPC public key request failed: {e}")
+            raise SDKException(f"Connect RPC public key request failed: {e}") from e
 
     def _normalize_session_key_type(self, session_key_type):
         """
@@ -608,7 +608,7 @@ class KASClient:
         except Exception as e:
             logging.error(f"Failed to parse JSON response: {e}")
             logging.error(f"Raw response content: {response.content}")
-            raise SDKException(f"Invalid JSON response from KAS: {e}")
+            raise SDKException(f"Invalid JSON response from KAS: {e}") from e
 
         entity_wrapped_key = response_data.get("entityWrappedKey")
         if not entity_wrapped_key:
@@ -702,7 +702,7 @@ class KASClient:
 
         except Exception as e:
             logging.error(f"Connect RPC rewrap failed: {e}")
-            raise SDKException(f"Connect RPC rewrap failed: {e}")
+            raise SDKException(f"Connect RPC rewrap failed: {e}") from e
 
     def get_key_cache(self) -> KASKeyCache:
         """Returns the KAS key cache used for storing and retrieving encryption keys."""

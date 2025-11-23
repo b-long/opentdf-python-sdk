@@ -35,7 +35,7 @@ def decrypt(input_path: Path, output_path: Path, sdk: SDK):
             logger.error(f"Decryption failed: {e}")
             # Clean up the output file if there was an error
             output_path.unlink(missing_ok=True)
-            raise SDKException("Decryption failed")
+            raise SDKException("Decryption failed") from e
 
 
 @pytest.mark.integration

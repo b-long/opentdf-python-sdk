@@ -17,7 +17,7 @@ class ZipReader:
             try:
                 return self._zipfile.read(self._zipinfo)
             except Exception as e:
-                raise InvalidZipException(f"Error reading entry data: {e}")
+                raise InvalidZipException(f"Error reading entry data: {e}") from e
 
     def __init__(self, in_stream: io.BytesIO | bytes | None = None):
         try:
@@ -29,7 +29,7 @@ class ZipReader:
                 self.Entry(self.zipfile, zi) for zi in self.zipfile.infolist()
             ]
         except zipfile.BadZipFile as e:
-            raise InvalidZipException(f"Invalid ZIP file: {e}")
+            raise InvalidZipException(f"Invalid ZIP file: {e}") from e
 
     def get_entries(self) -> list:
         return self.entries
