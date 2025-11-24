@@ -34,8 +34,8 @@ def normalize_address(url_string: str, use_plaintext: bool) -> str:
         port_str = host_port_pattern.group(2)
         try:
             port = int(port_str)
-        except ValueError:
-            raise SDKException(f"Invalid port in URL [{url_string}]")
+        except ValueError as err:
+            raise SDKException(f"Invalid port in URL [{url_string}]") from err
 
         normalized_url = f"{scheme}://{host}:{port}"
         logger.debug(f"normalized url [{url_string}] to [{normalized_url}]")
@@ -66,8 +66,8 @@ def normalize_address(url_string: str, use_plaintext: bool) -> str:
             _, port_str = parsed_url.netloc.split(":", 1)
             try:
                 port = int(port_str)
-            except ValueError:
-                raise SDKException(f"Invalid port in URL [{url_string}]")
+            except ValueError as err:
+                raise SDKException(f"Invalid port in URL [{url_string}]") from err
 
         # If no port was found or extracted, use the default
         if port is None:
@@ -81,4 +81,4 @@ def normalize_address(url_string: str, use_plaintext: bool) -> str:
     except Exception as e:
         if isinstance(e, SDKException):
             raise e
-        raise SDKException(f"Error normalizing URL [{url_string}]", e)
+        raise SDKException(f"Error normalizing URL [{url_string}]: {e}") from e

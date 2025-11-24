@@ -74,7 +74,7 @@ class TDF:
                     except Exception as e:
                         raise ValueError(
                             f"Failed to fetch public key for KAS {kas.url}: {e}"
-                        )
+                        ) from e
                 else:
                     raise ValueError(
                         "Each KAS info must have a public_key, or SDK services must be available to fetch it"

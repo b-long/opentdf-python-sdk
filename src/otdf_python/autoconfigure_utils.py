@@ -42,10 +42,10 @@ class AttributeNameFQN:
             raise AutoConfigureException("invalid type: attribute regex fail")
         try:
             urllib.parse.unquote(matcher.group(2))
-        except Exception:
+        except Exception as err:
             raise AutoConfigureException(
                 f"invalid type: error in attribute name [{matcher.group(2)}]"
-            )
+            ) from err
         self.url = url
         self.key = url.lower()
 
@@ -76,8 +76,8 @@ class AttributeNameFQN:
             raise AutoConfigureException("invalid attribute")
         try:
             return urllib.parse.unquote(matcher.group(1))
-        except Exception:
-            raise AutoConfigureException("invalid type")
+        except Exception as err:
+            raise AutoConfigureException("invalid type") from err
 
 
 class AttributeValueFQN:
@@ -96,8 +96,10 @@ class AttributeValueFQN:
         try:
             urllib.parse.unquote(matcher.group(2))
             urllib.parse.unquote(matcher.group(3))
-        except Exception:
-            raise AutoConfigureException("invalid type: error in attribute or value")
+        except Exception as err:
+            raise AutoConfigureException(
+                "invalid type: error in attribute or value"
+            ) from err
         self.url = url
         self.key = url.lower()
 

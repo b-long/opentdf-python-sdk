@@ -260,7 +260,7 @@ class NanoTDF:
             else:
                 raise SDKException("Invalid PEM format - no BEGIN header found")
         except Exception as e:
-            raise SDKException(f"Failed to detect key type: {e}")
+            raise SDKException(f"Failed to detect key type: {e}") from e
 
     def _derive_key_with_ecdh(  # noqa: C901
         self, config: NanoTDFConfig
@@ -582,7 +582,7 @@ class NanoTDF:
             header_len = Header.peek_length(nano_tdf_data)
             header_obj = Header.from_bytes(nano_tdf_data[:header_len])
         except Exception as e:
-            raise InvalidNanoTDFConfig(f"Failed to parse NanoTDF header: {e}")
+            raise InvalidNanoTDFConfig(f"Failed to parse NanoTDF header: {e}") from e
 
         # Read payload section per NanoTDF spec:
         # [3 bytes: length] [3 bytes: IV] [variable: ciphertext] [tag]

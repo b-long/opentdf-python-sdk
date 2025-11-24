@@ -86,7 +86,7 @@ lint.select = [
     # pyflakes checks.
     "F",
     # flake8-bugbear checks.
-    "B0",
+    "B",
     # flake8-comprehensions checks.
     "C4",
     # McCabe complexity

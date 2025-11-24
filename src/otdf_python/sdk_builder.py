@@ -283,7 +283,7 @@ class SDKBuilder:
                         pass
                 raise AutoConfigureException(
                     f"Error during token endpoint discovery: {e!s}"
-                )
+                ) from e
 
         # Fall back to explicit issuer endpoint
         if self.issuer_endpoint:
@@ -341,7 +341,9 @@ class SDKBuilder:
                 )
 
         except Exception as e:
-            raise AutoConfigureException(f"Error during token acquisition: {e!s}")
+            raise AutoConfigureException(
+                f"Error during token acquisition: {e!s}"
+            ) from e
 
     def _create_services(self) -> SDK.Services:
         """

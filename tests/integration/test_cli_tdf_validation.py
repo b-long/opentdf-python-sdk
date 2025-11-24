@@ -165,7 +165,7 @@ def _validate_tdf_zip_structure(tdf_path: Path) -> None:
                 assert "uuid" in policy_obj, "policy missing 'uuid' field"
                 assert "body" in policy_obj, "policy missing 'body' field"
             except Exception as e:
-                raise AssertionError(f"Failed to decode base64 policy: {e}")
+                raise AssertionError(f"Failed to decode base64 policy: {e}") from e
 
             # Validate method structure
             method = enc_info["method"]
@@ -216,9 +216,9 @@ def _validate_tdf_zip_structure(tdf_path: Path) -> None:
             )
 
         except json.JSONDecodeError as e:
-            raise AssertionError(f"Manifest is not valid JSON: {e}")
+            raise AssertionError(f"Manifest is not valid JSON: {e}") from e
         except KeyError as e:
-            raise AssertionError(f"Manifest missing required field: {e}")
+            raise AssertionError(f"Manifest missing required field: {e}") from e
 
         # Check for payload file (usually 0.payload)
         payload_files = [f for f in file_list if f.endswith(".payload")]

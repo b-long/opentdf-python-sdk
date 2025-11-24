@@ -156,7 +156,7 @@ def decompress_public_key(
 
         return ec.EllipticCurvePublicKey.from_encoded_point(curve, compressed_key)
     except (ValueError, TypeError) as e:
-        raise InvalidKeyError(f"Failed to decompress public key: {e}")
+        raise InvalidKeyError(f"Failed to decompress public key: {e}") from e
 
 
 def derive_shared_secret(
@@ -179,7 +179,7 @@ def derive_shared_secret(
         shared_secret = private_key.exchange(ec.ECDH(), public_key)
         return shared_secret
     except Exception as e:
-        raise ECDHError(f"Failed to derive shared secret: {e}")
+        raise ECDHError(f"Failed to derive shared secret: {e}") from e
 
 
 def derive_key_from_shared_secret(
@@ -216,7 +216,7 @@ def derive_key_from_shared_secret(
         )
         return hkdf.derive(shared_secret)
     except Exception as e:
-        raise ECDHError(f"Failed to derive key from shared secret: {e}")
+        raise ECDHError(f"Failed to derive key from shared secret: {e}") from e
 
 
 def encrypt_key_with_ecdh(
@@ -251,7 +251,7 @@ def encrypt_key_with_ecdh(
         if not isinstance(recipient_public_key, ec.EllipticCurvePublicKey):
             raise InvalidKeyError("Recipient's public key is not an EC key")
     except Exception as e:
-        raise InvalidKeyError(f"Failed to load recipient's public key: {e}")
+        raise InvalidKeyError(f"Failed to load recipient's public key: {e}") from e
 
     # Generate ephemeral keypair
     ephemeral_private_key, ephemeral_public_key = generate_ephemeral_keypair(curve_name)
@@ -301,7 +301,7 @@ def decrypt_key_with_ecdh(
         if not isinstance(recipient_private_key, ec.EllipticCurvePrivateKey):
             raise InvalidKeyError("Recipient's private key is not an EC key")
     except Exception as e:
-        raise InvalidKeyError(f"Failed to load recipient's private key: {e}")
+        raise InvalidKeyError(f"Failed to load recipient's private key: {e}") from e
 
     # Decompress ephemeral public key
     ephemeral_public_key = decompress_public_key(
