@@ -1,6 +1,4 @@
-"""
-Tests for the integration between SDK and TDF classes.
-"""
+"""Tests for the integration between SDK and TDF classes."""
 
 import io
 

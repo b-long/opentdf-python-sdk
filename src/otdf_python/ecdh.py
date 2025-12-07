@@ -1,5 +1,4 @@
-"""
-ECDH (Elliptic Curve Diffie-Hellman) key exchange for NanoTDF.
+"""ECDH (Elliptic Curve Diffie-Hellman) key exchange for NanoTDF.
 
 This module implements the ECDH key exchange protocol with HKDF key derivation
 as specified in the NanoTDF spec. It supports the following curves:
@@ -52,8 +51,7 @@ class InvalidKeyError(ECDHError):
 
 
 def get_curve(curve_name: str) -> ec.EllipticCurve:
-    """
-    Get the cryptography curve object for a given curve name.
+    """Get the cryptography curve object for a given curve name.
 
     Args:
         curve_name: Name of the curve (e.g., "secp256r1")
@@ -63,6 +61,7 @@ def get_curve(curve_name: str) -> ec.EllipticCurve:
 
     Raises:
         UnsupportedCurveError: If the curve is not supported
+
     """
     try:
         # Delegate to ECCConstants for the authoritative mapping
@@ -72,8 +71,7 @@ def get_curve(curve_name: str) -> ec.EllipticCurve:
 
 
 def get_compressed_key_size(curve_name: str) -> int:
-    """
-    Get the size of a compressed public key for a given curve.
+    """Get the size of a compressed public key for a given curve.
 
     Args:
         curve_name: Name of the curve (e.g., "secp256r1")
@@ -83,6 +81,7 @@ def get_compressed_key_size(curve_name: str) -> int:
 
     Raises:
         UnsupportedCurveError: If the curve is not supported
+
     """
     try:
         # Delegate to ECCConstants for the authoritative mapping
@@ -94,8 +93,7 @@ def get_compressed_key_size(curve_name: str) -> int:
 def generate_ephemeral_keypair(
     curve_name: str,
 ) -> tuple[ec.EllipticCurvePrivateKey, ec.EllipticCurvePublicKey]:
-    """
-    Generate an ephemeral keypair for ECDH.
+    """Generate an ephemeral keypair for ECDH.
 
     Args:
         curve_name: Name of the curve (e.g., "secp256r1")
@@ -105,6 +103,7 @@ def generate_ephemeral_keypair(
 
     Raises:
         UnsupportedCurveError: If the curve is not supported
+
     """
     curve = get_curve(curve_name)
     private_key = ec.generate_private_key(curve, default_backend())
@@ -113,14 +112,14 @@ def generate_ephemeral_keypair(
 
 
 def compress_public_key(public_key: ec.EllipticCurvePublicKey) -> bytes:
-    """
-    Compress an EC public key to compressed point format.
+    """Compress an EC public key to compressed point format.
 
     Args:
         public_key: The EC public key to compress
 
     Returns:
         bytes: Compressed public key (33-67 bytes depending on curve)
+
     """
     return public_key.public_bytes(
         encoding=Encoding.X962, format=PublicFormat.CompressedPoint
@@ -130,8 +129,7 @@ def compress_public_key(public_key: ec.EllipticCurvePublicKey) -> bytes:
 def decompress_public_key(
     compressed_key: bytes, curve_name: str
 ) -> ec.EllipticCurvePublicKey:
-    """
-    Decompress a public key from compressed point format.
+    """Decompress a public key from compressed point format.
 
     Args:
         compressed_key: The compressed public key bytes
@@ -143,6 +141,7 @@ def decompress_public_key(
     Raises:
         InvalidKeyError: If the key cannot be decompressed
         UnsupportedCurveError: If the curve is not supported
+
     """
     try:
         curve = get_curve(curve_name)
@@ -162,8 +161,7 @@ def decompress_public_key(
 def derive_shared_secret(
     private_key: ec.EllipticCurvePrivateKey, public_key: ec.EllipticCurvePublicKey
 ) -> bytes:
-    """
-    Derive a shared secret using ECDH.
+    """Derive a shared secret using ECDH.
 
     Args:
         private_key: The private key (can be ephemeral or recipient's key)
@@ -174,6 +172,7 @@ def derive_shared_secret(
 
     Raises:
         ECDHError: If ECDH fails
+
     """
     try:
         shared_secret = private_key.exchange(ec.ECDH(), public_key)
@@ -188,8 +187,7 @@ def derive_key_from_shared_secret(
     salt: bytes | None = None,
     info: bytes = b"",
 ) -> bytes:
-    """
-    Derive a symmetric encryption key from the ECDH shared secret using HKDF.
+    """Derive a symmetric encryption key from the ECDH shared secret using HKDF.
 
     Args:
         shared_secret: The raw ECDH shared secret
@@ -202,6 +200,7 @@ def derive_key_from_shared_secret(
 
     Raises:
         ECDHError: If key derivation fails
+
     """
     if salt is None:
         salt = NANOTDF_HKDF_SALT
@@ -222,8 +221,7 @@ def derive_key_from_shared_secret(
 def encrypt_key_with_ecdh(
     recipient_public_key_pem: str, curve_name: str = "secp256r1"
 ) -> tuple[bytes, bytes]:
-    """
-    High-level function: Generate ephemeral keypair and derive encryption key.
+    """High-level function: Generate ephemeral keypair and derive encryption key.
 
     This is used during NanoTDF encryption to derive the key that will be used
     to encrypt the payload. The ephemeral public key must be stored in the
@@ -242,6 +240,7 @@ def encrypt_key_with_ecdh(
         ECDHError: If key derivation fails
         InvalidKeyError: If recipient's public key is invalid
         UnsupportedCurveError: If the curve is not supported
+
     """
     # Load recipient's public key
     try:
@@ -273,8 +272,7 @@ def decrypt_key_with_ecdh(
     compressed_ephemeral_public_key: bytes,
     curve_name: str = "secp256r1",
 ) -> bytes:
-    """
-    High-level function: Derive decryption key from ephemeral public key and recipient's private key.
+    """High-level function: Derive decryption key from ephemeral public key and recipient's private key.
 
     This is used during NanoTDF decryption to derive the same key that was used
     to encrypt the payload. The ephemeral public key is extracted from the
@@ -292,6 +290,7 @@ def decrypt_key_with_ecdh(
         ECDHError: If key derivation fails
         InvalidKeyError: If keys are invalid
         UnsupportedCurveError: If the curve is not supported
+
     """
     # Load recipient's private key
     try:

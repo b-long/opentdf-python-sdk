@@ -1,3 +1,5 @@
+"""TDF reader and writer functionality for OpenTDF platform."""
+
 import base64
 import hashlib
 import hmac
@@ -31,17 +33,23 @@ from otdf_python.tdf_writer import TDFWriter
 
 @dataclass
 class TDFReader:
+    """Container for TDF payload and manifest after reading."""
+
     payload: bytes
     manifest: Manifest
 
 
 @dataclass
 class TDFReaderConfig:
+    """Configuration for TDF reader operations."""
+
     kas_private_key: str | None = None
     attributes: list[str] | None = None
 
 
 class TDF:
+    """TDF reader and writer for handling TDF encryption and decryption."""
+
     MAX_TDF_INPUT_SIZE = 68719476736
     GCM_KEY_SIZE = 32
     GCM_IV_SIZE = 12
@@ -53,6 +61,13 @@ class TDF:
     GLOBAL_KEY_SALT = b"TDF-Session-Key"
 
     def __init__(self, services=None, maximum_size: int | None = None):
+        """Initialize TDF reader/writer.
+
+        Args:
+            services: SDK services for KAS operations
+            maximum_size: Maximum size allowed for TDF operations
+
+        """
         self.services = services
         self.maximum_size = maximum_size or self.MAX_TDF_INPUT_SIZE
 
@@ -162,7 +177,7 @@ class TDF:
             return _json.dumps(policy, default=self._serialize_policy_object)
 
     def _serialize_policy_object(self, obj):
-        """Custom TDF serializer to convert to compatible JSON format."""
+        """Serialize policy object to compatible JSON format."""
         from otdf_python.policy_object import AttributeObject, PolicyBody
 
         if isinstance(obj, PolicyBody):
@@ -185,9 +200,7 @@ class TDF:
             return obj.__dict__
 
     def _unwrap_key(self, key_access_objs, private_key_pem):
-        """
-        Unwraps the key locally using a provided private key (used for testing)
-        """
+        """Unwrap the key locally using provided private key (used for testing)."""
         from .asym_crypto import AsymDecryption
 
         key = None
@@ -204,9 +217,7 @@ class TDF:
         return key
 
     def _unwrap_key_with_kas(self, key_access_objs, policy_b64) -> bytes:
-        """
-        Unwraps the key using the KAS service (production method)
-        """
+        """Unwrap the key using the KAS service (production method)."""
         # Get KAS client from services
         if not self.services:
             raise ValueError("SDK services required for KAS operations")
@@ -281,6 +292,17 @@ class TDF:
         config: TDFConfig,
         output_stream: io.BytesIO | None = None,
     ):
+        """Create a TDF with the provided payload and configuration.
+
+        Args:
+            payload: The payload data as bytes or BinaryIO
+            config: TDFConfig for encryption settings
+            output_stream: Optional output stream, creates new BytesIO if not provided
+
+        Returns:
+            Tuple of (manifest, size, output_stream)
+
+        """
         if output_stream is None:
             output_stream = io.BytesIO()
         writer = TDFWriter(output_stream)
@@ -380,6 +402,16 @@ class TDF:
     def load_tdf(
         self, tdf_data: bytes | io.BytesIO, config: TDFReaderConfig
     ) -> TDFReader:
+        """Load and decrypt a TDF from the provided data.
+
+        Args:
+            tdf_data: The TDF data as bytes or BytesIO
+            config: TDFReaderConfig with optional private key for local unwrapping
+
+        Returns:
+            TDFReader containing payload and manifest
+
+        """
         # Extract manifest, unwrap payload key using KAS client
         # Handle both bytes and BinaryIO input
         tdf_bytes_io = io.BytesIO(tdf_data) if isinstance(tdf_data, bytes) else tdf_data
@@ -423,8 +455,13 @@ class TDF:
     def read_payload(
         self, tdf_bytes: bytes, config: dict, output_stream: BinaryIO
     ) -> None:
-        """
-        Reads and verifies TDF segments, decrypts if needed, and writes the payload to output_stream.
+        """Read and verify TDF segments, decrypt if needed, and write the payload.
+
+        Args:
+            tdf_bytes: The TDF data as bytes
+            config: Configuration dictionary for reading
+            output_stream: The output stream to write the payload to
+
         """
         import base64
         import zipfile

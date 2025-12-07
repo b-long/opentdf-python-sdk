@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-OpenTDF Python CLI
+"""OpenTDF Python CLI.
 
 A command-line interface for encrypting and decrypting files using OpenTDF.
 Provides encrypt, decrypt, and inspect commands similar to the otdfctl CLI.
@@ -36,6 +35,7 @@ class CLIError(Exception):
     """Custom exception for CLI errors."""
 
     def __init__(self, level: str, message: str, cause: Exception | None = None):
+        """Initialize CLI error."""
         self.level = level
         self.message = message
         self.cause = cause
@@ -525,7 +525,7 @@ Where creds.json contains:
 
 
 def main():
-    """Main CLI entry point."""
+    """Execute the CLI entry point."""
     parser = create_parser()
     args = parser.parse_args()
 

@@ -1,10 +1,16 @@
+"""Symmetric encryption and payload configuration."""
+
+
 class SymmetricAndPayloadConfig:
+    """Symmetric and payload configuration."""
+
     def __init__(
         self,
         cipher_type: int = 0,
         signature_ecc_mode: int = 0,
         has_signature: bool = True,
     ):
+        """Initialize symmetric and payload configuration."""
         self.cipher_type = cipher_type
         self.signature_ecc_mode = signature_ecc_mode
         self.has_signature = has_signature

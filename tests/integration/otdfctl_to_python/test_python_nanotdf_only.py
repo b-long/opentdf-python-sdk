@@ -1,5 +1,5 @@
-"""
-Simple NanoTDF integration test focusing on Python CLI only.
+"""Simple NanoTDF integration test focusing on Python CLI only.
+
 This tests the Python implementation without otdfctl dependency.
 """
 
@@ -23,7 +23,6 @@ def test_python_nanotdf_roundtrip(
     collect_server_logs, temp_credentials_file, project_root
 ):
     """Test Python CLI NanoTDF encryption and decryption roundtrip."""
-
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
 

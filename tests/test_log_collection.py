@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Test script to verify server log collection functionality.
+"""Test script to verify server log collection functionality.
 
 This script tests the server log collection without running full pytest.
 """

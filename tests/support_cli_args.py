@@ -1,6 +1,4 @@
-"""
-Support functions for constructing CLI arguments for this project's (Python) CLI.
-"""
+"""Support functions for constructing CLI arguments for this project's (Python) CLI."""
 
 import json
 import logging
@@ -15,9 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def _get_cli_flags() -> list[str]:
-    """
-    Determine (Python) CLI flags based on platform URL
-    """
+    """Determine (Python) CLI flags based on platform URL"""
     platform_url = get_platform_url()
     cli_flags = []
 
@@ -32,13 +28,11 @@ def _get_cli_flags() -> list[str]:
 
 
 def run_cli_inspect(tdf_path: Path, creds_file: Path, cwd: Path) -> dict:
-    """
-    Helper function to run Python CLI inspect command and return parsed JSON result.
+    """Helper function to run Python CLI inspect command and return parsed JSON result.
 
     This demonstrates how the CLI inspect functionality could be tested
     with the new fixtures.
     """
-
     # Build CLI command
     cmd = [
         sys.executable,

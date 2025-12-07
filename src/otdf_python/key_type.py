@@ -1,7 +1,11 @@
+"""Key type constants for RSA and EC encryption."""
+
 from enum import Enum
 
 
 class KeyType(Enum):
+    """Key type enumeration for encryption algorithms."""
+
     RSA2048Key = "rsa:2048"
     EC256Key = "ec:secp256r1"
     EC384Key = "ec:secp384r1"

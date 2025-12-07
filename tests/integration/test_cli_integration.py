@@ -1,6 +1,4 @@
-"""
-Integration Test CLI functionality
-"""
+"""Integration Test CLI functionality"""
 
 import tempfile
 from pathlib import Path
@@ -24,10 +22,7 @@ from tests.support_otdfctl_args import (
 def test_cli_decrypt_otdfctl_tdf(
     collect_server_logs, temp_credentials_file, project_root
 ):
-    """
-    Test that the Python CLI can successfully decrypt TDF files created by otdfctl.
-    """
-
+    """Test that the Python CLI can successfully decrypt TDF files created by otdfctl."""
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
@@ -88,10 +83,7 @@ def test_cli_decrypt_otdfctl_tdf(
 def test_otdfctl_decrypt_comparison(
     collect_server_logs, temp_credentials_file, project_root
 ):
-    """
-    Test comparative decryption between otdfctl and Python CLI on the same TDF.
-    """
-
+    """Test comparative decryption between otdfctl and Python CLI on the same TDF."""
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
@@ -170,10 +162,7 @@ def test_otdfctl_decrypt_comparison(
 
 @pytest.mark.integration
 def test_otdfctl_encrypt_decrypt_roundtrip(collect_server_logs, temp_credentials_file):
-    """
-    Test complete encrypt-decrypt roundtrip using otdfctl to verify functionality.
-    """
-
+    """Test complete encrypt-decrypt roundtrip using otdfctl to verify functionality."""
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
@@ -250,7 +239,6 @@ def test_cli_encrypt_integration(
     collect_server_logs, temp_credentials_file, project_root
 ):
     """Integration test comparing our CLI with otdfctl"""
-
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)

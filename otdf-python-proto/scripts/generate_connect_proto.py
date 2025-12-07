@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Enhanced script to generate Python Connect RPC clients from .proto definitions.
+"""Enhanced script to generate Python Connect RPC clients from .proto definitions.
 
 This script:
 1. Downloads the latest proto files from OpenTDF platform
@@ -200,8 +199,7 @@ def create_init_files(generated_dir: Path) -> None:
 
 
 def _fix_ignore_if_default_value(proto_files_dir):
-    """
-    TODO: Fix buf validation: Updated the proto files to use the correct enum value:
+    """TODO: Fix buf validation: Updated the proto files to use the correct enum value:
 
     Changed IGNORE_IF_DEFAULT_VALUE → IGNORE_IF_ZERO_VALUE in:
         attributes.proto

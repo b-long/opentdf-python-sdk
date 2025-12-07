@@ -1,6 +1,4 @@
-"""
-Unit tests for ECDH key exchange module.
-"""
+"""Unit tests for ECDH key exchange module."""
 
 import pytest
 from cryptography.hazmat.primitives import serialization

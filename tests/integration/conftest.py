@@ -1,6 +1,4 @@
-"""
-Shared fixtures and utilities for integration tests.
-"""
+"""Shared fixtures and utilities for integration tests."""
 
 import json
 import logging

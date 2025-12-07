@@ -1,6 +1,4 @@
-"""
-TDFReader is responsible for reading and processing Trusted Data Format (TDF) files.
-"""
+"""TDFReader is responsible for reading and processing Trusted Data Format (TDF) files."""
 
 from .manifest import Manifest
 from .policy_object import PolicyObject
@@ -13,15 +11,13 @@ TDF_PAYLOAD_FILE_NAME = "0.payload"
 
 
 class TDFReader:
-    """
-    TDFReader is responsible for reading and processing Trusted Data Format (TDF) files.
+    """TDFReader is responsible for reading and processing Trusted Data Format (TDF) files.
     The class initializes with a TDF file channel, extracts the manifest and payload entries,
     and provides methods to retrieve the manifest content, read payload bytes, and read policy objects.
     """
 
     def __init__(self, tdf):
-        """
-        Initialize a TDFReader with a TDF file channel.
+        """Initialize a TDFReader with a TDF file channel.
 
         Args:
             tdf: A file-like object containing the TDF data
@@ -29,6 +25,7 @@ class TDFReader:
         Raises:
             SDKException: If there's an error reading the TDF
             ValueError: If the TDF doesn't contain a manifest or payload
+
         """
         try:
             self._zip_reader = ZipReader(tdf)
@@ -48,14 +45,14 @@ class TDFReader:
             raise SDKException("Error initializing TDFReader") from e
 
     def manifest(self) -> str:
-        """
-        Get the manifest content as a string.
+        """Get the manifest content as a string.
 
         Returns:
             The manifest content as a UTF-8 encoded string
 
         Raises:
             SDKException: If there's an error retrieving the manifest
+
         """
         try:
             manifest_data = self._zip_reader.read(self._manifest_name)
@@ -64,8 +61,7 @@ class TDFReader:
             raise SDKException("Error retrieving manifest from zip file") from e
 
     def read_payload_bytes(self, buf: bytearray) -> int:
-        """
-        Read bytes from the payload into a buffer.
+        """Read bytes from the payload into a buffer.
 
         Args:
             buf: A bytearray buffer to read into
@@ -75,6 +71,7 @@ class TDFReader:
 
         Raises:
             SDKException: If there's an error reading from the payload
+
         """
         try:
             # Read the entire payload
@@ -89,14 +86,14 @@ class TDFReader:
             raise SDKException("Error reading from payload in TDF") from e
 
     def read_policy_object(self) -> PolicyObject:
-        """
-        Read the policy object from the manifest.
+        """Read the policy object from the manifest.
 
         Returns:
             The PolicyObject
 
         Raises:
             SDKException: If there's an error reading the policy object
+
         """
         try:
             manifest_text = self.manifest()

@@ -1,6 +1,4 @@
-"""
-Support functions for constructing CLI arguments for otdfctl CLI.
-"""
+"""Support functions for constructing CLI arguments for otdfctl CLI."""
 
 import logging
 import subprocess
@@ -13,9 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_otdfctl_flags() -> list[str]:
-    """
-    Determine otdfctl flags based on platform URL
-    """
+    """Determine otdfctl flags based on platform URL"""
     platform_url = get_platform_url()
     otdfctl_flags = []
     if platform_url.startswith("http://"):
@@ -68,8 +64,8 @@ def _build_otdfctl_encrypt_command(
         attributes: Optional list of attributes to apply
         tdf_type: TDF type (e.g., "tdf3", "nano")
         target_mode: Target TDF spec version (e.g., "v4.2.2", "v4.3.1")
-    """
 
+    """
     cmd = get_otdfctl_base_command(creds_file, platform_url)
     cmd.append("encrypt")
     cmd.extend(["--mime-type", mime_type])
@@ -215,8 +211,7 @@ def otdfctl_generate_tdf_files_for_target_mode(
     test_data_dir: Path,
     sample_input_files: dict[str, Path],
 ) -> dict[str, Path]:
-    """
-    Factory function to generate TDF files for a specific target mode.
+    """Factory function to generate TDF files for a specific target mode.
 
     Args:
         target_mode: Target TDF spec version (e.g., "v4.2.2", "v4.3.1")
@@ -226,6 +221,7 @@ def otdfctl_generate_tdf_files_for_target_mode(
 
     Returns:
         Dictionary mapping file types to their TDF file paths
+
     """
     output_dir = test_data_dir / target_mode
     tdf_files = {}

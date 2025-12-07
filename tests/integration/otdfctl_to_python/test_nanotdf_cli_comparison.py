@@ -1,5 +1,4 @@
-"""
-Integration tests for NanoTDF using otdfctl and Python CLI interoperability.
+"""Integration tests for NanoTDF using otdfctl and Python CLI interoperability.
 
 These tests verify that:
 1. otdfctl can encrypt to NanoTDF and Python can decrypt
@@ -31,7 +30,6 @@ def test_otdfctl_encrypt_nano_python_decrypt(
     collect_server_logs, temp_credentials_file, project_root
 ):
     """Test otdfctl encrypt with --tdf-type nano and Python CLI decrypt."""
-
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
 
@@ -103,7 +101,6 @@ def test_python_encrypt_nano_otdfctl_decrypt(
     collect_server_logs, temp_credentials_file, project_root
 ):
     """Test Python CLI encrypt with --container-type nano and otdfctl decrypt."""
-
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
 
@@ -176,11 +173,10 @@ def test_python_encrypt_nano_otdfctl_decrypt(
 def test_nanotdf_roundtrip_comparison(
     collect_server_logs, temp_credentials_file, project_root
 ):
-    """
-    Compare NanoTDF files created by otdfctl and Python CLI.
+    """Compare NanoTDF files created by otdfctl and Python CLI.
+
     Tests both tools' roundtrip encryption/decryption.
     """
-
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
 
@@ -303,7 +299,6 @@ def test_nanotdf_with_attributes(
     collect_server_logs, temp_credentials_file, project_root
 ):
     """Test NanoTDF encryption/decryption with attributes."""
-
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
 

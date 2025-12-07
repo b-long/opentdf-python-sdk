@@ -1,9 +1,10 @@
+"""Elliptic Curve Cryptography mode enumeration."""
+
 from otdf_python.ecc_constants import ECCConstants
 
 
 class ECCMode:
-    """
-    ECC (Elliptic Curve Cryptography) mode configuration for NanoTDF.
+    """ECC (Elliptic Curve Cryptography) mode configuration for NanoTDF.
 
     This class encapsulates the curve type and policy binding mode (GMAC vs ECDSA)
     that are encoded in the NanoTDF header. It delegates to ECCConstants for
@@ -11,6 +12,7 @@ class ECCMode:
     """
 
     def __init__(self, curve_mode: int = 0, use_ecdsa_binding: bool = False):
+        """Initialize ECC mode."""
         self.curve_mode = curve_mode
         self.use_ecdsa_binding = use_ecdsa_binding
 
@@ -34,6 +36,7 @@ class ECCMode:
 
         Raises:
             ValueError: If curve_mode is not supported
+
         """
         # Delegate to ECCConstants for the authoritative mapping
         return ECCConstants.get_curve_name(self.curve_mode)
@@ -50,6 +53,7 @@ class ECCMode:
 
         Raises:
             ValueError: If curve_type is not supported
+
         """
         # Delegate to ECCConstants for the authoritative mapping
         return ECCConstants.get_compressed_key_size_by_type(curve_type)
@@ -71,6 +75,7 @@ class ECCMode:
 
         Raises:
             ValueError: If curve_str is not a supported curve or binding type
+
         """
         # Handle policy binding types (always use secp256r1 as default curve)
         if curve_str.lower() == "gmac":

@@ -1,6 +1,4 @@
-"""
-Address normalization utilities for OpenTDF.
-"""
+"""Address normalization utilities for OpenTDF."""
 
 import logging
 import re
@@ -12,8 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def normalize_address(url_string: str, use_plaintext: bool) -> str:
-    """
-    Normalize a URL address to ensure it has the correct scheme and port.
+    """Normalize a URL address to ensure it has the correct scheme and port.
 
     Args:
         url_string: The URL string to normalize
@@ -24,6 +21,7 @@ def normalize_address(url_string: str, use_plaintext: bool) -> str:
 
     Raises:
         SDKException: If there's an error parsing or creating the URL
+
     """
     scheme = "http" if use_plaintext else "https"
 

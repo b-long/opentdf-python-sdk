@@ -1,6 +1,4 @@
-"""
-Integration tests for KASClient.
-"""
+"""Integration tests for KASClient."""
 
 import pytest
 

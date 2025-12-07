@@ -1,3 +1,5 @@
+"""Cryptographic utility functions."""
+
 import hashlib
 import hmac
 
@@ -7,6 +9,8 @@ from cryptography.hazmat.primitives.asymmetric import ec, rsa
 
 
 class CryptoUtils:
+    """Cryptographic utility functions and helpers."""
+
     KEYPAIR_SIZE = 2048
 
     @staticmethod

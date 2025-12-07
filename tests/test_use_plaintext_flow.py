@@ -1,6 +1,4 @@
-"""
-Test to verify that the use_plaintext parameter flows correctly from SDKBuilder to KASClient.
-"""
+"""Test to verify that the use_plaintext parameter flows correctly from SDKBuilder to KASClient."""
 
 from unittest.mock import MagicMock, patch
 
@@ -9,7 +7,6 @@ from otdf_python.sdk_builder import SDKBuilder
 
 def test_use_plaintext_flows_through_sdk_builder_to_kas_client():
     """Test that use_plaintext parameter flows from SDKBuilder through to KASClient."""
-
     with patch("otdf_python.kas_client.KASClient") as mock_kas_client:
         # Mock the KASClient constructor to capture the arguments
         mock_kas_instance = MagicMock()
@@ -40,7 +37,6 @@ def test_use_plaintext_flows_through_sdk_builder_to_kas_client():
 
 def test_use_plaintext_false_flows_through_sdk_builder_to_kas_client():
     """Test that use_plaintext=False flows from SDKBuilder through to KASClient."""
-
     with patch("otdf_python.kas_client.KASClient") as mock_kas_client:
         # Mock the KASClient constructor to capture the arguments
         mock_kas_instance = MagicMock()
@@ -71,7 +67,6 @@ def test_use_plaintext_false_flows_through_sdk_builder_to_kas_client():
 
 def test_use_plaintext_default_value():
     """Test that the default use_plaintext value is False."""
-
     with patch("otdf_python.kas_client.KASClient") as mock_kas_client:
         # Mock the KASClient constructor to capture the arguments
         mock_kas_instance = MagicMock()

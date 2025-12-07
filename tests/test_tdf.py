@@ -1,3 +1,5 @@
+"""Tests for TDF."""
+
 import io
 import json
 import zipfile
@@ -11,6 +13,7 @@ from tests.mock_crypto import generate_rsa_keypair
 
 
 def test_tdf_create_and_load():
+    """Test TDF creation and loading roundtrip."""
     tdf = TDF()
     payload = b"test payload"
     kas_private_key, kas_public_key = generate_rsa_keypair()
@@ -40,6 +43,7 @@ def test_tdf_create_and_load():
 
 @pytest.mark.integration
 def test_tdf_multi_kas_roundtrip():
+    """Test TDF with multiple KAS roundtrip."""
     tdf = TDF()
     payload = b"multi-kas test payload"
     # Generate two KAS keypairs

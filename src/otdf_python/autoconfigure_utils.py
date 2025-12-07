@@ -1,3 +1,5 @@
+"""Utilities for automatic SDK configuration."""
+
 import re
 import urllib.parse
 from dataclasses import dataclass
@@ -6,6 +8,8 @@ from typing import Any
 
 # RuleType constants
 class RuleType:
+    """Rule type constants for attribute hierarchy."""
+
     HIERARCHY = "hierarchy"
     ALL_OF = "allOf"
     ANY_OF = "anyOf"
@@ -15,6 +19,8 @@ class RuleType:
 
 @dataclass(frozen=True)
 class KeySplitStep:
+    """Key split step information."""
+
     kas: str
     splitID: str
 
@@ -31,11 +37,16 @@ class KeySplitStep:
 
 
 class AutoConfigureException(Exception):
+    """Exception for auto-configuration errors."""
+
     pass
 
 
 class AttributeNameFQN:
+    """Fully qualified attribute name."""
+
     def __init__(self, url: str):
+        """Initialize attribute name from URL."""
         pattern = re.compile(r"^(https?://[\w./-]+)/attr/([^/\s]*)$")
         matcher = pattern.match(url)
         if not matcher or not matcher.group(1) or not matcher.group(2):
@@ -81,7 +92,10 @@ class AttributeNameFQN:
 
 
 class AttributeValueFQN:
+    """Fully qualified attribute value."""
+
     def __init__(self, url: str):
+        """Initialize attribute value from URL."""
         pattern = re.compile(r"^(https?://[\w./-]+)/attr/(\S*)/value/(\S*)$")
         matcher = pattern.match(url)
         if (

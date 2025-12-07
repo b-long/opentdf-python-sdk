@@ -1,6 +1,4 @@
-"""
-Integration test: Single attribute encryption/decryption using SDK and otdfctl
-"""
+"""Integration test: Single attribute encryption/decryption using SDK and otdfctl"""
 
 import logging
 import tempfile

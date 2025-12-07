@@ -1,6 +1,4 @@
-"""
-Asymmetric encryption and decryption utilities for RSA keys in PEM format.
-"""
+"""Asymmetric encryption and decryption utilities for RSA keys in PEM format."""
 
 import base64
 import re
@@ -14,8 +12,7 @@ from .sdk_exceptions import SDKException
 
 
 class AsymDecryption:
-    """
-    Provides functionality for asymmetric decryption using an RSA private key.
+    """Provides functionality for asymmetric decryption using an RSA private key.
 
     Supports both PEM string and key object initialization for flexibility.
     """
@@ -25,8 +22,7 @@ class AsymDecryption:
     PRIVATE_KEY_FOOTER = "-----END PRIVATE KEY-----"
 
     def __init__(self, private_key_pem: str | None = None, private_key_obj=None):
-        """
-        Initialize with either a PEM string or a key object.
+        """Initialize with either a PEM string or a key object.
 
         Args:
             private_key_pem: Private key in PEM format (with or without headers)
@@ -34,6 +30,7 @@ class AsymDecryption:
 
         Raises:
             SDKException: If key loading fails
+
         """
         if private_key_obj is not None:
             self.private_key = private_key_obj
@@ -65,8 +62,7 @@ class AsymDecryption:
             self.private_key = None
 
     def decrypt(self, data: bytes) -> bytes:
-        """
-        Decrypt data using RSA OAEP with SHA-1.
+        """Decrypt data using RSA OAEP with SHA-1.
 
         Args:
             data: Encrypted bytes to decrypt
@@ -76,6 +72,7 @@ class AsymDecryption:
 
         Raises:
             SDKException: If decryption fails or key is not set
+
         """
         if self.private_key is None:
             raise SDKException("Failed to decrypt, private key is empty")
@@ -93,8 +90,7 @@ class AsymDecryption:
 
 
 class AsymEncryption:
-    """
-    Provides functionality for asymmetric encryption using an RSA public key or certificate in PEM format.
+    """Provides functionality for asymmetric encryption using an RSA public key or certificate in PEM format.
 
     Supports PEM public keys, X.509 certificates, and pre-loaded key objects.
     Also handles base64-encoded keys without PEM headers.
@@ -105,8 +101,7 @@ class AsymEncryption:
     CIPHER_TRANSFORM = "RSA/ECB/OAEPWithSHA-1AndMGF1Padding"
 
     def __init__(self, public_key_pem: str | None = None, public_key_obj=None):
-        """
-        Initialize with either a PEM string or a key object.
+        """Initialize with either a PEM string or a key object.
 
         Args:
             public_key_pem: Public key in PEM format, X.509 certificate, or base64 string
@@ -114,6 +109,7 @@ class AsymEncryption:
 
         Raises:
             SDKException: If key loading fails or key is not RSA
+
         """
         if public_key_obj is not None:
             self.public_key = public_key_obj
@@ -152,8 +148,7 @@ class AsymEncryption:
             raise SDKException("Not an RSA PEM formatted public key")
 
     def encrypt(self, data: bytes) -> bytes:
-        """
-        Encrypt data using RSA OAEP with SHA-1.
+        """Encrypt data using RSA OAEP with SHA-1.
 
         Args:
             data: Plaintext bytes to encrypt
@@ -163,6 +158,7 @@ class AsymEncryption:
 
         Raises:
             SDKException: If encryption fails or key is not set
+
         """
         if self.public_key is None:
             raise SDKException("Failed to encrypt, public key is empty")
@@ -179,14 +175,14 @@ class AsymEncryption:
             raise SDKException(f"Error performing encryption: {e}") from e
 
     def public_key_in_pem_format(self) -> str:
-        """
-        Export the public key to PEM format.
+        """Export the public key to PEM format.
 
         Returns:
             Public key as PEM-encoded string
 
         Raises:
             SDKException: If export fails
+
         """
         try:
             pem = self.public_key.public_bytes(

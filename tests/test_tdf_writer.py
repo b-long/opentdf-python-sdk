@@ -1,3 +1,5 @@
+"""Tests for TDFWriter."""
+
 import io
 import unittest
 import zipfile
@@ -6,7 +8,10 @@ from otdf_python.tdf_writer import TDFWriter
 
 
 class TestTDFWriter(unittest.TestCase):
+    """Tests for TDFWriter class."""
+
     def test_append_manifest_and_payload(self):
+        """Test appending manifest and payload."""
         out = io.BytesIO()
         writer = TDFWriter(out)
         manifest = '{"foo": "bar"}'
@@ -21,6 +26,7 @@ class TestTDFWriter(unittest.TestCase):
             self.assertEqual(z.read("0.payload"), b"payload data")
 
     def test_getvalue(self):
+        """Test getting writer value as bytes."""
         writer = TDFWriter()
         writer.append_manifest("{}")
         with writer.payload() as f:
@@ -32,6 +38,7 @@ class TestTDFWriter(unittest.TestCase):
             self.assertEqual(z.read("0.payload"), b"abc")
 
     def test_large_payload_chunks(self):
+        """Test writing large payload in chunks."""
         out = io.BytesIO()
         writer = TDFWriter(out)
         writer.append_manifest('{"test": true}')
@@ -45,6 +52,7 @@ class TestTDFWriter(unittest.TestCase):
             self.assertEqual(z.read("0.payload"), chunk * 5)
 
     def test_error_on_write_after_finish(self):
+        """Test error when writing after finish."""
         out = io.BytesIO()
         writer = TDFWriter(out)
         writer.append_manifest("{}")

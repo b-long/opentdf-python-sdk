@@ -1,3 +1,5 @@
+"""TDF manifest representation and serialization."""
+
 import json
 from dataclasses import asdict, dataclass, field
 from typing import Any
@@ -5,6 +7,8 @@ from typing import Any
 
 @dataclass
 class ManifestSegment:
+    """Encrypted segment information in TDF manifest."""
+
     hash: str
     segmentSize: int
     encryptedSegmentSize: int
@@ -12,12 +16,16 @@ class ManifestSegment:
 
 @dataclass
 class ManifestRootSignature:
+    """Root signature for manifest integrity."""
+
     alg: str
     sig: str
 
 
 @dataclass
 class ManifestIntegrityInformation:
+    """Manifest integrity information with signatures and hashes."""
+
     rootSignature: ManifestRootSignature
     segmentHashAlg: str
     segmentSizeDefault: int
@@ -27,12 +35,16 @@ class ManifestIntegrityInformation:
 
 @dataclass
 class ManifestPolicyBinding:
+    """Policy binding with algorithm and hash."""
+
     alg: str
     hash: str
 
 
 @dataclass
 class ManifestKeyAccess:
+    """Key access information in manifest."""
+
     type: str
     url: str
     protocol: str
@@ -47,6 +59,8 @@ class ManifestKeyAccess:
 
 @dataclass
 class ManifestMethod:
+    """Encryption method information in manifest."""
+
     algorithm: str
     iv: str
     isStreamable: bool | None = None
@@ -54,6 +68,8 @@ class ManifestMethod:
 
 @dataclass
 class ManifestEncryptionInformation:
+    """Encryption information in TDF manifest."""
+
     type: str
     policy: str
     keyAccess: list[ManifestKeyAccess]
@@ -63,6 +79,8 @@ class ManifestEncryptionInformation:
 
 @dataclass
 class ManifestPayload:
+    """Payload information in TDF manifest."""
+
     type: str
     url: str
     protocol: str
@@ -72,12 +90,16 @@ class ManifestPayload:
 
 @dataclass
 class ManifestBinding:
+    """Assertion binding information."""
+
     method: str
     signature: str
 
 
 @dataclass
 class ManifestAssertion:
+    """TDF assertion in manifest."""
+
     id: str
     type: str
     scope: str
@@ -88,6 +110,8 @@ class ManifestAssertion:
 
 @dataclass
 class Manifest:
+    """TDF manifest with encryption and payload information."""
+
     schemaVersion: str | None = None
     encryptionInformation: ManifestEncryptionInformation | None = None
     payload: ManifestPayload | None = None

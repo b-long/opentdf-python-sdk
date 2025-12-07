@@ -1,5 +1,4 @@
-"""
-Pytest configuration and fixtures for the OpenTDF Python SDK tests.
+"""Pytest configuration and fixtures for the OpenTDF Python SDK tests.
 
 This module contains pytest hooks and fixtures that will be automatically
 loaded by pytest when running tests.
@@ -14,13 +13,13 @@ from tests.server_logs import log_server_logs_on_failure
 
 @pytest.fixture(scope="session")
 def project_root(request) -> Path:
+    """Get project root directory."""
     return request.config.rootpath  # Project root
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    """
-    Hook that runs after each test phase (setup, call, teardown).
+    """Collect server logs when test fails after each test phase.
 
     This hook automatically collects server logs when a test fails.
     """
@@ -53,8 +52,7 @@ def pytest_runtest_makereport(item, call):
 
 @pytest.fixture
 def collect_server_logs():
-    """
-    Fixture that provides a function to manually collect server logs.
+    """Fixture that provides a function to manually collect server logs.
 
     Usage:
         def test_something(collect_server_logs):

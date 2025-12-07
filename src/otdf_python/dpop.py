@@ -1,6 +1,4 @@
-"""
-DPoP (Demonstration of Proof-of-Possession) token generation utilities.
-"""
+"""DPoP (Demonstration of Proof-of-Possession) token generation utilities."""
 
 import base64
 import hashlib
@@ -18,8 +16,7 @@ def create_dpop_token(
     method: str = "POST",
     access_token: str | None = None,
 ) -> str:
-    """
-    Create a DPoP (Demonstration of Proof-of-Possession) token.
+    """Create a DPoP (Demonstration of Proof-of-Possession) token.
 
     Args:
         private_key_pem: RSA private key in PEM format for signing
@@ -30,6 +27,7 @@ def create_dpop_token(
 
     Returns:
         DPoP token as a string
+
     """
     # Parse the RSA public key to extract modulus and exponent
     public_key_obj = CryptoUtils.get_rsa_public_key_from_pem(public_key_pem)

@@ -1,1 +1,1 @@
-# Empty file to make tests a package
+"""Test suite for OpenTDF Python SDK."""

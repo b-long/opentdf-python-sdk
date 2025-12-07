@@ -51,8 +51,7 @@ def get_user_access_token(
     pe_username,
     pe_password,
 ):
-    """
-    When using this function, ensure that:
+    """When using this function, ensure that:
 
     1. The client has "fine-grained access control" enabled (in the Advanced tab for the client in Keycloak).
     2. The client is allowed to use "Direct access grants" (in the Settings tab for the client in Keycloak).

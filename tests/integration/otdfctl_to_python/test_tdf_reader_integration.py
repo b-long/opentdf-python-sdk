@@ -1,6 +1,4 @@
-"""
-Integration Tests for TDFReader.
-"""
+"""Integration Tests for TDFReader."""
 
 import io
 import json
@@ -25,7 +23,6 @@ class TestTDFReaderIntegration:
         self, temp_credentials_file, collect_server_logs
     ):
         """Test that TDFReader can parse the structure of files created by otdfctl."""
-
         # Create temporary directory for work
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
@@ -108,7 +105,6 @@ class TestTDFReaderIntegration:
         self, temp_credentials_file, collect_server_logs
     ):
         """Test reading TDF files created by otdfctl with data attributes."""
-
         # Create temporary directory for work
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
@@ -181,7 +177,6 @@ class TestTDFReaderIntegration:
         self, temp_credentials_file, collect_server_logs
     ):
         """Test reading multiple TDF files of different types created by otdfctl."""
-
         # Create temporary directory for work
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)

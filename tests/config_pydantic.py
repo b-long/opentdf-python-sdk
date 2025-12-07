@@ -1,5 +1,4 @@
-"""
-In this module, we are migrating to using `pydantic-settings`.
+"""In this module, we are migrating to using `pydantic-settings`.
 
 Docs: https://docs.pydantic.dev/latest/concepts/pydantic_settings/
 
@@ -78,9 +77,7 @@ class ConfigureTdf(BaseSettings):
 
 
 class ConfigureTesting(BaseSettings):
-    """
-    Used by integration tests (in particular for SSH and Kubernetes access).
-    """
+    """Used by integration tests (in particular for SSH and Kubernetes access)."""
 
     model_config = SettingsConfigDict(
         # env_prefix="common_",

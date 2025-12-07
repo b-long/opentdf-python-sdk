@@ -1,6 +1,4 @@
-"""
-Server log collection utility for debugging test failures.
-"""
+"""Server log collection utility for debugging test failures."""
 
 import logging
 import subprocess
@@ -17,17 +15,18 @@ def collect_server_logs(
     lines: int = CONFIG_TESTING.LOG_LINES,
     test_name: str | None = None,
 ) -> str | None:
-    """
-    Collect server logs from a Kubernetes pod via SSH.
+    """Collect server logs from a Kubernetes pod via SSH.
 
     Args:
         pod_name: Name of the Kubernetes pod
         namespace: Kubernetes namespace
         ssh_target: SSH target (hostname/alias)
         lines: Number of log lines to retrieve
+        test_name: Test name for log file naming
 
     Returns:
         Log output as string, or None if collection failed
+
     """
     if CONFIG_TESTING.ENABLE_LOG_COLLECTION:
         logging.debug(f"\n{'=' * 60}")
@@ -73,8 +72,7 @@ def log_server_logs_on_failure(
     ssh_target: str = CONFIG_TESTING.SSH_TARGET,
     lines: int = CONFIG_TESTING.LOG_LINES,
 ) -> None:
-    """
-    Collect and log server logs when a test fails.
+    """Collect and log server logs when a test fails.
 
     Args:
         test_name: Name of the failed test
@@ -82,8 +80,8 @@ def log_server_logs_on_failure(
         namespace: Kubernetes namespace
         ssh_target: SSH target (hostname/alias)
         lines: Number of log lines to retrieve
-    """
 
+    """
     logs = collect_server_logs(pod_name, namespace, ssh_target, lines, test_name)
 
     if logs:

@@ -1,3 +1,5 @@
+"""Tests for KAS key management."""
+
 import base64
 import os
 import unittest

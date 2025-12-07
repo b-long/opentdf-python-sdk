@@ -1,3 +1,5 @@
+"""Configuration classes for TDF and NanoTDF operations."""
+
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
@@ -5,17 +7,23 @@ from urllib.parse import urlparse, urlunparse
 
 
 class TDFFormat(Enum):
+    """TDF format enumeration."""
+
     JSONFormat = "JSONFormat"
     XMLFormat = "XMLFormat"
 
 
 class IntegrityAlgorithm(Enum):
+    """Integrity algorithm enumeration."""
+
     HS256 = "HS256"
     GMAC = "GMAC"
 
 
 @dataclass
 class KASInfo:
+    """Key Access Service information."""
+
     url: str
     public_key: str | None = None
     kid: str | None = None
@@ -28,6 +36,8 @@ class KASInfo:
 
 @dataclass
 class TDFConfig:
+    """TDF encryption configuration."""
+
     autoconfigure: bool = True
     default_segment_size: int = 2 * 1024 * 1024
     enable_encryption: bool = True
@@ -49,6 +59,8 @@ class TDFConfig:
 
 @dataclass
 class NanoTDFConfig:
+    """NanoTDF encryption configuration."""
+
     ecc_mode: str | None = None
     cipher: str | None = None
     config: str | None = None
@@ -60,6 +72,7 @@ class NanoTDFConfig:
 
 # Utility function to normalize KAS URLs (Python equivalent)
 def get_kas_address(kas_url: str) -> str:
+    """Normalize KAS URL by adding https:// if no scheme present."""
     if "://" not in kas_url:
         kas_url = "https://" + kas_url
     parsed = urlparse(kas_url)

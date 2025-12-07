@@ -1,13 +1,18 @@
+"""AES-GCM encryption and decryption functionality."""
+
 import os
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 
 class AesGcm:
+    """AES-GCM encryption and decryption operations."""
+
     GCM_NONCE_LENGTH = 12
     GCM_TAG_LENGTH = 16
 
     def __init__(self, key: bytes):
+        """Initialize AES-GCM cipher with key."""
         if not key or len(key) not in (16, 24, 32):
             raise ValueError("Invalid key size for GCM encryption")
         self.key = key
@@ -17,7 +22,10 @@ class AesGcm:
         return self.key
 
     class Encrypted:
+        """Encrypted data with initialization vector and ciphertext."""
+
         def __init__(self, iv: bytes, ciphertext: bytes):
+            """Initialize encrypted data."""
             self.iv = iv
             self.ciphertext = ciphertext
 

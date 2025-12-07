@@ -1,10 +1,11 @@
+"""Key Access Service information and configuration."""
+
 from dataclasses import dataclass
 
 
 @dataclass
 class KASInfo:
-    """
-    Configuration for Key Access Server (KAS) information.
+    """Configuration for Key Access Server (KAS) information.
     This class stores details about a Key Access Server including its URL,
     public key, key ID, default status, and cryptographic algorithm.
     """
@@ -16,7 +17,7 @@ class KASInfo:
     algorithm: str | None = None
 
     def clone(self):
-        """Creates a copy of this KASInfo object."""
+        """Create a copy of this KASInfo object."""
         from copy import copy
 
         return copy(self)

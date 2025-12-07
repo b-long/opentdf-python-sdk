@@ -1,3 +1,5 @@
+"""NanoTDF reader and writer implementation."""
+
 import contextlib
 import hashlib
 import json
@@ -24,22 +26,32 @@ from .asym_crypto import AsymDecryption
 
 
 class NanoTDFException(SDKException):
+    """Base exception for NanoTDF operations."""
+
     pass
 
 
 class NanoTDFMaxSizeLimit(NanoTDFException):
+    """Exception for NanoTDF size limit exceeded."""
+
     pass
 
 
 class UnsupportedNanoTDFFeature(NanoTDFException):
+    """Exception for unsupported NanoTDF features."""
+
     pass
 
 
 class InvalidNanoTDFConfig(NanoTDFException):
+    """Exception for invalid NanoTDF configuration."""
+
     pass
 
 
 class NanoTDF:
+    """NanoTDF reader and writer for compact TDF format."""
+
     MAGIC_NUMBER_AND_VERSION = MAGIC_NUMBER_AND_VERSION
     K_MAX_TDF_SIZE = (16 * 1024 * 1024) - 3 - 32
     K_NANOTDF_GMAC_LENGTH = 8
@@ -48,6 +60,7 @@ class NanoTDF:
     K_EMPTY_IV = bytes([0x0] * 12)
 
     def __init__(self, services=None, collection_store: CollectionStore | None = None):
+        """Initialize NanoTDF reader/writer."""
         self.services = services
         self.collection_store = collection_store or NoOpCollectionStore()
 
@@ -59,7 +72,7 @@ class NanoTDF:
         return PolicyObject(uuid=policy_uuid, body=body)
 
     def _serialize_policy_object(self, obj):
-        """Custom NanoTDF serializer to convert to compatible JSON format."""
+        """Serialize policy object to compatible JSON format."""
         from otdf_python.policy_object import AttributeObject, PolicyBody
 
         if isinstance(obj, PolicyBody):
@@ -82,8 +95,7 @@ class NanoTDF:
             return obj.__dict__
 
     def _prepare_payload(self, payload: bytes | BytesIO) -> bytes:
-        """
-        Convert BytesIO to bytes and validate payload size.
+        """Convert BytesIO to bytes and validate payload size.
 
         Args:
             payload: The payload data as bytes or BytesIO
@@ -93,6 +105,7 @@ class NanoTDF:
 
         Raises:
             NanoTDFMaxSizeLimit: If the payload exceeds the maximum size
+
         """
         if isinstance(payload, BytesIO):
             payload = payload.getvalue()
@@ -101,14 +114,14 @@ class NanoTDF:
         return payload
 
     def _prepare_policy_data(self, config: NanoTDFConfig) -> tuple[bytes, str]:
-        """
-        Prepare policy data from configuration.
+        """Prepare policy data from configuration.
 
         Args:
             config: NanoTDFConfig configuration
 
         Returns:
             tuple: (policy_body, policy_type)
+
         """
         attributes = config.attributes if config.attributes else []
         policy_object = self._create_policy_object(attributes)
@@ -150,8 +163,7 @@ class NanoTDF:
         config: NanoTDFConfig,
         ephemeral_public_key: bytes | None = None,
     ) -> bytes:
-        """
-        Create the NanoTDF header.
+        """Create the NanoTDF header.
 
         Args:
             policy_body: The policy body bytes
@@ -161,6 +173,7 @@ class NanoTDF:
 
         Returns:
             bytes: The header bytes
+
         """
         from otdf_python.header import Header  # Local import to avoid circular import
 
@@ -228,8 +241,7 @@ class NanoTDF:
         return self.MAGIC_NUMBER_AND_VERSION + header_bytes
 
     def _is_ec_key(self, key_pem: str) -> bool:
-        """
-        Detect if a PEM key is an EC key (vs RSA).
+        """Detect if a PEM key is an EC key (vs RSA).
 
         Args:
             key_pem: PEM-formatted key string
@@ -239,6 +251,7 @@ class NanoTDF:
 
         Raises:
             SDKException: If key cannot be parsed
+
         """
         try:
             # Try to load as public key first
@@ -265,8 +278,7 @@ class NanoTDF:
     def _derive_key_with_ecdh(  # noqa: C901
         self, config: NanoTDFConfig
     ) -> tuple[bytes, bytes | None, bytes | None]:
-        """
-        Derive encryption key using ECDH if KAS public key is provided or can be fetched.
+        """Derive encryption key using ECDH if KAS public key is provided or can be fetched.
 
         This implements the NanoTDF spec's ECDH + HKDF key derivation:
         1. Generate ephemeral keypair
@@ -283,6 +295,7 @@ class NanoTDF:
                 - derived_key: 32-byte AES-256 key for encrypting the payload
                 - ephemeral_public_key_compressed: Compressed ephemeral public key to store in header (None for RSA)
                 - kas_public_key: KAS public key PEM string (or None if not available)
+
         """
         import logging
 
@@ -384,8 +397,7 @@ class NanoTDF:
         return derived_key, ephemeral_public_key_compressed, kas_public_key
 
     def _encrypt_payload(self, payload: bytes, key: bytes) -> tuple[bytes, bytes]:
-        """
-        Encrypt the payload using AES-GCM.
+        """Encrypt the payload using AES-GCM.
 
         Args:
             payload: The payload to encrypt
@@ -393,6 +405,7 @@ class NanoTDF:
 
         Returns:
             tuple: (iv, ciphertext)
+
         """
         iv = secrets.token_bytes(self.K_NANOTDF_IV_SIZE)
         iv_padded = self.K_EMPTY_IV[: self.K_IV_PADDING] + iv
@@ -403,8 +416,7 @@ class NanoTDF:
     def create_nano_tdf(
         self, payload: bytes | BytesIO, output_stream: BinaryIO, config: NanoTDFConfig
     ) -> int:
-        """
-        Stream-based NanoTDF creation - writes encrypted payload to an output stream.
+        """Stream-based NanoTDF creation - writes encrypted payload to an output stream.
 
         For convenience method that returns bytes, use create_nanotdf() instead.
         Supports ECDH key derivation if KAS info with public key is provided in config.
@@ -422,8 +434,8 @@ class NanoTDF:
             UnsupportedNanoTDFFeature: If an unsupported feature is requested
             InvalidNanoTDFConfig: If the configuration is invalid
             SDKException: For other errors
-        """
 
+        """
         # Process payload and validate size
         payload = self._prepare_payload(payload)
 
@@ -557,8 +569,7 @@ class NanoTDF:
         output_stream: BinaryIO,
         config: NanoTDFConfig,
     ) -> None:
-        """
-        Stream-based NanoTDF decryption - writes decrypted payload to an output stream.
+        """Stream-based NanoTDF decryption - writes decrypted payload to an output stream.
 
         For convenience method that returns bytes, use read_nanotdf() instead.
         Supports ECDH key derivation and KAS key unwrapping.
@@ -571,6 +582,7 @@ class NanoTDF:
         Raises:
             InvalidNanoTDFConfig: If the NanoTDF format is invalid or config is missing required info
             SDKException: For other errors
+
         """
         # Convert to bytes if BytesIO
         if isinstance(nano_tdf_data, BytesIO):
@@ -768,8 +780,7 @@ class NanoTDF:
         return key, config
 
     def create_nanotdf(self, data: bytes, config: dict | NanoTDFConfig) -> bytes:
-        """
-        Convenience method - creates a NanoTDF and returns the encrypted bytes.
+        """Create a NanoTDF and return the encrypted bytes.
 
         For stream-based version, use create_nano_tdf() instead.
         """
@@ -846,8 +857,7 @@ class NanoTDF:
     def read_nanotdf(
         self, nanotdf_bytes: bytes, config: dict | NanoTDFConfig | None = None
     ) -> bytes:
-        """
-        Convenience method - decrypts a NanoTDF and returns the plaintext bytes.
+        """Decrypt a NanoTDF and return the plaintext bytes.
 
         For stream-based version, use read_nano_tdf() instead.
         """
