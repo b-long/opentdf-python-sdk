@@ -1,4 +1,4 @@
-"""Basic tests for the Python SDK class port."""
+"""Basic tests for the Python SDK class."""
 
 from otdf_python.sdk import SDK
 
