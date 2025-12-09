@@ -39,8 +39,6 @@ class KeySplitStep:
 class AutoConfigureException(Exception):
     """Exception for auto-configuration errors."""
 
-    pass
-
 
 class AttributeNameFQN:
     """Fully qualified attribute name."""

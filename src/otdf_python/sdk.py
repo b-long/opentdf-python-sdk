@@ -134,7 +134,6 @@ class KAS(AbstractContextManager):
 
     def close(self):
         """Close resources associated with KAS interface."""
-        pass
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
@@ -219,7 +218,6 @@ class SDK(AbstractContextManager):
 
         def close(self):
             """Close resources associated with the services."""
-            pass
 
         def __exit__(self, exc_type, exc_val, exc_tb):
             self.close()
@@ -377,22 +375,14 @@ class SDK(AbstractContextManager):
     class SplitKeyException(SDKException):
         """Throw when SDK encounters error related to split key operations."""
 
-        pass
-
     class DataSizeNotSupported(SDKException):
         """Throw when user attempts to create TDF larger than maximum size."""
-
-        pass
 
     class KasInfoMissing(SDKException):
         """Throw during TDF creation when no KAS information is present."""
 
-        pass
-
     class KasPublicKeyMissing(SDKException):
         """Throw during encryption when SDK cannot retrieve public key for KAS."""
-
-        pass
 
     class TamperException(SDKException):
         """Base class for exceptions related to signature mismatches."""
@@ -407,17 +397,11 @@ class SDK(AbstractContextManager):
     class SegmentSignatureMismatch(TamperException):
         """Throw when segment signature does not match expected value."""
 
-        pass
-
     class KasBadRequestException(SDKException):
         """Throw when KAS returns bad request response."""
 
-        pass
-
     class KasAllowlistException(SDKException):
         """Throw when KAS allowlist check fails."""
-
-        pass
 
     class AssertionException(SDKException):
         """Throw when an assertion validation fails."""

@@ -35,19 +35,13 @@ NANOTDF_HKDF_SALT = bytes.fromhex(
 class ECDHError(Exception):
     """Base exception for ECDH operations."""
 
-    pass
-
 
 class UnsupportedCurveError(ECDHError):
     """Raised when an unsupported curve is specified."""
 
-    pass
-
 
 class InvalidKeyError(ECDHError):
     """Raised when a key is invalid or malformed."""
-
-    pass
 
 
 def get_curve(curve_name: str) -> ec.EllipticCurve:

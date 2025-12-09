@@ -12,7 +12,6 @@ class DummyServices(SDK.Services):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Exit context manager."""
-        pass
 
 
 def test_sdk_init_and_close():
