@@ -91,13 +91,7 @@ lint.select = [
     "FURB",   # refurb
     "I",      # isort
     "PERF",   # performance
-    "PIE790", # unnecessary 'pass' statements
-    "PIE794", # duplicate class field definitions
-    "PIE796", # non-unique enum values
-    "PIE800", # unnecessary ... spread in dict literals
-    "PIE804", # unnecessary dict kwargs
-    "PIE807", # lambda can be replaced with function
-    "PIE810", # multiple starts-with/ends-with calls can be merged
+    "PIE",    # flake8-pie
     "PT018",  # pytest style
     "PTH",    # pathlib
     "Q",      # flake8-quotes
