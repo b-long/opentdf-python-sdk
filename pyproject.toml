@@ -92,6 +92,8 @@ lint.select = [
     "I",      # isort
     "PERF",   # performance
     "PIE790", # unnecessary 'pass' statements
+    "PIE794", #
+    "PIE796", #
     "PT018",  # pytest style
     "PTH",    # pathlib
     "Q",      # flake8-quotes
