@@ -404,10 +404,6 @@ class SDK(AbstractContextManager):
     class RootSignatureValidationException(TamperException):
         """Throw when root signature validation fails."""
 
-        def __init__(self, error_message: str):
-            """Initialize exception."""
-            super().__init__(error_message)
-
     class SegmentSignatureMismatch(TamperException):
         """Throw when segment signature does not match expected value."""
 
