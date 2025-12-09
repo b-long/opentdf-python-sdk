@@ -1,4 +1,4 @@
-"""Python port of the main SDK class for OpenTDF platform interaction."""
+"""The main SDK class for OpenTDF platform interaction."""
 
 from contextlib import AbstractContextManager
 from io import BytesIO
