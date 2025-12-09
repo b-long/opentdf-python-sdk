@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.4.0...otdf-python-v0.4.1) (2025-12-09)
+
+
+### Bug Fixes
+
+* preserve exception chain ([#119](https://github.com/b-long/opentdf-python-sdk/issues/119)) ([09984b8](https://github.com/b-long/opentdf-python-sdk/commit/09984b843b369a6d2c76dc8a81d6315f195ea773))
+
 ## [0.4.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.3.5...otdf-python-v0.4.0) (2025-11-20)
 
 
