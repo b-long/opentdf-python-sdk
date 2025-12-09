@@ -1,4 +1,4 @@
-"""Python port of the SDKBuilder class for OpenTDF platform interaction.
+"""SDKBuilder class for OpenTDF platform interaction.
 
 Provides methods to configure and build SDK instances.
 """
