@@ -1,8 +1,12 @@
+"""Policy object dataclasses for OpenTDF."""
+
 from dataclasses import dataclass
 
 
 @dataclass
 class AttributeObject:
+    """An attribute object."""
+
     attribute: str
     display_name: str | None = None
     is_default: bool = False
@@ -12,11 +16,15 @@ class AttributeObject:
 
 @dataclass
 class PolicyBody:
+    """A policy body."""
+
     data_attributes: list[AttributeObject]
     dissem: list[str]
 
 
 @dataclass
 class PolicyObject:
+    """A policy object."""
+
     uuid: str
     body: PolicyBody

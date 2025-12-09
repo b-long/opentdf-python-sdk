@@ -1,5 +1,4 @@
-"""
-KASConnectRPCClient: Handles Connect RPC communication with the Key Access Service (KAS).
+"""KASConnectRPCClient: Handles Connect RPC communication with the Key Access Service (KAS).
 This class encapsulates all interactions with otdf_python_proto.
 """
 
@@ -15,27 +14,25 @@ from .sdk_exceptions import SDKException
 
 
 class KASConnectRPCClient:
-    """
-    Handles Connect RPC communication with KAS service using otdf_python_proto.
-    """
+    """Handles Connect RPC communication with KAS service using otdf_python_proto."""
 
     def __init__(self, use_plaintext=False, verify_ssl=True):
-        """
-        Initialize the Connect RPC client.
+        """Initialize the Connect RPC client.
 
         Args:
             use_plaintext: Whether to use plaintext (HTTP) connections
             verify_ssl: Whether to verify SSL certificates
+
         """
         self.use_plaintext = use_plaintext
         self.verify_ssl = verify_ssl
 
     def _create_http_client(self):
-        """
-        Create HTTP client with SSL verification configuration.
+        """Create HTTP client with SSL verification configuration.
 
         Returns:
             urllib3.PoolManager configured for SSL verification settings
+
         """
         if self.verify_ssl:
             logging.info("Using SSL verification enabled HTTP client")
@@ -46,14 +43,14 @@ class KASConnectRPCClient:
             return urllib3.PoolManager(cert_reqs="CERT_NONE")
 
     def _prepare_connect_rpc_url(self, kas_url):
-        """
-        Prepare the base URL for Connect RPC client.
+        """Prepare the base URL for Connect RPC client.
 
         Args:
             kas_url: The normalized KAS URL
 
         Returns:
             Base URL for Connect RPC client (without /kas suffix)
+
         """
         connect_rpc_base_url = kas_url
         # Remove /kas suffix, if present
@@ -61,14 +58,14 @@ class KASConnectRPCClient:
         return connect_rpc_base_url
 
     def _prepare_auth_headers(self, access_token):
-        """
-        Prepare authentication headers if access token is available.
+        """Prepare authentication headers if access token is available.
 
         Args:
             access_token: Bearer token for authentication
 
         Returns:
             Dictionary with authentication headers or None
+
         """
         if access_token:
             auth_headers = AuthHeaders(
@@ -79,8 +76,7 @@ class KASConnectRPCClient:
         return None
 
     def get_public_key(self, normalized_kas_url, kas_info, access_token=None):
-        """
-        Get KAS public key using Connect RPC.
+        """Get KAS public key using Connect RPC.
 
         Args:
             normalized_kas_url: The normalized KAS URL
@@ -89,6 +85,7 @@ class KASConnectRPCClient:
 
         Returns:
             Updated kas_info with public_key and kid
+
         """
         logging.info(
             f"KAS Connect RPC client settings for public key retrieval: "
@@ -143,8 +140,7 @@ class KASConnectRPCClient:
     def unwrap_key(
         self, normalized_kas_url, key_access, signed_token, access_token=None
     ):
-        """
-        Unwrap a key using Connect RPC.
+        """Unwrap a key using Connect RPC.
 
         Args:
             normalized_kas_url: The normalized KAS URL
@@ -154,6 +150,7 @@ class KASConnectRPCClient:
 
         Returns:
             Unwrapped key bytes from the response
+
         """
         logging.info(
             f"KAS Connect RPC client settings for unwrap: "

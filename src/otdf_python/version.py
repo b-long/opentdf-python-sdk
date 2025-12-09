@@ -1,9 +1,13 @@
+"""SDK version information."""
+
 import re
 from functools import total_ordering
 
 
 @total_ordering
 class Version:
+    """Semantic version representation."""
+
     SEMVER_PATTERN = re.compile(
         r"^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?P<prereleaseAndMetadata>\D.*)?$"
     )
@@ -15,6 +19,7 @@ class Version:
         patch=None,
         prerelease_and_metadata: str | None = None,
     ):
+        """Initialize semantic version."""
         if minor is None and patch is None:
             # Parse from string
             m = self.SEMVER_PATTERN.match(semver_or_major)

@@ -1,6 +1,4 @@
-"""
-Tests using target mode fixtures, for CLI integration testing.
-"""
+"""Tests using target mode fixtures, for CLI integration testing."""
 
 import logging
 import subprocess
@@ -21,10 +19,7 @@ logger = logging.getLogger(__name__)
 def test_cli_decrypt_v4_2_2_vs_v4_3_1(
     all_target_mode_tdf_files, temp_credentials_file, collect_server_logs, project_root
 ):
-    """
-    Test Python CLI decrypt with various TDF versions created by otdfctl.
-    """
-
+    """Test Python CLI decrypt with various TDF versions created by otdfctl."""
     v4_2_2_files = all_target_mode_tdf_files["v4.2.2"]
     v4_3_1_files = all_target_mode_tdf_files["v4.3.1"]
 
@@ -88,10 +83,7 @@ def test_cli_decrypt_different_file_types(
     project_root,
     known_target_modes,
 ):
-    """
-    Test CLI decrypt with different file types.
-    """
-
+    """Test CLI decrypt with different file types."""
     assert "v4.2.2" in all_target_mode_tdf_files
     assert "v4.3.1" in all_target_mode_tdf_files
 
@@ -152,8 +144,7 @@ def test_cli_decrypt_different_file_types(
 def _run_cli_decrypt(
     tdf_path: Path, creds_file: Path, cwd: Path, collect_server_logs
 ) -> Path | None:
-    """
-    Helper function to run Python CLI decrypt command and return the output file path.
+    """Helper function to run Python CLI decrypt command and return the output file path.
 
     Returns the Path to the decrypted output file if successful, None if failed.
     """

@@ -1,10 +1,15 @@
+"""Tests for policy objects."""
+
 import unittest
 
 from otdf_python.policy_object import AttributeObject, PolicyBody, PolicyObject
 
 
 class TestPolicyObject(unittest.TestCase):
+    """Tests for policy object classes."""
+
     def test_attribute_object(self):
+        """Test AttributeObject creation and properties."""
         attr = AttributeObject(
             attribute="attr1",
             display_name="Attribute 1",
@@ -19,6 +24,7 @@ class TestPolicyObject(unittest.TestCase):
         self.assertEqual(attr.kas_url, "https://kas.example.com")
 
     def test_policy_body(self):
+        """Test PolicyBody creation and properties."""
         attr1 = AttributeObject(attribute="attr1")
         attr2 = AttributeObject(attribute="attr2")
         body = PolicyBody(data_attributes=[attr1, attr2], dissem=["user1", "user2"])
@@ -27,6 +33,7 @@ class TestPolicyObject(unittest.TestCase):
         self.assertIn("user2", body.dissem)
 
     def test_policy_object(self):
+        """Test PolicyObject creation and properties."""
         attr = AttributeObject(attribute="attr1")
         body = PolicyBody(data_attributes=[attr], dissem=["user1"])
         policy = PolicyObject(uuid="uuid-1234", body=body)

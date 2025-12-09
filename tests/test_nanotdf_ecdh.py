@@ -1,6 +1,4 @@
-"""
-Integration tests for NanoTDF with ECDH key exchange.
-"""
+"""Integration tests for NanoTDF with ECDH key exchange."""
 
 import io
 

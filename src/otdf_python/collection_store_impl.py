@@ -1,3 +1,5 @@
+"""Collection store implementation."""
+
 from collections import OrderedDict
 from threading import RLock
 
@@ -5,7 +7,10 @@ MAX_SIZE_STORE = 500
 
 
 class CollectionStoreImpl(OrderedDict):
+    """Thread-safe collection store for caching TDF keys."""
+
     def __init__(self):
+        """Initialize collection store."""
         super().__init__()
         self._lock = RLock()
 

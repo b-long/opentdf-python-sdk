@@ -1,3 +1,5 @@
+"""Tests for TDF manifest."""
+
 from otdf_python.manifest import (
     Manifest,
     ManifestAssertion,

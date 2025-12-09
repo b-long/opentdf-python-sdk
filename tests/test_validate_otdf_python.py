@@ -1,5 +1,6 @@
-"""
-This file is effectively the same test coverage as:
+"""Validation tests for OpenTDF Python SDK.
+
+This module provides the same test coverage as:
 https://github.com/b-long/opentdf-python-sdk/blob/v0.2.17/validate_otdf_python.py
 
 Execute using:
@@ -35,7 +36,6 @@ def _get_sdk_and_tdf_config() -> tuple:
 
 def encrypt_file(input_path: Path) -> Path:
     """Encrypt a file and return the path to the encrypted file."""
-
     # Build the SDK
     sdk, tdf_config = _get_sdk_and_tdf_config()
 
@@ -59,6 +59,7 @@ def decrypt_file(encrypted_path: Path) -> Path:
 
 
 def verify_encrypt_str() -> None:
+    """Verify string encryption functionality."""
     print("Validating string encryption (local TDF)")
     try:
         sdk = get_sdk()
@@ -97,6 +98,7 @@ def test_verify_encrypt_str():
 
 
 def verify_encrypt_file() -> None:
+    """Verify file encryption functionality."""
     print("Validating file encryption (local TDF)")
     try:
         with tempfile.TemporaryDirectory() as tmpDir:
@@ -121,6 +123,7 @@ def test_verify_encrypt_file():
 
 
 def verify_encrypt_decrypt_file() -> None:
+    """Verify encrypt/decrypt roundtrip functionality."""
     print("Validating encrypt/decrypt roundtrip (local TDF)")
     try:
         with tempfile.TemporaryDirectory() as tmpDir:

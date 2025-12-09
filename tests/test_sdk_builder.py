@@ -1,6 +1,4 @@
-"""
-Tests for the SDKBuilder class.
-"""
+"""Tests for the SDKBuilder class."""
 
 import tempfile
 from pathlib import Path

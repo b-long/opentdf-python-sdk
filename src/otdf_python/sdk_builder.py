@@ -1,5 +1,5 @@
-"""
-Python port of the SDKBuilder class for OpenTDF platform interaction.
+"""SDKBuilder class for OpenTDF platform interaction.
+
 Provides methods to configure and build SDK instances.
 """
 
@@ -19,6 +19,8 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class OAuthConfig:
+    """OAuth configuration."""
+
     client_id: str
     client_secret: str
     grant_type: str = "client_credentials"
@@ -28,9 +30,7 @@ class OAuthConfig:
 
 
 class SDKBuilder:
-    """
-    A builder class for creating instances of the SDK class.
-    """
+    """A builder class for creating instances of the SDK class."""
 
     PLATFORM_ISSUER = "platform_issuer"
 
@@ -38,6 +38,7 @@ class SDKBuilder:
     _platform_url = None
 
     def __init__(self):
+        """Initialize SDK builder."""
         self.platform_endpoint: str | None = None
         self.issuer_endpoint: str | None = None
         self.oauth_config: OAuthConfig | None = None
@@ -49,29 +50,33 @@ class SDKBuilder:
 
     @staticmethod
     def new_builder() -> "SDKBuilder":
-        """
-        Creates a new SDKBuilder instance.
+        """Create a new SDKBuilder instance.
+
         Returns:
             SDKBuilder: A new builder instance
+
         """
         return SDKBuilder()
 
     @staticmethod
     def get_platform_url() -> str | None:
-        """
-        Gets the last set platform URL.
+        """Get the last set platform URL.
+
         Returns:
             str | None: The platform URL or None if not set
+
         """
         return SDKBuilder._platform_url
 
     def ssl_context_from_directory(self, certs_dir_path: str) -> "SDKBuilder":
-        """
-        Add SSL Context with trusted certs from certDirPath
+        """Add SSL context with trusted certs from certDirPath.
+
         Args:
             certs_dir_path: Path to a directory containing .pem or .crt trusted certs
+
         Returns:
             self: The builder instance for chaining
+
         """
         self.cert_paths = []
 
@@ -91,13 +96,14 @@ class SDKBuilder:
         return self
 
     def client_secret(self, client_id: str, client_secret: str) -> "SDKBuilder":
-        """
-        Sets client credentials for OAuth 2.0 client_credentials grant.
+        """Set client credentials for OAuth 2.0 client_credentials grant.
+
         Args:
             client_id: The OAuth client ID
             client_secret: The OAuth client secret
         Returns:
             self: The builder instance for chaining
+
         """
         self.oauth_config = OAuthConfig(
             client_id=client_id, client_secret=client_secret
@@ -105,12 +111,13 @@ class SDKBuilder:
         return self
 
     def set_platform_endpoint(self, endpoint: str) -> "SDKBuilder":
-        """
-        Sets the OpenTDF platform endpoint URL.
+        """Set the OpenTDF platform endpoint URL.
+
         Args:
             endpoint: The platform endpoint URL
         Returns:
             self: The builder instance for chaining
+
         """
         # Normalize the endpoint URL
         if endpoint and not (
@@ -127,12 +134,13 @@ class SDKBuilder:
         return self
 
     def set_issuer_endpoint(self, issuer: str) -> "SDKBuilder":
-        """
-        Sets the OpenID Connect issuer endpoint URL.
+        """Set the OpenID Connect issuer endpoint URL.
+
         Args:
             issuer: The issuer endpoint URL
         Returns:
             self: The builder instance for chaining
+
         """
         # Normalize the issuer URL
         if issuer and not (
@@ -146,12 +154,13 @@ class SDKBuilder:
     def use_insecure_plaintext_connection(
         self, use_plaintext: bool = True
     ) -> "SDKBuilder":
-        """
-        Configures whether to use plain text (HTTP) connection instead of HTTPS.
+        """Configure whether to use plain text (HTTP) instead of HTTPS.
+
         Args:
             use_plaintext: Whether to use plain text connection
         Returns:
             self: The builder instance for chaining
+
         """
         self.use_plaintext = use_plaintext
 
@@ -168,12 +177,13 @@ class SDKBuilder:
         return self
 
     def use_insecure_skip_verify(self, skip_verify: bool = True) -> "SDKBuilder":
-        """
-        Configures whether to skip SSL verification.
+        """Configure whether to skip SSL verification.
+
         Args:
             skip_verify: Whether to skip SSL verification
         Returns:
             self: The builder instance for chaining
+
         """
         self.insecure_skip_verify = skip_verify
 
@@ -184,21 +194,23 @@ class SDKBuilder:
         return self
 
     def bearer_token(self, token: str) -> "SDKBuilder":
-        """
-        Sets a bearer token to use for authorization.
+        """Set a bearer token to use for authorization.
+
         Args:
             token: The bearer token
         Returns:
             self: The builder instance for chaining
+
         """
         self.auth_token = token
         return self
 
     def _discover_token_endpoint_from_platform(self) -> None:
-        """
-        Discover token endpoint using OpenTDF platform configuration.
+        """Discover token endpoint using OpenTDF platform configuration.
+
         Raises:
             AutoConfigureException: If discovery fails
+
         """
         if not self.platform_endpoint or not self.oauth_config:
             return
@@ -232,12 +244,13 @@ class SDKBuilder:
         self._discover_token_endpoint_from_issuer(platform_issuer)
 
     def _discover_token_endpoint_from_issuer(self, issuer_url: str) -> None:
-        """
-        Discover token endpoint using OIDC discovery from issuer.
+        """Discover token endpoint using OIDC discovery from issuer.
+
         Args:
             issuer_url: The issuer URL to use for discovery
         Raises:
             AutoConfigureException: If discovery fails
+
         """
         if not self.oauth_config:
             return
@@ -260,10 +273,11 @@ class SDKBuilder:
             )
 
     def _discover_token_endpoint(self) -> None:
-        """
-        Discover the token endpoint using available configuration.
+        """Discover the token endpoint using available configuration.
+
         Raises:
             AutoConfigureException: If discovery fails
+
         """
         # Try platform endpoint first
         if self.platform_endpoint:
@@ -297,12 +311,13 @@ class SDKBuilder:
         )
 
     def _get_token_from_client_credentials(self) -> str:
-        """
-        Obtains an OAuth token using client credentials.
+        """Obtain an OAuth token using client credentials.
+
         Returns:
-            str: The access token
+            str: The OAuth access token
         Raises:
             AutoConfigureException: If token acquisition fails
+
         """
         if not self.oauth_config:
             raise AutoConfigureException("OAuth configuration is not set")
@@ -346,12 +361,13 @@ class SDKBuilder:
             ) from e
 
     def _create_services(self) -> SDK.Services:
-        """
-        Creates service client instances.
+        """Create service client instances.
+
         Returns:
             SDK.Services: The service client instances
         Raises:
             AutoConfigureException: If service creation fails
+
         """
         # For now, return a simple implementation of Services
         # In a real implementation, this would create actual service clients
@@ -366,9 +382,7 @@ class SDKBuilder:
                 self._builder = builder_instance
 
             def kas(self) -> KAS:
-                """
-                Returns the KAS interface with SSL verification settings.
-                """
+                """Return the KAS interface with SSL verification settings."""
                 platform_url = SDKBuilder.get_platform_url()
 
                 # Create a token source function that can refresh tokens
@@ -396,12 +410,13 @@ class SDKBuilder:
         return ServicesImpl(self)
 
     def build(self) -> SDK:
-        """
-        Builds and returns an SDK instance with the configured properties.
+        """Build and return an SDK instance with configured properties.
+
         Returns:
             SDK: The configured SDK instance
         Raises:
             AutoConfigureException: If the build fails
+
         """
         if not self.platform_endpoint:
             raise AutoConfigureException("Platform endpoint is not set")

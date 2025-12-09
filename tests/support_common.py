@@ -37,8 +37,7 @@ def handle_subprocess_error(
 
 
 def get_testing_environ() -> dict | None:
-    """
-    Set up environment and configuration
+    """Set up environment and configuration
 
     TODO: YAGNI: this is a hook we could use to modify all testing environments, e.g.
         env = os.environ.copy()

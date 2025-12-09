@@ -1,6 +1,4 @@
-"""
-Tests for address_normalizer module.
-"""
+"""Tests for address_normalizer module."""
 
 import pytest
 

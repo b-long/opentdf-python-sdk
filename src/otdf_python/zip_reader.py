@@ -1,3 +1,5 @@
+"""ZIP file reader for TDF operations."""
+
 import io
 import zipfile
 
@@ -5,8 +7,13 @@ from otdf_python.invalid_zip_exception import InvalidZipException
 
 
 class ZipReader:
+    """ZIP file reader for reading TDF packages."""
+
     class Entry:
+        """ZIP file entry with data access."""
+
         def __init__(self, zipfile_obj, zipinfo):
+            """Initialize ZIP entry."""
             self._zipfile = zipfile_obj
             self._zipinfo = zipinfo
 
@@ -20,6 +27,7 @@ class ZipReader:
                 raise InvalidZipException(f"Error reading entry data: {e}") from e
 
     def __init__(self, in_stream: io.BytesIO | bytes | None = None):
+        """Initialize ZIP reader."""
         try:
             if isinstance(in_stream, bytes):
                 in_stream = io.BytesIO(in_stream)

@@ -1,3 +1,5 @@
+"""Tests for ZipReader."""
+
 import io
 import random
 import unittest
@@ -8,7 +10,10 @@ from otdf_python.zip_writer import ZipWriter
 
 
 class TestZipReader(unittest.TestCase):
+    """Tests for ZipReader class."""
+
     def test_read_and_namelist(self):
+        """Test reading zip and listing files."""
         # Create a zip in memory
         writer = ZipWriter()
         writer.data("foo.txt", b"foo")
@@ -25,6 +30,7 @@ class TestZipReader(unittest.TestCase):
         reader.close()
 
     def test_extract(self):
+        """Test extracting files from zip."""
         import tempfile
 
         writer = ZipWriter()
@@ -39,6 +45,7 @@ class TestZipReader(unittest.TestCase):
         reader.close()
 
     def test_entry_interface_and_random_files(self):
+        """Test zip entry interface with random files."""
         # Create a zip with many random files
         r = random.Random(42)
         num_entries = r.randint(10, 20)  # Use a smaller number for test speed

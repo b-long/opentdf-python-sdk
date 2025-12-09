@@ -6,13 +6,11 @@ import pytest
 @pytest.mark.integration
 @pytest.fixture(scope="session", autouse=True)
 def check_for_otdfctl():
-    """
-    Ensure that the otdfctl command is available on the system.
+    """Ensure that the otdfctl command is available on the system.
 
     This fixture runs once per test session (for integration tests) and raises
     an exception if the otdfctl command is not found.
     """
-
     # Check if otdfctl is available
     try:
         subprocess.run(

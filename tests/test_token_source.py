@@ -1,6 +1,4 @@
-"""
-Unit tests for TokenSource.
-"""
+"""Unit tests for TokenSource."""
 
 import time
 from unittest.mock import MagicMock, patch
@@ -9,6 +7,7 @@ from otdf_python.token_source import TokenSource
 
 
 def test_token_source_returns_token_and_caches():
+    """Test TokenSource returns token and caches it."""
     with patch("httpx.post") as mock_post:
         mock_resp = MagicMock()
         mock_resp.json.return_value = {"access_token": "abc", "expires_in": 100}
@@ -26,6 +25,7 @@ def test_token_source_returns_token_and_caches():
 
 @patch("httpx.post")
 def test_token_source_refreshes_token(mock_post):
+    """Test TokenSource refreshes expired token."""
     mock_resp1 = MagicMock()
     mock_resp1.json.return_value = {"access_token": "abc", "expires_in": 1}
     mock_resp1.raise_for_status.return_value = None

@@ -1,5 +1,4 @@
-"""
-Elliptic Curve Constants for NanoTDF.
+"""Elliptic Curve Constants for NanoTDF.
 
 This module defines shared constants for elliptic curve operations used across
 the SDK, particularly for NanoTDF encryption/decryption.
@@ -14,8 +13,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 
 
 class ECCConstants:
-    """
-    Centralized constants for elliptic curve cryptography operations.
+    """Centralized constants for elliptic curve cryptography operations.
 
     This class provides mappings between curve names, curve type integers,
     cryptography curve objects, and compressed public key sizes.
@@ -67,8 +65,7 @@ class ECCConstants:
 
     @classmethod
     def get_curve_name(cls, curve_type: int) -> str:
-        """
-        Get curve name from curve type integer.
+        """Get curve name from curve type integer.
 
         Args:
             curve_type: Curve type (0=secp256r1, 1=secp384r1, 2=secp521r1, 3=secp256k1)
@@ -78,6 +75,7 @@ class ECCConstants:
 
         Raises:
             ValueError: If curve_type is not supported
+
         """
         name = cls.CURVE_TYPE_TO_NAME.get(curve_type)
         if name is None:
@@ -89,8 +87,7 @@ class ECCConstants:
 
     @classmethod
     def get_curve_type(cls, curve_name: str) -> int:
-        """
-        Get curve type integer from curve name.
+        """Get curve type integer from curve name.
 
         Args:
             curve_name: Curve name (e.g., "secp256r1")
@@ -100,6 +97,7 @@ class ECCConstants:
 
         Raises:
             ValueError: If curve_name is not supported
+
         """
         curve_type = cls.CURVE_NAME_TO_TYPE.get(curve_name.lower())
         if curve_type is None:
@@ -111,8 +109,7 @@ class ECCConstants:
 
     @classmethod
     def get_compressed_key_size_by_type(cls, curve_type: int) -> int:
-        """
-        Get compressed public key size from curve type integer.
+        """Get compressed public key size from curve type integer.
 
         Args:
             curve_type: Curve type (0=secp256r1, 1=secp384r1, 2=secp521r1, 3=secp256k1)
@@ -122,6 +119,7 @@ class ECCConstants:
 
         Raises:
             ValueError: If curve_type is not supported
+
         """
         size = cls.COMPRESSED_KEY_SIZE_BY_TYPE.get(curve_type)
         if size is None:
@@ -133,8 +131,7 @@ class ECCConstants:
 
     @classmethod
     def get_compressed_key_size_by_name(cls, curve_name: str) -> int:
-        """
-        Get compressed public key size from curve name.
+        """Get compressed public key size from curve name.
 
         Args:
             curve_name: Curve name (e.g., "secp256r1")
@@ -144,6 +141,7 @@ class ECCConstants:
 
         Raises:
             ValueError: If curve_name is not supported
+
         """
         size = cls.COMPRESSED_KEY_SIZE_BY_NAME.get(curve_name.lower())
         if size is None:
@@ -155,8 +153,7 @@ class ECCConstants:
 
     @classmethod
     def get_curve_object(cls, curve_name: str) -> ec.EllipticCurve:
-        """
-        Get cryptography library curve object from curve name.
+        """Get cryptography library curve object from curve name.
 
         Args:
             curve_name: Curve name (e.g., "secp256r1")
@@ -166,6 +163,7 @@ class ECCConstants:
 
         Raises:
             ValueError: If curve_name is not supported
+
         """
         curve = cls.CURVE_OBJECTS.get(curve_name.lower())
         if curve is None:

@@ -1,3 +1,5 @@
+"""Tests for ZipWriter."""
+
 import io
 import unittest
 import zipfile
@@ -6,7 +8,10 @@ from otdf_python.zip_writer import ZipWriter
 
 
 class TestZipWriter(unittest.TestCase):
+    """Tests for ZipWriter class."""
+
     def test_data_and_stream(self):
+        """Test writing data and streams to zip."""
         out = io.BytesIO()
         writer = ZipWriter(out)
         # Write using data
@@ -23,6 +28,7 @@ class TestZipWriter(unittest.TestCase):
             self.assertEqual(z.read("bar.txt"), b"bar contents")
 
     def test_getvalue(self):
+        """Test getting writer value as bytes."""
         writer = ZipWriter()
         writer.data("a.txt", b"A")
         writer.finish()

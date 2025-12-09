@@ -1,5 +1,4 @@
-"""
-OpenTDF Python SDK
+"""OpenTDF Python SDK.
 
 A Python implementation of the OpenTDF SDK for working with Trusted Data Format (TDF) files.
 Provides both programmatic APIs and command-line interface for encryption and decryption.

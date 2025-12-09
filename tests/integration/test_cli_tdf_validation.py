@@ -1,6 +1,4 @@
-"""
-Test CLI encryption functionality and TDF validation
-"""
+"""Test CLI encryption functionality and TDF validation"""
 
 import json
 import tempfile
@@ -285,7 +283,6 @@ def _run_python_cli_decrypt(
 @pytest.mark.integration
 def test_otdfctl_encrypt_with_validation(collect_server_logs, temp_credentials_file):
     """Integration test that uses otdfctl for encryption and validates the TDF thoroughly."""
-
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
@@ -331,7 +328,6 @@ def test_otdfctl_encrypt_with_validation(collect_server_logs, temp_credentials_f
 @pytest.mark.integration
 def test_python_encrypt(collect_server_logs, temp_credentials_file, project_root):
     """Integration test that uses Python CLI for encryption only and verifies the TDF can be inspected"""
-
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
@@ -380,7 +376,6 @@ def test_cross_tool_compatibility(
     collect_server_logs, temp_credentials_file, project_root
 ):
     """Test that TDFs created by one tool can be decrypted by the other."""
-
     # Create temporary directory for work
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
@@ -453,7 +448,6 @@ def test_different_content_types(
     collect_server_logs, temp_credentials_file, project_root
 ):
     """Test encryption/decryption with different types of content."""
-
     test_cases = [
         ("short.txt", "x"),  # Single character
         ("multiline.txt", "Line 1\nLine 2\nLine 3\n"),  # Multi-line content
@@ -513,7 +507,6 @@ def test_different_content_types_empty(
     collect_server_logs, temp_credentials_file, project_root
 ):
     """Test encryption/decryption with different types of content."""
-
     test_cases = [
         ("empty.txt", ""),  # Empty file
     ]

@@ -1,3 +1,5 @@
+"""Tests for NanoTDF."""
+
 import secrets
 
 import pytest
@@ -7,6 +9,7 @@ from otdf_python.nanotdf import InvalidNanoTDFConfig, NanoTDF, NanoTDFMaxSizeLim
 
 
 def test_nanotdf_roundtrip():
+    """Test NanoTDF encrypt and decrypt roundtrip."""
     nanotdf = NanoTDF()
     key = secrets.token_bytes(32)
     data = b"nano tdf test payload"
@@ -18,6 +21,7 @@ def test_nanotdf_roundtrip():
 
 
 def test_nanotdf_too_large():
+    """Test NanoTDF with payload exceeding size limit."""
     nanotdf = NanoTDF()
     key = secrets.token_bytes(32)
     data = b"x" * (NanoTDF.K_MAX_TDF_SIZE + 1)
@@ -27,6 +31,7 @@ def test_nanotdf_too_large():
 
 
 def test_nanotdf_invalid_magic():
+    """Test NanoTDF with invalid magic bytes."""
     nanotdf = NanoTDF()
     key = secrets.token_bytes(32)
     config = NanoTDFConfig(cipher=key.hex())
@@ -37,6 +42,7 @@ def test_nanotdf_invalid_magic():
 
 @pytest.mark.integration
 def test_nanotdf_integration_encrypt_decrypt():
+    """Test NanoTDF integration with KAS."""
     # Load environment variables for integration
     from otdf_python.config import KASInfo
     from tests.config_pydantic import CONFIG_TDF

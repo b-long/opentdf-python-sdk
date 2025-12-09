@@ -1,6 +1,4 @@
-"""
-Test TDF manifest format, inspired by the Java SDK manifest tests.
-"""
+"""Test TDF manifest format, inspired by the Java SDK manifest tests."""
 
 import json
 
@@ -11,7 +9,6 @@ from tests.mock_crypto import generate_rsa_keypair
 
 def test_manifest_field_format():
     """Test that manifest uses camelCase field names as per TDF specification."""
-
     # Create a mock KAS info with public key to avoid network calls
     kas_private_key, kas_public_key = generate_rsa_keypair()
     kas_info = KASInfo(

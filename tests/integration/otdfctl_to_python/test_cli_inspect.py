@@ -1,6 +1,4 @@
-"""
-Tests using target mode fixtures, for CLI integration testing.
-"""
+"""Tests using target mode fixtures, for CLI integration testing."""
 
 import logging
 
@@ -15,10 +13,7 @@ logger = logging.getLogger(__name__)
 def test_cli_inspect_v4_2_2_vs_v4_3_1(
     all_target_mode_tdf_files, temp_credentials_file, project_root
 ):
-    """
-    Test Python CLI inspect with various TDF versions created by otdfctl.
-    """
-
+    """Test Python CLI inspect with various TDF versions created by otdfctl."""
     v4_2_2_files = all_target_mode_tdf_files["v4.2.2"]
     v4_3_1_files = all_target_mode_tdf_files["v4.3.1"]
 
@@ -83,9 +78,7 @@ def test_cli_inspect_v4_2_2_vs_v4_3_1(
 def test_cli_inspect_different_file_types(
     all_target_mode_tdf_files, temp_credentials_file, project_root, known_target_modes
 ):
-    """
-    Test CLI inspect with different file types.
-    """
+    """Test CLI inspect with different file types."""
     assert "v4.2.2" in all_target_mode_tdf_files
     assert "v4.3.1" in all_target_mode_tdf_files
 

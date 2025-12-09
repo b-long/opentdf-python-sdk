@@ -1,9 +1,15 @@
+"""Policy information handling for NanoTDF."""
+
+
 class PolicyInfo:
+    """Policy information."""
+
     def __init__(
         self,
         policy_type: int = 0,
         body: bytes | None = None,
     ):
+        """Initialize policy information."""
         self.policy_type = policy_type
         self.body = body
 

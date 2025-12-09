@@ -1,21 +1,23 @@
+"""Policy binding serialization for HMAC calculation."""
+
 from typing import Any
 
 
 class PolicyBinding:
-    """
-    Represents a policy binding in the TDF manifest.
+    """Represents a policy binding in the TDF manifest.
+
     This is a placeholder implementation as the complete details of
     the PolicyBinding class aren't provided in the code snippets.
     """
 
     def __init__(self, **kwargs):
+        """Initialize policy binding from kwargs."""
         for key, value in kwargs.items():
             setattr(self, key, value)
 
 
 class PolicyBindingSerializer:
-    """
-    Handles serialization and deserialization of policy bindings.
+    """Handles serialization and deserialization of policy bindings.
     This class provides static methods to convert between JSON representations
     and PolicyBinding objects.
     """

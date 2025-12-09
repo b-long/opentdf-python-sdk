@@ -1,7 +1,11 @@
+"""NanoTDF type enumeration."""
+
 from enum import Enum
 
 
 class ECCurve(Enum):
+    """Elliptic curve enumeration for NanoTDF."""
+
     SECP256R1 = "secp256r1"
     SECP384R1 = "secp384r1"
     SECP521R1 = "secp384r1"
@@ -12,11 +16,15 @@ class ECCurve(Enum):
 
 
 class Protocol(Enum):
+    """Protocol enumeration for KAS communication."""
+
     HTTP = "HTTP"
     HTTPS = "HTTPS"
 
 
 class IdentifierType(Enum):
+    """Identifier type enumeration for NanoTDF."""
+
     NONE = 0
     TWO_BYTES = 2
     EIGHT_BYTES = 8
@@ -27,6 +35,8 @@ class IdentifierType(Enum):
 
 
 class PolicyType(Enum):
+    """Policy type enumeration for NanoTDF."""
+
     REMOTE_POLICY = 0
     EMBEDDED_POLICY_PLAIN_TEXT = 1
     EMBEDDED_POLICY_ENCRYPTED = 2
@@ -34,6 +44,8 @@ class PolicyType(Enum):
 
 
 class Cipher(Enum):
+    """Cipher enumeration for NanoTDF encryption."""
+
     AES_256_GCM_64_TAG = 0
     AES_256_GCM_96_TAG = 1
     AES_256_GCM_104_TAG = 2

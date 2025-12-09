@@ -1,10 +1,15 @@
+"""ZIP file writer for TDF operations."""
+
 import io
 import zipfile
 import zlib
 
 
 class FileInfo:
+    """ZIP file metadata information."""
+
     def __init__(self, name: str, crc: int, size: int, offset: int):
+        """Initialize file info."""
         self.name = name
         self.crc = crc
         self.size = size
@@ -12,7 +17,10 @@ class FileInfo:
 
 
 class ZipWriter:
+    """ZIP file writer for creating TDF packages."""
+
     def __init__(self, out_stream: io.BytesIO | None = None):
+        """Initialize ZIP writer."""
         self.out_stream = out_stream or io.BytesIO()
         self.zipfile = zipfile.ZipFile(
             self.out_stream, mode="w", compression=zipfile.ZIP_STORED
@@ -45,7 +53,10 @@ class ZipWriter:
 
 
 class _TrackingWriter(io.RawIOBase):
+    """Internal ZIP stream writer with offset tracking."""
+
     def __init__(self, zip_writer: ZipWriter, name: str, offset: int):
+        """Initialize tracking writer."""
         self._zip_writer = zip_writer
         self._name = name
         self._offset = offset

@@ -1,6 +1,4 @@
-"""
-Tests for NanoTDFECDSAStruct.
-"""
+"""Tests for NanoTDFECDSAStruct."""
 
 import pytest
 

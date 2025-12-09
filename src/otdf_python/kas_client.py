@@ -1,6 +1,4 @@
-"""
-KASClient: Handles communication with the Key Access Service (KAS).
-"""
+"""KASClient: Handles communication with the Key Access Service (KAS)."""
 
 import base64
 import hashlib
@@ -22,6 +20,8 @@ from .sdk_exceptions import SDKException
 
 @dataclass
 class KeyAccess:
+    """Key access response from KAS."""
+
     url: str
     wrapped_key: str
     ephemeral_public_key: str | None = None
@@ -29,6 +29,8 @@ class KeyAccess:
 
 
 class KASClient:
+    """Client for communicating with the Key Access Service (KAS)."""
+
     def __init__(
         self,
         kas_url=None,
@@ -37,6 +39,7 @@ class KASClient:
         use_plaintext=False,
         verify_ssl=True,
     ):
+        """Initialize KAS client."""
         self.kas_url = kas_url
         self.token_source = token_source
         self.cache = cache or KASKeyCache()
@@ -63,14 +66,14 @@ class KASClient:
         )
 
     def _normalize_kas_url(self, url: str) -> str:
-        """
-        Normalize KAS URLs based on client security settings.
+        """Normalize KAS URLs based on client security settings.
 
         Args:
             url: The KAS URL to normalize
 
         Returns:
             Normalized URL with appropriate protocol and port
+
         """
         from urllib.parse import urlparse
 
@@ -141,14 +144,14 @@ class KASClient:
             raise SDKException(f"error creating KAS address: {e}") from e
 
     def _get_wrapped_key_base64(self, key_access):
-        """
-        Extract and normalize the wrapped key to base64-encoded string.
+        """Extract and normalize the wrapped key to base64-encoded string.
 
         Args:
             key_access: KeyAccess object
 
         Returns:
             Base64-encoded wrapped key string
+
         """
         wrapped_key = getattr(key_access, "wrappedKey", None) or getattr(
             key_access, "wrapped_key", None
@@ -166,14 +169,14 @@ class KASClient:
         return wrapped_key
 
     def _build_key_access_dict(self, key_access):
-        """
-        Build key access dictionary from KeyAccess object, handling both old and new field names.
+        """Build key access dictionary from KeyAccess object, handling both old and new field names.
 
         Args:
             key_access: KeyAccess object
 
         Returns:
             Dictionary with key access information
+
         """
         wrapped_key = self._get_wrapped_key_base64(key_access)
 
@@ -197,12 +200,12 @@ class KASClient:
         return key_access_dict
 
     def _add_optional_fields(self, key_access_dict, key_access):
-        """
-        Add optional fields to key access dictionary.
+        """Add optional fields to key access dictionary.
 
         Args:
             key_access_dict: Dictionary to add fields to
             key_access: KeyAccess object to extract fields from
+
         """
         # Policy binding
         policy_binding = getattr(key_access, "policyBinding", None) or getattr(
@@ -244,14 +247,14 @@ class KASClient:
             key_access_dict["header"] = base64.b64encode(header).decode("utf-8")
 
     def _get_algorithm_from_session_key_type(self, session_key_type):
-        """
-        Convert session key type to algorithm string for KAS.
+        """Convert session key type to algorithm string for KAS.
 
         Args:
             session_key_type: Session key type (EC_KEY_TYPE or RSA_KEY_TYPE)
 
         Returns:
             Algorithm string or None
+
         """
         if session_key_type == EC_KEY_TYPE:
             return "ec:secp256r1"  # Default EC curve for NanoTDF
@@ -262,8 +265,7 @@ class KASClient:
     def _build_rewrap_request(
         self, policy_json, client_public_key, key_access_dict, algorithm, has_header
     ):
-        """
-        Build the unsigned rewrap request structure.
+        """Build the unsigned rewrap request structure.
 
         Args:
             policy_json: Policy JSON string
@@ -274,6 +276,7 @@ class KASClient:
 
         Returns:
             Dictionary with unsigned rewrap request
+
         """
         import json
 
@@ -316,8 +319,7 @@ class KASClient:
     def _create_signed_request_jwt(
         self, policy_json, client_public_key, key_access, session_key_type=None
     ):
-        """
-        Create a signed JWT for the rewrap request.
+        """Create a signed JWT for the rewrap request.
         The JWT is signed with the DPoP private key.
 
         Args:
@@ -325,6 +327,7 @@ class KASClient:
             client_public_key: Client public key PEM string
             key_access: KeyAccess object
             session_key_type: Optional session key type (RSA_KEY_TYPE or EC_KEY_TYPE)
+
         """
         # Build key access dictionary handling both old and new field names
         key_access_dict = self._build_key_access_dict(key_access)
@@ -354,8 +357,7 @@ class KASClient:
         return jwt.encode(payload, self._dpop_private_key_pem, algorithm="RS256")
 
     def _create_connect_rpc_signed_token(self, key_access, policy_json):
-        """
-        Create a signed token specifically for Connect RPC requests.
+        """Create a signed token specifically for Connect RPC requests.
         For now, this delegates to the existing JWT creation method.
         """
         return self._create_signed_request_jwt(
@@ -363,8 +365,7 @@ class KASClient:
         )
 
     def _create_dpop_proof(self, method, url, access_token=None):
-        """
-        Create a DPoP proof JWT as per RFC 9449.
+        """Create a DPoP proof JWT as per RFC 9449.
 
         Args:
             method: HTTP method (e.g., "POST")
@@ -373,6 +374,7 @@ class KASClient:
 
         Returns:
             DPoP proof JWT string
+
         """
         now = int(time.time())
 
@@ -424,8 +426,7 @@ class KASClient:
         )
 
     def get_public_key(self, kas_info):
-        """
-        Get KAS public key using Connect RPC.
+        """Get KAS public key using Connect RPC.
         Checks cache first if available.
         """
         try:
@@ -448,10 +449,7 @@ class KASClient:
             raise
 
     def _get_public_key_with_connect_rpc(self, kas_info):
-        """
-        Get KAS public key using Connect RPC.
-        """
-
+        """Get KAS public key using Connect RPC."""
         # Get access token for authentication if token source is available
         access_token = None
         if self.token_source:
@@ -486,14 +484,14 @@ class KASClient:
             raise SDKException(f"Connect RPC public key request failed: {e}") from e
 
     def _normalize_session_key_type(self, session_key_type):
-        """
-        Normalize session key type to the appropriate enum value.
+        """Normalize session key type to the appropriate enum value.
 
         Args:
             session_key_type: Type of the session key (KeyType enum or string "RSA"/"EC")
 
         Returns:
             Normalized key type enum
+
         """
         if isinstance(session_key_type, str):
             if session_key_type.upper() == "RSA":
@@ -511,14 +509,14 @@ class KASClient:
         return session_key_type
 
     def _prepare_ec_keypair(self, session_key_type):
-        """
-        Prepare EC key pair for unwrapping.
+        """Prepare EC key pair for unwrapping.
 
         Args:
             session_key_type: EC key type with curve information
 
         Returns:
             ECKeyPair instance and client public key
+
         """
         from .eckeypair import ECKeyPair
 
@@ -528,12 +526,12 @@ class KASClient:
         return ec_key_pair, client_public_key
 
     def _prepare_rsa_keypair(self):
-        """
-        Prepare RSA key pair for unwrapping, reusing if possible.
+        """Prepare RSA key pair for unwrapping, reusing if possible.
         Uses separate ephemeral keys for encryption (not DPoP keys).
 
         Returns:
             Client public key PEM for the ephemeral encryption key
+
         """
         if self.decryptor is None:
             # Generate ephemeral keys for encryption (separate from DPoP keys)
@@ -543,8 +541,7 @@ class KASClient:
         return self.client_public_key
 
     def _unwrap_with_ec(self, wrapped_key, ec_key_pair, response_data):
-        """
-        Unwrap a key using EC cryptography.
+        """Unwrap a key using EC cryptography.
 
         Args:
             wrapped_key: The wrapped key to decrypt
@@ -553,6 +550,7 @@ class KASClient:
 
         Returns:
             Unwrapped key as bytes
+
         """
         if ec_key_pair is None:
             raise SDKException(
@@ -581,9 +579,7 @@ class KASClient:
         return gcm.decrypt(wrapped_key)
 
     def _ensure_client_keypair(self, session_key_type):
-        """
-        Ensure client keypair is generated and stored.
-        """
+        """Ensure client keypair is generated and stored."""
         if session_key_type == RSA_KEY_TYPE:
             if self.decryptor is None:
                 private_key, public_key = CryptoUtils.generate_rsa_keypair()
@@ -600,9 +596,7 @@ class KASClient:
                 self.client_public_key = CryptoUtils.get_rsa_public_key_pem(public_key)
 
     def _parse_and_decrypt_response(self, response):
-        """
-        Parse JSON response and decrypt the wrapped key.
-        """
+        """Parse JSON response and decrypt the wrapped key."""
         try:
             response_data = response.json()
         except Exception as e:
@@ -621,8 +615,7 @@ class KASClient:
         return self.decryptor.decrypt(encrypted_key)
 
     def unwrap(self, key_access, policy_json, session_key_type=None) -> bytes:
-        """
-        Unwrap a key using Connect RPC.
+        """Unwrap a key using Connect RPC.
 
         Args:
             key_access: Key access information
@@ -631,6 +624,7 @@ class KASClient:
 
         Returns:
             Unwrapped key bytes
+
         """
         # Default to RSA if not specified
         if session_key_type is None:
@@ -655,15 +649,14 @@ class KASClient:
     def _unwrap_with_connect_rpc(
         self, key_access, signed_token, session_key_type=None
     ) -> bytes:
-        """
-        Connect RPC method for unwrapping keys.
+        """Connect RPC method for unwrapping keys.
 
         Args:
             key_access: KeyAccess object
             signed_token: Signed JWT token
             session_key_type: Optional session key type (RSA_KEY_TYPE or EC_KEY_TYPE)
-        """
 
+        """
         # Get access token for authentication if token source is available
         access_token = None
         if self.token_source:
@@ -705,5 +698,5 @@ class KASClient:
             raise SDKException(f"Connect RPC rewrap failed: {e}") from e
 
     def get_key_cache(self) -> KASKeyCache:
-        """Returns the KAS key cache used for storing and retrieving encryption keys."""
+        """Return the KAS key cache used for storing and retrieving encryption keys."""
         return self.cache

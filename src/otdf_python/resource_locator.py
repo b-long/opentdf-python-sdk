@@ -1,15 +1,19 @@
+"""NanoTDF resource locator handling."""
+
+
 class ResourceLocator:
-    """
-    NanoTDF Resource Locator per the spec:
-    https://github.com/opentdf/spec/blob/main/schema/nanotdf/README.md
+    """Represent NanoTDF Resource Locator per specification.
+
+    See https://github.com/opentdf/spec/blob/main/schema/nanotdf/README.md
 
     Format:
-    - Byte 0: Protocol Enum (bits 0-3) + Identifier Length (bits 4-7)
-      - Protocol: 0x0=HTTP, 0x1=HTTPS, 0xF=Shared Resource Directory
-      - Identifier: 0x0=None, 0x1=2 bytes, 0x2=8 bytes, 0x3=32 bytes
-    - Byte 1: Body Length (1-255 bytes)
-    - Bytes 2-N: Body (URL path)
-    - Bytes N+1-M: Identifier (optional, 0/2/8/32 bytes)
+        - Byte 0: Protocol Enum (bits 0-3) + Identifier Length (bits 4-7)
+          - Protocol: 0x0=HTTP, 0x1=HTTPS, 0xF=Shared Resource Directory
+          - Identifier: 0x0=None, 0x1=2 bytes, 0x2=8 bytes, 0x3=32 bytes
+        - Byte 1: Body Length (1-255 bytes)
+        - Bytes 2-N: Body (URL path)
+        - Bytes N+1-M: Identifier (optional, 0/2/8/32 bytes)
+
     """
 
     # Protocol enum values
@@ -24,6 +28,13 @@ class ResourceLocator:
     IDENTIFIER_32_BYTES = 0x3
 
     def __init__(self, resource_url: str | None = None, identifier: str | None = None):
+        """Initialize resource locator.
+
+        Args:
+            resource_url: URL of the resource
+            identifier: Optional identifier for the resource
+
+        """
         self.resource_url = resource_url or ""
         self.identifier = identifier or ""
 
@@ -71,8 +82,7 @@ class ResourceLocator:
             raise ValueError(f"Identifier too long: {id_len} bytes (max 32)")
 
     def to_bytes(self):
-        """
-        Convert to NanoTDF Resource Locator format per spec.
+        """Convert to NanoTDF Resource Locator format per spec.
 
         Format:
         - Byte 0: Protocol Enum (bits 0-3) + Identifier Length (bits 4-7)
@@ -106,8 +116,7 @@ class ResourceLocator:
 
     @staticmethod
     def from_bytes_with_size(buffer: bytes):  # noqa: C901
-        """
-        Parse NanoTDF Resource Locator from bytes per spec.
+        """Parse NanoTDF Resource Locator from bytes per spec.
 
         Format:
         - Byte 0: Protocol Enum (bits 0-3) + Identifier Length (bits 4-7)

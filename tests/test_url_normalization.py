@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Test script to verify URL normalization functionality is working correctly.
+"""Test script to verify URL normalization functionality is working correctly.
 
 This script tests the _normalize_kas_url method to ensure it properly respects
 the use_plaintext setting when converting URLs.
@@ -10,6 +9,7 @@ from src.otdf_python.kas_client import KASClient
 
 
 def test_url_normalization():
+    """Test KAS URL normalization with plaintext settings."""
     print("Testing with use_plaintext=True:")
     client_plaintext = KASClient(use_plaintext=True)
 

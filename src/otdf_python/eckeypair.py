@@ -1,3 +1,5 @@
+"""Elliptic Curve key pair management."""
+
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
@@ -12,7 +14,10 @@ from cryptography.hazmat.primitives.serialization import (
 
 
 class ECKeyPair:
+    """Elliptic Curve key pair for cryptographic operations."""
+
     def __init__(self, curve=None):
+        """Initialize EC key pair."""
         if curve is None:
             curve = ec.SECP256R1()
         self.private_key = ec.generate_private_key(curve, default_backend())

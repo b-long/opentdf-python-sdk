@@ -1,6 +1,4 @@
-"""
-Unit tests for KASClient.
-"""
+"""Unit tests for KASClient."""
 
 from base64 import b64decode
 from unittest.mock import MagicMock, patch
@@ -13,7 +11,19 @@ from otdf_python.sdk_exceptions import SDKException
 
 
 class MockKasInfo:
+    """Mock KAS info for testing."""
+
     def __init__(self, url, algorithm=None, public_key=None, kid=None, default=False):
+        """Initialize MockKasInfo.
+
+        Args:
+            url: KAS URL.
+            algorithm: Key algorithm.
+            public_key: Public key.
+            kid: Key ID.
+            default: Whether this is the default KAS.
+
+        """
         self.url = url
         self.algorithm = algorithm or ""
         self.public_key = public_key or ""
@@ -31,6 +41,7 @@ class MockKasInfo:
 
 
 def test_get_public_key_uses_cache():
+    """Test that get_public_key uses cached KAS info."""
     cache = KASKeyCache()
     kas_info = MockKasInfo(url="http://kas")
     # Store in cache using the new mechanism
@@ -45,6 +56,7 @@ def test_get_public_key_uses_cache():
 def test_get_public_key_fetches_and_caches(
     mock_access_service_client, mock_pool_manager
 ):
+    """Test that get_public_key fetches and caches public key."""
     cache = KASKeyCache()
     client = KASClient("http://kas", cache=cache)
 
@@ -105,6 +117,7 @@ def test_unwrap_success(
     mock_access_service_client,
     mock_pool_manager,
 ):
+    """Test successful key unwrap operation."""
     # Setup mocks for RSA key pair generation and decryption
     mock_private_key = MagicMock()
     mock_public_key = MagicMock()
@@ -168,6 +181,7 @@ def test_unwrap_success(
 @patch("urllib3.PoolManager")
 @patch("otdf_python_proto.kas.kas_pb2_connect.AccessServiceClient")
 def test_unwrap_failure(mock_access_service_client, mock_pool_manager):
+    """Test key unwrap failure handling."""
     # Setup realistic HTTP response mock for PoolManager
     mock_response = MagicMock()
     mock_response.status = 500

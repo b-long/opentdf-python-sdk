@@ -1,6 +1,4 @@
-"""
-NanoTDF ECDSA Signature Structure.
-"""
+"""NanoTDF ECDSA Signature Structure."""
 
 from dataclasses import dataclass, field
 
@@ -13,8 +11,7 @@ class IncorrectNanoTDFECDSASignatureSize(Exception):
 
 @dataclass
 class NanoTDFECDSAStruct:
-    """
-    Class to handle ECDSA signature structure for NanoTDF.
+    """Class to handle ECDSA signature structure for NanoTDF.
 
     This structure represents an ECDSA signature as required by the NanoTDF format.
     It consists of r and s values along with their lengths.
@@ -29,8 +26,7 @@ class NanoTDFECDSAStruct:
     def from_bytes(
         cls, ecdsa_signature_value: bytes, key_size: int
     ) -> "NanoTDFECDSAStruct":
-        """
-        Create a NanoTDFECDSAStruct from a byte array.
+        """Create a NanoTDFECDSAStruct from a byte array.
 
         Args:
             ecdsa_signature_value: The signature value as bytes
@@ -41,6 +37,7 @@ class NanoTDFECDSAStruct:
 
         Raises:
             IncorrectNanoTDFECDSASignatureSize: If the signature buffer size is invalid
+
         """
         if len(ecdsa_signature_value) != (2 * key_size) + 2:
             raise IncorrectNanoTDFECDSASignatureSize(
@@ -72,8 +69,7 @@ class NanoTDFECDSAStruct:
         return struct_obj
 
     def as_bytes(self) -> bytes:
-        """
-        Convert the signature structure to bytes.
+        """Convert the signature structure to bytes.
         Raises ValueError if r_value or s_value is None.
         """
         if self.r_value is None or self.s_value is None:

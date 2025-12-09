@@ -1,3 +1,5 @@
+"""TDF header parsing and serialization."""
+
 from otdf_python.constants import MAGIC_NUMBER_AND_VERSION
 from otdf_python.ecc_mode import ECCMode
 from otdf_python.policy_info import PolicyInfo
@@ -6,10 +8,13 @@ from otdf_python.symmetric_and_payload_config import SymmetricAndPayloadConfig
 
 
 class Header:
+    """TDF header with encryption and policy information."""
+
     # Size of GMAC (Galois Message Authentication Code) for policy binding
     GMAC_SIZE = 8
 
     def __init__(self):
+        """Initialize TDF header."""
         self.kas_locator: ResourceLocator | None = None
         self.ecc_mode: ECCMode | None = None
         self.payload_config: SymmetricAndPayloadConfig | None = None

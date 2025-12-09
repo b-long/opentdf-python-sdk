@@ -1,6 +1,4 @@
-"""
-Tests for TDFReader.
-"""
+"""Tests for TDFReader."""
 
 import io
 import json
