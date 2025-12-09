@@ -120,9 +120,7 @@ class SDKBuilder:
 
         """
         # Normalize the endpoint URL
-        if endpoint and not (
-            endpoint.startswith("http://") or endpoint.startswith("https://")
-        ):
+        if endpoint and not (endpoint.startswith(("http://", "https://"))):
             if self.use_plaintext:
                 endpoint = f"http://{endpoint}"
             else:
@@ -143,9 +141,7 @@ class SDKBuilder:
 
         """
         # Normalize the issuer URL
-        if issuer and not (
-            issuer.startswith("http://") or issuer.startswith("https://")
-        ):
+        if issuer and not (issuer.startswith(("http://", "https://"))):
             issuer = f"https://{issuer}"
 
         self.issuer_endpoint = issuer
