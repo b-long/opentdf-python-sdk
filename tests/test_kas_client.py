@@ -51,27 +51,18 @@ def test_get_public_key_uses_cache():
     assert client.get_public_key(MockKasInfo(url="http://kas")) == kas_info
 
 
-@patch("urllib3.PoolManager")
-@patch("otdf_python.kas_connect_rpc_client.AccessServiceClient")
+@patch("httpx.Client")
+@patch("otdf_python.kas_connect_rpc_client.AccessServiceClientSync")
 def test_get_public_key_fetches_and_caches(
-    mock_access_service_client, mock_pool_manager
+    mock_access_service_client, mock_http_client
 ):
     """Test that get_public_key fetches and caches public key."""
     cache = KASKeyCache()
     client = KASClient("http://kas", cache=cache)
 
-    # Mock urllib3.PoolManager to prevent real network calls
-    mock_pool_instance = MagicMock()
-    mock_pool_manager.return_value = mock_pool_instance
-
-    # Setup a successful HTTP response that bypasses error handling
-    mock_response = MagicMock()
-    mock_response.status = 200
-    mock_response.headers = {"Content-Type": "application/proto"}
-    mock_response.read.return_value = (
-        b""  # Empty protobuf data since we're mocking the client layer
-    )
-    mock_pool_instance.request.return_value = mock_response
+    # Mock httpx.Client to prevent real network calls
+    mock_client_context = MagicMock()
+    mock_http_client.return_value.__enter__.return_value = mock_client_context
 
     # Mock the Connect RPC client directly since it expects protobuf responses
     mock_client_instance = MagicMock()
@@ -105,8 +96,8 @@ def test_get_public_key_fetches_and_caches(
     assert cached.public_key == "public-key-data"
 
 
-@patch("urllib3.PoolManager")
-@patch("otdf_python.kas_connect_rpc_client.AccessServiceClient")
+@patch("httpx.Client")
+@patch("otdf_python.kas_connect_rpc_client.AccessServiceClientSync")
 @patch("otdf_python.kas_client.CryptoUtils")
 @patch("otdf_python.kas_client.AsymDecryption")
 @patch("otdf_python.kas_client.jwt.encode")  # Mock JWT encoding directly
@@ -115,7 +106,7 @@ def test_unwrap_success(
     mock_asym_decryption,
     mock_crypto_utils,
     mock_access_service_client,
-    mock_pool_manager,
+    mock_http_client,
 ):
     """Test successful key unwrap operation."""
     # Setup mocks for RSA key pair generation and decryption
@@ -138,18 +129,9 @@ def test_unwrap_success(
     mock_decryptor.decrypt.return_value = b"decrypted_key"
     mock_asym_decryption.return_value = mock_decryptor
 
-    # Mock urllib3.PoolManager to prevent real network calls
-    mock_pool_instance = MagicMock()
-    mock_pool_manager.return_value = mock_pool_instance
-
-    # Setup a successful HTTP response that bypasses error handling
-    mock_response = MagicMock()
-    mock_response.status = 200
-    mock_response.headers = {"Content-Type": "application/proto"}
-    mock_response.read.return_value = (
-        b""  # Empty protobuf data since we're mocking the client layer
-    )
-    mock_pool_instance.request.return_value = mock_response
+    # Mock httpx.Client to prevent real network calls
+    mock_client_context = MagicMock()
+    mock_http_client.return_value.__enter__.return_value = mock_client_context
 
     # Mock Connect RPC client directly instead of HTTP layer
     mock_client_instance = MagicMock()
@@ -178,19 +160,13 @@ def test_unwrap_success(
     mock_decryptor.decrypt.assert_called_once()
 
 
-@patch("urllib3.PoolManager")
-@patch("otdf_python_proto.kas.kas_pb2_connect.AccessServiceClient")
-def test_unwrap_failure(mock_access_service_client, mock_pool_manager):
+@patch("httpx.Client")
+@patch("otdf_python.kas_connect_rpc_client.AccessServiceClientSync")
+def test_unwrap_failure(mock_access_service_client, mock_http_client):
     """Test key unwrap failure handling."""
-    # Setup realistic HTTP response mock for PoolManager
-    mock_response = MagicMock()
-    mock_response.status = 500
-    mock_response.read.return_value = b'{"error": "fail"}'
-    mock_response.headers = {"content-type": "application/json"}
-
-    mock_pool_instance = MagicMock()
-    mock_pool_instance.request.return_value = mock_response
-    mock_pool_manager.return_value = mock_pool_instance
+    # Mock httpx.Client to prevent real network calls
+    mock_client_context = MagicMock()
+    mock_http_client.return_value.__enter__.return_value = mock_client_context
 
     # Mock the Connect RPC client to raise an exception
     mock_access_service_client.side_effect = Exception("fail")
@@ -434,10 +410,10 @@ def test_kas_url_normalization_error_handling_with_kasinfo():
             client._normalize_kas_url(kas_info.url)
 
 
-@patch("urllib3.PoolManager")
-@patch("otdf_python.kas_connect_rpc_client.AccessServiceClient")
+@patch("httpx.Client")
+@patch("otdf_python.kas_connect_rpc_client.AccessServiceClientSync")
 def test_jwt_signature_verification_in_unwrap_request(
-    mock_access_service_client, mock_pool_manager, collect_server_logs
+    mock_access_service_client, mock_http_client, collect_server_logs
 ):
     """Test that JWT signature is properly created and can be verified.
 
@@ -447,18 +423,9 @@ def test_jwt_signature_verification_in_unwrap_request(
     """
     import jwt
 
-    # Mock urllib3.PoolManager to prevent real network calls
-    mock_pool_instance = MagicMock()
-    mock_pool_manager.return_value = mock_pool_instance
-
-    # Setup a successful HTTP response that bypasses error handling
-    mock_response = MagicMock()
-    mock_response.status = 200
-    mock_response.headers = {"Content-Type": "application/proto"}
-    mock_response.read.return_value = (
-        b""  # Empty protobuf data since we're mocking the client layer
-    )
-    mock_pool_instance.request.return_value = mock_response
+    # Mock httpx.Client to prevent real network calls
+    mock_client_context = MagicMock()
+    mock_http_client.return_value.__enter__.return_value = mock_client_context
 
     # Mock Connect RPC client directly for protobuf compatibility
     mock_client_instance = MagicMock()
