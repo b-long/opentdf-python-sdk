@@ -433,6 +433,7 @@ dependencies = [
     { name = "grpcio-tools" },
     { name = "httpx" },
     { name = "protobuf" },
+    { name = "protoc-gen-connect-python" },
     { name = "protoc-gen-openapiv2" },
     { name = "pyjwt" },
     { name = "typing-extensions" },
@@ -449,13 +450,14 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "connect-python", extras = ["compiler"], specifier = ">=0.6.0,<0.7" },
+    { name = "connect-python", specifier = ">=0.6.0,<0.7" },
     { name = "cryptography", specifier = ">=45.0.4" },
     { name = "grpcio", specifier = ">=1.74.0" },
     { name = "grpcio-status", specifier = ">=1.74.0" },
     { name = "grpcio-tools", specifier = ">=1.74.0" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "protobuf", specifier = ">=6.31.1" },
+    { name = "protoc-gen-connect-python", specifier = ">=0.6.0,<0.7" },
     { name = "protoc-gen-openapiv2", specifier = ">=0.0.1" },
     { name = "pyjwt", specifier = ">=2.10.1" },
     { name = "typing-extensions", specifier = ">=4.14.1" },
@@ -501,6 +503,19 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/8e/d0/d796e419e2ec93d2f3fa44888861c3f88f722cde02b7c3488fcc6a166820/protobuf-6.33.1-cp39-abi3-manylinux2014_s390x.whl", hash = "sha256:0f4cf01222c0d959c2b399142deb526de420be8236f22c71356e2a544e153c53", size = 339161, upload-time = "2025-11-13T16:44:12.778Z" },
     { url = "https://files.pythonhosted.org/packages/1d/2a/3c5f05a4af06649547027d288747f68525755de692a26a7720dced3652c0/protobuf-6.33.1-cp39-abi3-manylinux2014_x86_64.whl", hash = "sha256:8fd7d5e0eb08cd5b87fd3df49bc193f5cfd778701f47e11d127d0afc6c39f1d1", size = 323171, upload-time = "2025-11-13T16:44:14.035Z" },
     { url = "https://files.pythonhosted.org/packages/08/b4/46310463b4f6ceef310f8348786f3cff181cea671578e3d9743ba61a459e/protobuf-6.33.1-py3-none-any.whl", hash = "sha256:d595a9fd694fdeb061a62fbe10eb039cc1e444df81ec9bb70c7fc59ebcb1eafa", size = 170477, upload-time = "2025-11-13T16:44:17.633Z" },
+]
+
+[[package]]
+name = "protoc-gen-connect-python"
+version = "0.6.0"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8f/3a/721ca3c27870596240b0d13dab40145b5de68147e4fdcdf9afc7684e905d/protoc_gen_connect_python-0.6.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:f7395905489de4af43e001b0439aa10680d35c023c9e61e9c7df08f5d5b4a41b", size = 1827154, upload-time = "2025-12-08T04:45:52.917Z" },
+    { url = "https://files.pythonhosted.org/packages/6e/92/45e07f3060a458809530c8dc48fa3a291e35ecc3560759b26a5aa371c4cb/protoc_gen_connect_python-0.6.0-py3-none-macosx_11_0_x86_64.whl", hash = "sha256:dd0673917cb357e3796d1f088bf5aba5cbc39ef785e68aa1c69d8663ff476be5", size = 1951153, upload-time = "2025-12-08T04:45:54.314Z" },
+    { url = "https://files.pythonhosted.org/packages/48/63/3d0b1ced6d0341afa3c7338eed46e4a070233d83577d7368a5acacce0781/protoc_gen_connect_python-0.6.0-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.musllinux_1_1_aarch64.whl", hash = "sha256:53fcb349100d3d1c1f297d0f3391daf25d75adaea0907acbfd8fa88b1ce6b028", size = 1761360, upload-time = "2025-12-08T04:45:55.861Z" },
+    { url = "https://files.pythonhosted.org/packages/11/6a/b123d1dfd4aecbc52f7ee325cddfa3ef972250e064365c1b10edf48a5736/protoc_gen_connect_python-0.6.0-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.musllinux_1_1_x86_64.whl", hash = "sha256:461d3c6a4ed73120404e65bd299dc4ddeea95a22abe08165119f0eae7c9abc9b", size = 1928744, upload-time = "2025-12-08T04:45:57.557Z" },
+    { url = "https://files.pythonhosted.org/packages/f1/d9/de885f34566df97ecc9ac782d11ff923ebf250c01dc9cf0159bfb694b094/protoc_gen_connect_python-0.6.0-py3-none-win_amd64.whl", hash = "sha256:cc02f64587bbb7ddd5c22686af1b521886121ffd97bc82f7dfec96564de44ca9", size = 1988083, upload-time = "2025-12-08T04:45:58.867Z" },
+    { url = "https://files.pythonhosted.org/packages/d4/1a/c3d7bf5eda1c0724f219dcc16bd219b6fcc41d3ab846e3a8af2f94b1a81f/protoc_gen_connect_python-0.6.0-py3-none-win_arm64.whl", hash = "sha256:1b89eff4e2289ac72b682a2637dc9cb60647a9b16fa6c56a6bdf229545f5bac8", size = 1793631, upload-time = "2025-12-08T04:46:00.401Z" },
 ]
 
 [[package]]

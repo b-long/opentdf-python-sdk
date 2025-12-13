@@ -26,7 +26,8 @@ classifiers = [
 
 dependencies = [
     "cryptography>=45.0.4",
-    "connect-python[compiler]>=0.6.0,<0.7",
+    "connect-python>=0.6.0,<0.7",
+    "protoc-gen-connect-python>=0.6.0,<0.7",
     "httpx>=0.28.1",
     "protobuf>=6.31.1",
     "pyjwt>=2.10.1",
