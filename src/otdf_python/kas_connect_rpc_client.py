@@ -104,7 +104,7 @@ class KASConnectRPCClient:
             with self._create_http_client() as http_client:
                 # Create Connect RPC client with configured HTTP client
                 client = AccessServiceClientSync(
-                    base_url=connect_rpc_base_url, session=http_client
+                    address=connect_rpc_base_url, session=http_client
                 )
 
                 # Create public key request
@@ -169,7 +169,7 @@ class KASConnectRPCClient:
             with self._create_http_client() as http_client:
                 # Create Connect RPC client with configured HTTP client
                 client = AccessServiceClientSync(
-                    base_url=kas_service_url, session=http_client
+                    address=kas_service_url, session=http_client
                 )
 
                 # Create rewrap request
