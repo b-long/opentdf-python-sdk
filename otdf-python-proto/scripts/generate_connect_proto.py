@@ -37,7 +37,7 @@ def check_dependencies() -> bool:
                 print("  # macOS: brew install bufbuild/buf/buf")
                 print("  # Or: go install github.com/bufbuild/buf/cmd/buf@latest")
             elif dep == "connect-python":
-                print("  uv add connect-python[compiler]")
+                print("  uv add connect-python protoc-gen-connect-python")
         return False
 
     return True
@@ -141,9 +141,9 @@ def run_buf_generate(proto_gen_dir: Path) -> bool:
     print("Generating protobuf and Connect RPC files...")
 
     try:
-        # First, get the path to protoc-gen-connect_python
+        # First, get the path to protoc-gen-connect-python
         result = subprocess.run(
-            ["uv", "run", "which", "protoc-gen-connect_python"],
+            ["uv", "run", "which", "protoc-gen-connect-python"],
             cwd=proto_gen_dir,
             capture_output=True,
             text=True,
@@ -159,7 +159,7 @@ def run_buf_generate(proto_gen_dir: Path) -> bool:
 
         # Replace the local plugin path
         updated_content = content.replace(
-            "- local: protoc-gen-connect_python", f"- local: {connect_plugin_path}"
+            "- local: protoc-gen-connect-python", f"- local: {connect_plugin_path}"
         )
 
         with buf_gen_path.open("w") as f:
