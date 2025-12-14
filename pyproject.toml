@@ -91,6 +91,7 @@ lint.select = [
     "FURB",   # refurb
     "I",      # isort
     "PERF",   # performance
+    "PIE",    # flake8-pie
     "PT018",  # pytest style
     "PTH",    # pathlib
     "Q",      # flake8-quotes

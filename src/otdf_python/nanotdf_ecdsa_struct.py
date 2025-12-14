@@ -6,8 +6,6 @@ from dataclasses import dataclass, field
 class IncorrectNanoTDFECDSASignatureSize(Exception):
     """Exception raised when the signature size is incorrect."""
 
-    pass
-
 
 @dataclass
 class NanoTDFECDSAStruct:

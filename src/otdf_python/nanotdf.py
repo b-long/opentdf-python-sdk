@@ -28,25 +28,17 @@ from .asym_crypto import AsymDecryption
 class NanoTDFException(SDKException):
     """Base exception for NanoTDF operations."""
 
-    pass
-
 
 class NanoTDFMaxSizeLimit(NanoTDFException):
     """Exception for NanoTDF size limit exceeded."""
-
-    pass
 
 
 class UnsupportedNanoTDFFeature(NanoTDFException):
     """Exception for unsupported NanoTDF features."""
 
-    pass
-
 
 class InvalidNanoTDFConfig(NanoTDFException):
     """Exception for invalid NanoTDF configuration."""
-
-    pass
 
 
 class NanoTDF:

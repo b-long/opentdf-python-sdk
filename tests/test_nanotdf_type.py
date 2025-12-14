@@ -18,7 +18,7 @@ class TestNanoTDFType(unittest.TestCase):
         """Test ECCurve enum values."""
         self.assertEqual(str(ECCurve.SECP256R1), "secp256r1")
         self.assertEqual(str(ECCurve.SECP384R1), "secp384r1")
-        self.assertEqual(str(ECCurve.SECP521R1), "secp384r1")
+        self.assertEqual(str(ECCurve.SECP521R1), "secp521r1")
         self.assertEqual(str(ECCurve.SECP256K1), "secp256k1")
 
     def test_protocol(self):
