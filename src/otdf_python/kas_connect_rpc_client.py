@@ -26,6 +26,27 @@ class KASConnectRPCClient:
         """
         self.use_plaintext = use_plaintext
         self.verify_ssl = verify_ssl
+        self._http_client = None
+
+    def __enter__(self):
+        """Enter context manager and create HTTP client."""
+        self._http_client = self._create_http_client()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exit context manager and close HTTP client."""
+        self.close()
+
+    def close(self):
+        """Close HTTP client and release resources.
+
+        This method should be called when the client is no longer needed
+        to properly clean up resources. It's also called automatically
+        when using the client as a context manager.
+        """
+        if self._http_client is not None:
+            self._http_client.close()
+            self._http_client = None
 
     def _create_http_client(self):
         """Create HTTP client with SSL verification configuration.
@@ -40,6 +61,17 @@ class KASConnectRPCClient:
         else:
             logging.info("Using SSL verification disabled HTTP client")
             return httpx.Client(verify=False)
+
+    def _get_http_client(self):
+        """Get HTTP client, creating one if needed for backward compatibility.
+
+        Returns:
+            httpx.Client instance
+
+        """
+        if self._http_client is None:
+            self._http_client = self._create_http_client()
+        return self._http_client
 
     def _prepare_connect_rpc_url(self, kas_url):
         """Prepare the base URL for Connect RPC client.
@@ -100,32 +132,33 @@ class KASConnectRPCClient:
                 f"for public key retrieval"
             )
 
-            # Use context manager to ensure proper cleanup
-            with self._create_http_client() as http_client:
-                # Create Connect RPC client with configured HTTP client
-                client = AccessServiceClientSync(
-                    address=connect_rpc_base_url, session=http_client
-                )
+            # Get or create HTTP client
+            http_client = self._get_http_client()
 
-                # Create public key request
-                algorithm = getattr(kas_info, "algorithm", "") or ""
-                request = (
-                    kas_pb2.PublicKeyRequest(algorithm=algorithm)
-                    if algorithm
-                    else kas_pb2.PublicKeyRequest()
-                )
+            # Create Connect RPC client with configured HTTP client
+            client = AccessServiceClientSync(
+                address=connect_rpc_base_url, session=http_client
+            )
 
-                # Prepare headers with authentication if available
-                headers = self._prepare_auth_headers(access_token)
+            # Create public key request
+            algorithm = getattr(kas_info, "algorithm", "") or ""
+            request = (
+                kas_pb2.PublicKeyRequest(algorithm=algorithm)
+                if algorithm
+                else kas_pb2.PublicKeyRequest()
+            )
 
-                # Make the public key call with authentication headers
-                response = client.public_key(request, headers=headers)
+            # Prepare headers with authentication if available
+            headers = self._prepare_auth_headers(access_token)
 
-                # Update kas_info with response
-                kas_info.public_key = response.public_key
-                kas_info.kid = response.kid
+            # Make the public key call with authentication headers
+            response = client.public_key(request, headers=headers)
 
-                return kas_info
+            # Update kas_info with response
+            kas_info.public_key = response.public_key
+            kas_info.kid = response.kid
+
+            return kas_info
 
         except Exception as e:
             import traceback
@@ -165,49 +198,48 @@ class KASConnectRPCClient:
                 f"Creating Connect RPC client for base URL: {kas_service_url}, for unwrap"
             )
 
-            # Use context manager to ensure proper cleanup
-            with self._create_http_client() as http_client:
-                # Create Connect RPC client with configured HTTP client
-                client = AccessServiceClientSync(
-                    address=kas_service_url, session=http_client
-                )
+            # Get or create HTTP client
+            http_client = self._get_http_client()
 
-                # Create rewrap request
-                request = kas_pb2.RewrapRequest(
-                    signed_request_token=signed_token,
-                )
+            # Create Connect RPC client with configured HTTP client
+            client = AccessServiceClientSync(
+                address=kas_service_url, session=http_client
+            )
 
-                # Debug: Log the signed token details
-                logging.info(f"Connect RPC signed token: {signed_token}")
+            # Create rewrap request
+            request = kas_pb2.RewrapRequest(
+                signed_request_token=signed_token,
+            )
 
-                # Prepare headers with authentication if available
-                headers = self._prepare_auth_headers(access_token)
+            # Debug: Log the signed token details
+            logging.info(f"Connect RPC signed token: {signed_token}")
 
-                # Make the rewrap call with authentication headers
-                response = client.rewrap(request, headers=headers)
+            # Prepare headers with authentication if available
+            headers = self._prepare_auth_headers(access_token)
 
-                # Extract the entity wrapped key from v2 response structure
-                # The v2 response has responses[] array with results[] for each policy
-                if response.responses and len(response.responses) > 0:
-                    policy_result = response.responses[0]  # First policy
-                    if policy_result.results and len(policy_result.results) > 0:
-                        kao_result = policy_result.results[0]  # First KAO result
-                        if kao_result.kas_wrapped_key:
-                            entity_wrapped_key = kao_result.kas_wrapped_key
-                        else:
-                            raise SDKException(f"KAO result error: {kao_result.error}")
+            # Make the rewrap call with authentication headers
+            response = client.rewrap(request, headers=headers)
+
+            # Extract the entity wrapped key from v2 response structure
+            # The v2 response has responses[] array with results[] for each policy
+            if response.responses and len(response.responses) > 0:
+                policy_result = response.responses[0]  # First policy
+                if policy_result.results and len(policy_result.results) > 0:
+                    kao_result = policy_result.results[0]  # First KAO result
+                    if kao_result.kas_wrapped_key:
+                        entity_wrapped_key = kao_result.kas_wrapped_key
                     else:
-                        raise SDKException("No KAO results in policy response")
+                        raise SDKException(f"KAO result error: {kao_result.error}")
                 else:
-                    # Fallback to legacy entity_wrapped_key field for backward compatibility
-                    entity_wrapped_key = response.entity_wrapped_key
-                    if not entity_wrapped_key:
-                        raise SDKException(
-                            "No entity_wrapped_key in Connect RPC response"
-                        )
+                    raise SDKException("No KAO results in policy response")
+            else:
+                # Fallback to legacy entity_wrapped_key field for backward compatibility
+                entity_wrapped_key = response.entity_wrapped_key
+                if not entity_wrapped_key:
+                    raise SDKException("No entity_wrapped_key in Connect RPC response")
 
-                logging.info("Connect RPC rewrap succeeded")
-                return entity_wrapped_key
+            logging.info("Connect RPC rewrap succeeded")
+            return entity_wrapped_key
 
         except Exception as e:
             logging.error(f"Connect RPC rewrap failed: {e}")

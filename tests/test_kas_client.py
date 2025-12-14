@@ -61,12 +61,13 @@ def test_get_public_key_fetches_and_caches(
     client = KASClient("http://kas", cache=cache)
 
     # Mock httpx.Client to prevent real network calls
-    mock_client_context = MagicMock()
-    mock_http_client.return_value.__enter__.return_value = mock_client_context
+    # Note: We're using lazy initialization, so return the mock directly (not via context manager)
+    mock_client_instance = MagicMock()
+    mock_http_client.return_value = mock_client_instance
 
     # Mock the Connect RPC client directly since it expects protobuf responses
-    mock_client_instance = MagicMock()
-    mock_access_service_client.return_value = mock_client_instance
+    mock_rpc_client_instance = MagicMock()
+    mock_access_service_client.return_value = mock_rpc_client_instance
 
     # Mock the public key response using protobuf structure
     mock_rpc_response = MagicMock()
@@ -76,7 +77,7 @@ def test_get_public_key_fetches_and_caches(
     def mock_public_key_call(*args, **kwargs):
         return mock_rpc_response
 
-    mock_client_instance.public_key = mock_public_key_call
+    mock_rpc_client_instance.public_key = mock_public_key_call
 
     # Create KASInfo with URL but no KID or public key
     from otdf_python.config import KASInfo
@@ -130,19 +131,20 @@ def test_unwrap_success(
     mock_asym_decryption.return_value = mock_decryptor
 
     # Mock httpx.Client to prevent real network calls
-    mock_client_context = MagicMock()
-    mock_http_client.return_value.__enter__.return_value = mock_client_context
+    # Note: We're using lazy initialization, so return the mock directly (not via context manager)
+    mock_http_client_instance = MagicMock()
+    mock_http_client.return_value = mock_http_client_instance
 
     # Mock Connect RPC client directly instead of HTTP layer
-    mock_client_instance = MagicMock()
-    mock_access_service_client.return_value = mock_client_instance
+    mock_rpc_client_instance = MagicMock()
+    mock_access_service_client.return_value = mock_rpc_client_instance
 
     mock_rpc_response = MagicMock()
     mock_rpc_response.entity_wrapped_key = b64decode(
         "d2VsY29tZQ=="
     )  # "welcome" decoded
     mock_rpc_response.responses = []  # Empty to test fallback to legacy field
-    mock_client_instance.rewrap.return_value = mock_rpc_response
+    mock_rpc_client_instance.rewrap.return_value = mock_rpc_response
 
     # Create client and test unwrap
     # We need to patch the DPoP proof creation method to avoid RSA key access
@@ -155,7 +157,7 @@ def test_unwrap_success(
     assert result == b"decrypted_key"
     # Verify the Connect RPC client was called correctly
     mock_access_service_client.assert_called_once()
-    mock_client_instance.rewrap.assert_called_once()
+    mock_rpc_client_instance.rewrap.assert_called_once()
     # Verify the decryptor was called
     mock_decryptor.decrypt.assert_called_once()
 
@@ -165,8 +167,9 @@ def test_unwrap_success(
 def test_unwrap_failure(mock_access_service_client, mock_http_client):
     """Test key unwrap failure handling."""
     # Mock httpx.Client to prevent real network calls
-    mock_client_context = MagicMock()
-    mock_http_client.return_value.__enter__.return_value = mock_client_context
+    # Note: We're using lazy initialization, so return the mock directly (not via context manager)
+    mock_http_client_instance = MagicMock()
+    mock_http_client.return_value = mock_http_client_instance
 
     # Mock the Connect RPC client to raise an exception
     mock_access_service_client.side_effect = Exception("fail")
@@ -424,12 +427,13 @@ def test_jwt_signature_verification_in_unwrap_request(
     import jwt
 
     # Mock httpx.Client to prevent real network calls
-    mock_client_context = MagicMock()
-    mock_http_client.return_value.__enter__.return_value = mock_client_context
+    # Note: We're using lazy initialization, so return the mock directly (not via context manager)
+    mock_http_client_instance = MagicMock()
+    mock_http_client.return_value = mock_http_client_instance
 
     # Mock Connect RPC client directly for protobuf compatibility
-    mock_client_instance = MagicMock()
-    mock_access_service_client.return_value = mock_client_instance
+    mock_rpc_client_instance = MagicMock()
+    mock_access_service_client.return_value = mock_rpc_client_instance
 
     # Create a mock successful response
     mock_rpc_response = MagicMock()
@@ -437,7 +441,7 @@ def test_jwt_signature_verification_in_unwrap_request(
         "d2VsY29tZQ=="
     )  # "welcome" decoded
     mock_rpc_response.responses = []  # Empty to test fallback to legacy field
-    mock_client_instance.rewrap.return_value = mock_rpc_response
+    mock_rpc_client_instance.rewrap.return_value = mock_rpc_response
 
     # Create client with known DPoP keys for verification
     client = KASClient("http://kas", token_source=lambda: "test_token")
@@ -471,10 +475,10 @@ def test_jwt_signature_verification_in_unwrap_request(
             client.unwrap(key_access, '{"test": "policy"}')
 
             # Verify the Connect RPC client was called
-            assert mock_client_instance.rewrap.called
+            assert mock_rpc_client_instance.rewrap.called
 
             # Extract the request to verify JWT structure
-            call_args = mock_client_instance.rewrap.call_args
+            call_args = mock_rpc_client_instance.rewrap.call_args
             if call_args and len(call_args) > 0:
                 request = call_args[0][0]  # First positional argument (the request)
                 signed_token = request.signed_request_token
