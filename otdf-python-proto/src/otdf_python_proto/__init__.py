@@ -13,25 +13,21 @@ except metadata.PackageNotFoundError:
     __version__ = "0.0.0"
 
 # Import submodules to make them available
-from . import authorization
+# Note: authorization, entityresolution, wellknownconfiguration and policy subdirectories
+# are imported lazily to avoid import errors from generated protobuf files
 from . import common
 from . import entity
-from . import entityresolution
 from . import kas
 from . import legacy_grpc
 from . import logger
 from . import policy
-from . import wellknownconfiguration
 
 # Export main module categories
 __all__ = [
-    "authorization",
     "common",
     "entity",
-    "entityresolution",
     "kas",
     "legacy_grpc",
     "logger",
     "policy",
-    "wellknownconfiguration",
 ]

@@ -134,6 +134,8 @@ class KAS(AbstractContextManager):
 
     def close(self):
         """Close resources associated with KAS interface."""
+        if self._kas_client:
+            self._kas_client.close()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()

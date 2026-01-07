@@ -65,6 +65,24 @@ class KASClient:
             self._dpop_public_key
         )
 
+    def __enter__(self):
+        """Enter context manager."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exit context manager and clean up resources."""
+        self.close()
+
+    def close(self):
+        """Close the KAS client and release resources.
+
+        This method should be called when the client is no longer needed
+        to properly clean up resources. It's also called automatically
+        when using the client as a context manager.
+        """
+        if self.connect_rpc_client:
+            self.connect_rpc_client.close()
+
     def _normalize_kas_url(self, url: str) -> str:
         """Normalize KAS URLs based on client security settings.
 

@@ -4,9 +4,9 @@ This class encapsulates all interactions with otdf_python_proto.
 
 import logging
 
-import urllib3
+import httpx
 from otdf_python_proto.kas import kas_pb2
-from otdf_python_proto.kas.kas_pb2_connect import AccessServiceClient
+from otdf_python_proto.kas.kas_connect import AccessServiceClientSync
 
 from otdf_python.auth_headers import AuthHeaders
 
@@ -26,21 +26,56 @@ class KASConnectRPCClient:
         """
         self.use_plaintext = use_plaintext
         self.verify_ssl = verify_ssl
+        self._http_client = None
+
+    def __enter__(self):
+        """Enter context manager and create HTTP client."""
+        self._http_client = self._create_http_client()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exit context manager and close HTTP client."""
+        self.close()
+
+    def close(self):
+        """Close HTTP client and release resources.
+
+        This method should be called when the client is no longer needed
+        to properly clean up resources. It's also called automatically
+        when using the client as a context manager.
+        """
+        if self._http_client is not None:
+            self._http_client.close()
+            self._http_client = None
 
     def _create_http_client(self):
         """Create HTTP client with SSL verification configuration.
 
         Returns:
-            urllib3.PoolManager configured for SSL verification settings
+            httpx.Client configured for SSL verification settings
 
         """
         if self.verify_ssl:
             logging.info("Using SSL verification enabled HTTP client")
-            return urllib3.PoolManager()
+            return httpx.Client()
         else:
             logging.info("Using SSL verification disabled HTTP client")
-            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-            return urllib3.PoolManager(cert_reqs="CERT_NONE")
+            return httpx.Client(verify=False)
+
+    def _get_http_client(self):
+        """Get HTTP client, creating one if needed for backward compatibility.
+
+        Returns:
+            httpx.Client instance
+
+        """
+        if self._http_client is None:
+            logging.warning(
+                "KASConnectRPCClient is being used without a context manager. "
+                "Consider using 'with KASConnectRPCClient(...) as client:' to ensure proper resource cleanup."
+            )
+            self._http_client = self._create_http_client()
+        return self._http_client
 
     def _prepare_connect_rpc_url(self, kas_url):
         """Prepare the base URL for Connect RPC client.
@@ -93,8 +128,6 @@ class KASConnectRPCClient:
             f"kas_url={kas_info.url}"
         )
 
-        http_client = self._create_http_client()
-
         try:
             connect_rpc_base_url = self._prepare_connect_rpc_url(normalized_kas_url)
 
@@ -103,9 +136,13 @@ class KASConnectRPCClient:
                 f"for public key retrieval"
             )
 
-            # Create Connect RPC client with configured HTTP client using Connect protocol
-            # Note: gRPC protocol is not supported with urllib3, use default Connect protocol
-            client = AccessServiceClient(connect_rpc_base_url, http_client=http_client)
+            # Get or create HTTP client
+            http_client = self._get_http_client()
+
+            # Create Connect RPC client with configured HTTP client
+            client = AccessServiceClientSync(
+                address=connect_rpc_base_url, session=http_client
+            )
 
             # Create public key request
             algorithm = getattr(kas_info, "algorithm", "") or ""
@@ -116,10 +153,10 @@ class KASConnectRPCClient:
             )
 
             # Prepare headers with authentication if available
-            extra_headers = self._prepare_auth_headers(access_token)
+            headers = self._prepare_auth_headers(access_token)
 
             # Make the public key call with authentication headers
-            response = client.public_key(request, extra_headers=extra_headers)
+            response = client.public_key(request, headers=headers)
 
             # Update kas_info with response
             kas_info.public_key = response.public_key
@@ -158,8 +195,6 @@ class KASConnectRPCClient:
             f"kas_url={key_access.url}"
         )
 
-        http_client = self._create_http_client()
-
         try:
             kas_service_url = self._prepare_connect_rpc_url(normalized_kas_url)
 
@@ -167,8 +202,13 @@ class KASConnectRPCClient:
                 f"Creating Connect RPC client for base URL: {kas_service_url}, for unwrap"
             )
 
-            # Note: gRPC protocol is not supported with urllib3, use default Connect protocol
-            client = AccessServiceClient(kas_service_url, http_client=http_client)
+            # Get or create HTTP client
+            http_client = self._get_http_client()
+
+            # Create Connect RPC client with configured HTTP client
+            client = AccessServiceClientSync(
+                address=kas_service_url, session=http_client
+            )
 
             # Create rewrap request
             request = kas_pb2.RewrapRequest(
@@ -179,10 +219,10 @@ class KASConnectRPCClient:
             logging.info(f"Connect RPC signed token: {signed_token}")
 
             # Prepare headers with authentication if available
-            extra_headers = self._prepare_auth_headers(access_token)
+            headers = self._prepare_auth_headers(access_token)
 
             # Make the rewrap call with authentication headers
-            response = client.rewrap(request, extra_headers=extra_headers)
+            response = client.rewrap(request, headers=headers)
 
             # Extract the entity wrapped key from v2 response structure
             # The v2 response has responses[] array with results[] for each policy
