@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.0.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.4.2...otdf-python-v1.0.0) (2026-01-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* **main:** Upgrade from connect-python 0.4.2 to 0.6.0
+* rewrite in pure Python ([#62](https://github.com/b-long/opentdf-python-sdk/issues/62))
+
+### Features
+
+* add Python 3.14 support & fix pre-commit ([#117](https://github.com/b-long/opentdf-python-sdk/issues/117)) ([b89edfc](https://github.com/b-long/opentdf-python-sdk/commit/b89edfc70b13139691b7d2a11b256f59b457176d))
+* configure release-please ([#74](https://github.com/b-long/opentdf-python-sdk/issues/74)) ([439becd](https://github.com/b-long/opentdf-python-sdk/commit/439becd82a5faf834a190516b64e21aa331c0176))
+* rewrite in pure Python ([#62](https://github.com/b-long/opentdf-python-sdk/issues/62)) ([2a9c1fa](https://github.com/b-long/opentdf-python-sdk/commit/2a9c1fa6331c8b82efcc23b24e21461e4c443fcd))
+* Update to latest SDK ([#73](https://github.com/b-long/opentdf-python-sdk/issues/73)) ([9c0329e](https://github.com/b-long/opentdf-python-sdk/commit/9c0329ec76d4dea53ac66b5342d3cce6ec249d58))
+
+
+### Bug Fixes
+
+* fix release-please configuration ([#104](https://github.com/b-long/opentdf-python-sdk/issues/104)) ([3b1c949](https://github.com/b-long/opentdf-python-sdk/commit/3b1c949680b1c4e8ec5bae5d2dbb2f18dc53b559))
+* improve docs ([#106](https://github.com/b-long/opentdf-python-sdk/issues/106)) ([49aa4ae](https://github.com/b-long/opentdf-python-sdk/commit/49aa4aea5e576c20b3e26c852331de8b0469742f))
+* **main:** ensure compatibility with the latest `connect-python` ([#123](https://github.com/b-long/opentdf-python-sdk/issues/123)) ([4d160db](https://github.com/b-long/opentdf-python-sdk/commit/4d160dbed2bdedc4baaa807f97903aad710de943))
+* NanoTDF support ([#114](https://github.com/b-long/opentdf-python-sdk/issues/114)) ([8f09297](https://github.com/b-long/opentdf-python-sdk/commit/8f092976f6473db7738a86d7ec30dc9ebbcb6a3a))
+* preserve exception chain ([#119](https://github.com/b-long/opentdf-python-sdk/issues/119)) ([09984b8](https://github.com/b-long/opentdf-python-sdk/commit/09984b843b369a6d2c76dc8a81d6315f195ea773))
+* testing improvements ([#102](https://github.com/b-long/opentdf-python-sdk/issues/102)) ([8e82361](https://github.com/b-long/opentdf-python-sdk/commit/8e8236190df157da8ab7fda0b6dfb9cd78bae3bf))
+* update ruff ([#108](https://github.com/b-long/opentdf-python-sdk/issues/108)) ([5e4c796](https://github.com/b-long/opentdf-python-sdk/commit/5e4c796a8c1fc10b206cd2769f7c8548903ad3c1))
+
 ## [0.4.1](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.4.0...otdf-python-v0.4.1) (2025-12-09)
 
 
