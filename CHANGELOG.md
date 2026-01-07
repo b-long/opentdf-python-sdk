@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.4.1...otdf-python-v0.4.2) (2026-01-07)
+
+
+### Bug Fixes
+
+* **main:** ensure compatibility with the latest `connect-python` ([#123](https://github.com/b-long/opentdf-python-sdk/issues/123)) ([4d160db](https://github.com/b-long/opentdf-python-sdk/commit/4d160dbed2bdedc4baaa807f97903aad710de943))
+
 ## [0.4.1](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.4.0...otdf-python-v0.4.1) (2025-12-09)
 
 
