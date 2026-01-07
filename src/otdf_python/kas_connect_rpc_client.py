@@ -70,6 +70,10 @@ class KASConnectRPCClient:
 
         """
         if self._http_client is None:
+            logging.warning(
+                "KASConnectRPCClient is being used without a context manager. "
+                "Consider using 'with KASConnectRPCClient(...) as client:' to ensure proper resource cleanup."
+            )
             self._http_client = self._create_http_client()
         return self._http_client
 
