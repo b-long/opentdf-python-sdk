@@ -10,6 +10,7 @@ from pathlib import Path
 
 import httpx
 
+from otdf_python.kas_allowlist import KASAllowlist
 from otdf_python.sdk import KAS, SDK
 from otdf_python.sdk_exceptions import AutoConfigureException
 
@@ -47,6 +48,8 @@ class SDKBuilder:
         self.ssl_context: ssl.SSLContext | None = None
         self.auth_token: str | None = None
         self.cert_paths: list[str] = []
+        self._kas_allowlist_urls: list[str] | None = None
+        self._ignore_kas_allowlist: bool = False
 
     @staticmethod
     def new_builder() -> "SDKBuilder":
@@ -199,6 +202,54 @@ class SDKBuilder:
 
         """
         self.auth_token = token
+        return self
+
+    def with_kas_allowlist(self, urls: list[str]) -> "SDKBuilder":
+        """Set the KAS allowlist to restrict which KAS servers the SDK will contact.
+
+        This provides protection against SSRF attacks where malicious TDF files
+        could contain attacker-controlled KAS URLs to steal OIDC credentials.
+
+        By default (if no allowlist is set), only the platform's KAS endpoint
+        is allowed.
+
+        Args:
+            urls: List of trusted KAS URLs. Each URL is normalized to its
+                origin (scheme://host:port) for comparison.
+
+        Returns:
+            self: The builder instance for chaining
+
+        Example:
+            builder.with_kas_allowlist([
+                "https://kas.example.com",
+                "https://kas2.example.com:8443"
+            ])
+
+        """
+        self._kas_allowlist_urls = urls
+        return self
+
+    def with_ignore_kas_allowlist(self, ignore: bool = True) -> "SDKBuilder":
+        """Configure whether to skip KAS allowlist validation.
+
+        WARNING: This is insecure and should only be used for testing or
+        development. When enabled, the SDK will contact any KAS URL found
+        in TDF files, potentially leaking credentials to malicious servers.
+
+        Args:
+            ignore: Whether to ignore the KAS allowlist (default: True)
+
+        Returns:
+            self: The builder instance for chaining
+
+        """
+        self._ignore_kas_allowlist = ignore
+        if ignore:
+            logger.warning(
+                "KAS allowlist validation is disabled. This is insecure and "
+                "should only be used for testing."
+            )
         return self
 
     def _discover_token_endpoint_from_platform(self) -> None:
@@ -356,6 +407,34 @@ class SDKBuilder:
                 f"Error during token acquisition: {e!s}"
             ) from e
 
+    def _create_kas_allowlist(self) -> KASAllowlist | None:
+        """Create the KAS allowlist based on builder configuration.
+
+        Returns:
+            KASAllowlist configured based on builder settings, or None if
+            allowlist validation is disabled.
+
+        """
+        # If ignoring allowlist, return an allow-all instance
+        if self._ignore_kas_allowlist:
+            return KASAllowlist(allow_all=True)
+
+        # If explicit allowlist provided, use it
+        if self._kas_allowlist_urls:
+            allowlist = KASAllowlist(self._kas_allowlist_urls)
+            # Also add the platform URL for convenience
+            if self.platform_endpoint:
+                allowlist.add(self.platform_endpoint)
+                allowlist.add(self.platform_endpoint.rstrip("/") + "/kas")
+            return allowlist
+
+        # Default: create allowlist from platform URL only
+        if self.platform_endpoint:
+            return KASAllowlist.from_platform_url(self.platform_endpoint)
+
+        # No platform endpoint set yet - return None and let SDK handle it
+        return None
+
     def _create_services(self) -> SDK.Services:
         """Create service client instances.
 
@@ -371,11 +450,15 @@ class SDKBuilder:
 
         ssl_verify = not self.insecure_skip_verify
 
+        # Create the KAS allowlist
+        kas_allowlist = self._create_kas_allowlist()
+
         class ServicesImpl(SDK.Services):
-            def __init__(self, builder_instance):
+            def __init__(self, builder_instance, allowlist: KASAllowlist | None):
                 self.closed = False
                 self._ssl_verify = ssl_verify
                 self._builder = builder_instance
+                self._kas_allowlist = allowlist
 
             def kas(self) -> KAS:
                 """Return the KAS interface with SSL verification settings."""
@@ -394,6 +477,7 @@ class SDKBuilder:
                     token_source=token_source,
                     sdk_ssl_verify=self._ssl_verify,
                     use_plaintext=self._builder.use_plaintext,
+                    kas_allowlist=self._kas_allowlist,
                 )
                 return kas_impl
 
@@ -403,7 +487,7 @@ class SDKBuilder:
             def __exit__(self, exc_type, exc_val, exc_tb):
                 self.close()
 
-        return ServicesImpl(self)
+        return ServicesImpl(self, kas_allowlist)
 
     def build(self) -> SDK:
         """Build and return an SDK instance with configured properties.

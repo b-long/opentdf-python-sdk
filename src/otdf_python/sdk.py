@@ -37,6 +37,7 @@ class KAS(AbstractContextManager):
         token_source=None,
         sdk_ssl_verify=True,
         use_plaintext=False,
+        kas_allowlist=None,
     ):
         """Initialize the KAS client.
 
@@ -45,6 +46,7 @@ class KAS(AbstractContextManager):
             token_source: Function that returns an authentication token
             sdk_ssl_verify: Whether to verify SSL certificates
             use_plaintext: Whether to use plaintext HTTP connections instead of HTTPS
+            kas_allowlist: Optional KASAllowlist for URL validation
 
         """
         from .kas_client import KASClient
@@ -54,6 +56,7 @@ class KAS(AbstractContextManager):
             token_source=token_source,
             verify_ssl=sdk_ssl_verify,
             use_plaintext=use_plaintext,
+            kas_allowlist=kas_allowlist,
         )
         # Store the parameters for potential use
         self._sdk_ssl_verify = sdk_ssl_verify
@@ -404,6 +407,33 @@ class SDK(AbstractContextManager):
 
     class KasAllowlistException(SDKException):
         """Throw when KAS allowlist check fails."""
+
+        def __init__(
+            self,
+            url: str,
+            allowed_origins: set[str] | None = None,
+            message: str | None = None,
+        ):
+            """Initialize exception.
+
+            Args:
+                url: The KAS URL that was rejected
+                allowed_origins: Set of allowed origin URLs
+                message: Optional custom message (auto-generated if not provided)
+
+            """
+            self.url = url
+            self.allowed_origins = allowed_origins or set()
+            if message is None:
+                origins_str = (
+                    ", ".join(sorted(self.allowed_origins))
+                    if self.allowed_origins
+                    else "none"
+                )
+                message = (
+                    f"KAS URL not in allowlist: {url}. Allowed origins: {origins_str}"
+                )
+            super().__init__(message)
 
     class AssertionException(SDKException):
         """Throw when an assertion validation fails."""
