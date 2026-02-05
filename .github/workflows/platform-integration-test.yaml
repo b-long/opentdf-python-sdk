@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
         with:
           repository: opentdf/platform
-          ref: main
+          ref: service/v0.8.2
           path: platform
       - name: Set up go
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491
@@ -132,7 +132,7 @@ jobs:
           grpcurl -plaintext localhost:8080 kas.AccessService/PublicKey
 
       - name: Install otdfctl
-        run: go install github.com/opentdf/otdfctl@latest
+        run: go install github.com/opentdf/otdfctl@v0.28.0
         shell: bash
 
       - name: Create creds.json for otdfctl
