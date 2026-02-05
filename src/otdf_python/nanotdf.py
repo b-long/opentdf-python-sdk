@@ -70,8 +70,8 @@ class NanoTDF:
         if isinstance(obj, PolicyBody):
             # Convert data_attributes to dataAttributes and use null instead of empty array
             result = {
-                "dataAttributes": obj.data_attributes if obj.data_attributes else None,
-                "dissem": obj.dissem if obj.dissem else None,
+                "dataAttributes": obj.data_attributes or None,
+                "dissem": obj.dissem or None,
             }
             return result
         elif isinstance(obj, AttributeObject):
@@ -115,14 +115,12 @@ class NanoTDF:
             tuple: (policy_body, policy_type)
 
         """
-        attributes = config.attributes if config.attributes else []
+        attributes = config.attributes or []
         policy_object = self._create_policy_object(attributes)
         policy_json = json.dumps(
             policy_object, default=self._serialize_policy_object
         ).encode("utf-8")
-        policy_type = (
-            config.policy_type if config.policy_type else "EMBEDDED_POLICY_PLAIN_TEXT"
-        )
+        policy_type = config.policy_type or "EMBEDDED_POLICY_PLAIN_TEXT"
 
         if policy_type == "EMBEDDED_POLICY_PLAIN_TEXT":
             policy_body = policy_json

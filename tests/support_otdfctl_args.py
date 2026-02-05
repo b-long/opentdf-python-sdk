@@ -183,8 +183,8 @@ def _generate_target_mode_tdf(
         creds_file=creds_file,
         input_file=input_file,
         output_file=output_file,
-        mime_type=mime_type if mime_type else "text/plain",
-        attributes=attributes if attributes else None,
+        mime_type=mime_type or "text/plain",
+        attributes=attributes or None,
         tdf_type="tdf3",
         target_mode=target_mode,
     )

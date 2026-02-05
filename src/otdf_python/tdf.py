@@ -183,8 +183,8 @@ class TDF:
         if isinstance(obj, PolicyBody):
             # Convert data_attributes to dataAttributes and use null instead of empty array
             result = {
-                "dataAttributes": obj.data_attributes if obj.data_attributes else None,
-                "dissem": obj.dissem if obj.dissem else None,
+                "dataAttributes": obj.data_attributes or None,
+                "dissem": obj.dissem or None,
             }
             return result
         elif isinstance(obj, AttributeObject):
