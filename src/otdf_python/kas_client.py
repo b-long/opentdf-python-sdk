@@ -38,13 +38,26 @@ class KASClient:
         cache=None,
         use_plaintext=False,
         verify_ssl=True,
+        kas_allowlist=None,
     ):
-        """Initialize KAS client."""
+        """Initialize KAS client.
+
+        Args:
+            kas_url: Default KAS URL
+            token_source: Function that returns an authentication token
+            cache: Optional KASKeyCache for caching public keys
+            use_plaintext: Whether to use HTTP instead of HTTPS
+            verify_ssl: Whether to verify SSL certificates
+            kas_allowlist: Optional KASAllowlist for URL validation. If provided,
+                only URLs in the allowlist will be contacted.
+
+        """
         self.kas_url = kas_url
         self.token_source = token_source
         self.cache = cache or KASKeyCache()
         self.use_plaintext = use_plaintext
         self.verify_ssl = verify_ssl
+        self.kas_allowlist = kas_allowlist
         self.decryptor = None
         self.client_public_key = None
 
@@ -86,14 +99,25 @@ class KASClient:
     def _normalize_kas_url(self, url: str) -> str:
         """Normalize KAS URLs based on client security settings.
 
+        This method also validates the URL against the KAS allowlist if one
+        is configured. This prevents SSRF attacks where malicious TDF files
+        could contain attacker-controlled KAS URLs to steal OIDC credentials.
+
         Args:
             url: The KAS URL to normalize
 
         Returns:
             Normalized URL with appropriate protocol and port
 
+        Raises:
+            KASAllowlistException: If the URL is not in the allowlist
+
         """
         from urllib.parse import urlparse
+
+        # Validate against allowlist BEFORE making any requests
+        if self.kas_allowlist is not None:
+            self.kas_allowlist.validate(url)
 
         try:
             # Parse the URL

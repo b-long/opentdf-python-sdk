@@ -112,33 +112,14 @@ def load_client_credentials(creds_file_path: str) -> tuple[str, str]:
         ) from e
 
 
-def build_sdk(args) -> SDK:
-    """Build SDK instance from CLI arguments."""
-    builder = SDKBuilder()
-
-    if args.platform_url:
-        builder.set_platform_endpoint(args.platform_url)
-
-        # Auto-detect HTTP URLs and enable plaintext mode
-        if args.platform_url.startswith("http://") and (
-            not hasattr(args, "plaintext") or not args.plaintext
-        ):
-            logger.debug(
-                f"Auto-detected HTTP URL {args.platform_url}, enabling plaintext mode"
-            )
-            builder.use_insecure_plaintext_connection(True)
-
-    if args.oidc_endpoint:
-        builder.set_issuer_endpoint(args.oidc_endpoint)
-
+def _configure_auth(builder: SDKBuilder, args) -> None:
+    """Configure authentication on the SDK builder."""
     if args.client_id and args.client_secret:
         builder.client_secret(args.client_id, args.client_secret)
     elif hasattr(args, "with_client_creds_file") and args.with_client_creds_file:
-        # Load credentials from file
         client_id, client_secret = load_client_credentials(args.with_client_creds_file)
         builder.client_secret(client_id, client_secret)
     elif hasattr(args, "auth") and args.auth:
-        # Parse combined auth string (clientId:clientSecret) - legacy support
         auth_parts = args.auth.split(":")
         if len(auth_parts) != 2:
             raise CLIError(
@@ -152,11 +133,48 @@ def build_sdk(args) -> SDK:
             "Authentication required: provide --with-client-creds-file OR --client-id and --client-secret",
         )
 
+
+def _configure_kas_allowlist(builder: SDKBuilder, args) -> None:
+    """Configure KAS allowlist on the SDK builder."""
+    if hasattr(args, "ignore_kas_allowlist") and args.ignore_kas_allowlist:
+        logger.warning(
+            "KAS allowlist validation is disabled. This may leak credentials "
+            "to malicious servers if decrypting untrusted TDF files."
+        )
+        builder.with_ignore_kas_allowlist(True)
+    elif hasattr(args, "kas_allowlist") and args.kas_allowlist:
+        kas_urls = [url.strip() for url in args.kas_allowlist.split(",") if url.strip()]
+        logger.debug(f"Using KAS allowlist: {kas_urls}")
+        builder.with_kas_allowlist(kas_urls)
+
+
+def build_sdk(args) -> SDK:
+    """Build SDK instance from CLI arguments."""
+    builder = SDKBuilder()
+
+    if args.platform_url:
+        builder.set_platform_endpoint(args.platform_url)
+        # Auto-detect HTTP URLs and enable plaintext mode
+        if args.platform_url.startswith("http://") and (
+            not hasattr(args, "plaintext") or not args.plaintext
+        ):
+            logger.debug(
+                f"Auto-detected HTTP URL {args.platform_url}, enabling plaintext mode"
+            )
+            builder.use_insecure_plaintext_connection(True)
+
+    if args.oidc_endpoint:
+        builder.set_issuer_endpoint(args.oidc_endpoint)
+
+    _configure_auth(builder, args)
+
     if hasattr(args, "plaintext") and args.plaintext:
         builder.use_insecure_plaintext_connection(True)
 
     if args.insecure:
         builder.use_insecure_skip_verify(True)
+
+    _configure_kas_allowlist(builder, args)
 
     return builder.build()
 
@@ -475,6 +493,17 @@ Where creds.json contains:
     )
     security_group.add_argument(
         "--insecure", action="store_true", help="Skip TLS verification"
+    )
+    security_group.add_argument(
+        "--kas-allowlist",
+        help="Comma-separated list of trusted KAS URLs. "
+        "By default, only the platform URL's KAS endpoint is trusted.",
+    )
+    security_group.add_argument(
+        "--ignore-kas-allowlist",
+        action="store_true",
+        help="WARNING: Disable KAS allowlist validation. This is insecure and "
+        "should only be used for testing. May leak credentials to malicious servers.",
     )
 
     # Subcommands
