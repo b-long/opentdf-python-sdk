@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.3](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.4.2...otdf-python-v0.4.3) (2026-02-05)
+
+
+### Bug Fixes
+
+* implement KAS allowlist functionality ([#129](https://github.com/b-long/opentdf-python-sdk/issues/129)) ([c1306da](https://github.com/b-long/opentdf-python-sdk/commit/c1306da24eb27f80bb3f1c11cea0f24175b5fd23))
+
 ## [0.4.2](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.4.1...otdf-python-v0.4.2) (2026-01-07)
 
 
