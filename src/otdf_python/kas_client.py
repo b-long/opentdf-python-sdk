@@ -154,7 +154,7 @@ class KASClient:
         # Reconstruct URL preserving the path (especially /kas prefix)
         try:
             # Create URL preserving the path component for proper endpoint routing
-            path = parsed.path if parsed.path else ""
+            path = parsed.path or ""
             normalized_url = f"{scheme}://{parsed.hostname}:{port}{path}"
             logging.debug(f"normalized url [{parsed.geturl()}] to [{normalized_url}]")
             return normalized_url
