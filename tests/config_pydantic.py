@@ -54,7 +54,9 @@ class ConfigureTdf(BaseSettings):
     )
 
     OIDC_OP_TOKEN_ENDPOINT: str = Field(
-        default_factory=lambda data: f"{data['KEYCLOAK_URL']}realms/opentdf/protocol/openid-connect/token"
+        default_factory=lambda data: (
+            f"{data['KEYCLOAK_URL']}realms/opentdf/protocol/openid-connect/token"
+        )
     )
 
     # NOTE: The following variableis used for OIDC, NPE encryption/decryption, as
