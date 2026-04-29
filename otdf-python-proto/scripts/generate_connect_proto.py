@@ -189,13 +189,9 @@ def run_buf_generate(proto_gen_dir: Path) -> bool:
 
 def create_init_files(generated_dir: Path) -> None:
     """Create __init__.py files in generated directories."""
-    # Create __init__.py in main generated directory
-    (generated_dir / "__init__.py").touch()
-
-    # Create __init__.py files in any subdirectories
-    for subdir in generated_dir.iterdir():
-        if subdir.is_dir():
-            (subdir / "__init__.py").touch()
+    for dirpath in [generated_dir, *generated_dir.rglob("*")]:
+        if dirpath.is_dir():
+            (dirpath / "__init__.py").touch()
 
 
 def _fix_ignore_if_default_value(proto_files_dir):
