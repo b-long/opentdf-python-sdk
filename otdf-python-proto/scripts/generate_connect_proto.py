@@ -46,7 +46,7 @@ def check_dependencies() -> bool:
 
 def copy_opentdf_proto_files(proto_gen_dir: Path, git_tag: str | None = None) -> bool:
     """Clone OpenTDF platform repository and copy all proto files."""
-    GIT_TAG = git_tag or "service/v0.12.0"
+    GIT_TAG = git_tag or "service/v0.7.2"
     REPO_URL = "https://github.com/opentdf/platform.git"
 
     temp_repo_dir = proto_gen_dir / "temp_platform_repo"

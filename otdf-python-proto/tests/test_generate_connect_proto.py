@@ -175,7 +175,7 @@ class TestGitTagOverride:
         git_cmd = next(c for c in captured if c[0] == "git")
         branch_idx = git_cmd.index("--branch")
         default_tag = git_cmd[branch_idx + 1]
-        assert default_tag != "service/v0.7.2"
+        assert default_tag == "service/v0.7.2"
 
 
 class TestArgParsing:
