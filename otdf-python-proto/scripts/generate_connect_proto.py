@@ -157,7 +157,7 @@ def run_buf_generate(proto_gen_dir: Path) -> bool:
             content = f.read()
 
         updated_content = re.sub(
-            r"- local: \S+protoc-gen-connect[_-]python\S*",
+            r"- local: \S*protoc-gen-connect[_-]python\S*",
             f"- local: {connect_plugin_path}",
             content,
         )
