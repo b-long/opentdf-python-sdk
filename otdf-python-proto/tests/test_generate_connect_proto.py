@@ -10,16 +10,13 @@ to one of the bugs documented in:
 import re
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, call, patch
-
-import pytest
+from unittest.mock import MagicMock, patch
 
 # Make the scripts directory importable without installing the package.
 _SCRIPTS_DIR = Path(__file__).parent.parent / "scripts"
 sys.path.insert(0, str(_SCRIPTS_DIR))
 
 import generate_connect_proto as gen  # noqa: E402
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -53,7 +50,9 @@ plugins:
     out: src/otdf_python_proto
 """
 
-_ABSOLUTE_PLUGIN = "/home/vagrant/opentdf-python-sdk/.venv/bin/protoc-gen-connect-python"
+_ABSOLUTE_PLUGIN = (
+    "/home/vagrant/opentdf-python-sdk/.venv/bin/protoc-gen-connect-python"
+)
 
 _EXPECTED_LINE = f"  - local: {_ABSOLUTE_PLUGIN}"
 
@@ -193,10 +192,15 @@ class TestArgParsing:
         return git_tag
 
     def test_tag_equals_form(self):
-        assert self._parse_tag(["script.py", "--tag=service/v0.11.0"]) == "service/v0.11.0"
+        assert (
+            self._parse_tag(["script.py", "--tag=service/v0.11.0"]) == "service/v0.11.0"
+        )
 
     def test_tag_space_form(self):
-        assert self._parse_tag(["script.py", "--tag", "service/v0.10.0"]) == "service/v0.10.0"
+        assert (
+            self._parse_tag(["script.py", "--tag", "service/v0.10.0"])
+            == "service/v0.10.0"
+        )
 
     def test_no_tag_returns_none(self):
         assert self._parse_tag(["script.py", "--download"]) is None
@@ -313,11 +317,11 @@ class TestCreateInitFiles:
         """Create a directory tree that mirrors the buf generate output structure."""
         dirs = [
             base / "authorization",
-            base / "authorization" / "v2",          # depth 2 — was missing __init__.py
+            base / "authorization" / "v2",  # depth 2 — was missing __init__.py
             base / "entityresolution",
-            base / "entityresolution" / "v2",        # depth 2
-            base / "policy" / "attributes",          # depth 2
-            base / "policy" / "kasregistry",         # depth 2
+            base / "entityresolution" / "v2",  # depth 2
+            base / "policy" / "attributes",  # depth 2
+            base / "policy" / "kasregistry",  # depth 2
             base / "legacy_grpc" / "authorization" / "v2",  # depth 3
         ]
         for d in dirs:
@@ -348,7 +352,9 @@ class TestCreateInitFiles:
     def test_depth_three_gets_init(self, tmp_path):
         self._make_tree(tmp_path)
         gen.create_init_files(tmp_path)
-        assert (tmp_path / "legacy_grpc" / "authorization" / "v2" / "__init__.py").exists(), (
+        assert (
+            tmp_path / "legacy_grpc" / "authorization" / "v2" / "__init__.py"
+        ).exists(), (
             "legacy_grpc/authorization/v2/__init__.py missing — create_init_files() does not recurse"
         )
 
