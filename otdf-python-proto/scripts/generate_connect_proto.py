@@ -48,7 +48,7 @@ def check_dependencies() -> bool:
 
 def copy_opentdf_proto_files(proto_gen_dir: Path, git_tag: str | None = None) -> bool:
     """Clone OpenTDF platform repository and copy all proto files."""
-    GIT_TAG = git_tag or "service/v0.7.2"
+    GIT_TAG = git_tag or "service/v0.8.0"
     REPO_URL = "https://github.com/opentdf/platform.git"
 
     temp_repo_dir = proto_gen_dir / "temp_platform_repo"
@@ -153,28 +153,33 @@ def run_buf_generate(proto_gen_dir: Path) -> bool:
         connect_plugin_path = result.stdout.strip()
         print(f"Using Connect plugin at: {connect_plugin_path}")
 
-        # Update buf.gen.yaml with the correct absolute path for the local plugin
+        # Update buf.gen.yaml with the correct absolute path for the local plugin,
+        # then restore the original content after buf generate runs.
         buf_gen_path = proto_gen_dir / "buf.gen.yaml"
         with buf_gen_path.open() as f:
-            content = f.read()
+            original_content = f.read()
 
         updated_content = re.sub(
             r"- local:\s+\S*protoc-gen-connect[_-]python\S*",
-            lambda _: f"- local: {connect_plugin_path}",
-            content,
+            f"- local: {connect_plugin_path}",
+            original_content,
         )
 
-        with buf_gen_path.open("w") as f:
-            f.write(updated_content)
+        try:
+            with buf_gen_path.open("w") as f:
+                f.write(updated_content)
 
-        # Run buf generate
-        subprocess.run(
-            ["buf", "generate"],
-            cwd=proto_gen_dir,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
+            # Run buf generate
+            subprocess.run(
+                ["buf", "generate"],
+                cwd=proto_gen_dir,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+        finally:
+            with buf_gen_path.open("w") as f:
+                f.write(original_content)
 
         print("✓ Successfully generated protobuf and Connect RPC files")
         return True

@@ -399,6 +399,46 @@ class RegisteredResourceValue(_message.Message):
     metadata: _common_pb2.Metadata
     def __init__(self, id: _Optional[str] = ..., value: _Optional[str] = ..., resource: _Optional[_Union[RegisteredResource, _Mapping]] = ..., action_attribute_values: _Optional[_Iterable[_Union[RegisteredResourceValue.ActionAttributeValue, _Mapping]]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
 
+class Obligation(_message.Message):
+    __slots__ = ("id", "namespace", "name", "values", "metadata")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    VALUES_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    namespace: Namespace
+    name: str
+    values: _containers.RepeatedCompositeFieldContainer[ObligationValue]
+    metadata: _common_pb2.Metadata
+    def __init__(self, id: _Optional[str] = ..., namespace: _Optional[_Union[Namespace, _Mapping]] = ..., name: _Optional[str] = ..., values: _Optional[_Iterable[_Union[ObligationValue, _Mapping]]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
+
+class ObligationValue(_message.Message):
+    __slots__ = ("id", "obligation", "value", "metadata")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    OBLIGATION_FIELD_NUMBER: _ClassVar[int]
+    VALUE_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    obligation: Obligation
+    value: str
+    metadata: _common_pb2.Metadata
+    def __init__(self, id: _Optional[str] = ..., obligation: _Optional[_Union[Obligation, _Mapping]] = ..., value: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
+
+class ObligationTrigger(_message.Message):
+    __slots__ = ("id", "obligation_value", "action", "attribute_value", "metadata")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    OBLIGATION_VALUE_FIELD_NUMBER: _ClassVar[int]
+    ACTION_FIELD_NUMBER: _ClassVar[int]
+    ATTRIBUTE_VALUE_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    obligation_value: ObligationValue
+    action: Action
+    attribute_value: Value
+    metadata: _common_pb2.Metadata
+    def __init__(self, id: _Optional[str] = ..., obligation_value: _Optional[_Union[ObligationValue, _Mapping]] = ..., action: _Optional[_Union[Action, _Mapping]] = ..., attribute_value: _Optional[_Union[Value, _Mapping]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
+
 class KasKey(_message.Message):
     __slots__ = ("kas_id", "key", "kas_uri")
     KAS_ID_FIELD_NUMBER: _ClassVar[int]

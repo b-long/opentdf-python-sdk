@@ -448,3 +448,43 @@ class SetBaseKeyResponse(_message.Message):
     new_base_key: _objects_pb2.SimpleKasKey
     previous_base_key: _objects_pb2.SimpleKasKey
     def __init__(self, new_base_key: _Optional[_Union[_objects_pb2.SimpleKasKey, _Mapping]] = ..., previous_base_key: _Optional[_Union[_objects_pb2.SimpleKasKey, _Mapping]] = ...) -> None: ...
+
+class MappedPolicyObject(_message.Message):
+    __slots__ = ("id", "fqn")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    FQN_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    fqn: str
+    def __init__(self, id: _Optional[str] = ..., fqn: _Optional[str] = ...) -> None: ...
+
+class KeyMapping(_message.Message):
+    __slots__ = ("kid", "kas_uri", "namespace_mappings", "attribute_mappings", "value_mappings")
+    KID_FIELD_NUMBER: _ClassVar[int]
+    KAS_URI_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_MAPPINGS_FIELD_NUMBER: _ClassVar[int]
+    ATTRIBUTE_MAPPINGS_FIELD_NUMBER: _ClassVar[int]
+    VALUE_MAPPINGS_FIELD_NUMBER: _ClassVar[int]
+    kid: str
+    kas_uri: str
+    namespace_mappings: _containers.RepeatedCompositeFieldContainer[MappedPolicyObject]
+    attribute_mappings: _containers.RepeatedCompositeFieldContainer[MappedPolicyObject]
+    value_mappings: _containers.RepeatedCompositeFieldContainer[MappedPolicyObject]
+    def __init__(self, kid: _Optional[str] = ..., kas_uri: _Optional[str] = ..., namespace_mappings: _Optional[_Iterable[_Union[MappedPolicyObject, _Mapping]]] = ..., attribute_mappings: _Optional[_Iterable[_Union[MappedPolicyObject, _Mapping]]] = ..., value_mappings: _Optional[_Iterable[_Union[MappedPolicyObject, _Mapping]]] = ...) -> None: ...
+
+class ListKeyMappingsRequest(_message.Message):
+    __slots__ = ("id", "key", "pagination")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    KEY_FIELD_NUMBER: _ClassVar[int]
+    PAGINATION_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    key: KasKeyIdentifier
+    pagination: _selectors_pb2.PageRequest
+    def __init__(self, id: _Optional[str] = ..., key: _Optional[_Union[KasKeyIdentifier, _Mapping]] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ...) -> None: ...
+
+class ListKeyMappingsResponse(_message.Message):
+    __slots__ = ("key_mappings", "pagination")
+    KEY_MAPPINGS_FIELD_NUMBER: _ClassVar[int]
+    PAGINATION_FIELD_NUMBER: _ClassVar[int]
+    key_mappings: _containers.RepeatedCompositeFieldContainer[KeyMapping]
+    pagination: _selectors_pb2.PageResponse
+    def __init__(self, key_mappings: _Optional[_Iterable[_Union[KeyMapping, _Mapping]]] = ..., pagination: _Optional[_Union[_selectors_pb2.PageResponse, _Mapping]] = ...) -> None: ...

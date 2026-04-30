@@ -13,7 +13,7 @@ from connectrpc.method import IdempotencyLevel, MethodInfo
 from connectrpc.request import Headers, RequestContext
 from connectrpc.server import ConnectASGIApplication, ConnectWSGIApplication, Endpoint, EndpointSync
 import google.protobuf.wrappers_pb2 as google_dot_protobuf_dot_wrappers__pb2
-from . import kas_pb2 as kas_dot_kas__pb2
+import kas.kas_pb2 as kas_dot_kas__pb2
 
 
 class AccessService(Protocol):

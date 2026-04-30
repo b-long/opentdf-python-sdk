@@ -12,7 +12,7 @@ from connectrpc.interceptor import Interceptor, InterceptorSync
 from connectrpc.method import IdempotencyLevel, MethodInfo
 from connectrpc.request import Headers, RequestContext
 from connectrpc.server import ConnectASGIApplication, ConnectWSGIApplication, Endpoint, EndpointSync
-from . import wellknown_configuration_pb2 as wellknownconfiguration_dot_wellknown__configuration__pb2
+import wellknownconfiguration.wellknown_configuration_pb2 as wellknownconfiguration_dot_wellknown__configuration__pb2
 
 
 class WellKnownService(Protocol):

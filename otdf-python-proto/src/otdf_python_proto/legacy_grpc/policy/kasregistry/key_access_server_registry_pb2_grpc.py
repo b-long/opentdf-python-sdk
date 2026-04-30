@@ -79,6 +79,11 @@ class KeyAccessServerRegistryServiceStub(object):
                 request_serializer=policy_dot_kasregistry_dot_key__access__server__registry__pb2.GetBaseKeyRequest.SerializeToString,
                 response_deserializer=policy_dot_kasregistry_dot_key__access__server__registry__pb2.GetBaseKeyResponse.FromString,
                 _registered_method=True)
+        self.ListKeyMappings = channel.unary_unary(
+                '/policy.kasregistry.KeyAccessServerRegistryService/ListKeyMappings',
+                request_serializer=policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsRequest.SerializeToString,
+                response_deserializer=policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsResponse.FromString,
+                _registered_method=True)
 
 
 class KeyAccessServerRegistryServiceServicer(object):
@@ -171,6 +176,13 @@ class KeyAccessServerRegistryServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ListKeyMappings(self, request, context):
+        """Request to list key mappings in the Key Access Service.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_KeyAccessServerRegistryServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -238,6 +250,11 @@ def add_KeyAccessServerRegistryServiceServicer_to_server(servicer, server):
                     servicer.GetBaseKey,
                     request_deserializer=policy_dot_kasregistry_dot_key__access__server__registry__pb2.GetBaseKeyRequest.FromString,
                     response_serializer=policy_dot_kasregistry_dot_key__access__server__registry__pb2.GetBaseKeyResponse.SerializeToString,
+            ),
+            'ListKeyMappings': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListKeyMappings,
+                    request_deserializer=policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsRequest.FromString,
+                    response_serializer=policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -591,6 +608,33 @@ class KeyAccessServerRegistryService(object):
             '/policy.kasregistry.KeyAccessServerRegistryService/GetBaseKey',
             policy_dot_kasregistry_dot_key__access__server__registry__pb2.GetBaseKeyRequest.SerializeToString,
             policy_dot_kasregistry_dot_key__access__server__registry__pb2.GetBaseKeyResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListKeyMappings(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/policy.kasregistry.KeyAccessServerRegistryService/ListKeyMappings',
+            policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsRequest.SerializeToString,
+            policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsResponse.FromString,
             options,
             channel_credentials,
             insecure,
