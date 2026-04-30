@@ -255,7 +255,9 @@ def main():
     # Parse arguments
     parser = argparse.ArgumentParser(description="OpenTDF Connect RPC Client Generator")
     parser.add_argument("--tag", help="Git tag to use for OpenTDF platform")
-    parser.add_argument("--download", action="store_true", help="Force download of proto files")
+    parser.add_argument(
+        "--download", action="store_true", help="Force download of proto files"
+    )
     args = parser.parse_args()
     git_tag = args.tag
 
