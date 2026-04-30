@@ -32,7 +32,26 @@ jobs:
           uv run ruff check
           uv run ruff format --check
 
-  # Step 2: Build (only after linting passes)
+  # Step 2a: Proto sub-project unit tests (runs in parallel with build)
+  proto-unit-tests:
+    runs-on: ubuntu-22.04
+    needs: lint-check
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: "otdf-python-proto/uv.lock"
+
+      - name: Run otdf-python-proto unit tests
+        working-directory: otdf-python-proto
+        run: |
+          uv sync --frozen --group dev
+          uv run pytest --tb=short -v tests/
+
+  # Step 2b: Build (only after linting passes)
   build:
     runs-on: ubuntu-22.04
     needs: lint-check
@@ -99,7 +118,7 @@ jobs:
 
   report:
     runs-on: ubuntu-22.04
-    needs: [lint-check, build, unit-tests, integration-tests]
+    needs: [lint-check, proto-unit-tests, build, unit-tests, integration-tests]
     if: always()
     outputs:
       success: ${{ steps.check.outputs.success }}
@@ -107,13 +126,14 @@ jobs:
       - name: Check all jobs succeeded
         id: check
         run: |
-          if [[ "${{ needs.lint-check.result }}" == "success" && "${{ needs.build.result }}" == "success" && "${{ needs.unit-tests.result }}" == "success" && "${{ needs.integration-tests.result }}" == "success" ]]; then
+          if [[ "${{ needs.lint-check.result }}" == "success" && "${{ needs.proto-unit-tests.result }}" == "success" && "${{ needs.build.result }}" == "success" && "${{ needs.unit-tests.result }}" == "success" && "${{ needs.integration-tests.result }}" == "success" ]]; then
             echo "success=true" >> $GITHUB_OUTPUT
             echo "✅ All tests passed!"
           else
             echo "success=false" >> $GITHUB_OUTPUT
             echo "❌ Some tests failed:"
             echo "  Lint Check: ${{ needs.lint-check.result }}"
+            echo "  Proto Unit Tests: ${{ needs.proto-unit-tests.result }}"
             echo "  Build: ${{ needs.build.result }}"
             echo "  Unit Tests: ${{ needs.unit-tests.result }}"
             echo "  Integration Tests: ${{ needs.integration-tests.result }}"

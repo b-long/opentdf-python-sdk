@@ -8,6 +8,9 @@ This script:
 4. Optionally generates legacy gRPC clients for backward compatibility
 """
 
+import argparse
+import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -43,9 +46,9 @@ def check_dependencies() -> bool:
     return True
 
 
-def copy_opentdf_proto_files(proto_gen_dir: Path) -> bool:
+def copy_opentdf_proto_files(proto_gen_dir: Path, git_tag: str | None = None) -> bool:
     """Clone OpenTDF platform repository and copy all proto files."""
-    GIT_TAG = "service/v0.7.2"
+    GIT_TAG = git_tag or "service/v0.7.2"
     REPO_URL = "https://github.com/opentdf/platform.git"
 
     temp_repo_dir = proto_gen_dir / "temp_platform_repo"
@@ -57,7 +60,7 @@ def copy_opentdf_proto_files(proto_gen_dir: Path) -> bool:
     try:
         # Remove existing temp directory if it exists
         if temp_repo_dir.exists():
-            subprocess.run(["rm", "-rf", str(temp_repo_dir)], check=True)
+            shutil.rmtree(temp_repo_dir)
 
         print(f"Cloning OpenTDF platform repository (tag: {GIT_TAG})...")
 
@@ -120,17 +123,15 @@ def copy_opentdf_proto_files(proto_gen_dir: Path) -> bool:
     finally:
         # Clean up temp directory
         if temp_repo_dir.exists():
-            subprocess.run(["rm", "-rf", str(temp_repo_dir)], check=False)
-
-    return False
+            shutil.rmtree(temp_repo_dir)
 
 
-def download_proto_files(proto_gen_dir: Path) -> bool:
+def download_proto_files(proto_gen_dir: Path, git_tag: str | None = None) -> bool:
     """Download proto files from OpenTDF platform."""
     print("Copying proto files from OpenTDF platform...")
 
     try:
-        return copy_opentdf_proto_files(proto_gen_dir)
+        return copy_opentdf_proto_files(proto_gen_dir, git_tag=git_tag)
     except Exception as e:
         print(f"Error getting proto files: {e}")
         return False
@@ -152,14 +153,15 @@ def run_buf_generate(proto_gen_dir: Path) -> bool:
         connect_plugin_path = result.stdout.strip()
         print(f"Using Connect plugin at: {connect_plugin_path}")
 
-        # Update buf.gen.yaml with the correct path
+        # Update buf.gen.yaml with the correct absolute path for the local plugin
         buf_gen_path = proto_gen_dir / "buf.gen.yaml"
         with buf_gen_path.open() as f:
             content = f.read()
 
-        # Replace the local plugin path
-        updated_content = content.replace(
-            "- local: protoc-gen-connect-python", f"- local: {connect_plugin_path}"
+        updated_content = re.sub(
+            r"- local:\s+\S*protoc-gen-connect[_-]python\S*",
+            lambda _: f"- local: {connect_plugin_path}",
+            content,
         )
 
         with buf_gen_path.open("w") as f:
@@ -189,13 +191,9 @@ def run_buf_generate(proto_gen_dir: Path) -> bool:
 
 def create_init_files(generated_dir: Path) -> None:
     """Create __init__.py files in generated directories."""
-    # Create __init__.py in main generated directory
-    (generated_dir / "__init__.py").touch()
-
-    # Create __init__.py files in any subdirectories
-    for subdir in generated_dir.iterdir():
-        if subdir.is_dir():
-            (subdir / "__init__.py").touch()
+    for dirpath in [generated_dir, *generated_dir.rglob("*")]:
+        if dirpath.is_dir():
+            (dirpath / "__init__.py").touch()
 
 
 def _fix_ignore_if_default_value(proto_files_dir):
@@ -245,7 +243,7 @@ def main():
     # Get the proto-gen directory (parent of scripts)
     proto_gen_dir = Path(__file__).parent.parent
     proto_files_dir = proto_gen_dir / "proto-files"
-    generated_dir = proto_gen_dir / "generated"
+    generated_dir = proto_gen_dir / "src" / "otdf_python_proto"
 
     # Check dependencies
     if not check_dependencies():
@@ -255,10 +253,19 @@ def main():
     proto_files_dir.mkdir(exist_ok=True)
     generated_dir.mkdir(exist_ok=True)
 
+    # Parse arguments
+    parser = argparse.ArgumentParser(description="OpenTDF Connect RPC Client Generator")
+    parser.add_argument("--tag", help="Git tag to use for OpenTDF platform")
+    parser.add_argument(
+        "--download", action="store_true", help="Force download of proto files"
+    )
+    args = parser.parse_args()
+    git_tag = args.tag
+
     # Download proto files (optional - can use existing files)
     if (
-        "--download" in sys.argv or not any(proto_files_dir.glob("**/*.proto"))
-    ) and not download_proto_files(proto_gen_dir):
+        args.download or not any(proto_files_dir.glob("**/*.proto"))
+    ) and not download_proto_files(proto_gen_dir, git_tag=git_tag):
         return 1
 
     # Check if we have any proto files

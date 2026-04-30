@@ -92,4 +92,4 @@ cd otdf-python-proto
 uv run python scripts/generate_connect_proto.py
 ```
 
-See [`otdf-python-proto/README.md`](../otdf-python-proto/README.md) and [`PROTOBUF_SETUP.md`](./PROTOBUF_SETUP.md) for details.
+See [`otdf-python-proto/README.md`](../otdf-python-proto/README.md) and [`CONNECT_RPC.md`](./CONNECT_RPC.md) for details.

@@ -23,7 +23,11 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "mypy-protobuf>=3.6.0",
+    "pytest>=8.0.0",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/otdf_python_proto"]
