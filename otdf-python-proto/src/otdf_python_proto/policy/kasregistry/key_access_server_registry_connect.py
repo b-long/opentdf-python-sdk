@@ -55,6 +55,9 @@ class KeyAccessServerRegistryService(Protocol):
     async def get_base_key(self, request: policy_dot_kasregistry_dot_key__access__server__registry__pb2.GetBaseKeyRequest, ctx: RequestContext) -> policy_dot_kasregistry_dot_key__access__server__registry__pb2.GetBaseKeyResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
 
+    async def list_key_mappings(self, request: policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsRequest, ctx: RequestContext) -> policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsResponse:
+        raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
+
 
 class KeyAccessServerRegistryServiceASGIApplication(ConnectASGIApplication[KeyAccessServerRegistryService]):
     def __init__(self, service: KeyAccessServerRegistryService | AsyncGenerator[KeyAccessServerRegistryService], *, interceptors: Iterable[Interceptor]=(), read_max_bytes: int | None = None) -> None:
@@ -190,6 +193,16 @@ class KeyAccessServerRegistryServiceASGIApplication(ConnectASGIApplication[KeyAc
                         idempotency_level=IdempotencyLevel.UNKNOWN,
                     ),
                     function=svc.get_base_key,
+                ),
+                "/policy.kasregistry.KeyAccessServerRegistryService/ListKeyMappings": Endpoint.unary(
+                    method=MethodInfo(
+                        name="ListKeyMappings",
+                        service_name="policy.kasregistry.KeyAccessServerRegistryService",
+                        input=policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsRequest,
+                        output=policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsResponse,
+                        idempotency_level=IdempotencyLevel.UNKNOWN,
+                    ),
+                    function=svc.list_key_mappings,
                 ),
             },
             interceptors=interceptors,
@@ -469,6 +482,26 @@ class KeyAccessServerRegistryServiceClient(ConnectClient):
             timeout_ms=timeout_ms,
         )
 
+    async def list_key_mappings(
+        self,
+        request: policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsRequest,
+        *,
+        headers: Headers | Mapping[str, str] | None = None,
+        timeout_ms: int | None = None,
+    ) -> policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsResponse:
+        return await self.execute_unary(
+            request=request,
+            method=MethodInfo(
+                name="ListKeyMappings",
+                service_name="policy.kasregistry.KeyAccessServerRegistryService",
+                input=policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsRequest,
+                output=policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsResponse,
+                idempotency_level=IdempotencyLevel.UNKNOWN,
+            ),
+            headers=headers,
+            timeout_ms=timeout_ms,
+        )
+
 
 class KeyAccessServerRegistryServiceSync(Protocol):
     def list_key_access_servers(self, request: policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyAccessServersRequest, ctx: RequestContext) -> policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyAccessServersResponse:
@@ -496,6 +529,8 @@ class KeyAccessServerRegistryServiceSync(Protocol):
     def set_base_key(self, request: policy_dot_kasregistry_dot_key__access__server__registry__pb2.SetBaseKeyRequest, ctx: RequestContext) -> policy_dot_kasregistry_dot_key__access__server__registry__pb2.SetBaseKeyResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
     def get_base_key(self, request: policy_dot_kasregistry_dot_key__access__server__registry__pb2.GetBaseKeyRequest, ctx: RequestContext) -> policy_dot_kasregistry_dot_key__access__server__registry__pb2.GetBaseKeyResponse:
+        raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
+    def list_key_mappings(self, request: policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsRequest, ctx: RequestContext) -> policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
 
 
@@ -632,6 +667,16 @@ class KeyAccessServerRegistryServiceWSGIApplication(ConnectWSGIApplication):
                         idempotency_level=IdempotencyLevel.UNKNOWN,
                     ),
                     function=service.get_base_key,
+                ),
+                "/policy.kasregistry.KeyAccessServerRegistryService/ListKeyMappings": EndpointSync.unary(
+                    method=MethodInfo(
+                        name="ListKeyMappings",
+                        service_name="policy.kasregistry.KeyAccessServerRegistryService",
+                        input=policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsRequest,
+                        output=policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsResponse,
+                        idempotency_level=IdempotencyLevel.UNKNOWN,
+                    ),
+                    function=service.list_key_mappings,
                 ),
             },
             interceptors=interceptors,
@@ -905,6 +950,26 @@ class KeyAccessServerRegistryServiceClientSync(ConnectClientSync):
                 service_name="policy.kasregistry.KeyAccessServerRegistryService",
                 input=policy_dot_kasregistry_dot_key__access__server__registry__pb2.GetBaseKeyRequest,
                 output=policy_dot_kasregistry_dot_key__access__server__registry__pb2.GetBaseKeyResponse,
+                idempotency_level=IdempotencyLevel.UNKNOWN,
+            ),
+            headers=headers,
+            timeout_ms=timeout_ms,
+        )
+
+    def list_key_mappings(
+        self,
+        request: policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsRequest,
+        *,
+        headers: Headers | Mapping[str, str] | None = None,
+        timeout_ms: int | None = None,
+    ) -> policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsResponse:
+        return self.execute_unary(
+            request=request,
+            method=MethodInfo(
+                name="ListKeyMappings",
+                service_name="policy.kasregistry.KeyAccessServerRegistryService",
+                input=policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsRequest,
+                output=policy_dot_kasregistry_dot_key__access__server__registry__pb2.ListKeyMappingsResponse,
                 idempotency_level=IdempotencyLevel.UNKNOWN,
             ),
             headers=headers,
