@@ -264,14 +264,10 @@ class TestNoDeadReturnAfterFinally:
 
     def test_temp_dir_cleaned_up_on_success(self, tmp_path):
         """finally block must clean up temp_platform_repo regardless of outcome."""
-        rm_calls: list = []
+        temp_repo = tmp_path / "temp_platform_repo"
 
         def fake_run(cmd, **kwargs):
-            if cmd[0] == "rm":
-                rm_calls.append(cmd)
-                return MagicMock(returncode=0)
             if cmd[0] == "git":
-                temp_repo = tmp_path / "temp_platform_repo"
                 service_dir = temp_repo / "service" / "kas"
                 service_dir.mkdir(parents=True)
                 (service_dir / "kas.proto").write_text('syntax = "proto3";\n')
@@ -280,18 +276,14 @@ class TestNoDeadReturnAfterFinally:
         with patch("generate_connect_proto.subprocess.run", side_effect=fake_run):
             gen.copy_opentdf_proto_files(tmp_path)
 
-        assert any("temp_platform_repo" in str(c) for c in rm_calls)
+        assert not temp_repo.exists()
 
     def test_temp_dir_cleaned_up_on_failure(self, tmp_path):
-        rm_calls: list = []
+        temp_repo = tmp_path / "temp_platform_repo"
 
         def fake_run(cmd, **kwargs):
-            if cmd[0] == "rm":
-                rm_calls.append(cmd)
-                return MagicMock(returncode=0)
             if cmd[0] == "git":
-                # Create the temp dir so the finally block has something to clean up.
-                (tmp_path / "temp_platform_repo").mkdir(exist_ok=True)
+                temp_repo.mkdir(exist_ok=True)
                 raise gen.subprocess.CalledProcessError(1, "git")
             return MagicMock(returncode=0)
 
@@ -299,7 +291,7 @@ class TestNoDeadReturnAfterFinally:
             result = gen.copy_opentdf_proto_files(tmp_path)
 
         assert result is False
-        assert any("temp_platform_repo" in str(c) for c in rm_calls)
+        assert not temp_repo.exists()
 
 
 # ---------------------------------------------------------------------------

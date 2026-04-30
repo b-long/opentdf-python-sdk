@@ -10,6 +10,7 @@ This script:
 
 import argparse
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -59,7 +60,7 @@ def copy_opentdf_proto_files(proto_gen_dir: Path, git_tag: str | None = None) ->
     try:
         # Remove existing temp directory if it exists
         if temp_repo_dir.exists():
-            subprocess.run(["rm", "-rf", str(temp_repo_dir)], check=True)
+            shutil.rmtree(temp_repo_dir)
 
         print(f"Cloning OpenTDF platform repository (tag: {GIT_TAG})...")
 
@@ -122,7 +123,7 @@ def copy_opentdf_proto_files(proto_gen_dir: Path, git_tag: str | None = None) ->
     finally:
         # Clean up temp directory
         if temp_repo_dir.exists():
-            subprocess.run(["rm", "-rf", str(temp_repo_dir)], check=False)
+            shutil.rmtree(temp_repo_dir)
 
 
 def download_proto_files(proto_gen_dir: Path, git_tag: str | None = None) -> bool:
