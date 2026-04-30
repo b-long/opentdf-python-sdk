@@ -178,33 +178,32 @@ class TestGitTagOverride:
 class TestArgParsing:
     """--tag argument parsing in main() must populate git_tag correctly."""
 
-    def _parse_tag(self, argv: list[str]) -> str | None:
-        """Run just the tag-parsing block from main() against a given argv."""
-        git_tag = None
-        for i, arg in enumerate(argv[1:], 1):
-            if arg.startswith("--tag="):
-                git_tag = arg.split("=", 1)[1]
-            elif arg == "--tag" and i + 1 < len(argv):
-                git_tag = argv[i + 1]
-        return git_tag
+    def _get_parser(self):
+        """Replicates the ArgumentParser setup from main()."""
+        parser = gen.argparse.ArgumentParser(
+            description="OpenTDF Connect RPC Client Generator"
+        )
+        parser.add_argument("--tag", help="Git tag to use for OpenTDF platform")
+        parser.add_argument(
+            "--download", action="store_true", help="Force download of proto files"
+        )
+        return parser
 
     def test_tag_equals_form(self):
-        assert (
-            self._parse_tag(["script.py", "--tag=service/v0.11.0"]) == "service/v0.11.0"
-        )
+        args = self._get_parser().parse_args(["--tag=service/v0.11.0"])
+        assert args.tag == "service/v0.11.0"
 
     def test_tag_space_form(self):
-        assert (
-            self._parse_tag(["script.py", "--tag", "service/v0.10.0"])
-            == "service/v0.10.0"
-        )
+        args = self._get_parser().parse_args(["--tag", "service/v0.10.0"])
+        assert args.tag == "service/v0.10.0"
 
     def test_no_tag_returns_none(self):
-        assert self._parse_tag(["script.py", "--download"]) is None
+        args = self._get_parser().parse_args(["--download"])
+        assert args.tag is None
 
     def test_tag_alongside_download(self):
-        argv = ["script.py", "--download", "--tag=service/v0.12.0"]
-        assert self._parse_tag(argv) == "service/v0.12.0"
+        args = self._get_parser().parse_args(["--download", "--tag=service/v0.12.0"])
+        assert args.tag == "service/v0.12.0"
 
 
 # ---------------------------------------------------------------------------
