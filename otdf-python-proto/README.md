@@ -170,7 +170,7 @@ If you're migrating from traditional gRPC clients to Connect RPC:
 Install buf: `brew install bufbuild/buf/buf`
 
 ### "protoc-gen-connect_python not found"
-Install with compiler support: `uv add connect-python[compiler]`
+Run the setup script: `uv run python scripts/setup_connect_rpc.py`
 
 ### Import errors after generation
 Ensure `__init__.py` files exist in otdf_python_proto directories
