@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.4](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.4.3...otdf-python-v0.4.4) (2026-04-30)
+
+
+### Bug Fixes
+
+* **proto-gen:** fix buf plugin path replacement, GIT_TAG, and generated_dir ([#135](https://github.com/b-long/opentdf-python-sdk/issues/135)) ([88d227d](https://github.com/b-long/opentdf-python-sdk/commit/88d227d83eb5e1903e5a2ef86dc38ea016885f60))
+
 ## [0.4.3](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.4.2...otdf-python-v0.4.3) (2026-02-05)
 
 
