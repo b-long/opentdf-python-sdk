@@ -8,6 +8,7 @@ This script:
 4. Optionally generates legacy gRPC clients for backward compatibility
 """
 
+import argparse
 import re
 import subprocess
 import sys
@@ -157,8 +158,8 @@ def run_buf_generate(proto_gen_dir: Path) -> bool:
             content = f.read()
 
         updated_content = re.sub(
-            r"- local: \S*protoc-gen-connect[_-]python\S*",
-            f"- local: {connect_plugin_path}",
+            r"- local:\s+\S*protoc-gen-connect[_-]python\S*",
+            lambda _: f"- local: {connect_plugin_path}",
             content,
         )
 
@@ -251,17 +252,16 @@ def main():
     proto_files_dir.mkdir(exist_ok=True)
     generated_dir.mkdir(exist_ok=True)
 
-    # Parse optional --tag argument
-    git_tag = None
-    for i, arg in enumerate(sys.argv[1:], 1):
-        if arg.startswith("--tag="):
-            git_tag = arg.split("=", 1)[1]
-        elif arg == "--tag" and i + 1 < len(sys.argv):
-            git_tag = sys.argv[i + 1]
+    # Parse arguments
+    parser = argparse.ArgumentParser(description="OpenTDF Connect RPC Client Generator")
+    parser.add_argument("--tag", help="Git tag to use for OpenTDF platform")
+    parser.add_argument("--download", action="store_true", help="Force download of proto files")
+    args = parser.parse_args()
+    git_tag = args.tag
 
     # Download proto files (optional - can use existing files)
     if (
-        "--download" in sys.argv or not any(proto_files_dir.glob("**/*.proto"))
+        args.download or not any(proto_files_dir.glob("**/*.proto"))
     ) and not download_proto_files(proto_gen_dir, git_tag=git_tag):
         return 1
 

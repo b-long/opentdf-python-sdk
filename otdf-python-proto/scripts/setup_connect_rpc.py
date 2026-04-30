@@ -14,7 +14,7 @@ def main():
     """Install Connect RPC compiler dependencies."""
     print("Installing Connect RPC dependencies...")
     subprocess.run(
-        ["uv", "add", "connect-python[compiler]"],
+        ["uv", "sync"],
         check=True,
     )
     print("✓ Connect RPC dependencies installed.")
