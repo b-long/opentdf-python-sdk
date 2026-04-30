@@ -1,10 +1,7 @@
 """Unit tests for scripts/generate_connect_proto.py.
 
 These tests exercise the pure-Python logic in the generation script without
-requiring network access, buf, or git to be present.  Each test class maps
-to one of the bugs documented in:
-  - https://github.com/b-long/opentdf-python-sdk/issues/133  (fixed)
-  - https://github.com/b-long/opentdf-python-sdk/issues/134  (remaining)
+requiring network access, buf, or git to be present.
 """
 
 import re
