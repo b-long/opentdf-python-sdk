@@ -148,8 +148,8 @@ class TestGitTagOverride:
         used_tag = self._run_with_tag(tmp_path, "service/v0.12.0")
         assert used_tag == "service/v0.12.0"
 
-    def test_default_tag_is_not_old_hardcode(self, tmp_path):
-        """The default must no longer be the stale service/v0.7.2."""
+    def test_default_tag_is_used_when_no_tag_is_provided(self, tmp_path):
+        """The default tag must be used when no git_tag is provided."""
         proto_files_dir = tmp_path / "proto-files"
         proto_files_dir.mkdir()
 

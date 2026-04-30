@@ -51,8 +51,9 @@ uv sync
 
 # Check if connect-python is available
 if ! uv run python -c "import connectrpc" 2>/dev/null; then
-    echo "Error: connect-python is not available after uv sync."
-    echo "Run: uv run python scripts/setup_connect_rpc.py"
+    echo "Error: connect-python is not in the installed dependencies."
+    echo "It may need to be added first. Run: uv run python scripts/setup_connect_rpc.py"
+    echo "Then re-run this script."
     exit 1
 fi
 
