@@ -279,7 +279,7 @@ class ListKeyAccessServerGrantsResponse(_message.Message):
     def __init__(self, grants: _Optional[_Iterable[_Union[KeyAccessServerGrants, _Mapping]]] = ..., pagination: _Optional[_Union[_selectors_pb2.PageResponse, _Mapping]] = ...) -> None: ...
 
 class CreateKeyRequest(_message.Message):
-    __slots__ = ("kas_id", "key_id", "key_algorithm", "key_mode", "public_key_ctx", "private_key_ctx", "provider_config_id", "metadata")
+    __slots__ = ("kas_id", "key_id", "key_algorithm", "key_mode", "public_key_ctx", "private_key_ctx", "provider_config_id", "legacy", "metadata")
     KAS_ID_FIELD_NUMBER: _ClassVar[int]
     KEY_ID_FIELD_NUMBER: _ClassVar[int]
     KEY_ALGORITHM_FIELD_NUMBER: _ClassVar[int]
@@ -287,6 +287,7 @@ class CreateKeyRequest(_message.Message):
     PUBLIC_KEY_CTX_FIELD_NUMBER: _ClassVar[int]
     PRIVATE_KEY_CTX_FIELD_NUMBER: _ClassVar[int]
     PROVIDER_CONFIG_ID_FIELD_NUMBER: _ClassVar[int]
+    LEGACY_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     kas_id: str
     key_id: str
@@ -295,8 +296,9 @@ class CreateKeyRequest(_message.Message):
     public_key_ctx: _objects_pb2.PublicKeyCtx
     private_key_ctx: _objects_pb2.PrivateKeyCtx
     provider_config_id: str
+    legacy: bool
     metadata: _common_pb2.MetadataMutable
-    def __init__(self, kas_id: _Optional[str] = ..., key_id: _Optional[str] = ..., key_algorithm: _Optional[_Union[_objects_pb2.Algorithm, str]] = ..., key_mode: _Optional[_Union[_objects_pb2.KeyMode, str]] = ..., public_key_ctx: _Optional[_Union[_objects_pb2.PublicKeyCtx, _Mapping]] = ..., private_key_ctx: _Optional[_Union[_objects_pb2.PrivateKeyCtx, _Mapping]] = ..., provider_config_id: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
+    def __init__(self, kas_id: _Optional[str] = ..., key_id: _Optional[str] = ..., key_algorithm: _Optional[_Union[_objects_pb2.Algorithm, str]] = ..., key_mode: _Optional[_Union[_objects_pb2.KeyMode, str]] = ..., public_key_ctx: _Optional[_Union[_objects_pb2.PublicKeyCtx, _Mapping]] = ..., private_key_ctx: _Optional[_Union[_objects_pb2.PrivateKeyCtx, _Mapping]] = ..., provider_config_id: _Optional[str] = ..., legacy: bool = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
 
 class CreateKeyResponse(_message.Message):
     __slots__ = ("kas_key",)
@@ -319,18 +321,20 @@ class GetKeyResponse(_message.Message):
     def __init__(self, kas_key: _Optional[_Union[_objects_pb2.KasKey, _Mapping]] = ...) -> None: ...
 
 class ListKeysRequest(_message.Message):
-    __slots__ = ("key_algorithm", "kas_id", "kas_name", "kas_uri", "pagination")
+    __slots__ = ("key_algorithm", "kas_id", "kas_name", "kas_uri", "legacy", "pagination")
     KEY_ALGORITHM_FIELD_NUMBER: _ClassVar[int]
     KAS_ID_FIELD_NUMBER: _ClassVar[int]
     KAS_NAME_FIELD_NUMBER: _ClassVar[int]
     KAS_URI_FIELD_NUMBER: _ClassVar[int]
+    LEGACY_FIELD_NUMBER: _ClassVar[int]
     PAGINATION_FIELD_NUMBER: _ClassVar[int]
     key_algorithm: _objects_pb2.Algorithm
     kas_id: str
     kas_name: str
     kas_uri: str
+    legacy: bool
     pagination: _selectors_pb2.PageRequest
-    def __init__(self, key_algorithm: _Optional[_Union[_objects_pb2.Algorithm, str]] = ..., kas_id: _Optional[str] = ..., kas_name: _Optional[str] = ..., kas_uri: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ...) -> None: ...
+    def __init__(self, key_algorithm: _Optional[_Union[_objects_pb2.Algorithm, str]] = ..., kas_id: _Optional[str] = ..., kas_name: _Optional[str] = ..., kas_uri: _Optional[str] = ..., legacy: bool = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ...) -> None: ...
 
 class ListKeysResponse(_message.Message):
     __slots__ = ("kas_keys", "pagination")

@@ -26,9 +26,10 @@ from buf.validate import validate_pb2 as buf_dot_validate_dot_validate__pb2
 from entity import entity_pb2 as entity_dot_entity__pb2
 from google.protobuf import any_pb2 as google_dot_protobuf_dot_any__pb2
 from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
+from authorization.v2 import authorization_pb2 as authorization_dot_v2_dot_authorization__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n+entityresolution/v2/entity_resolution.proto\x12\x13\x65ntityresolution.v2\x1a\x1b\x62uf/validate/validate.proto\x1a\x13\x65ntity/entity.proto\x1a\x19google/protobuf/any.proto\x1a\x1cgoogle/protobuf/struct.proto\"{\n\x14\x45ntityRepresentation\x12\x1f\n\x0boriginal_id\x18\x01 \x01(\tR\noriginalId\x12\x42\n\x10\x61\x64\x64itional_props\x18\x02 \x03(\x0b\x32\x17.google.protobuf.StructR\x0f\x61\x64\x64itionalProps\"Q\n\x16ResolveEntitiesRequest\x12\x37\n\x08\x65ntities\x18\x01 \x03(\x0b\x32\x0e.entity.EntityB\x0b\xbaH\x08\x92\x01\x02\x08\x01\xc8\x01\x01R\x08\x65ntities\"{\n\x17ResolveEntitiesResponse\x12`\n\x16\x65ntity_representations\x18\x01 \x03(\x0b\x32).entityresolution.v2.EntityRepresentationR\x15\x65ntityRepresentations\"\x8b\x01\n\x13\x45ntityNotFoundError\x12\x12\n\x04\x63ode\x18\x01 \x01(\x05R\x04\x63ode\x12\x18\n\x07message\x18\x02 \x01(\tR\x07message\x12.\n\x07\x64\x65tails\x18\x03 \x03(\x0b\x32\x14.google.protobuf.AnyR\x07\x64\x65tails\x12\x16\n\x06\x65ntity\x18\x04 \x01(\tR\x06\x65ntity\"L\n#CreateEntityChainsFromTokensRequest\x12%\n\x06tokens\x18\x01 \x03(\x0b\x32\r.entity.TokenR\x06tokens\"`\n$CreateEntityChainsFromTokensResponse\x12\x38\n\rentity_chains\x18\x01 \x03(\x0b\x32\x13.entity.EntityChainR\x0c\x65ntityChains2\xa1\x02\n\x17\x45ntityResolutionService\x12n\n\x0fResolveEntities\x12+.entityresolution.v2.ResolveEntitiesRequest\x1a,.entityresolution.v2.ResolveEntitiesResponse\"\x00\x12\x95\x01\n\x1c\x43reateEntityChainsFromTokens\x12\x38.entityresolution.v2.CreateEntityChainsFromTokensRequest\x1a\x39.entityresolution.v2.CreateEntityChainsFromTokensResponse\"\x00\x42\x9d\x01\n\x17\x63om.entityresolution.v2B\x15\x45ntityResolutionProtoP\x01\xa2\x02\x03\x45XX\xaa\x02\x13\x45ntityresolution.V2\xca\x02\x13\x45ntityresolution\\V2\xe2\x02\x1f\x45ntityresolution\\V2\\GPBMetadata\xea\x02\x14\x45ntityresolution::V2b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n+entityresolution/v2/entity_resolution.proto\x12\x13\x65ntityresolution.v2\x1a\x1b\x62uf/validate/validate.proto\x1a\x13\x65ntity/entity.proto\x1a\x19google/protobuf/any.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a$authorization/v2/authorization.proto\"]\n\x11\x44irectEntitlement\x12.\n\x13\x61ttribute_value_fqn\x18\x01 \x01(\tR\x11\x61ttributeValueFqn\x12\x18\n\x07\x61\x63tions\x18\x02 \x03(\tR\x07\x61\x63tions\"\xd4\x01\n\x14\x45ntityRepresentation\x12\x1f\n\x0boriginal_id\x18\x01 \x01(\tR\noriginalId\x12\x42\n\x10\x61\x64\x64itional_props\x18\x02 \x03(\x0b\x32\x17.google.protobuf.StructR\x0f\x61\x64\x64itionalProps\x12W\n\x13\x64irect_entitlements\x18\x03 \x03(\x0b\x32&.entityresolution.v2.DirectEntitlementR\x12\x64irectEntitlements\"Q\n\x16ResolveEntitiesRequest\x12\x37\n\x08\x65ntities\x18\x01 \x03(\x0b\x32\x0e.entity.EntityB\x0b\xbaH\x08\x92\x01\x02\x08\x01\xc8\x01\x01R\x08\x65ntities\"{\n\x17ResolveEntitiesResponse\x12`\n\x16\x65ntity_representations\x18\x01 \x03(\x0b\x32).entityresolution.v2.EntityRepresentationR\x15\x65ntityRepresentations\"\x8b\x01\n\x13\x45ntityNotFoundError\x12\x12\n\x04\x63ode\x18\x01 \x01(\x05R\x04\x63ode\x12\x18\n\x07message\x18\x02 \x01(\tR\x07message\x12.\n\x07\x64\x65tails\x18\x03 \x03(\x0b\x32\x14.google.protobuf.AnyR\x07\x64\x65tails\x12\x16\n\x06\x65ntity\x18\x04 \x01(\tR\x06\x65ntity\"\x86\x01\n#CreateEntityChainsFromTokensRequest\x12%\n\x06tokens\x18\x01 \x03(\x0b\x32\r.entity.TokenR\x06tokens\x12\x38\n\tresources\x18\x02 \x03(\x0b\x32\x1a.authorization.v2.ResourceR\tresources\"`\n$CreateEntityChainsFromTokensResponse\x12\x38\n\rentity_chains\x18\x01 \x03(\x0b\x32\x13.entity.EntityChainR\x0c\x65ntityChains2\xa1\x02\n\x17\x45ntityResolutionService\x12n\n\x0fResolveEntities\x12+.entityresolution.v2.ResolveEntitiesRequest\x1a,.entityresolution.v2.ResolveEntitiesResponse\"\x00\x12\x95\x01\n\x1c\x43reateEntityChainsFromTokens\x12\x38.entityresolution.v2.CreateEntityChainsFromTokensRequest\x1a\x39.entityresolution.v2.CreateEntityChainsFromTokensResponse\"\x00\x42\x9d\x01\n\x17\x63om.entityresolution.v2B\x15\x45ntityResolutionProtoP\x01\xa2\x02\x03\x45XX\xaa\x02\x13\x45ntityresolution.V2\xca\x02\x13\x45ntityresolution\\V2\xe2\x02\x1f\x45ntityresolution\\V2\\GPBMetadata\xea\x02\x14\x45ntityresolution::V2b\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -38,18 +39,20 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._serialized_options = b'\n\027com.entityresolution.v2B\025EntityResolutionProtoP\001\242\002\003EXX\252\002\023Entityresolution.V2\312\002\023Entityresolution\\V2\342\002\037Entityresolution\\V2\\GPBMetadata\352\002\024Entityresolution::V2'
   _globals['_RESOLVEENTITIESREQUEST'].fields_by_name['entities']._loaded_options = None
   _globals['_RESOLVEENTITIESREQUEST'].fields_by_name['entities']._serialized_options = b'\272H\010\222\001\002\010\001\310\001\001'
-  _globals['_ENTITYREPRESENTATION']._serialized_start=175
-  _globals['_ENTITYREPRESENTATION']._serialized_end=298
-  _globals['_RESOLVEENTITIESREQUEST']._serialized_start=300
-  _globals['_RESOLVEENTITIESREQUEST']._serialized_end=381
-  _globals['_RESOLVEENTITIESRESPONSE']._serialized_start=383
-  _globals['_RESOLVEENTITIESRESPONSE']._serialized_end=506
-  _globals['_ENTITYNOTFOUNDERROR']._serialized_start=509
-  _globals['_ENTITYNOTFOUNDERROR']._serialized_end=648
-  _globals['_CREATEENTITYCHAINSFROMTOKENSREQUEST']._serialized_start=650
-  _globals['_CREATEENTITYCHAINSFROMTOKENSREQUEST']._serialized_end=726
-  _globals['_CREATEENTITYCHAINSFROMTOKENSRESPONSE']._serialized_start=728
-  _globals['_CREATEENTITYCHAINSFROMTOKENSRESPONSE']._serialized_end=824
-  _globals['_ENTITYRESOLUTIONSERVICE']._serialized_start=827
-  _globals['_ENTITYRESOLUTIONSERVICE']._serialized_end=1116
+  _globals['_DIRECTENTITLEMENT']._serialized_start=213
+  _globals['_DIRECTENTITLEMENT']._serialized_end=306
+  _globals['_ENTITYREPRESENTATION']._serialized_start=309
+  _globals['_ENTITYREPRESENTATION']._serialized_end=521
+  _globals['_RESOLVEENTITIESREQUEST']._serialized_start=523
+  _globals['_RESOLVEENTITIESREQUEST']._serialized_end=604
+  _globals['_RESOLVEENTITIESRESPONSE']._serialized_start=606
+  _globals['_RESOLVEENTITIESRESPONSE']._serialized_end=729
+  _globals['_ENTITYNOTFOUNDERROR']._serialized_start=732
+  _globals['_ENTITYNOTFOUNDERROR']._serialized_end=871
+  _globals['_CREATEENTITYCHAINSFROMTOKENSREQUEST']._serialized_start=874
+  _globals['_CREATEENTITYCHAINSFROMTOKENSREQUEST']._serialized_end=1008
+  _globals['_CREATEENTITYCHAINSFROMTOKENSRESPONSE']._serialized_start=1010
+  _globals['_CREATEENTITYCHAINSFROMTOKENSRESPONSE']._serialized_end=1106
+  _globals['_ENTITYRESOLUTIONSERVICE']._serialized_start=1109
+  _globals['_ENTITYRESOLUTIONSERVICE']._serialized_end=1398
 # @@protoc_insertion_point(module_scope)

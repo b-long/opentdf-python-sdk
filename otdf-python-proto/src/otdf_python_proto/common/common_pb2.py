@@ -23,9 +23,10 @@ _sym_db = _symbol_database.Default()
 
 
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
+from buf.validate import validate_pb2 as buf_dot_validate_dot_validate__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x13\x63ommon/common.proto\x12\x06\x63ommon\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf1\x01\n\x08Metadata\x12\x39\n\ncreated_at\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x39\n\nupdated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x34\n\x06labels\x18\x03 \x03(\x0b\x32\x1c.common.Metadata.LabelsEntryR\x06labels\x1a\x39\n\x0bLabelsEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n\x05value\x18\x02 \x01(\tR\x05value:\x02\x38\x01\"\x89\x01\n\x0fMetadataMutable\x12;\n\x06labels\x18\x03 \x03(\x0b\x32#.common.MetadataMutable.LabelsEntryR\x06labels\x1a\x39\n\x0bLabelsEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n\x05value\x18\x02 \x01(\tR\x05value:\x02\x38\x01*}\n\x12MetadataUpdateEnum\x12$\n METADATA_UPDATE_ENUM_UNSPECIFIED\x10\x00\x12\x1f\n\x1bMETADATA_UPDATE_ENUM_EXTEND\x10\x01\x12 \n\x1cMETADATA_UPDATE_ENUM_REPLACE\x10\x02*\x8d\x01\n\x0f\x41\x63tiveStateEnum\x12!\n\x1d\x41\x43TIVE_STATE_ENUM_UNSPECIFIED\x10\x00\x12\x1c\n\x18\x41\x43TIVE_STATE_ENUM_ACTIVE\x10\x01\x12\x1e\n\x1a\x41\x43TIVE_STATE_ENUM_INACTIVE\x10\x02\x12\x19\n\x15\x41\x43TIVE_STATE_ENUM_ANY\x10\x03\x42Q\n\ncom.commonB\x0b\x43ommonProtoP\x01\xa2\x02\x03\x43XX\xaa\x02\x06\x43ommon\xca\x02\x06\x43ommon\xe2\x02\x12\x43ommon\\GPBMetadata\xea\x02\x06\x43ommonb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x13\x63ommon/common.proto\x12\x06\x63ommon\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1b\x62uf/validate/validate.proto\"\xd2\x02\n\x10IdNameIdentifier\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x90\x02\n\x04name\x18\x02 \x01(\tB\xfb\x01\xbaH\xf7\x01r\x05\x10\x01\x18\xfd\x01\xba\x01\xec\x01\n\x0bname_format\x12\x9f\x01Name must be an alphanumeric string, allowing hyphens and underscores but not as the first or last character. The stored name will be normalized to lower case.\x1a;this.matches(\'^[a-zA-Z0-9](?:[a-zA-Z0-9_-]*[a-zA-Z0-9])?$\')R\x04name:\x11\xbaH\x0e\"\x0c\n\x02id\n\x04name\x10\x01\"[\n\x0fIdFqnIdentifier\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x1c\n\x03\x66qn\x18\x02 \x01(\tB\n\xbaH\x07r\x05\x10\x01\x88\x01\x01R\x03\x66qn:\x10\xbaH\r\"\x0b\n\x02id\n\x03\x66qn\x10\x01\"\xf1\x01\n\x08Metadata\x12\x39\n\ncreated_at\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x39\n\nupdated_at\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x34\n\x06labels\x18\x03 \x03(\x0b\x32\x1c.common.Metadata.LabelsEntryR\x06labels\x1a\x39\n\x0bLabelsEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n\x05value\x18\x02 \x01(\tR\x05value:\x02\x38\x01\"\x89\x01\n\x0fMetadataMutable\x12;\n\x06labels\x18\x03 \x03(\x0b\x32#.common.MetadataMutable.LabelsEntryR\x06labels\x1a\x39\n\x0bLabelsEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n\x05value\x18\x02 \x01(\tR\x05value:\x02\x38\x01*}\n\x12MetadataUpdateEnum\x12$\n METADATA_UPDATE_ENUM_UNSPECIFIED\x10\x00\x12\x1f\n\x1bMETADATA_UPDATE_ENUM_EXTEND\x10\x01\x12 \n\x1cMETADATA_UPDATE_ENUM_REPLACE\x10\x02*\x8d\x01\n\x0f\x41\x63tiveStateEnum\x12!\n\x1d\x41\x43TIVE_STATE_ENUM_UNSPECIFIED\x10\x00\x12\x1c\n\x18\x41\x43TIVE_STATE_ENUM_ACTIVE\x10\x01\x12\x1e\n\x1a\x41\x43TIVE_STATE_ENUM_INACTIVE\x10\x02\x12\x19\n\x15\x41\x43TIVE_STATE_ENUM_ANY\x10\x03\x42Q\n\ncom.commonB\x0b\x43ommonProtoP\x01\xa2\x02\x03\x43XX\xaa\x02\x06\x43ommon\xca\x02\x06\x43ommon\xe2\x02\x12\x43ommon\\GPBMetadata\xea\x02\x06\x43ommonb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,20 +34,36 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'common.common_pb2', _global
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'\n\ncom.commonB\013CommonProtoP\001\242\002\003CXX\252\002\006Common\312\002\006Common\342\002\022Common\\GPBMetadata\352\002\006Common'
+  _globals['_IDNAMEIDENTIFIER'].fields_by_name['id']._loaded_options = None
+  _globals['_IDNAMEIDENTIFIER'].fields_by_name['id']._serialized_options = b'\272H\005r\003\260\001\001'
+  _globals['_IDNAMEIDENTIFIER'].fields_by_name['name']._loaded_options = None
+  _globals['_IDNAMEIDENTIFIER'].fields_by_name['name']._serialized_options = b'\272H\367\001r\005\020\001\030\375\001\272\001\354\001\n\013name_format\022\237\001Name must be an alphanumeric string, allowing hyphens and underscores but not as the first or last character. The stored name will be normalized to lower case.\032;this.matches(\'^[a-zA-Z0-9](?:[a-zA-Z0-9_-]*[a-zA-Z0-9])?$\')'
+  _globals['_IDNAMEIDENTIFIER']._loaded_options = None
+  _globals['_IDNAMEIDENTIFIER']._serialized_options = b'\272H\016\"\014\n\002id\n\004name\020\001'
+  _globals['_IDFQNIDENTIFIER'].fields_by_name['id']._loaded_options = None
+  _globals['_IDFQNIDENTIFIER'].fields_by_name['id']._serialized_options = b'\272H\005r\003\260\001\001'
+  _globals['_IDFQNIDENTIFIER'].fields_by_name['fqn']._loaded_options = None
+  _globals['_IDFQNIDENTIFIER'].fields_by_name['fqn']._serialized_options = b'\272H\007r\005\020\001\210\001\001'
+  _globals['_IDFQNIDENTIFIER']._loaded_options = None
+  _globals['_IDFQNIDENTIFIER']._serialized_options = b'\272H\r\"\013\n\002id\n\003fqn\020\001'
   _globals['_METADATA_LABELSENTRY']._loaded_options = None
   _globals['_METADATA_LABELSENTRY']._serialized_options = b'8\001'
   _globals['_METADATAMUTABLE_LABELSENTRY']._loaded_options = None
   _globals['_METADATAMUTABLE_LABELSENTRY']._serialized_options = b'8\001'
-  _globals['_METADATAUPDATEENUM']._serialized_start=448
-  _globals['_METADATAUPDATEENUM']._serialized_end=573
-  _globals['_ACTIVESTATEENUM']._serialized_start=576
-  _globals['_ACTIVESTATEENUM']._serialized_end=717
-  _globals['_METADATA']._serialized_start=65
-  _globals['_METADATA']._serialized_end=306
-  _globals['_METADATA_LABELSENTRY']._serialized_start=249
-  _globals['_METADATA_LABELSENTRY']._serialized_end=306
-  _globals['_METADATAMUTABLE']._serialized_start=309
-  _globals['_METADATAMUTABLE']._serialized_end=446
-  _globals['_METADATAMUTABLE_LABELSENTRY']._serialized_start=249
-  _globals['_METADATAMUTABLE_LABELSENTRY']._serialized_end=306
+  _globals['_METADATAUPDATEENUM']._serialized_start=911
+  _globals['_METADATAUPDATEENUM']._serialized_end=1036
+  _globals['_ACTIVESTATEENUM']._serialized_start=1039
+  _globals['_ACTIVESTATEENUM']._serialized_end=1180
+  _globals['_IDNAMEIDENTIFIER']._serialized_start=94
+  _globals['_IDNAMEIDENTIFIER']._serialized_end=432
+  _globals['_IDFQNIDENTIFIER']._serialized_start=434
+  _globals['_IDFQNIDENTIFIER']._serialized_end=525
+  _globals['_METADATA']._serialized_start=528
+  _globals['_METADATA']._serialized_end=769
+  _globals['_METADATA_LABELSENTRY']._serialized_start=712
+  _globals['_METADATA_LABELSENTRY']._serialized_end=769
+  _globals['_METADATAMUTABLE']._serialized_start=772
+  _globals['_METADATAMUTABLE']._serialized_end=909
+  _globals['_METADATAMUTABLE_LABELSENTRY']._serialized_start=712
+  _globals['_METADATAMUTABLE_LABELSENTRY']._serialized_end=769
 # @@protoc_insertion_point(module_scope)

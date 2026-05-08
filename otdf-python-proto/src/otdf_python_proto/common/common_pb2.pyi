@@ -1,6 +1,7 @@
 import datetime
 
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
+from buf.validate import validate_pb2 as _validate_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
@@ -29,6 +30,22 @@ ACTIVE_STATE_ENUM_UNSPECIFIED: ActiveStateEnum
 ACTIVE_STATE_ENUM_ACTIVE: ActiveStateEnum
 ACTIVE_STATE_ENUM_INACTIVE: ActiveStateEnum
 ACTIVE_STATE_ENUM_ANY: ActiveStateEnum
+
+class IdNameIdentifier(_message.Message):
+    __slots__ = ("id", "name")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    name: str
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ...) -> None: ...
+
+class IdFqnIdentifier(_message.Message):
+    __slots__ = ("id", "fqn")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    FQN_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    fqn: str
+    def __init__(self, id: _Optional[str] = ..., fqn: _Optional[str] = ...) -> None: ...
 
 class Metadata(_message.Message):
     __slots__ = ("created_at", "updated_at", "labels")
