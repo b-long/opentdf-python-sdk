@@ -1,0 +1,4 @@
+code_review:
+  ignore_patterns:
+    - "otdf-python-proto/proto-files/**/*"
+    - "otdf-python-proto/src/otdf_python_proto/**/*"
