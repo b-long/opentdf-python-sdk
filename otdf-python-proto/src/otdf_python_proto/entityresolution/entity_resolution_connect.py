@@ -12,7 +12,7 @@ from connectrpc.interceptor import Interceptor, InterceptorSync
 from connectrpc.method import IdempotencyLevel, MethodInfo
 from connectrpc.request import Headers, RequestContext
 from connectrpc.server import ConnectASGIApplication, ConnectWSGIApplication, Endpoint, EndpointSync
-from . import entity_resolution_pb2 as entityresolution_dot_entity__resolution__pb2
+import entityresolution.entity_resolution_pb2 as entityresolution_dot_entity__resolution__pb2
 
 
 class EntityResolutionService(Protocol):

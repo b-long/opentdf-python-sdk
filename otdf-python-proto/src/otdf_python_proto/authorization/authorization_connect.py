@@ -12,7 +12,7 @@ from connectrpc.interceptor import Interceptor, InterceptorSync
 from connectrpc.method import IdempotencyLevel, MethodInfo
 from connectrpc.request import Headers, RequestContext
 from connectrpc.server import ConnectASGIApplication, ConnectWSGIApplication, Endpoint, EndpointSync
-from . import authorization_pb2 as authorization_dot_authorization__pb2
+import authorization.authorization_pb2 as authorization_dot_authorization__pb2
 
 
 class AuthorizationService(Protocol):

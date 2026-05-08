@@ -133,13 +133,17 @@ class UnsafeDeleteAttributeValueResponse(_message.Message):
     def __init__(self, value: _Optional[_Union[_objects_pb2.Value, _Mapping]] = ...) -> None: ...
 
 class UnsafeDeleteKasKeyRequest(_message.Message):
-    __slots__ = ("id",)
+    __slots__ = ("id", "kid", "kas_uri")
     ID_FIELD_NUMBER: _ClassVar[int]
+    KID_FIELD_NUMBER: _ClassVar[int]
+    KAS_URI_FIELD_NUMBER: _ClassVar[int]
     id: str
-    def __init__(self, id: _Optional[str] = ...) -> None: ...
+    kid: str
+    kas_uri: str
+    def __init__(self, id: _Optional[str] = ..., kid: _Optional[str] = ..., kas_uri: _Optional[str] = ...) -> None: ...
 
 class UnsafeDeleteKasKeyResponse(_message.Message):
     __slots__ = ("key",)
     KEY_FIELD_NUMBER: _ClassVar[int]
-    key: _objects_pb2.Key
-    def __init__(self, key: _Optional[_Union[_objects_pb2.Key, _Mapping]] = ...) -> None: ...
+    key: _objects_pb2.KasKey
+    def __init__(self, key: _Optional[_Union[_objects_pb2.KasKey, _Mapping]] = ...) -> None: ...
