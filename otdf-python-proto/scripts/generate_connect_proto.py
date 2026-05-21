@@ -152,13 +152,9 @@ def run_buf_generate(proto_gen_dir: Path) -> bool:
         if candidate.exists():
             connect_plugin_path = str(candidate)
         else:
-            result = subprocess.run(
-                ["which", "protoc-gen-connect-python"],
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            connect_plugin_path = result.stdout.strip()
+            connect_plugin_path = shutil.which("protoc-gen-connect-python")
+            if not connect_plugin_path:
+                raise RuntimeError("protoc-gen-connect-python not found in PATH")
         print(f"Using Connect plugin at: {connect_plugin_path}")
 
         # Update buf.gen.yaml with the correct absolute path for the local plugin,
