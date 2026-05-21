@@ -21,14 +21,16 @@ DECISION_DENY: Decision
 DECISION_PERMIT: Decision
 
 class EntityIdentifier(_message.Message):
-    __slots__ = ("entity_chain", "registered_resource_value_fqn", "token")
+    __slots__ = ("entity_chain", "registered_resource_value_fqn", "token", "with_request_token")
     ENTITY_CHAIN_FIELD_NUMBER: _ClassVar[int]
     REGISTERED_RESOURCE_VALUE_FQN_FIELD_NUMBER: _ClassVar[int]
     TOKEN_FIELD_NUMBER: _ClassVar[int]
+    WITH_REQUEST_TOKEN_FIELD_NUMBER: _ClassVar[int]
     entity_chain: _entity_pb2.EntityChain
     registered_resource_value_fqn: str
     token: _entity_pb2.Token
-    def __init__(self, entity_chain: _Optional[_Union[_entity_pb2.EntityChain, _Mapping]] = ..., registered_resource_value_fqn: _Optional[str] = ..., token: _Optional[_Union[_entity_pb2.Token, _Mapping]] = ...) -> None: ...
+    with_request_token: _wrappers_pb2.BoolValue
+    def __init__(self, entity_chain: _Optional[_Union[_entity_pb2.EntityChain, _Mapping]] = ..., registered_resource_value_fqn: _Optional[str] = ..., token: _Optional[_Union[_entity_pb2.Token, _Mapping]] = ..., with_request_token: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
 
 class EntityEntitlements(_message.Message):
     __slots__ = ("ephemeral_id", "actions_per_attribute_value_fqn")
@@ -66,22 +68,26 @@ class Resource(_message.Message):
     def __init__(self, ephemeral_id: _Optional[str] = ..., attribute_values: _Optional[_Union[Resource.AttributeValues, _Mapping]] = ..., registered_resource_value_fqn: _Optional[str] = ...) -> None: ...
 
 class ResourceDecision(_message.Message):
-    __slots__ = ("ephemeral_resource_id", "decision")
+    __slots__ = ("ephemeral_resource_id", "decision", "required_obligations")
     EPHEMERAL_RESOURCE_ID_FIELD_NUMBER: _ClassVar[int]
     DECISION_FIELD_NUMBER: _ClassVar[int]
+    REQUIRED_OBLIGATIONS_FIELD_NUMBER: _ClassVar[int]
     ephemeral_resource_id: str
     decision: Decision
-    def __init__(self, ephemeral_resource_id: _Optional[str] = ..., decision: _Optional[_Union[Decision, str]] = ...) -> None: ...
+    required_obligations: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, ephemeral_resource_id: _Optional[str] = ..., decision: _Optional[_Union[Decision, str]] = ..., required_obligations: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class GetDecisionRequest(_message.Message):
-    __slots__ = ("entity_identifier", "action", "resource")
+    __slots__ = ("entity_identifier", "action", "resource", "fulfillable_obligation_fqns")
     ENTITY_IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     ACTION_FIELD_NUMBER: _ClassVar[int]
     RESOURCE_FIELD_NUMBER: _ClassVar[int]
+    FULFILLABLE_OBLIGATION_FQNS_FIELD_NUMBER: _ClassVar[int]
     entity_identifier: EntityIdentifier
     action: _objects_pb2.Action
     resource: Resource
-    def __init__(self, entity_identifier: _Optional[_Union[EntityIdentifier, _Mapping]] = ..., action: _Optional[_Union[_objects_pb2.Action, _Mapping]] = ..., resource: _Optional[_Union[Resource, _Mapping]] = ...) -> None: ...
+    fulfillable_obligation_fqns: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, entity_identifier: _Optional[_Union[EntityIdentifier, _Mapping]] = ..., action: _Optional[_Union[_objects_pb2.Action, _Mapping]] = ..., resource: _Optional[_Union[Resource, _Mapping]] = ..., fulfillable_obligation_fqns: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class GetDecisionResponse(_message.Message):
     __slots__ = ("decision",)
@@ -90,14 +96,16 @@ class GetDecisionResponse(_message.Message):
     def __init__(self, decision: _Optional[_Union[ResourceDecision, _Mapping]] = ...) -> None: ...
 
 class GetDecisionMultiResourceRequest(_message.Message):
-    __slots__ = ("entity_identifier", "action", "resources")
+    __slots__ = ("entity_identifier", "action", "resources", "fulfillable_obligation_fqns")
     ENTITY_IDENTIFIER_FIELD_NUMBER: _ClassVar[int]
     ACTION_FIELD_NUMBER: _ClassVar[int]
     RESOURCES_FIELD_NUMBER: _ClassVar[int]
+    FULFILLABLE_OBLIGATION_FQNS_FIELD_NUMBER: _ClassVar[int]
     entity_identifier: EntityIdentifier
     action: _objects_pb2.Action
     resources: _containers.RepeatedCompositeFieldContainer[Resource]
-    def __init__(self, entity_identifier: _Optional[_Union[EntityIdentifier, _Mapping]] = ..., action: _Optional[_Union[_objects_pb2.Action, _Mapping]] = ..., resources: _Optional[_Iterable[_Union[Resource, _Mapping]]] = ...) -> None: ...
+    fulfillable_obligation_fqns: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, entity_identifier: _Optional[_Union[EntityIdentifier, _Mapping]] = ..., action: _Optional[_Union[_objects_pb2.Action, _Mapping]] = ..., resources: _Optional[_Iterable[_Union[Resource, _Mapping]]] = ..., fulfillable_obligation_fqns: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class GetDecisionMultiResourceResponse(_message.Message):
     __slots__ = ("all_permitted", "resource_decisions")

@@ -23,10 +23,11 @@ _sym_db = _symbol_database.Default()
 
 
 from buf.validate import validate_pb2 as buf_dot_validate_dot_validate__pb2
+from google.protobuf import wrappers_pb2 as google_dot_protobuf_dot_wrappers__pb2
 from policy import objects_pb2 as policy_dot_objects__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1apolicy/unsafe/unsafe.proto\x12\rpolicy.unsafe\x1a\x1b\x62uf/validate/validate.proto\x1a\x14policy/objects.proto\"\xeb\x04\n\x1cUnsafeUpdateNamespaceRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\xb0\x04\n\x04name\x18\x02 \x01(\tB\x9b\x04\xbaH\x97\x04r\x03\x18\xfd\x01\xba\x01\x8e\x04\n\x15namespace_name_format\x12\xa1\x03Namespace must be a valid hostname. It should include at least one dot, with each segment (label) starting and ending with an alphanumeric character. Each label must be 1 to 63 characters long, allowing hyphens but not as the first or last character. The top-level domain (the last segment after the final dot) must consist of at least two alphabetic characters. The stored namespace will be normalized to lower case.\x1aQthis.matches(\'^([a-zA-Z0-9]([a-zA-Z0-9\\\\-]{0,61}[a-zA-Z0-9])?\\\\.)+[a-zA-Z]{2,}$\')R\x04name\"P\n\x1dUnsafeUpdateNamespaceResponse\x12/\n\tnamespace\x18\x01 \x01(\x0b\x32\x11.policy.NamespaceR\tnamespace\"<\n UnsafeReactivateNamespaceRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\"T\n!UnsafeReactivateNamespaceResponse\x12/\n\tnamespace\x18\x01 \x01(\x0b\x32\x11.policy.NamespaceR\tnamespace\"R\n\x1cUnsafeDeleteNamespaceRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x18\n\x03\x66qn\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x03\x66qn\"P\n\x1dUnsafeDeleteNamespaceResponse\x12/\n\tnamespace\x18\x01 \x01(\x0b\x32\x11.policy.NamespaceR\tnamespace\"\xe2\x03\n\x1cUnsafeUpdateAttributeRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\xc7\x02\n\x04name\x18\x02 \x01(\tB\xb2\x02\xbaH\xae\x02r\x03\x18\xfd\x01\xba\x01\xa2\x02\n\x15\x61ttribute_name_format\x12\xb3\x01\x41ttribute name must be an alphanumeric string, allowing hyphens and underscores but not as the first or last character. The stored attribute name will be normalized to lower case.\x1aSsize(this) > 0 ? this.matches(\'^[a-zA-Z0-9](?:[a-zA-Z0-9_-]*[a-zA-Z0-9])?$\') : true\xc8\x01\x00R\x04name\x12;\n\x04rule\x18\x03 \x01(\x0e\x32\x1d.policy.AttributeRuleTypeEnumB\x08\xbaH\x05\x82\x01\x02\x10\x01R\x04rule\x12!\n\x0cvalues_order\x18\x04 \x03(\tR\x0bvaluesOrder\"P\n\x1dUnsafeUpdateAttributeResponse\x12/\n\tattribute\x18\x01 \x01(\x0b\x32\x11.policy.AttributeR\tattribute\"<\n UnsafeReactivateAttributeRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\"T\n!UnsafeReactivateAttributeResponse\x12/\n\tattribute\x18\x01 \x01(\x0b\x32\x11.policy.AttributeR\tattribute\"R\n\x1cUnsafeDeleteAttributeRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x18\n\x03\x66qn\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x03\x66qn\"P\n\x1dUnsafeDeleteAttributeResponse\x12/\n\tattribute\x18\x01 \x01(\x0b\x32\x11.policy.AttributeR\tattribute\"\xe7\x02\n!UnsafeUpdateAttributeValueRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\xa7\x02\n\x05value\x18\x02 \x01(\tB\x90\x02\xbaH\x8c\x02r\x03\x18\xfd\x01\xba\x01\x83\x02\n\x0cvalue_format\x12\xb5\x01\x41ttribute Value must be an alphanumeric string, allowing hyphens and underscores but not as the first or last character. The stored attribute value will be normalized to lower case.\x1a;this.matches(\'^[a-zA-Z0-9](?:[a-zA-Z0-9_-]*[a-zA-Z0-9])?$\')R\x05value\"I\n\"UnsafeUpdateAttributeValueResponse\x12#\n\x05value\x18\x01 \x01(\x0b\x32\r.policy.ValueR\x05value\"A\n%UnsafeReactivateAttributeValueRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\"M\n&UnsafeReactivateAttributeValueResponse\x12#\n\x05value\x18\x01 \x01(\x0b\x32\r.policy.ValueR\x05value\"W\n!UnsafeDeleteAttributeValueRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x18\n\x03\x66qn\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x03\x66qn\"I\n\"UnsafeDeleteAttributeValueResponse\x12#\n\x05value\x18\x01 \x01(\x0b\x32\r.policy.ValueR\x05value\"p\n\x19UnsafeDeleteKasKeyRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x18\n\x03kid\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x03kid\x12\x1f\n\x07kas_uri\x18\x03 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x06kasUri\">\n\x1aUnsafeDeleteKasKeyResponse\x12 \n\x03key\x18\x01 \x01(\x0b\x32\x0e.policy.KasKeyR\x03key2\xf8\t\n\rUnsafeService\x12t\n\x15UnsafeUpdateNamespace\x12+.policy.unsafe.UnsafeUpdateNamespaceRequest\x1a,.policy.unsafe.UnsafeUpdateNamespaceResponse\"\x00\x12\x80\x01\n\x19UnsafeReactivateNamespace\x12/.policy.unsafe.UnsafeReactivateNamespaceRequest\x1a\x30.policy.unsafe.UnsafeReactivateNamespaceResponse\"\x00\x12t\n\x15UnsafeDeleteNamespace\x12+.policy.unsafe.UnsafeDeleteNamespaceRequest\x1a,.policy.unsafe.UnsafeDeleteNamespaceResponse\"\x00\x12t\n\x15UnsafeUpdateAttribute\x12+.policy.unsafe.UnsafeUpdateAttributeRequest\x1a,.policy.unsafe.UnsafeUpdateAttributeResponse\"\x00\x12\x80\x01\n\x19UnsafeReactivateAttribute\x12/.policy.unsafe.UnsafeReactivateAttributeRequest\x1a\x30.policy.unsafe.UnsafeReactivateAttributeResponse\"\x00\x12t\n\x15UnsafeDeleteAttribute\x12+.policy.unsafe.UnsafeDeleteAttributeRequest\x1a,.policy.unsafe.UnsafeDeleteAttributeResponse\"\x00\x12\x83\x01\n\x1aUnsafeUpdateAttributeValue\x12\x30.policy.unsafe.UnsafeUpdateAttributeValueRequest\x1a\x31.policy.unsafe.UnsafeUpdateAttributeValueResponse\"\x00\x12\x8f\x01\n\x1eUnsafeReactivateAttributeValue\x12\x34.policy.unsafe.UnsafeReactivateAttributeValueRequest\x1a\x35.policy.unsafe.UnsafeReactivateAttributeValueResponse\"\x00\x12\x83\x01\n\x1aUnsafeDeleteAttributeValue\x12\x30.policy.unsafe.UnsafeDeleteAttributeValueRequest\x1a\x31.policy.unsafe.UnsafeDeleteAttributeValueResponse\"\x00\x12k\n\x12UnsafeDeleteKasKey\x12(.policy.unsafe.UnsafeDeleteKasKeyRequest\x1a).policy.unsafe.UnsafeDeleteKasKeyResponse\"\x00\x42u\n\x11\x63om.policy.unsafeB\x0bUnsafeProtoP\x01\xa2\x02\x03PUX\xaa\x02\rPolicy.Unsafe\xca\x02\rPolicy\\Unsafe\xe2\x02\x19Policy\\Unsafe\\GPBMetadata\xea\x02\x0ePolicy::Unsafeb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1apolicy/unsafe/unsafe.proto\x12\rpolicy.unsafe\x1a\x1b\x62uf/validate/validate.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x14policy/objects.proto\"\xeb\x04\n\x1cUnsafeUpdateNamespaceRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\xb0\x04\n\x04name\x18\x02 \x01(\tB\x9b\x04\xbaH\x97\x04r\x03\x18\xfd\x01\xba\x01\x8e\x04\n\x15namespace_name_format\x12\xa1\x03Namespace must be a valid hostname. It should include at least one dot, with each segment (label) starting and ending with an alphanumeric character. Each label must be 1 to 63 characters long, allowing hyphens but not as the first or last character. The top-level domain (the last segment after the final dot) must consist of at least two alphabetic characters. The stored namespace will be normalized to lower case.\x1aQthis.matches(\'^([a-zA-Z0-9]([a-zA-Z0-9\\\\-]{0,61}[a-zA-Z0-9])?\\\\.)+[a-zA-Z]{2,}$\')R\x04name\"P\n\x1dUnsafeUpdateNamespaceResponse\x12/\n\tnamespace\x18\x01 \x01(\x0b\x32\x11.policy.NamespaceR\tnamespace\"<\n UnsafeReactivateNamespaceRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\"T\n!UnsafeReactivateNamespaceResponse\x12/\n\tnamespace\x18\x01 \x01(\x0b\x32\x11.policy.NamespaceR\tnamespace\"R\n\x1cUnsafeDeleteNamespaceRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x18\n\x03\x66qn\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x03\x66qn\"P\n\x1dUnsafeDeleteNamespaceResponse\x12/\n\tnamespace\x18\x01 \x01(\x0b\x32\x11.policy.NamespaceR\tnamespace\"\xa7\x04\n\x1cUnsafeUpdateAttributeRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\xc7\x02\n\x04name\x18\x02 \x01(\tB\xb2\x02\xbaH\xae\x02r\x03\x18\xfd\x01\xba\x01\xa2\x02\n\x15\x61ttribute_name_format\x12\xb3\x01\x41ttribute name must be an alphanumeric string, allowing hyphens and underscores but not as the first or last character. The stored attribute name will be normalized to lower case.\x1aSsize(this) > 0 ? this.matches(\'^[a-zA-Z0-9](?:[a-zA-Z0-9_-]*[a-zA-Z0-9])?$\') : true\xc8\x01\x00R\x04name\x12;\n\x04rule\x18\x03 \x01(\x0e\x32\x1d.policy.AttributeRuleTypeEnumB\x08\xbaH\x05\x82\x01\x02\x10\x01R\x04rule\x12\x43\n\x0f\x61llow_traversal\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.BoolValueR\x0e\x61llowTraversal\x12!\n\x0cvalues_order\x18\x04 \x03(\tR\x0bvaluesOrder\"P\n\x1dUnsafeUpdateAttributeResponse\x12/\n\tattribute\x18\x01 \x01(\x0b\x32\x11.policy.AttributeR\tattribute\"<\n UnsafeReactivateAttributeRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\"T\n!UnsafeReactivateAttributeResponse\x12/\n\tattribute\x18\x01 \x01(\x0b\x32\x11.policy.AttributeR\tattribute\"R\n\x1cUnsafeDeleteAttributeRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x18\n\x03\x66qn\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x03\x66qn\"P\n\x1dUnsafeDeleteAttributeResponse\x12/\n\tattribute\x18\x01 \x01(\x0b\x32\x11.policy.AttributeR\tattribute\"\xe7\x02\n!UnsafeUpdateAttributeValueRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\xa7\x02\n\x05value\x18\x02 \x01(\tB\x90\x02\xbaH\x8c\x02r\x03\x18\xfd\x01\xba\x01\x83\x02\n\x0cvalue_format\x12\xb5\x01\x41ttribute Value must be an alphanumeric string, allowing hyphens and underscores but not as the first or last character. The stored attribute value will be normalized to lower case.\x1a;this.matches(\'^[a-zA-Z0-9](?:[a-zA-Z0-9_-]*[a-zA-Z0-9])?$\')R\x05value\"I\n\"UnsafeUpdateAttributeValueResponse\x12#\n\x05value\x18\x01 \x01(\x0b\x32\r.policy.ValueR\x05value\"A\n%UnsafeReactivateAttributeValueRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\"M\n&UnsafeReactivateAttributeValueResponse\x12#\n\x05value\x18\x01 \x01(\x0b\x32\r.policy.ValueR\x05value\"W\n!UnsafeDeleteAttributeValueRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x18\n\x03\x66qn\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x03\x66qn\"I\n\"UnsafeDeleteAttributeValueResponse\x12#\n\x05value\x18\x01 \x01(\x0b\x32\r.policy.ValueR\x05value\"p\n\x19UnsafeDeleteKasKeyRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x18\n\x03kid\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x03kid\x12\x1f\n\x07kas_uri\x18\x03 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x06kasUri\">\n\x1aUnsafeDeleteKasKeyResponse\x12 \n\x03key\x18\x01 \x01(\x0b\x32\x0e.policy.KasKeyR\x03key2\xf8\t\n\rUnsafeService\x12t\n\x15UnsafeUpdateNamespace\x12+.policy.unsafe.UnsafeUpdateNamespaceRequest\x1a,.policy.unsafe.UnsafeUpdateNamespaceResponse\"\x00\x12\x80\x01\n\x19UnsafeReactivateNamespace\x12/.policy.unsafe.UnsafeReactivateNamespaceRequest\x1a\x30.policy.unsafe.UnsafeReactivateNamespaceResponse\"\x00\x12t\n\x15UnsafeDeleteNamespace\x12+.policy.unsafe.UnsafeDeleteNamespaceRequest\x1a,.policy.unsafe.UnsafeDeleteNamespaceResponse\"\x00\x12t\n\x15UnsafeUpdateAttribute\x12+.policy.unsafe.UnsafeUpdateAttributeRequest\x1a,.policy.unsafe.UnsafeUpdateAttributeResponse\"\x00\x12\x80\x01\n\x19UnsafeReactivateAttribute\x12/.policy.unsafe.UnsafeReactivateAttributeRequest\x1a\x30.policy.unsafe.UnsafeReactivateAttributeResponse\"\x00\x12t\n\x15UnsafeDeleteAttribute\x12+.policy.unsafe.UnsafeDeleteAttributeRequest\x1a,.policy.unsafe.UnsafeDeleteAttributeResponse\"\x00\x12\x83\x01\n\x1aUnsafeUpdateAttributeValue\x12\x30.policy.unsafe.UnsafeUpdateAttributeValueRequest\x1a\x31.policy.unsafe.UnsafeUpdateAttributeValueResponse\"\x00\x12\x8f\x01\n\x1eUnsafeReactivateAttributeValue\x12\x34.policy.unsafe.UnsafeReactivateAttributeValueRequest\x1a\x35.policy.unsafe.UnsafeReactivateAttributeValueResponse\"\x00\x12\x83\x01\n\x1aUnsafeDeleteAttributeValue\x12\x30.policy.unsafe.UnsafeDeleteAttributeValueRequest\x1a\x31.policy.unsafe.UnsafeDeleteAttributeValueResponse\"\x00\x12k\n\x12UnsafeDeleteKasKey\x12(.policy.unsafe.UnsafeDeleteKasKeyRequest\x1a).policy.unsafe.UnsafeDeleteKasKeyResponse\"\x00\x42u\n\x11\x63om.policy.unsafeB\x0bUnsafeProtoP\x01\xa2\x02\x03PUX\xaa\x02\rPolicy.Unsafe\xca\x02\rPolicy\\Unsafe\xe2\x02\x19Policy\\Unsafe\\GPBMetadata\xea\x02\x0ePolicy::Unsafeb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -72,46 +73,46 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_UNSAFEDELETEKASKEYREQUEST'].fields_by_name['kid']._serialized_options = b'\272H\003\310\001\001'
   _globals['_UNSAFEDELETEKASKEYREQUEST'].fields_by_name['kas_uri']._loaded_options = None
   _globals['_UNSAFEDELETEKASKEYREQUEST'].fields_by_name['kas_uri']._serialized_options = b'\272H\003\310\001\001'
-  _globals['_UNSAFEUPDATENAMESPACEREQUEST']._serialized_start=97
-  _globals['_UNSAFEUPDATENAMESPACEREQUEST']._serialized_end=716
-  _globals['_UNSAFEUPDATENAMESPACERESPONSE']._serialized_start=718
-  _globals['_UNSAFEUPDATENAMESPACERESPONSE']._serialized_end=798
-  _globals['_UNSAFEREACTIVATENAMESPACEREQUEST']._serialized_start=800
-  _globals['_UNSAFEREACTIVATENAMESPACEREQUEST']._serialized_end=860
-  _globals['_UNSAFEREACTIVATENAMESPACERESPONSE']._serialized_start=862
-  _globals['_UNSAFEREACTIVATENAMESPACERESPONSE']._serialized_end=946
-  _globals['_UNSAFEDELETENAMESPACEREQUEST']._serialized_start=948
-  _globals['_UNSAFEDELETENAMESPACEREQUEST']._serialized_end=1030
-  _globals['_UNSAFEDELETENAMESPACERESPONSE']._serialized_start=1032
-  _globals['_UNSAFEDELETENAMESPACERESPONSE']._serialized_end=1112
-  _globals['_UNSAFEUPDATEATTRIBUTEREQUEST']._serialized_start=1115
-  _globals['_UNSAFEUPDATEATTRIBUTEREQUEST']._serialized_end=1597
-  _globals['_UNSAFEUPDATEATTRIBUTERESPONSE']._serialized_start=1599
-  _globals['_UNSAFEUPDATEATTRIBUTERESPONSE']._serialized_end=1679
-  _globals['_UNSAFEREACTIVATEATTRIBUTEREQUEST']._serialized_start=1681
-  _globals['_UNSAFEREACTIVATEATTRIBUTEREQUEST']._serialized_end=1741
-  _globals['_UNSAFEREACTIVATEATTRIBUTERESPONSE']._serialized_start=1743
-  _globals['_UNSAFEREACTIVATEATTRIBUTERESPONSE']._serialized_end=1827
-  _globals['_UNSAFEDELETEATTRIBUTEREQUEST']._serialized_start=1829
-  _globals['_UNSAFEDELETEATTRIBUTEREQUEST']._serialized_end=1911
-  _globals['_UNSAFEDELETEATTRIBUTERESPONSE']._serialized_start=1913
-  _globals['_UNSAFEDELETEATTRIBUTERESPONSE']._serialized_end=1993
-  _globals['_UNSAFEUPDATEATTRIBUTEVALUEREQUEST']._serialized_start=1996
-  _globals['_UNSAFEUPDATEATTRIBUTEVALUEREQUEST']._serialized_end=2355
-  _globals['_UNSAFEUPDATEATTRIBUTEVALUERESPONSE']._serialized_start=2357
-  _globals['_UNSAFEUPDATEATTRIBUTEVALUERESPONSE']._serialized_end=2430
-  _globals['_UNSAFEREACTIVATEATTRIBUTEVALUEREQUEST']._serialized_start=2432
-  _globals['_UNSAFEREACTIVATEATTRIBUTEVALUEREQUEST']._serialized_end=2497
-  _globals['_UNSAFEREACTIVATEATTRIBUTEVALUERESPONSE']._serialized_start=2499
-  _globals['_UNSAFEREACTIVATEATTRIBUTEVALUERESPONSE']._serialized_end=2576
-  _globals['_UNSAFEDELETEATTRIBUTEVALUEREQUEST']._serialized_start=2578
-  _globals['_UNSAFEDELETEATTRIBUTEVALUEREQUEST']._serialized_end=2665
-  _globals['_UNSAFEDELETEATTRIBUTEVALUERESPONSE']._serialized_start=2667
-  _globals['_UNSAFEDELETEATTRIBUTEVALUERESPONSE']._serialized_end=2740
-  _globals['_UNSAFEDELETEKASKEYREQUEST']._serialized_start=2742
-  _globals['_UNSAFEDELETEKASKEYREQUEST']._serialized_end=2854
-  _globals['_UNSAFEDELETEKASKEYRESPONSE']._serialized_start=2856
-  _globals['_UNSAFEDELETEKASKEYRESPONSE']._serialized_end=2918
-  _globals['_UNSAFESERVICE']._serialized_start=2921
-  _globals['_UNSAFESERVICE']._serialized_end=4193
+  _globals['_UNSAFEUPDATENAMESPACEREQUEST']._serialized_start=129
+  _globals['_UNSAFEUPDATENAMESPACEREQUEST']._serialized_end=748
+  _globals['_UNSAFEUPDATENAMESPACERESPONSE']._serialized_start=750
+  _globals['_UNSAFEUPDATENAMESPACERESPONSE']._serialized_end=830
+  _globals['_UNSAFEREACTIVATENAMESPACEREQUEST']._serialized_start=832
+  _globals['_UNSAFEREACTIVATENAMESPACEREQUEST']._serialized_end=892
+  _globals['_UNSAFEREACTIVATENAMESPACERESPONSE']._serialized_start=894
+  _globals['_UNSAFEREACTIVATENAMESPACERESPONSE']._serialized_end=978
+  _globals['_UNSAFEDELETENAMESPACEREQUEST']._serialized_start=980
+  _globals['_UNSAFEDELETENAMESPACEREQUEST']._serialized_end=1062
+  _globals['_UNSAFEDELETENAMESPACERESPONSE']._serialized_start=1064
+  _globals['_UNSAFEDELETENAMESPACERESPONSE']._serialized_end=1144
+  _globals['_UNSAFEUPDATEATTRIBUTEREQUEST']._serialized_start=1147
+  _globals['_UNSAFEUPDATEATTRIBUTEREQUEST']._serialized_end=1698
+  _globals['_UNSAFEUPDATEATTRIBUTERESPONSE']._serialized_start=1700
+  _globals['_UNSAFEUPDATEATTRIBUTERESPONSE']._serialized_end=1780
+  _globals['_UNSAFEREACTIVATEATTRIBUTEREQUEST']._serialized_start=1782
+  _globals['_UNSAFEREACTIVATEATTRIBUTEREQUEST']._serialized_end=1842
+  _globals['_UNSAFEREACTIVATEATTRIBUTERESPONSE']._serialized_start=1844
+  _globals['_UNSAFEREACTIVATEATTRIBUTERESPONSE']._serialized_end=1928
+  _globals['_UNSAFEDELETEATTRIBUTEREQUEST']._serialized_start=1930
+  _globals['_UNSAFEDELETEATTRIBUTEREQUEST']._serialized_end=2012
+  _globals['_UNSAFEDELETEATTRIBUTERESPONSE']._serialized_start=2014
+  _globals['_UNSAFEDELETEATTRIBUTERESPONSE']._serialized_end=2094
+  _globals['_UNSAFEUPDATEATTRIBUTEVALUEREQUEST']._serialized_start=2097
+  _globals['_UNSAFEUPDATEATTRIBUTEVALUEREQUEST']._serialized_end=2456
+  _globals['_UNSAFEUPDATEATTRIBUTEVALUERESPONSE']._serialized_start=2458
+  _globals['_UNSAFEUPDATEATTRIBUTEVALUERESPONSE']._serialized_end=2531
+  _globals['_UNSAFEREACTIVATEATTRIBUTEVALUEREQUEST']._serialized_start=2533
+  _globals['_UNSAFEREACTIVATEATTRIBUTEVALUEREQUEST']._serialized_end=2598
+  _globals['_UNSAFEREACTIVATEATTRIBUTEVALUERESPONSE']._serialized_start=2600
+  _globals['_UNSAFEREACTIVATEATTRIBUTEVALUERESPONSE']._serialized_end=2677
+  _globals['_UNSAFEDELETEATTRIBUTEVALUEREQUEST']._serialized_start=2679
+  _globals['_UNSAFEDELETEATTRIBUTEVALUEREQUEST']._serialized_end=2766
+  _globals['_UNSAFEDELETEATTRIBUTEVALUERESPONSE']._serialized_start=2768
+  _globals['_UNSAFEDELETEATTRIBUTEVALUERESPONSE']._serialized_end=2841
+  _globals['_UNSAFEDELETEKASKEYREQUEST']._serialized_start=2843
+  _globals['_UNSAFEDELETEKASKEYREQUEST']._serialized_end=2955
+  _globals['_UNSAFEDELETEKASKEYRESPONSE']._serialized_start=2957
+  _globals['_UNSAFEDELETEKASKEYRESPONSE']._serialized_end=3019
+  _globals['_UNSAFESERVICE']._serialized_start=3022
+  _globals['_UNSAFESERVICE']._serialized_end=4294
 # @@protoc_insertion_point(module_scope)

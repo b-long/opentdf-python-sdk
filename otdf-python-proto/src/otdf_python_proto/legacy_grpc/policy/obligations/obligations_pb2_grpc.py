@@ -104,6 +104,11 @@ class ServiceStub(object):
                 request_serializer=policy_dot_obligations_dot_obligations__pb2.RemoveObligationTriggerRequest.SerializeToString,
                 response_deserializer=policy_dot_obligations_dot_obligations__pb2.RemoveObligationTriggerResponse.FromString,
                 _registered_method=True)
+        self.ListObligationTriggers = channel.unary_unary(
+                '/policy.obligations.Service/ListObligationTriggers',
+                request_serializer=policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersRequest.SerializeToString,
+                response_deserializer=policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersResponse.FromString,
+                _registered_method=True)
 
 
 class ServiceServicer(object):
@@ -224,6 +229,12 @@ class ServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ListObligationTriggers(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -291,6 +302,11 @@ def add_ServiceServicer_to_server(servicer, server):
                     servicer.RemoveObligationTrigger,
                     request_deserializer=policy_dot_obligations_dot_obligations__pb2.RemoveObligationTriggerRequest.FromString,
                     response_serializer=policy_dot_obligations_dot_obligations__pb2.RemoveObligationTriggerResponse.SerializeToString,
+            ),
+            'ListObligationTriggers': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListObligationTriggers,
+                    request_deserializer=policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersRequest.FromString,
+                    response_serializer=policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -669,6 +685,33 @@ class Service(object):
             '/policy.obligations.Service/RemoveObligationTrigger',
             policy_dot_obligations_dot_obligations__pb2.RemoveObligationTriggerRequest.SerializeToString,
             policy_dot_obligations_dot_obligations__pb2.RemoveObligationTriggerResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListObligationTriggers(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/policy.obligations.Service/ListObligationTriggers',
+            policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersRequest.SerializeToString,
+            policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersResponse.FromString,
             options,
             channel_credentials,
             insecure,

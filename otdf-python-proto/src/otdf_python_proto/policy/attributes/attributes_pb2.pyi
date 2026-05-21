@@ -1,6 +1,7 @@
 from buf.validate import validate_pb2 as _validate_pb2
 from common import common_pb2 as _common_pb2
 from google.api import annotations_pb2 as _annotations_pb2
+from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from policy import objects_pb2 as _objects_pb2
 from policy import selectors_pb2 as _selectors_pb2
 from google.protobuf.internal import containers as _containers
@@ -78,18 +79,20 @@ class GetAttributeResponse(_message.Message):
     def __init__(self, attribute: _Optional[_Union[_objects_pb2.Attribute, _Mapping]] = ...) -> None: ...
 
 class CreateAttributeRequest(_message.Message):
-    __slots__ = ("namespace_id", "name", "rule", "values", "metadata")
+    __slots__ = ("namespace_id", "name", "rule", "values", "allow_traversal", "metadata")
     NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     RULE_FIELD_NUMBER: _ClassVar[int]
     VALUES_FIELD_NUMBER: _ClassVar[int]
+    ALLOW_TRAVERSAL_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     namespace_id: str
     name: str
     rule: _objects_pb2.AttributeRuleTypeEnum
     values: _containers.RepeatedScalarFieldContainer[str]
+    allow_traversal: _wrappers_pb2.BoolValue
     metadata: _common_pb2.MetadataMutable
-    def __init__(self, namespace_id: _Optional[str] = ..., name: _Optional[str] = ..., rule: _Optional[_Union[_objects_pb2.AttributeRuleTypeEnum, str]] = ..., values: _Optional[_Iterable[str]] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
+    def __init__(self, namespace_id: _Optional[str] = ..., name: _Optional[str] = ..., rule: _Optional[_Union[_objects_pb2.AttributeRuleTypeEnum, str]] = ..., values: _Optional[_Iterable[str]] = ..., allow_traversal: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
 
 class CreateAttributeResponse(_message.Message):
     __slots__ = ("attribute",)
@@ -204,12 +207,10 @@ class DeactivateAttributeValueResponse(_message.Message):
     def __init__(self, value: _Optional[_Union[_objects_pb2.Value, _Mapping]] = ...) -> None: ...
 
 class GetAttributeValuesByFqnsRequest(_message.Message):
-    __slots__ = ("fqns", "with_value")
+    __slots__ = ("fqns",)
     FQNS_FIELD_NUMBER: _ClassVar[int]
-    WITH_VALUE_FIELD_NUMBER: _ClassVar[int]
     fqns: _containers.RepeatedScalarFieldContainer[str]
-    with_value: _selectors_pb2.AttributeValueSelector
-    def __init__(self, fqns: _Optional[_Iterable[str]] = ..., with_value: _Optional[_Union[_selectors_pb2.AttributeValueSelector, _Mapping]] = ...) -> None: ...
+    def __init__(self, fqns: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class GetAttributeValuesByFqnsResponse(_message.Message):
     __slots__ = ("fqn_attribute_values",)

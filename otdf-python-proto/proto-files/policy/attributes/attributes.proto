@@ -5,6 +5,7 @@ package policy.attributes;
 import "buf/validate/validate.proto";
 import "common/common.proto";
 import "google/api/annotations.proto";
+import "google/protobuf/wrappers.proto";
 import "policy/objects.proto";
 import "policy/selectors.proto";
 
@@ -93,7 +94,7 @@ message GetAttributeRequest {
     message: "Either id or one of attribute_id or fqn must be set"
   };
 
-  // Deprecated
+  // Deprecated: utilize identifier
   string id = 1 [
     deprecated = true,
     (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE,
@@ -146,6 +147,14 @@ message CreateAttributeRequest {
   }];
 
   // Optional
+  // Setting allow_traversal=true allows TDF creation to be front-loaded, meaning a customer
+  // can create encrypted content with an attribute definitions key mapping before
+  // creating the attribute values needed to decrypt.
+  // Content will be able to be encrypted with missing attribute values,
+  // but will not be able to be decrypted until such attribute values exist.
+  google.protobuf.BoolValue allow_traversal = 5;
+
+  // Optional
   common.MetadataMutable metadata = 100;
 }
 message CreateAttributeResponse {
@@ -189,7 +198,7 @@ message GetAttributeValueRequest {
     message: "Either id or one of value_id or fqn must be set"
   };
 
-  // Deprecated
+  // Deprecated: utilize identifier
   string id = 1 [
     deprecated = true,
     (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE,
@@ -284,9 +293,8 @@ message GetAttributeValuesByFqnsRequest {
     max_items: 250
   }];
 
-  // Optional
-  // This attribute value selector is not used currently, but left here for future use.
-  policy.AttributeValueSelector with_value = 2;
+  reserved 2;
+  reserved "with_value";
 }
 message GetAttributeValuesByFqnsResponse {
   message AttributeAndValue {
@@ -301,6 +309,7 @@ message GetAttributeValuesByFqnsResponse {
    Assign Key Access Server (KAS Grant) to Attribute and Value
 */
 
+// Deprecated: utilize AssignPublicKeyToAttributeRequest
 message AssignKeyAccessServerToAttributeRequest {
   option deprecated = true;
 
@@ -313,6 +322,7 @@ message AssignKeyAccessServerToAttributeResponse {
   AttributeKeyAccessServer attribute_key_access_server = 1;
 }
 
+// Deprecated: utilize RemovePublicKeyFromAttributeRequest
 message RemoveKeyAccessServerFromAttributeRequest {
   option deprecated = true;
   // Required
@@ -324,6 +334,7 @@ message RemoveKeyAccessServerFromAttributeResponse {
   AttributeKeyAccessServer attribute_key_access_server = 1;
 }
 
+// Deprecated: utilize AssignPublicKeyToValueRequest
 message AssignKeyAccessServerToValueRequest {
   option deprecated = true;
   // Required
@@ -335,6 +346,7 @@ message AssignKeyAccessServerToValueResponse {
   ValueKeyAccessServer value_key_access_server = 1;
 }
 
+// Deprecated: utilize RemovePublicKeyFromValueRequest
 message RemoveKeyAccessServerFromValueRequest {
   option deprecated = true;
   // Required
@@ -434,18 +446,22 @@ service AttributesService {
   /*--------------------------------------*
    * Attribute <> Key Access Server RPCs
    *---------------------------------------*/
+  // Deprecated: utilize AssignPublicKeyToAttribute
   rpc AssignKeyAccessServerToAttribute(AssignKeyAccessServerToAttributeRequest) returns (AssignKeyAccessServerToAttributeResponse) {
     option deprecated = true;
   }
 
+  // Deprecated: utilize RemovePublicKeyFromAttribute
   rpc RemoveKeyAccessServerFromAttribute(RemoveKeyAccessServerFromAttributeRequest) returns (RemoveKeyAccessServerFromAttributeResponse) {
     option deprecated = true;
   }
 
+  // Deprecated: utilize AssignPublicKeyToValue
   rpc AssignKeyAccessServerToValue(AssignKeyAccessServerToValueRequest) returns (AssignKeyAccessServerToValueResponse) {
     option deprecated = true;
   }
 
+  // Deprecated: utilize RemovePublicKeyFromValue
   rpc RemoveKeyAccessServerFromValue(RemoveKeyAccessServerFromValueRequest) returns (RemoveKeyAccessServerFromValueResponse) {
     option deprecated = true;
   }

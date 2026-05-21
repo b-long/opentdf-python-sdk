@@ -145,3 +145,41 @@ class RemovePublicKeyFromNamespaceResponse(_message.Message):
     NAMESPACE_KEY_FIELD_NUMBER: _ClassVar[int]
     namespace_key: NamespaceKey
     def __init__(self, namespace_key: _Optional[_Union[NamespaceKey, _Mapping]] = ...) -> None: ...
+
+class NamespaceCertificate(_message.Message):
+    __slots__ = ("namespace", "certificate_id")
+    NAMESPACE_FIELD_NUMBER: _ClassVar[int]
+    CERTIFICATE_ID_FIELD_NUMBER: _ClassVar[int]
+    namespace: _common_pb2.IdFqnIdentifier
+    certificate_id: str
+    def __init__(self, namespace: _Optional[_Union[_common_pb2.IdFqnIdentifier, _Mapping]] = ..., certificate_id: _Optional[str] = ...) -> None: ...
+
+class AssignCertificateToNamespaceRequest(_message.Message):
+    __slots__ = ("namespace", "pem", "metadata")
+    NAMESPACE_FIELD_NUMBER: _ClassVar[int]
+    PEM_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
+    namespace: _common_pb2.IdFqnIdentifier
+    pem: str
+    metadata: _common_pb2.MetadataMutable
+    def __init__(self, namespace: _Optional[_Union[_common_pb2.IdFqnIdentifier, _Mapping]] = ..., pem: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
+
+class AssignCertificateToNamespaceResponse(_message.Message):
+    __slots__ = ("namespace_certificate", "certificate")
+    NAMESPACE_CERTIFICATE_FIELD_NUMBER: _ClassVar[int]
+    CERTIFICATE_FIELD_NUMBER: _ClassVar[int]
+    namespace_certificate: NamespaceCertificate
+    certificate: _objects_pb2.Certificate
+    def __init__(self, namespace_certificate: _Optional[_Union[NamespaceCertificate, _Mapping]] = ..., certificate: _Optional[_Union[_objects_pb2.Certificate, _Mapping]] = ...) -> None: ...
+
+class RemoveCertificateFromNamespaceRequest(_message.Message):
+    __slots__ = ("namespace_certificate",)
+    NAMESPACE_CERTIFICATE_FIELD_NUMBER: _ClassVar[int]
+    namespace_certificate: NamespaceCertificate
+    def __init__(self, namespace_certificate: _Optional[_Union[NamespaceCertificate, _Mapping]] = ...) -> None: ...
+
+class RemoveCertificateFromNamespaceResponse(_message.Message):
+    __slots__ = ("namespace_certificate",)
+    NAMESPACE_CERTIFICATE_FIELD_NUMBER: _ClassVar[int]
+    namespace_certificate: NamespaceCertificate
+    def __init__(self, namespace_certificate: _Optional[_Union[NamespaceCertificate, _Mapping]] = ...) -> None: ...

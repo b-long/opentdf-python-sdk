@@ -48,7 +48,7 @@ def check_dependencies() -> bool:
 
 def copy_opentdf_proto_files(proto_gen_dir: Path, git_tag: str | None = None) -> bool:
     """Clone OpenTDF platform repository and copy all proto files."""
-    GIT_TAG = git_tag or "service/v0.8.0"
+    GIT_TAG = git_tag or "service/v0.12.0"
     REPO_URL = "https://github.com/opentdf/platform.git"
 
     temp_repo_dir = proto_gen_dir / "temp_platform_repo"
@@ -142,15 +142,19 @@ def run_buf_generate(proto_gen_dir: Path) -> bool:
     print("Generating protobuf and Connect RPC files...")
 
     try:
-        # First, get the path to protoc-gen-connect-python
-        result = subprocess.run(
-            ["uv", "run", "which", "protoc-gen-connect-python"],
-            cwd=proto_gen_dir,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        connect_plugin_path = result.stdout.strip()
+        # Resolve the connect-python plugin path. The buf.gen.yaml uses a relative
+        # path (e.g. ../.venv/bin/protoc-gen-connect-python) that is correct for
+        # running buf directly, but we need an absolute path when rewriting the file.
+        # Try the known relative location first; fall back to searching the PATH.
+        candidate = (
+            proto_gen_dir / ".." / ".venv" / "bin" / "protoc-gen-connect-python"
+        ).resolve()
+        if candidate.exists():
+            connect_plugin_path = str(candidate)
+        else:
+            connect_plugin_path = shutil.which("protoc-gen-connect-python")
+            if not connect_plugin_path:
+                raise RuntimeError("protoc-gen-connect-python not found in PATH")
         print(f"Using Connect plugin at: {connect_plugin_path}")
 
         # Update buf.gen.yaml with the correct absolute path for the local plugin,

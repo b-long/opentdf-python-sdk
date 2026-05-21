@@ -2,6 +2,7 @@ from buf.validate import validate_pb2 as _validate_pb2
 from entity import entity_pb2 as _entity_pb2
 from google.protobuf import any_pb2 as _any_pb2
 from google.protobuf import struct_pb2 as _struct_pb2
+from authorization.v2 import authorization_pb2 as _authorization_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
@@ -10,13 +11,23 @@ from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class DirectEntitlement(_message.Message):
+    __slots__ = ("attribute_value_fqn", "actions")
+    ATTRIBUTE_VALUE_FQN_FIELD_NUMBER: _ClassVar[int]
+    ACTIONS_FIELD_NUMBER: _ClassVar[int]
+    attribute_value_fqn: str
+    actions: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, attribute_value_fqn: _Optional[str] = ..., actions: _Optional[_Iterable[str]] = ...) -> None: ...
+
 class EntityRepresentation(_message.Message):
-    __slots__ = ("original_id", "additional_props")
+    __slots__ = ("original_id", "additional_props", "direct_entitlements")
     ORIGINAL_ID_FIELD_NUMBER: _ClassVar[int]
     ADDITIONAL_PROPS_FIELD_NUMBER: _ClassVar[int]
+    DIRECT_ENTITLEMENTS_FIELD_NUMBER: _ClassVar[int]
     original_id: str
     additional_props: _containers.RepeatedCompositeFieldContainer[_struct_pb2.Struct]
-    def __init__(self, original_id: _Optional[str] = ..., additional_props: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ...) -> None: ...
+    direct_entitlements: _containers.RepeatedCompositeFieldContainer[DirectEntitlement]
+    def __init__(self, original_id: _Optional[str] = ..., additional_props: _Optional[_Iterable[_Union[_struct_pb2.Struct, _Mapping]]] = ..., direct_entitlements: _Optional[_Iterable[_Union[DirectEntitlement, _Mapping]]] = ...) -> None: ...
 
 class ResolveEntitiesRequest(_message.Message):
     __slots__ = ("entities",)
@@ -43,10 +54,12 @@ class EntityNotFoundError(_message.Message):
     def __init__(self, code: _Optional[int] = ..., message: _Optional[str] = ..., details: _Optional[_Iterable[_Union[_any_pb2.Any, _Mapping]]] = ..., entity: _Optional[str] = ...) -> None: ...
 
 class CreateEntityChainsFromTokensRequest(_message.Message):
-    __slots__ = ("tokens",)
+    __slots__ = ("tokens", "resources")
     TOKENS_FIELD_NUMBER: _ClassVar[int]
+    RESOURCES_FIELD_NUMBER: _ClassVar[int]
     tokens: _containers.RepeatedCompositeFieldContainer[_entity_pb2.Token]
-    def __init__(self, tokens: _Optional[_Iterable[_Union[_entity_pb2.Token, _Mapping]]] = ...) -> None: ...
+    resources: _containers.RepeatedCompositeFieldContainer[_authorization_pb2.Resource]
+    def __init__(self, tokens: _Optional[_Iterable[_Union[_entity_pb2.Token, _Mapping]]] = ..., resources: _Optional[_Iterable[_Union[_authorization_pb2.Resource, _Mapping]]] = ...) -> None: ...
 
 class CreateEntityChainsFromTokensResponse(_message.Message):
     __slots__ = ("entity_chains",)

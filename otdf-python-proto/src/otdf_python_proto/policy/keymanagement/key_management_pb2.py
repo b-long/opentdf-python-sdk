@@ -28,7 +28,7 @@ from policy import objects_pb2 as policy_dot_objects__pb2
 from policy import selectors_pb2 as policy_dot_selectors__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n)policy/keymanagement/key_management.proto\x12\x14policy.keymanagement\x1a\x1b\x62uf/validate/validate.proto\x1a\x13\x63ommon/common.proto\x1a\x14policy/objects.proto\x1a\x16policy/selectors.proto\"\x97\x01\n\x1b\x43reateProviderConfigRequest\x12\x1a\n\x04name\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\'\n\x0b\x63onfig_json\x18\x02 \x01(\x0c\x42\x06\xbaH\x03\xc8\x01\x01R\nconfigJson\x12\x33\n\x08metadata\x18\x64 \x01(\x0b\x32\x17.common.MetadataMutableR\x08metadata\"b\n\x1c\x43reateProviderConfigResponse\x12\x42\n\x0fprovider_config\x18\x01 \x01(\x0b\x32\x19.policy.KeyProviderConfigR\x0eproviderConfig\"j\n\x18GetProviderConfigRequest\x12\x1a\n\x02id\x18\x02 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01H\x00R\x02id\x12\x1d\n\x04name\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01H\x00R\x04nameB\x13\n\nidentifier\x12\x05\xbaH\x02\x08\x01\"_\n\x19GetProviderConfigResponse\x12\x42\n\x0fprovider_config\x18\x01 \x01(\x0b\x32\x19.policy.KeyProviderConfigR\x0eproviderConfig\"Q\n\x1aListProviderConfigsRequest\x12\x33\n\npagination\x18\n \x01(\x0b\x32\x13.policy.PageRequestR\npagination\"\x99\x01\n\x1bListProviderConfigsResponse\x12\x44\n\x10provider_configs\x18\x01 \x03(\x0b\x32\x19.policy.KeyProviderConfigR\x0fproviderConfigs\x12\x34\n\npagination\x18\n \x01(\x0b\x32\x14.policy.PageResponseR\npagination\"\x87\x02\n\x1bUpdateProviderConfigRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x1a\n\x04name\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x00R\x04name\x12\'\n\x0b\x63onfig_json\x18\x03 \x01(\x0c\x42\x06\xbaH\x03\xc8\x01\x00R\nconfigJson\x12\x33\n\x08metadata\x18\x64 \x01(\x0b\x32\x17.common.MetadataMutableR\x08metadata\x12T\n\x18metadata_update_behavior\x18\x65 \x01(\x0e\x32\x1a.common.MetadataUpdateEnumR\x16metadataUpdateBehavior\"b\n\x1cUpdateProviderConfigResponse\x12\x42\n\x0fprovider_config\x18\x01 \x01(\x0b\x32\x19.policy.KeyProviderConfigR\x0eproviderConfig\"7\n\x1b\x44\x65leteProviderConfigRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\"b\n\x1c\x44\x65leteProviderConfigResponse\x12\x42\n\x0fprovider_config\x18\x01 \x01(\x0b\x32\x19.policy.KeyProviderConfigR\x0eproviderConfig2\x8f\x05\n\x14KeyManagementService\x12\x7f\n\x14\x43reateProviderConfig\x12\x31.policy.keymanagement.CreateProviderConfigRequest\x1a\x32.policy.keymanagement.CreateProviderConfigResponse\"\x00\x12v\n\x11GetProviderConfig\x12..policy.keymanagement.GetProviderConfigRequest\x1a/.policy.keymanagement.GetProviderConfigResponse\"\x00\x12|\n\x13ListProviderConfigs\x12\x30.policy.keymanagement.ListProviderConfigsRequest\x1a\x31.policy.keymanagement.ListProviderConfigsResponse\"\x00\x12\x7f\n\x14UpdateProviderConfig\x12\x31.policy.keymanagement.UpdateProviderConfigRequest\x1a\x32.policy.keymanagement.UpdateProviderConfigResponse\"\x00\x12\x7f\n\x14\x44\x65leteProviderConfig\x12\x31.policy.keymanagement.DeleteProviderConfigRequest\x1a\x32.policy.keymanagement.DeleteProviderConfigResponse\"\x00\x42\x9f\x01\n\x18\x63om.policy.keymanagementB\x12KeyManagementProtoP\x01\xa2\x02\x03PKX\xaa\x02\x14Policy.Keymanagement\xca\x02\x14Policy\\Keymanagement\xe2\x02 Policy\\Keymanagement\\GPBMetadata\xea\x02\x15Policy::Keymanagementb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n)policy/keymanagement/key_management.proto\x12\x14policy.keymanagement\x1a\x1b\x62uf/validate/validate.proto\x1a\x13\x63ommon/common.proto\x1a\x14policy/objects.proto\x1a\x16policy/selectors.proto\"\xb9\x01\n\x1b\x43reateProviderConfigRequest\x12\x1a\n\x04name\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x04name\x12\'\n\x0b\x63onfig_json\x18\x02 \x01(\x0c\x42\x06\xbaH\x03\xc8\x01\x01R\nconfigJson\x12 \n\x07manager\x18\x03 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x07manager\x12\x33\n\x08metadata\x18\x64 \x01(\x0b\x32\x17.common.MetadataMutableR\x08metadata\"b\n\x1c\x43reateProviderConfigResponse\x12\x42\n\x0fprovider_config\x18\x01 \x01(\x0b\x32\x19.policy.KeyProviderConfigR\x0eproviderConfig\"\x8c\x01\n\x18GetProviderConfigRequest\x12\x1a\n\x02id\x18\x02 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01H\x00R\x02id\x12\x1d\n\x04name\x18\x03 \x01(\tB\x07\xbaH\x04r\x02\x10\x01H\x00R\x04name\x12 \n\x07manager\x18\x04 \x01(\tB\x06\xbaH\x03\xc8\x01\x00R\x07managerB\x13\n\nidentifier\x12\x05\xbaH\x02\x08\x01\"_\n\x19GetProviderConfigResponse\x12\x42\n\x0fprovider_config\x18\x01 \x01(\x0b\x32\x19.policy.KeyProviderConfigR\x0eproviderConfig\"Q\n\x1aListProviderConfigsRequest\x12\x33\n\npagination\x18\n \x01(\x0b\x32\x13.policy.PageRequestR\npagination\"\x99\x01\n\x1bListProviderConfigsResponse\x12\x44\n\x10provider_configs\x18\x01 \x03(\x0b\x32\x19.policy.KeyProviderConfigR\x0fproviderConfigs\x12\x34\n\npagination\x18\n \x01(\x0b\x32\x14.policy.PageResponseR\npagination\"\xa9\x02\n\x1bUpdateProviderConfigRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x1a\n\x04name\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x00R\x04name\x12\'\n\x0b\x63onfig_json\x18\x03 \x01(\x0c\x42\x06\xbaH\x03\xc8\x01\x00R\nconfigJson\x12 \n\x07manager\x18\x04 \x01(\tB\x06\xbaH\x03\xc8\x01\x00R\x07manager\x12\x33\n\x08metadata\x18\x64 \x01(\x0b\x32\x17.common.MetadataMutableR\x08metadata\x12T\n\x18metadata_update_behavior\x18\x65 \x01(\x0e\x32\x1a.common.MetadataUpdateEnumR\x16metadataUpdateBehavior\"b\n\x1cUpdateProviderConfigResponse\x12\x42\n\x0fprovider_config\x18\x01 \x01(\x0b\x32\x19.policy.KeyProviderConfigR\x0eproviderConfig\"7\n\x1b\x44\x65leteProviderConfigRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\"b\n\x1c\x44\x65leteProviderConfigResponse\x12\x42\n\x0fprovider_config\x18\x01 \x01(\x0b\x32\x19.policy.KeyProviderConfigR\x0eproviderConfig2\x8f\x05\n\x14KeyManagementService\x12\x7f\n\x14\x43reateProviderConfig\x12\x31.policy.keymanagement.CreateProviderConfigRequest\x1a\x32.policy.keymanagement.CreateProviderConfigResponse\"\x00\x12v\n\x11GetProviderConfig\x12..policy.keymanagement.GetProviderConfigRequest\x1a/.policy.keymanagement.GetProviderConfigResponse\"\x00\x12|\n\x13ListProviderConfigs\x12\x30.policy.keymanagement.ListProviderConfigsRequest\x1a\x31.policy.keymanagement.ListProviderConfigsResponse\"\x00\x12\x7f\n\x14UpdateProviderConfig\x12\x31.policy.keymanagement.UpdateProviderConfigRequest\x1a\x32.policy.keymanagement.UpdateProviderConfigResponse\"\x00\x12\x7f\n\x14\x44\x65leteProviderConfig\x12\x31.policy.keymanagement.DeleteProviderConfigRequest\x1a\x32.policy.keymanagement.DeleteProviderConfigResponse\"\x00\x42\x9f\x01\n\x18\x63om.policy.keymanagementB\x12KeyManagementProtoP\x01\xa2\x02\x03PKX\xaa\x02\x14Policy.Keymanagement\xca\x02\x14Policy\\Keymanagement\xe2\x02 Policy\\Keymanagement\\GPBMetadata\xea\x02\x15Policy::Keymanagementb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -40,40 +40,46 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CREATEPROVIDERCONFIGREQUEST'].fields_by_name['name']._serialized_options = b'\272H\003\310\001\001'
   _globals['_CREATEPROVIDERCONFIGREQUEST'].fields_by_name['config_json']._loaded_options = None
   _globals['_CREATEPROVIDERCONFIGREQUEST'].fields_by_name['config_json']._serialized_options = b'\272H\003\310\001\001'
+  _globals['_CREATEPROVIDERCONFIGREQUEST'].fields_by_name['manager']._loaded_options = None
+  _globals['_CREATEPROVIDERCONFIGREQUEST'].fields_by_name['manager']._serialized_options = b'\272H\003\310\001\001'
   _globals['_GETPROVIDERCONFIGREQUEST'].oneofs_by_name['identifier']._loaded_options = None
   _globals['_GETPROVIDERCONFIGREQUEST'].oneofs_by_name['identifier']._serialized_options = b'\272H\002\010\001'
   _globals['_GETPROVIDERCONFIGREQUEST'].fields_by_name['id']._loaded_options = None
   _globals['_GETPROVIDERCONFIGREQUEST'].fields_by_name['id']._serialized_options = b'\272H\005r\003\260\001\001'
   _globals['_GETPROVIDERCONFIGREQUEST'].fields_by_name['name']._loaded_options = None
   _globals['_GETPROVIDERCONFIGREQUEST'].fields_by_name['name']._serialized_options = b'\272H\004r\002\020\001'
+  _globals['_GETPROVIDERCONFIGREQUEST'].fields_by_name['manager']._loaded_options = None
+  _globals['_GETPROVIDERCONFIGREQUEST'].fields_by_name['manager']._serialized_options = b'\272H\003\310\001\000'
   _globals['_UPDATEPROVIDERCONFIGREQUEST'].fields_by_name['id']._loaded_options = None
   _globals['_UPDATEPROVIDERCONFIGREQUEST'].fields_by_name['id']._serialized_options = b'\272H\005r\003\260\001\001'
   _globals['_UPDATEPROVIDERCONFIGREQUEST'].fields_by_name['name']._loaded_options = None
   _globals['_UPDATEPROVIDERCONFIGREQUEST'].fields_by_name['name']._serialized_options = b'\272H\003\310\001\000'
   _globals['_UPDATEPROVIDERCONFIGREQUEST'].fields_by_name['config_json']._loaded_options = None
   _globals['_UPDATEPROVIDERCONFIGREQUEST'].fields_by_name['config_json']._serialized_options = b'\272H\003\310\001\000'
+  _globals['_UPDATEPROVIDERCONFIGREQUEST'].fields_by_name['manager']._loaded_options = None
+  _globals['_UPDATEPROVIDERCONFIGREQUEST'].fields_by_name['manager']._serialized_options = b'\272H\003\310\001\000'
   _globals['_DELETEPROVIDERCONFIGREQUEST'].fields_by_name['id']._loaded_options = None
   _globals['_DELETEPROVIDERCONFIGREQUEST'].fields_by_name['id']._serialized_options = b'\272H\005r\003\260\001\001'
   _globals['_CREATEPROVIDERCONFIGREQUEST']._serialized_start=164
-  _globals['_CREATEPROVIDERCONFIGREQUEST']._serialized_end=315
-  _globals['_CREATEPROVIDERCONFIGRESPONSE']._serialized_start=317
-  _globals['_CREATEPROVIDERCONFIGRESPONSE']._serialized_end=415
-  _globals['_GETPROVIDERCONFIGREQUEST']._serialized_start=417
-  _globals['_GETPROVIDERCONFIGREQUEST']._serialized_end=523
-  _globals['_GETPROVIDERCONFIGRESPONSE']._serialized_start=525
-  _globals['_GETPROVIDERCONFIGRESPONSE']._serialized_end=620
-  _globals['_LISTPROVIDERCONFIGSREQUEST']._serialized_start=622
-  _globals['_LISTPROVIDERCONFIGSREQUEST']._serialized_end=703
-  _globals['_LISTPROVIDERCONFIGSRESPONSE']._serialized_start=706
-  _globals['_LISTPROVIDERCONFIGSRESPONSE']._serialized_end=859
-  _globals['_UPDATEPROVIDERCONFIGREQUEST']._serialized_start=862
-  _globals['_UPDATEPROVIDERCONFIGREQUEST']._serialized_end=1125
-  _globals['_UPDATEPROVIDERCONFIGRESPONSE']._serialized_start=1127
-  _globals['_UPDATEPROVIDERCONFIGRESPONSE']._serialized_end=1225
-  _globals['_DELETEPROVIDERCONFIGREQUEST']._serialized_start=1227
-  _globals['_DELETEPROVIDERCONFIGREQUEST']._serialized_end=1282
-  _globals['_DELETEPROVIDERCONFIGRESPONSE']._serialized_start=1284
-  _globals['_DELETEPROVIDERCONFIGRESPONSE']._serialized_end=1382
-  _globals['_KEYMANAGEMENTSERVICE']._serialized_start=1385
-  _globals['_KEYMANAGEMENTSERVICE']._serialized_end=2040
+  _globals['_CREATEPROVIDERCONFIGREQUEST']._serialized_end=349
+  _globals['_CREATEPROVIDERCONFIGRESPONSE']._serialized_start=351
+  _globals['_CREATEPROVIDERCONFIGRESPONSE']._serialized_end=449
+  _globals['_GETPROVIDERCONFIGREQUEST']._serialized_start=452
+  _globals['_GETPROVIDERCONFIGREQUEST']._serialized_end=592
+  _globals['_GETPROVIDERCONFIGRESPONSE']._serialized_start=594
+  _globals['_GETPROVIDERCONFIGRESPONSE']._serialized_end=689
+  _globals['_LISTPROVIDERCONFIGSREQUEST']._serialized_start=691
+  _globals['_LISTPROVIDERCONFIGSREQUEST']._serialized_end=772
+  _globals['_LISTPROVIDERCONFIGSRESPONSE']._serialized_start=775
+  _globals['_LISTPROVIDERCONFIGSRESPONSE']._serialized_end=928
+  _globals['_UPDATEPROVIDERCONFIGREQUEST']._serialized_start=931
+  _globals['_UPDATEPROVIDERCONFIGREQUEST']._serialized_end=1228
+  _globals['_UPDATEPROVIDERCONFIGRESPONSE']._serialized_start=1230
+  _globals['_UPDATEPROVIDERCONFIGRESPONSE']._serialized_end=1328
+  _globals['_DELETEPROVIDERCONFIGREQUEST']._serialized_start=1330
+  _globals['_DELETEPROVIDERCONFIGREQUEST']._serialized_end=1385
+  _globals['_DELETEPROVIDERCONFIGRESPONSE']._serialized_start=1387
+  _globals['_DELETEPROVIDERCONFIGRESPONSE']._serialized_end=1485
+  _globals['_KEYMANAGEMENTSERVICE']._serialized_start=1488
+  _globals['_KEYMANAGEMENTSERVICE']._serialized_end=2143
 # @@protoc_insertion_point(module_scope)

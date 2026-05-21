@@ -196,25 +196,30 @@ class AttributesServiceServicer(object):
         """--------------------------------------*
         Attribute <> Key Access Server RPCs
         ---------------------------------------
+
+        Deprecated: utilize AssignPublicKeyToAttribute
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def RemoveKeyAccessServerFromAttribute(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Deprecated: utilize RemovePublicKeyFromAttribute
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def AssignKeyAccessServerToValue(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Deprecated: utilize AssignPublicKeyToValue
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def RemoveKeyAccessServerFromValue(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Deprecated: utilize RemovePublicKeyFromValue
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')

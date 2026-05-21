@@ -55,6 +55,9 @@ class Service(Protocol):
     async def remove_obligation_trigger(self, request: policy_dot_obligations_dot_obligations__pb2.RemoveObligationTriggerRequest, ctx: RequestContext) -> policy_dot_obligations_dot_obligations__pb2.RemoveObligationTriggerResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
 
+    async def list_obligation_triggers(self, request: policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersRequest, ctx: RequestContext) -> policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersResponse:
+        raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
+
 
 class ServiceASGIApplication(ConnectASGIApplication[Service]):
     def __init__(self, service: Service | AsyncGenerator[Service], *, interceptors: Iterable[Interceptor]=(), read_max_bytes: int | None = None) -> None:
@@ -190,6 +193,16 @@ class ServiceASGIApplication(ConnectASGIApplication[Service]):
                         idempotency_level=IdempotencyLevel.UNKNOWN,
                     ),
                     function=svc.remove_obligation_trigger,
+                ),
+                "/policy.obligations.Service/ListObligationTriggers": Endpoint.unary(
+                    method=MethodInfo(
+                        name="ListObligationTriggers",
+                        service_name="policy.obligations.Service",
+                        input=policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersRequest,
+                        output=policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersResponse,
+                        idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
+                    ),
+                    function=svc.list_obligation_triggers,
                 ),
             },
             interceptors=interceptors,
@@ -473,6 +486,28 @@ class ServiceClient(ConnectClient):
             timeout_ms=timeout_ms,
         )
 
+    async def list_obligation_triggers(
+        self,
+        request: policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersRequest,
+        *,
+        headers: Headers | Mapping[str, str] | None = None,
+        timeout_ms: int | None = None,
+        use_get: bool = False,
+    ) -> policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersResponse:
+        return await self.execute_unary(
+            request=request,
+            method=MethodInfo(
+                name="ListObligationTriggers",
+                service_name="policy.obligations.Service",
+                input=policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersRequest,
+                output=policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersResponse,
+                idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
+            ),
+            headers=headers,
+            timeout_ms=timeout_ms,
+            use_get=use_get,
+        )
+
 
 class ServiceSync(Protocol):
     def list_obligations(self, request: policy_dot_obligations_dot_obligations__pb2.ListObligationsRequest, ctx: RequestContext) -> policy_dot_obligations_dot_obligations__pb2.ListObligationsResponse:
@@ -500,6 +535,8 @@ class ServiceSync(Protocol):
     def add_obligation_trigger(self, request: policy_dot_obligations_dot_obligations__pb2.AddObligationTriggerRequest, ctx: RequestContext) -> policy_dot_obligations_dot_obligations__pb2.AddObligationTriggerResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
     def remove_obligation_trigger(self, request: policy_dot_obligations_dot_obligations__pb2.RemoveObligationTriggerRequest, ctx: RequestContext) -> policy_dot_obligations_dot_obligations__pb2.RemoveObligationTriggerResponse:
+        raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
+    def list_obligation_triggers(self, request: policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersRequest, ctx: RequestContext) -> policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
 
 
@@ -636,6 +673,16 @@ class ServiceWSGIApplication(ConnectWSGIApplication):
                         idempotency_level=IdempotencyLevel.UNKNOWN,
                     ),
                     function=service.remove_obligation_trigger,
+                ),
+                "/policy.obligations.Service/ListObligationTriggers": EndpointSync.unary(
+                    method=MethodInfo(
+                        name="ListObligationTriggers",
+                        service_name="policy.obligations.Service",
+                        input=policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersRequest,
+                        output=policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersResponse,
+                        idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
+                    ),
+                    function=service.list_obligation_triggers,
                 ),
             },
             interceptors=interceptors,
@@ -917,4 +964,26 @@ class ServiceClientSync(ConnectClientSync):
             ),
             headers=headers,
             timeout_ms=timeout_ms,
+        )
+
+    def list_obligation_triggers(
+        self,
+        request: policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersRequest,
+        *,
+        headers: Headers | Mapping[str, str] | None = None,
+        timeout_ms: int | None = None,
+        use_get: bool = False,
+    ) -> policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersResponse:
+        return self.execute_unary(
+            request=request,
+            method=MethodInfo(
+                name="ListObligationTriggers",
+                service_name="policy.obligations.Service",
+                input=policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersRequest,
+                output=policy_dot_obligations_dot_obligations__pb2.ListObligationTriggersResponse,
+                idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
+            ),
+            headers=headers,
+            timeout_ms=timeout_ms,
+            use_get=use_get,
         )

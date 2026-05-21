@@ -1,4 +1,5 @@
 from buf.validate import validate_pb2 as _validate_pb2
+from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from policy import objects_pb2 as _objects_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
@@ -49,16 +50,18 @@ class UnsafeDeleteNamespaceResponse(_message.Message):
     def __init__(self, namespace: _Optional[_Union[_objects_pb2.Namespace, _Mapping]] = ...) -> None: ...
 
 class UnsafeUpdateAttributeRequest(_message.Message):
-    __slots__ = ("id", "name", "rule", "values_order")
+    __slots__ = ("id", "name", "rule", "allow_traversal", "values_order")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     RULE_FIELD_NUMBER: _ClassVar[int]
+    ALLOW_TRAVERSAL_FIELD_NUMBER: _ClassVar[int]
     VALUES_ORDER_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
     rule: _objects_pb2.AttributeRuleTypeEnum
+    allow_traversal: _wrappers_pb2.BoolValue
     values_order: _containers.RepeatedScalarFieldContainer[str]
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., rule: _Optional[_Union[_objects_pb2.AttributeRuleTypeEnum, str]] = ..., values_order: _Optional[_Iterable[str]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., rule: _Optional[_Union[_objects_pb2.AttributeRuleTypeEnum, str]] = ..., allow_traversal: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., values_order: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class UnsafeUpdateAttributeResponse(_message.Message):
     __slots__ = ("attribute",)

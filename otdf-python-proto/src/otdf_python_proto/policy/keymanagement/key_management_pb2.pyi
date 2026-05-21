@@ -11,14 +11,16 @@ from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class CreateProviderConfigRequest(_message.Message):
-    __slots__ = ("name", "config_json", "metadata")
+    __slots__ = ("name", "config_json", "manager", "metadata")
     NAME_FIELD_NUMBER: _ClassVar[int]
     CONFIG_JSON_FIELD_NUMBER: _ClassVar[int]
+    MANAGER_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     name: str
     config_json: bytes
+    manager: str
     metadata: _common_pb2.MetadataMutable
-    def __init__(self, name: _Optional[str] = ..., config_json: _Optional[bytes] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
+    def __init__(self, name: _Optional[str] = ..., config_json: _Optional[bytes] = ..., manager: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
 
 class CreateProviderConfigResponse(_message.Message):
     __slots__ = ("provider_config",)
@@ -27,12 +29,14 @@ class CreateProviderConfigResponse(_message.Message):
     def __init__(self, provider_config: _Optional[_Union[_objects_pb2.KeyProviderConfig, _Mapping]] = ...) -> None: ...
 
 class GetProviderConfigRequest(_message.Message):
-    __slots__ = ("id", "name")
+    __slots__ = ("id", "name", "manager")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
+    MANAGER_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ...) -> None: ...
+    manager: str
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., manager: _Optional[str] = ...) -> None: ...
 
 class GetProviderConfigResponse(_message.Message):
     __slots__ = ("provider_config",)
@@ -55,18 +59,20 @@ class ListProviderConfigsResponse(_message.Message):
     def __init__(self, provider_configs: _Optional[_Iterable[_Union[_objects_pb2.KeyProviderConfig, _Mapping]]] = ..., pagination: _Optional[_Union[_selectors_pb2.PageResponse, _Mapping]] = ...) -> None: ...
 
 class UpdateProviderConfigRequest(_message.Message):
-    __slots__ = ("id", "name", "config_json", "metadata", "metadata_update_behavior")
+    __slots__ = ("id", "name", "config_json", "manager", "metadata", "metadata_update_behavior")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     CONFIG_JSON_FIELD_NUMBER: _ClassVar[int]
+    MANAGER_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     METADATA_UPDATE_BEHAVIOR_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
     config_json: bytes
+    manager: str
     metadata: _common_pb2.MetadataMutable
     metadata_update_behavior: _common_pb2.MetadataUpdateEnum
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., config_json: _Optional[bytes] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ..., metadata_update_behavior: _Optional[_Union[_common_pb2.MetadataUpdateEnum, str]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., config_json: _Optional[bytes] = ..., manager: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ..., metadata_update_behavior: _Optional[_Union[_common_pb2.MetadataUpdateEnum, str]] = ...) -> None: ...
 
 class UpdateProviderConfigResponse(_message.Message):
     __slots__ = ("provider_config",)

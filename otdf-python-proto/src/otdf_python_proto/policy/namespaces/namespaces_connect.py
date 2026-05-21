@@ -43,6 +43,12 @@ class NamespaceService(Protocol):
     async def remove_public_key_from_namespace(self, request: policy_dot_namespaces_dot_namespaces__pb2.RemovePublicKeyFromNamespaceRequest, ctx: RequestContext) -> policy_dot_namespaces_dot_namespaces__pb2.RemovePublicKeyFromNamespaceResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
 
+    async def assign_certificate_to_namespace(self, request: policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceRequest, ctx: RequestContext) -> policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceResponse:
+        raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
+
+    async def remove_certificate_from_namespace(self, request: policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceRequest, ctx: RequestContext) -> policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceResponse:
+        raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
+
 
 class NamespaceServiceASGIApplication(ConnectASGIApplication[NamespaceService]):
     def __init__(self, service: NamespaceService | AsyncGenerator[NamespaceService], *, interceptors: Iterable[Interceptor]=(), read_max_bytes: int | None = None) -> None:
@@ -138,6 +144,26 @@ class NamespaceServiceASGIApplication(ConnectASGIApplication[NamespaceService]):
                         idempotency_level=IdempotencyLevel.UNKNOWN,
                     ),
                     function=svc.remove_public_key_from_namespace,
+                ),
+                "/policy.namespaces.NamespaceService/AssignCertificateToNamespace": Endpoint.unary(
+                    method=MethodInfo(
+                        name="AssignCertificateToNamespace",
+                        service_name="policy.namespaces.NamespaceService",
+                        input=policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceRequest,
+                        output=policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceResponse,
+                        idempotency_level=IdempotencyLevel.UNKNOWN,
+                    ),
+                    function=svc.assign_certificate_to_namespace,
+                ),
+                "/policy.namespaces.NamespaceService/RemoveCertificateFromNamespace": Endpoint.unary(
+                    method=MethodInfo(
+                        name="RemoveCertificateFromNamespace",
+                        service_name="policy.namespaces.NamespaceService",
+                        input=policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceRequest,
+                        output=policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceResponse,
+                        idempotency_level=IdempotencyLevel.UNKNOWN,
+                    ),
+                    function=svc.remove_certificate_from_namespace,
                 ),
             },
             interceptors=interceptors,
@@ -335,6 +361,46 @@ class NamespaceServiceClient(ConnectClient):
             timeout_ms=timeout_ms,
         )
 
+    async def assign_certificate_to_namespace(
+        self,
+        request: policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceRequest,
+        *,
+        headers: Headers | Mapping[str, str] | None = None,
+        timeout_ms: int | None = None,
+    ) -> policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceResponse:
+        return await self.execute_unary(
+            request=request,
+            method=MethodInfo(
+                name="AssignCertificateToNamespace",
+                service_name="policy.namespaces.NamespaceService",
+                input=policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceRequest,
+                output=policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceResponse,
+                idempotency_level=IdempotencyLevel.UNKNOWN,
+            ),
+            headers=headers,
+            timeout_ms=timeout_ms,
+        )
+
+    async def remove_certificate_from_namespace(
+        self,
+        request: policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceRequest,
+        *,
+        headers: Headers | Mapping[str, str] | None = None,
+        timeout_ms: int | None = None,
+    ) -> policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceResponse:
+        return await self.execute_unary(
+            request=request,
+            method=MethodInfo(
+                name="RemoveCertificateFromNamespace",
+                service_name="policy.namespaces.NamespaceService",
+                input=policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceRequest,
+                output=policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceResponse,
+                idempotency_level=IdempotencyLevel.UNKNOWN,
+            ),
+            headers=headers,
+            timeout_ms=timeout_ms,
+        )
+
 
 class NamespaceServiceSync(Protocol):
     def get_namespace(self, request: policy_dot_namespaces_dot_namespaces__pb2.GetNamespaceRequest, ctx: RequestContext) -> policy_dot_namespaces_dot_namespaces__pb2.GetNamespaceResponse:
@@ -354,6 +420,10 @@ class NamespaceServiceSync(Protocol):
     def assign_public_key_to_namespace(self, request: policy_dot_namespaces_dot_namespaces__pb2.AssignPublicKeyToNamespaceRequest, ctx: RequestContext) -> policy_dot_namespaces_dot_namespaces__pb2.AssignPublicKeyToNamespaceResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
     def remove_public_key_from_namespace(self, request: policy_dot_namespaces_dot_namespaces__pb2.RemovePublicKeyFromNamespaceRequest, ctx: RequestContext) -> policy_dot_namespaces_dot_namespaces__pb2.RemovePublicKeyFromNamespaceResponse:
+        raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
+    def assign_certificate_to_namespace(self, request: policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceRequest, ctx: RequestContext) -> policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceResponse:
+        raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
+    def remove_certificate_from_namespace(self, request: policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceRequest, ctx: RequestContext) -> policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
 
 
@@ -450,6 +520,26 @@ class NamespaceServiceWSGIApplication(ConnectWSGIApplication):
                         idempotency_level=IdempotencyLevel.UNKNOWN,
                     ),
                     function=service.remove_public_key_from_namespace,
+                ),
+                "/policy.namespaces.NamespaceService/AssignCertificateToNamespace": EndpointSync.unary(
+                    method=MethodInfo(
+                        name="AssignCertificateToNamespace",
+                        service_name="policy.namespaces.NamespaceService",
+                        input=policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceRequest,
+                        output=policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceResponse,
+                        idempotency_level=IdempotencyLevel.UNKNOWN,
+                    ),
+                    function=service.assign_certificate_to_namespace,
+                ),
+                "/policy.namespaces.NamespaceService/RemoveCertificateFromNamespace": EndpointSync.unary(
+                    method=MethodInfo(
+                        name="RemoveCertificateFromNamespace",
+                        service_name="policy.namespaces.NamespaceService",
+                        input=policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceRequest,
+                        output=policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceResponse,
+                        idempotency_level=IdempotencyLevel.UNKNOWN,
+                    ),
+                    function=service.remove_certificate_from_namespace,
                 ),
             },
             interceptors=interceptors,
@@ -641,6 +731,46 @@ class NamespaceServiceClientSync(ConnectClientSync):
                 service_name="policy.namespaces.NamespaceService",
                 input=policy_dot_namespaces_dot_namespaces__pb2.RemovePublicKeyFromNamespaceRequest,
                 output=policy_dot_namespaces_dot_namespaces__pb2.RemovePublicKeyFromNamespaceResponse,
+                idempotency_level=IdempotencyLevel.UNKNOWN,
+            ),
+            headers=headers,
+            timeout_ms=timeout_ms,
+        )
+
+    def assign_certificate_to_namespace(
+        self,
+        request: policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceRequest,
+        *,
+        headers: Headers | Mapping[str, str] | None = None,
+        timeout_ms: int | None = None,
+    ) -> policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceResponse:
+        return self.execute_unary(
+            request=request,
+            method=MethodInfo(
+                name="AssignCertificateToNamespace",
+                service_name="policy.namespaces.NamespaceService",
+                input=policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceRequest,
+                output=policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceResponse,
+                idempotency_level=IdempotencyLevel.UNKNOWN,
+            ),
+            headers=headers,
+            timeout_ms=timeout_ms,
+        )
+
+    def remove_certificate_from_namespace(
+        self,
+        request: policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceRequest,
+        *,
+        headers: Headers | Mapping[str, str] | None = None,
+        timeout_ms: int | None = None,
+    ) -> policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceResponse:
+        return self.execute_unary(
+            request=request,
+            method=MethodInfo(
+                name="RemoveCertificateFromNamespace",
+                service_name="policy.namespaces.NamespaceService",
+                input=policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceRequest,
+                output=policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceResponse,
                 idempotency_level=IdempotencyLevel.UNKNOWN,
             ),
             headers=headers,
