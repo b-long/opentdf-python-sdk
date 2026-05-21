@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.5.0...otdf-python-v0.6.0) (2026-05-21)
+
+
+### Features
+
+* **main:** update to service v 0.12.0 ([#139](https://github.com/b-long/opentdf-python-sdk/issues/139)) ([125b12b](https://github.com/b-long/opentdf-python-sdk/commit/125b12b24aa89fceeca56e5878728ac329dd8659))
+
 ## [0.5.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.4.4...otdf-python-v0.5.0) (2026-05-08)
 
 
