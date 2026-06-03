@@ -5,9 +5,9 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
 from otdf_python.sdk import SDK
 from otdf_python.sdk_exceptions import SDKException
+
 from tests.config_pydantic import CONFIG_TDF
 from tests.integration.support_sdk import get_sdk_for_pe
 

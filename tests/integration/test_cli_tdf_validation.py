@@ -6,8 +6,8 @@ import zipfile
 from pathlib import Path
 
 import pytest
-
 from otdf_python.tdf_reader import TDF_MANIFEST_FILE_NAME, TDF_PAYLOAD_FILE_NAME
+
 from tests.support_cli_args import (
     run_cli_decrypt,
     run_cli_encrypt,

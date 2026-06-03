@@ -3,6 +3,7 @@
 import io
 
 from otdf_python.sdk_builder import SDKBuilder
+
 from tests.config_pydantic import CONFIG_TDF
 from tests.mock_crypto import generate_rsa_keypair
 

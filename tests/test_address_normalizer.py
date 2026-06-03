@@ -1,7 +1,6 @@
 """Tests for address_normalizer module."""
 
 import pytest
-
 from otdf_python.address_normalizer import normalize_address
 from otdf_python.sdk_exceptions import SDKException
 

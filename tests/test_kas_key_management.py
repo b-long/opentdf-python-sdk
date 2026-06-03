@@ -6,7 +6,6 @@ import unittest
 from unittest.mock import Mock, patch
 
 import pytest
-
 from otdf_python.kas_client import KASClient, KeyAccess
 from otdf_python.key_type_constants import EC_KEY_TYPE, RSA_KEY_TYPE
 

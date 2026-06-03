@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import respx
-
 from otdf_python.sdk import SDK
 from otdf_python.sdk_builder import SDKBuilder
 from otdf_python.sdk_exceptions import AutoConfigureException

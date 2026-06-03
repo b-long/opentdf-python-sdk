@@ -3,7 +3,6 @@
 import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
-
 from otdf_python.ecc_constants import ECCConstants
 from otdf_python.ecdh import (
     InvalidKeyError,

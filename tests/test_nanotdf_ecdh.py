@@ -4,7 +4,6 @@ import io
 
 import pytest
 from cryptography.hazmat.primitives import serialization
-
 from otdf_python.config import KASInfo, NanoTDFConfig
 from otdf_python.ecdh import generate_ephemeral_keypair
 from otdf_python.nanotdf import NanoTDF
