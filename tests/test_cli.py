@@ -34,9 +34,7 @@ def test_cli_version(project_root):
     assert result.returncode == 0
     assert "OpenTDF Python SDK" in result.stdout
 
-    with (
-        Path(__file__).parent.parent / "packages" / "otdf-python" / "pyproject.toml"
-    ).open("rb") as f:
+    with (project_root / "packages" / "otdf-python" / "pyproject.toml").open("rb") as f:
         # Use tomli for Python < 3.11, tomllib for 3.11+
         if sys.version_info < (3, 11):
             import tomli

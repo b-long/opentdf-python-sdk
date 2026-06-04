@@ -443,17 +443,17 @@ dependencies = [
     { name = "cryptography" },
     { name = "grpcio" },
     { name = "grpcio-status" },
-    { name = "grpcio-tools" },
     { name = "httpx" },
     { name = "protobuf" },
-    { name = "protoc-gen-connect-python" },
-    { name = "protoc-gen-openapiv2" },
     { name = "pyjwt" },
     { name = "typing-extensions" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "grpcio-tools" },
+    { name = "protoc-gen-connect-python" },
+    { name = "protoc-gen-openapiv2" },
     { name = "pydantic-settings" },
     { name = "pytest" },
     { name = "respx" },
@@ -467,17 +467,17 @@ requires-dist = [
     { name = "cryptography", specifier = ">=45.0.4" },
     { name = "grpcio", specifier = ">=1.74.0" },
     { name = "grpcio-status", specifier = ">=1.74.0" },
-    { name = "grpcio-tools", specifier = ">=1.74.0" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "protobuf", specifier = ">=6.31.1" },
-    { name = "protoc-gen-connect-python", specifier = ">=0.6.0,<0.7" },
-    { name = "protoc-gen-openapiv2", specifier = ">=0.0.1" },
     { name = "pyjwt", specifier = ">=2.10.1" },
     { name = "typing-extensions", specifier = ">=4.14.1" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "grpcio-tools", specifier = ">=1.74.0" },
+    { name = "protoc-gen-connect-python", specifier = ">=0.6.0,<0.7" },
+    { name = "protoc-gen-openapiv2", specifier = ">=0.0.1" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
     { name = "pytest", specifier = ">=8.4.1" },
     { name = "respx", specifier = ">=0.21.1" },

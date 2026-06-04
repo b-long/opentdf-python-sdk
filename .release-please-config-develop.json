@@ -19,6 +19,11 @@
           "path": "packages/otdf-python-proto/pyproject.toml",
           "type": "toml",
           "jsonpath": "$.project.version"
+        },
+        {
+          "path": "uv.lock",
+          "type": "toml",
+          "jsonpath": "$.package[?(@.name.value=='otdf-python-proto')].version"
         }
       ]
     }
