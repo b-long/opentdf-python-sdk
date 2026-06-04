@@ -5,12 +5,11 @@ default_install_hook_types:
   - post-rewrite
 exclude: |
   (?x)^(
-    otdf_python/.*
-    | otdf-python-proto/proto-files/.*
-    | otdf-python-proto/generated/.*
-    | otdf-python-proto/src/otdf_python_proto/.*
-    | otdf-python-proto/buf.yaml
-    | otdf-python-proto/buf.gen.yaml
+    otdf-python-proto/generated/.*
+    | packages/otdf-python-proto/src/otdf_python_proto/.*
+    | packages/otdf-python-proto/proto-files/.*
+    | packages/otdf-python-proto/buf.yaml
+    | packages/otdf-python-proto/buf.gen.yaml
   )$
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks#
@@ -29,12 +28,12 @@ repos:
           [
             "--ignore-words-list",
             "b-long, otdf_python",
-            "--skip=uv.lock,otdf-python-proto/uv.lock",
+            "--skip=uv.lock",
           ]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.15.12
+    rev: v0.15.15
     hooks:
       # Run the linter.
       - id: ruff-check
@@ -45,4 +44,4 @@ repos:
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]
-        args: [--verbose, feat, fix, docs, style, test, chore, ci]
+        args: [--verbose, feat, fix, docs, style, refactor, perf, revert, build, test, chore, ci]
