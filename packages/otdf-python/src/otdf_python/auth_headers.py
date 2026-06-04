@@ -6,6 +6,7 @@ from dataclasses import dataclass
 @dataclass
 class AuthHeaders:
     """Represents authentication headers used in token-based authorization.
+
     This class holds authorization and DPoP (Demonstrating Proof of Possession) headers
     that are used in token-based API requests.
     """

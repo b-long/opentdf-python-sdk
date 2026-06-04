@@ -51,5 +51,4 @@ extend-exclude = ["packages/otdf-python-proto/src/"]
 # TODO: Remaining work - 4 buckets to fix (140 errors remaining):
 # Bucket #1: D102 (missing method docstrings) - 98 errors
 # Bucket #2: D105 (missing magic method docstrings) - 23 errors
-# Bucket #3: D205 (blank line formatting), D103, D417, D104 - 19 errors
-"packages/otdf-python/src/**" = ["D102", "D105", "D205"]
+"packages/otdf-python/src/**" = ["D102", "D105"]

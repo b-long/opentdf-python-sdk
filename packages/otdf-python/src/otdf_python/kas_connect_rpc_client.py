@@ -1,4 +1,5 @@
 """KASConnectRPCClient: Handles Connect RPC communication with the Key Access Service (KAS).
+
 This class encapsulates all interactions with otdf_python_proto.
 """
 
