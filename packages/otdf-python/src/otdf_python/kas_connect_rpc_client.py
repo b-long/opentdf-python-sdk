@@ -4,7 +4,7 @@ This class encapsulates all interactions with otdf_python_proto.
 
 import logging
 
-import httpx2 as httpx
+import httpx
 from otdf_python_proto.kas import kas_pb2
 from otdf_python_proto.kas.kas_connect import AccessServiceClientSync
 
