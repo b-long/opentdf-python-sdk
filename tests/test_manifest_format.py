@@ -4,6 +4,7 @@ import json
 
 from otdf_python.config import KASInfo, TDFConfig
 from otdf_python.tdf import TDF
+
 from tests.mock_crypto import generate_rsa_keypair
 
 

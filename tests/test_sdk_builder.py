@@ -5,8 +5,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-import respx
-
 from otdf_python.sdk import SDK
 from otdf_python.sdk_builder import SDKBuilder
 from otdf_python.sdk_exceptions import AutoConfigureException
@@ -128,54 +126,67 @@ def test_ssl_context_from_directory():
             assert not any("not_a_cert.txt" in path for path in builder.cert_paths)
 
 
-@respx.mock
-def test_get_token_from_client_credentials():
+@patch("otdf_python.sdk_builder.httpx.get")
+@patch("otdf_python.sdk_builder.httpx.post")
+def test_get_token_from_client_credentials(mock_post, mock_get):
     """Test getting OAuth token from client credentials."""
+
+    def get_side_effect(url, **kwargs):
+        resp = MagicMock()
+        if "openid-configuration" in url:
+            resp.status_code = 200
+            resp.json.return_value = {
+                "token_endpoint": "https://keycloak.example.com/oauth/token"
+            }
+        else:
+            resp.status_code = 404
+        return resp
+
+    mock_get.side_effect = get_side_effect
+    mock_post_resp = MagicMock()
+    mock_post_resp.status_code = 200
+    mock_post_resp.json.return_value = {
+        "access_token": "test-token-123",
+        "token_type": "Bearer",
+    }
+    mock_post.return_value = mock_post_resp
+
     builder = SDKBuilder()
     builder.set_platform_endpoint("example.com")
     builder.set_issuer_endpoint("https://keycloak.example.com")
     builder.client_secret("client123", "secret456")
 
-    # Mock the discovery endpoint (Keycloak format)
-    respx.get(
-        "https://keycloak.example.com/realms/opentdf/.well-known/openid-configuration"
-    ).respond(
-        json={"token_endpoint": "https://keycloak.example.com/oauth/token"},
-        status_code=200,
-    )
-
-    # Mock the token endpoint
-    respx.post("https://keycloak.example.com/oauth/token").respond(
-        json={"access_token": "test-token-123", "token_type": "Bearer"}, status_code=200
-    )
-
-    # Test the method
     token = builder._get_token_from_client_credentials()
     assert token == "test-token-123"
 
 
-@respx.mock
-def test_get_token_failure():
+@patch("otdf_python.sdk_builder.httpx.get")
+@patch("otdf_python.sdk_builder.httpx.post")
+def test_get_token_failure(mock_post, mock_get):
     """Test handling of token acquisition failure."""
+
+    def get_side_effect(url, **kwargs):
+        resp = MagicMock()
+        if "openid-configuration" in url:
+            resp.status_code = 200
+            resp.json.return_value = {
+                "token_endpoint": "https://keycloak.example.com/oauth/token"
+            }
+        else:
+            resp.status_code = 404
+        return resp
+
+    mock_get.side_effect = get_side_effect
+    mock_post_resp = MagicMock()
+    mock_post_resp.status_code = 401
+    mock_post_resp.json.return_value = {"error": "invalid_client"}
+    mock_post.return_value = mock_post_resp
+
     builder = SDKBuilder()
     builder.set_platform_endpoint("example.com")
     builder.set_issuer_endpoint("https://keycloak.example.com")
     builder.client_secret("client123", "secret456")
 
-    # Mock the discovery endpoint (Keycloak format)
-    respx.get(
-        "https://keycloak.example.com/realms/opentdf/.well-known/openid-configuration"
-    ).respond(
-        json={"token_endpoint": "https://keycloak.example.com/oauth/token"},
-        status_code=200,
-    )
-
-    # Mock the token endpoint with error
-    respx.post("https://keycloak.example.com/oauth/token").respond(
-        json={"error": "invalid_client"}, status_code=401
-    )
-
-    # Test the method
     with pytest.raises(AutoConfigureException) as excinfo:
         builder._get_token_from_client_credentials()
 

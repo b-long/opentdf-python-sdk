@@ -3,23 +3,23 @@
   "include-v-in-tag": true,
   "bootstrap-sha": "5ed358b3e2e0fd12dc336133f701b4ba5d8a298c",
   "packages": {
-    ".": {
+    "packages/otdf-python": {
       "release-type": "python",
       "package-name": "otdf-python",
       "extra-files": [
-        "pyproject.toml",
+        "packages/otdf-python/pyproject.toml",
         {
           "path": "uv.lock",
           "type": "toml",
           "jsonpath": "$.package[?(@.name.value=='otdf-python')].version"
         },
         {
-          "path": "otdf-python-proto/pyproject.toml",
+          "path": "packages/otdf-python-proto/pyproject.toml",
           "type": "toml",
           "jsonpath": "$.project.version"
         },
         {
-          "path": "otdf-python-proto/uv.lock",
+          "path": "uv.lock",
           "type": "toml",
           "jsonpath": "$.package[?(@.name.value=='otdf-python-proto')].version"
         }

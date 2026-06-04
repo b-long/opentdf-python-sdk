@@ -6,10 +6,10 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
 from otdf_python.tdf_reader import (
     TDFReader,
 )
+
 from tests.config_pydantic import CONFIG_TDF
 from tests.support_common import handle_subprocess_error
 from tests.support_otdfctl_args import run_otdfctl_encrypt_command

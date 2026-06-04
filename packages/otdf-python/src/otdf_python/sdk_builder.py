@@ -8,7 +8,7 @@ import ssl
 from dataclasses import dataclass
 from pathlib import Path
 
-import httpx
+import httpx2 as httpx
 
 from otdf_python.kas_allowlist import KASAllowlist
 from otdf_python.sdk import KAS, SDK

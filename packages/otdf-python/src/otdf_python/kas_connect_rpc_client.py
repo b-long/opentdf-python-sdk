@@ -4,7 +4,7 @@ This class encapsulates all interactions with otdf_python_proto.
 
 import logging
 
-import httpx
+import pyqwest
 from otdf_python_proto.kas import kas_pb2
 from otdf_python_proto.kas.kas_connect import AccessServiceClientSync
 
@@ -26,6 +26,7 @@ class KASConnectRPCClient:
         """
         self.use_plaintext = use_plaintext
         self.verify_ssl = verify_ssl
+        self._transport = None
         self._http_client = None
 
     def __enter__(self):
@@ -38,35 +39,41 @@ class KASConnectRPCClient:
         self.close()
 
     def close(self):
-        """Close HTTP client and release resources.
-
-        This method should be called when the client is no longer needed
-        to properly clean up resources. It's also called automatically
-        when using the client as a context manager.
-        """
-        if self._http_client is not None:
-            self._http_client.close()
-            self._http_client = None
+        """Close HTTP client and release resources."""
+        if self._transport is not None:
+            self._transport.close()
+            self._transport = None
+        self._http_client = None
 
     def _create_http_client(self):
-        """Create HTTP client with SSL verification configuration.
+        """Create HTTP client backed by a pyqwest.SyncHTTPTransport.
+
+        Supports plaintext (HTTP) and TLS (HTTPS) connections.
+        Custom CA/cert data is not yet supported.
 
         Returns:
-            httpx.Client configured for SSL verification settings
+            pyqwest.SyncClient configured for the current settings
+
+        Raises:
+            NotImplementedError: If verify_ssl=False is requested, as pyqwest
+                does not support disabling TLS verification. Passing custom
+                TLS certificate or CA data is also not yet implemented.
 
         """
-        if self.verify_ssl:
-            logging.info("Using SSL verification enabled HTTP client")
-            return httpx.Client()
-        else:
-            logging.info("Using SSL verification disabled HTTP client")
-            return httpx.Client(verify=False)
+        if not self.verify_ssl and not self.use_plaintext:
+            raise NotImplementedError(
+                "verify_ssl=False is not supported for HTTPS connections: pyqwest "
+                "does not expose an option to disable TLS verification. Passing "
+                "custom TLS cert or CA data is also not yet implemented."
+            )
+        self._transport = pyqwest.SyncHTTPTransport()
+        return pyqwest.SyncClient(transport=self._transport)
 
     def _get_http_client(self):
         """Get HTTP client, creating one if needed for backward compatibility.
 
         Returns:
-            httpx.Client instance
+            pyqwest.SyncClient instance
 
         """
         if self._http_client is None:
@@ -136,12 +143,9 @@ class KASConnectRPCClient:
                 f"for public key retrieval"
             )
 
-            # Get or create HTTP client
             http_client = self._get_http_client()
-
-            # Create Connect RPC client with configured HTTP client
             client = AccessServiceClientSync(
-                address=connect_rpc_base_url, session=http_client
+                address=connect_rpc_base_url, http_client=http_client
             )
 
             # Create public key request
@@ -202,12 +206,9 @@ class KASConnectRPCClient:
                 f"Creating Connect RPC client for base URL: {kas_service_url}, for unwrap"
             )
 
-            # Get or create HTTP client
             http_client = self._get_http_client()
-
-            # Create Connect RPC client with configured HTTP client
             client = AccessServiceClientSync(
-                address=kas_service_url, session=http_client
+                address=kas_service_url, http_client=http_client
             )
 
             # Create rewrap request
@@ -215,7 +216,6 @@ class KASConnectRPCClient:
                 signed_request_token=signed_token,
             )
 
-            # Debug: Log the signed token details
             logging.info(f"Connect RPC signed token: {signed_token}")
 
             # Prepare headers with authentication if available

@@ -8,7 +8,6 @@ KAS URLs to steal OIDC credentials.
 import logging
 
 import pytest
-
 from otdf_python.kas_allowlist import KASAllowlist
 from otdf_python.kas_client import KASClient
 from otdf_python.sdk import SDK

@@ -5,7 +5,6 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from otdf_python.policy_object import PolicyObject
 from otdf_python.tdf_reader import (
     TDF_MANIFEST_FILE_NAME,

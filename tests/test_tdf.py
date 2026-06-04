@@ -5,10 +5,10 @@ import json
 import zipfile
 
 import pytest
-
 from otdf_python.config import KASInfo, TDFConfig
 from otdf_python.manifest import Manifest
 from otdf_python.tdf import TDF, TDFReaderConfig
+
 from tests.mock_crypto import generate_rsa_keypair
 
 

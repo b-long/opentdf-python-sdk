@@ -28,7 +28,7 @@ jobs:
 
       - name: Run linting (fail fast)
         run: |
-          uv sync --frozen
+          uv sync --frozen --all-groups
           uv run ruff check
           uv run ruff format --check
 
@@ -43,13 +43,12 @@ jobs:
         uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
-          cache-dependency-glob: "otdf-python-proto/uv.lock"
+          cache-dependency-glob: "uv.lock"
 
       - name: Run otdf-python-proto unit tests
-        working-directory: otdf-python-proto
         run: |
-          uv sync --frozen --group dev
-          uv run pytest --tb=short -v tests/
+          uv sync --frozen --all-groups
+          uv run --package otdf-python-proto pytest --tb=short -v packages/otdf-python-proto/tests/
 
   # Step 2b: Build (only after linting passes)
   build:
@@ -70,7 +69,7 @@ jobs:
       - name: Build otdf-python wheel using uv
         run: |
           uv sync --frozen
-          uv build
+          uv build --wheel --package otdf-python
         shell: bash
 
       - name: Find built wheel
@@ -101,7 +100,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          uv sync --frozen
+          uv sync --frozen --all-groups
           uv run pytest -m "not integration" --tb=short -v tests/
 
   # Step 4: Integration tests (only after unit tests pass)

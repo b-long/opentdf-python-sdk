@@ -5,7 +5,6 @@ import io
 import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
-
 from otdf_python.config import KASInfo, NanoTDFConfig
 from otdf_python.nanotdf import NanoTDF
 

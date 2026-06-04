@@ -1,75 +1,15 @@
-[project]
-name = "otdf-python"
-version = "0.6.0"
-description = "Unofficial OpenTDF SDK for Python"
-readme = "README.md"
-authors = [
-    { name = "b-long", email = "b-long@users.noreply.github.com" }
-]
-requires-python = ">=3.10"
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
-    "Programming Language :: Python :: 3 :: Only",
-    "Topic :: Security :: Cryptography",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Typing :: Typed",
-]
+[tool.uv]
+package = false
 
-dependencies = [
-    "cryptography>=45.0.4",
-    "connect-python>=0.6.0,<0.7",
-    "protoc-gen-connect-python>=0.6.0,<0.7",
-    "httpx>=0.28.1",
-    "protobuf>=6.31.1",
-    "pyjwt>=2.10.1",
-    "typing-extensions>=4.14.1",
-    # Legacy gRPC support (may be removed in future versions)
-    "grpcio>=1.74.0",
-    "grpcio-tools>=1.74.0",
-    "grpcio-status>=1.74.0",
-    "protoc-gen-openapiv2>=0.0.1",
-]
-
-[project.urls]
-Homepage = "https://github.com/b-long/opentdf-python-sdk"
-Repository = "https://github.com/b-long/opentdf-python-sdk"
-Issues = "https://github.com/b-long/opentdf-python-sdk/issues"
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.build.targets.wheel]
-packages = [
-    "src/otdf_python",
-    "otdf-python-proto/src/otdf_python_proto",
-]
-
-
-[dependency-groups]
-dev = [
-    "pydantic-settings>=2.10.1",
-    "pytest>=8.4.1",
-    "respx>=0.21.1",
-    "ruff>=0.12.10",
-    "tomli>=2.2.1 ; python_full_version < '3.11'",
-]
+[tool.uv.workspace]
+members = ["packages/otdf-python", "packages/otdf-python-proto"]
 
 [tool.pytest.ini_options]
 markers = [
     "integration: mark a test as an integration test."
 ]
 testpaths = ["tests"]
-norecursedirs = ["otdf-python-proto"]
+norecursedirs = ["packages/otdf-python-proto"]
 
 [tool.ruff]
 line-length = 88
@@ -102,14 +42,14 @@ lint.select = [
     "W",      # pycodestyle warnings
 ]
 # Ignore generated files
-extend-exclude = ["otdf-python-proto/src/"]
+extend-exclude = ["packages/otdf-python-proto/src/"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["D100", "D101", "D102", "D103", "D107", "D400", "D401", "D415"]
-"otdf-python-proto/**" = ["D"]  # Ignore all D (docstring) rules for generated proto files
+"packages/otdf-python-proto/**" = ["D"]  # Ignore all D (docstring) rules for generated proto files
 
 # TODO: Remaining work - 4 buckets to fix (140 errors remaining):
 # Bucket #1: D102 (missing method docstrings) - 98 errors
 # Bucket #2: D105 (missing magic method docstrings) - 23 errors
 # Bucket #3: D205 (blank line formatting), D103, D417, D104 - 19 errors
-"src/**" = ["D102", "D105", "D205"]
+"packages/otdf-python/src/**" = ["D102", "D105", "D205"]

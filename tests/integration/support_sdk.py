@@ -1,7 +1,7 @@
-import httpx
-
+import httpx2 as httpx
 from otdf_python.sdk import SDK
 from otdf_python.sdk_builder import SDKBuilder
+
 from tests.config_pydantic import CONFIG_TDF
 
 

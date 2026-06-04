@@ -1,7 +1,6 @@
 import unittest
 
 from cryptography.hazmat.primitives.asymmetric import ec
-
 from otdf_python.crypto_utils import CryptoUtils
 
 

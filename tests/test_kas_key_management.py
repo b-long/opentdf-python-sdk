@@ -6,7 +6,6 @@ import unittest
 from unittest.mock import Mock, patch
 
 import pytest
-
 from otdf_python.kas_client import KASClient, KeyAccess
 from otdf_python.key_type_constants import EC_KEY_TYPE, RSA_KEY_TYPE
 
@@ -22,41 +21,31 @@ class TestKASKeyManagement(unittest.TestCase):
         self.assertIsNone(client.decryptor)
         self.assertIsNone(client.client_public_key)
 
-        # Mock the HTTP response
-        with patch("httpx.post") as mock_post:
-            # Configure the mock
-            mock_response = Mock()
-            mock_response.status_code = 200
-            mock_response.json.return_value = {
-                "entityWrappedKey": base64.b64encode(os.urandom(32)).decode()
-            }
-            mock_post.return_value = mock_response
+        # Create a test key access
+        key_access = KeyAccess(
+            url="http://kas.example.com",
+            wrapped_key=base64.b64encode(os.urandom(32)).decode(),
+        )
 
-            # Create a test key access
-            key_access = KeyAccess(
-                url="http://kas.example.com",
-                wrapped_key=base64.b64encode(os.urandom(32)).decode(),
-            )
+        # Also patch the decrypt method to return a predictable value
+        with patch(
+            "otdf_python.asym_crypto.AsymDecryption.decrypt",
+            return_value=b"test_key",
+        ):
+            # Call unwrap
+            from contextlib import suppress
 
-            # Also patch the decrypt method to return a predictable value
-            with patch(
-                "otdf_python.asym_crypto.AsymDecryption.decrypt",
-                return_value=b"test_key",
-            ):
-                # Call unwrap
-                from contextlib import suppress
+            with suppress(Exception):
+                # We expect an exception because we're not actually unwrapping a valid key
+                client.unwrap(key_access, "{}", RSA_KEY_TYPE)
 
-                with suppress(Exception):
-                    # We expect an exception because we're not actually unwrapping a valid key
-                    client.unwrap(key_access, "{}", RSA_KEY_TYPE)
+            # After unwrap, decryptor should be created
+            self.assertIsNotNone(client.decryptor)
+            self.assertIsNotNone(client.client_public_key)
 
-                # After unwrap, decryptor should be created
-                self.assertIsNotNone(client.decryptor)
-                self.assertIsNotNone(client.client_public_key)
-
-                # The public key should be in PEM format
-                assert isinstance(client.client_public_key, str)
-                assert client.client_public_key.startswith("-----BEGIN PUBLIC KEY-----")
+            # The public key should be in PEM format
+            assert isinstance(client.client_public_key, str)
+            assert client.client_public_key.startswith("-----BEGIN PUBLIC KEY-----")
 
     @pytest.mark.skip(reason="Skipping 'test_ec_key_generation' until fixed")
     @pytest.mark.integration
