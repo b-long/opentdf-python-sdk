@@ -60,11 +60,11 @@ class KASConnectRPCClient:
                 TLS certificate or CA data is also not yet implemented.
 
         """
-        if not self.verify_ssl:
+        if not self.verify_ssl and not self.use_plaintext:
             raise NotImplementedError(
-                "verify_ssl=False is not supported: pyqwest does not expose an "
-                "option to disable TLS verification. Passing custom TLS cert or "
-                "CA data is also not yet implemented."
+                "verify_ssl=False is not supported for HTTPS connections: pyqwest "
+                "does not expose an option to disable TLS verification. Passing "
+                "custom TLS cert or CA data is also not yet implemented."
             )
         self._transport = pyqwest.SyncHTTPTransport()
         return pyqwest.SyncClient(transport=self._transport)
