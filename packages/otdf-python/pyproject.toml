@@ -55,7 +55,6 @@ packages = ["src/otdf_python"]
 dev = [
     "pydantic-settings>=2.10.1",
     "pytest>=8.4.1",
-    "respx>=0.21.1",
     "ruff>=0.12.10",
     "tomli>=2.2.1 ; python_version < '3.11'",
     "protoc-gen-connect-python>=0.6.0,<0.7",
