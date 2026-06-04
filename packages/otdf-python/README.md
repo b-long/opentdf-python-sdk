@@ -100,7 +100,7 @@ with open("decrypted.txt", "wb") as f:
 ## Project Structure
 
 ```
-src/otdf_python/
+packages/otdf-python/src/otdf_python/
 ├── sdk.py                  # Main SDK interface
 ├── config.py               # Configuration management
 ├── tdf.py                  # TDF format handling
