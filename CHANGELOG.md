@@ -5,19 +5,7 @@
 
 ### Bug Fixes
 
-* D205 docstrins & update to release-please-action@v5 ([#149](https://github.com/b-long/opentdf-python-sdk/issues/149)) ([951fa33](https://github.com/b-long/opentdf-python-sdk/commit/951fa33d541f4662c1b6ec8d5cccd08ab8e03b50))
-* fix/increase testing, fix misconfiguration ([#148](https://github.com/b-long/opentdf-python-sdk/issues/148)) ([1dc8c45](https://github.com/b-long/opentdf-python-sdk/commit/1dc8c4557bdcbcbf74b2f663c4e190664047cb7f))
-* **main:** fix release issue, required arguments from workspace root ([#147](https://github.com/b-long/opentdf-python-sdk/issues/147)) ([668f00a](https://github.com/b-long/opentdf-python-sdk/commit/668f00a083990b5cea686e5885216e0359ceaf55))
-* set changelog-path relative to package dir for root CHANGELOG.md ([d4932b3](https://github.com/b-long/opentdf-python-sdk/commit/d4932b3f6df9429c648b68918f2fd2d8cbed37e9))
-* use explicit jsonpath for otdf-python pyproject.toml version bump ([e11e229](https://github.com/b-long/opentdf-python-sdk/commit/e11e229f039c83f92821f0164a6afbb09daf076f))
-* use repo root as release-please package path for root CHANGELOG.md ([e033ed2](https://github.com/b-long/opentdf-python-sdk/commit/e033ed2a3704d0d3293f0cb71ec89c5892ca7689))
-
-## [0.7.2](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.7.1...otdf-python-v0.7.2) (TBD)
-
-
-### Bug Fixes
-
-* fix D205 docstring formatting across otdf-python source files ([#149](https://github.com/b-long/opentdf-python-sdk/issues/149)) ([c0910cb](https://github.com/b-long/opentdf-python-sdk/commit/c0910cbb599af4f05e1bb5ca5d130e85d39eb4fa))
+* fix D205 docstring formatting across otdf-python source files ([#149](https://github.com/b-long/opentdf-python-sdk/issues/149)) ([951fa33](https://github.com/b-long/opentdf-python-sdk/commit/951fa33d541f4662c1b6ec8d5cccd08ab8e03b50))
 * fix/increase testing, fix misconfiguration ([#148](https://github.com/b-long/opentdf-python-sdk/issues/148)) ([1dc8c45](https://github.com/b-long/opentdf-python-sdk/commit/1dc8c4557bdcbcbf74b2f663c4e190664047cb7f))
 * **main:** fix release issue, required arguments from workspace root ([#147](https://github.com/b-long/opentdf-python-sdk/issues/147)) ([668f00a](https://github.com/b-long/opentdf-python-sdk/commit/668f00a083990b5cea686e5885216e0359ceaf55))
 * use --package flag with uv version for workspace layout ([#144](https://github.com/b-long/opentdf-python-sdk/issues/144)) ([12acfbb](https://github.com/b-long/opentdf-python-sdk/commit/12acfbb4f8d99c8c745f35cbd7bddfc41e63b8b4))
@@ -34,7 +22,7 @@
 
 ### Features
 
-* **main:** update dependencies & switch to uv workspace layout ([#142](https://github.com/b-long/opentdf-python-sdk/issues/142)) ([649f63c](https://github.com/b-long/opentdf-python-sdk/commit/649f63ce4eee4b564b92afd3dbda2b3e3d55803e))
+* **main:** upgrade from `httpx` to `httpx2`, update other dependencies & switch to uv workspace layout ([#142](https://github.com/b-long/opentdf-python-sdk/issues/142)) ([649f63c](https://github.com/b-long/opentdf-python-sdk/commit/649f63ce4eee4b564b92afd3dbda2b3e3d55803e))
 
 ## [0.6.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.5.0...otdf-python-v0.6.0) (2026-05-21)
 
