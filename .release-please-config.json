@@ -6,7 +6,7 @@
     "packages/otdf-python": {
       "release-type": "python",
       "package-name": "otdf-python",
-      "changelog-path": "CHANGELOG.md",
+      "changelog-path": "../../CHANGELOG.md",
       "extra-files": [
         "packages/otdf-python/pyproject.toml",
         {
