@@ -48,8 +48,7 @@ extend-exclude = ["packages/otdf-python-proto/src/"]
 "tests/**" = ["D100", "D101", "D102", "D103", "D107", "D400", "D401", "D415"]
 "packages/otdf-python-proto/**" = ["D"]  # Ignore all D (docstring) rules for generated proto files
 
-# TODO: Remaining work - 4 buckets to fix (140 errors remaining):
+# TODO: Remaining work
 # Bucket #1: D102 (missing method docstrings) - 98 errors
 # Bucket #2: D105 (missing magic method docstrings) - 23 errors
-# Bucket #3: D205 (blank line formatting), D103, D417, D104 - 19 errors
-"packages/otdf-python/src/**" = ["D102", "D105", "D205"]
+"packages/otdf-python/src/**" = ["D102", "D105"]

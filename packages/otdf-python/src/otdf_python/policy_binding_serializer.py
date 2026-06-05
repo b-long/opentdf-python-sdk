@@ -18,6 +18,7 @@ class PolicyBinding:
 
 class PolicyBindingSerializer:
     """Handles serialization and deserialization of policy bindings.
+
     This class provides static methods to convert between JSON representations
     and PolicyBinding objects.
     """

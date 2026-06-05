@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v4
 
       # Release-please for develop branch (creates alpha prereleases)
-      - uses: googleapis/release-please-action@v4
+      - uses: googleapis/release-please-action@v5
         if: github.ref == 'refs/heads/develop'
         id: release-develop
         with:
@@ -37,7 +37,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       # Release-please for main branch (creates stable releases)
-      - uses: googleapis/release-please-action@v4
+      - uses: googleapis/release-please-action@v5
         if: github.ref == 'refs/heads/main'
         id: release-main
         with:

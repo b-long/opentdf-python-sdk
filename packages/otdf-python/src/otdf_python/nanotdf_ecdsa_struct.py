@@ -68,6 +68,7 @@ class NanoTDFECDSAStruct:
 
     def as_bytes(self) -> bytes:
         """Convert the signature structure to bytes.
+
         Raises ValueError if r_value or s_value is None.
         """
         if self.r_value is None or self.s_value is None:

@@ -12,6 +12,7 @@ TDF_PAYLOAD_FILE_NAME = "0.payload"
 
 class TDFReader:
     """TDFReader is responsible for reading and processing Trusted Data Format (TDF) files.
+
     The class initializes with a TDF file channel, extracts the manifest and payload entries,
     and provides methods to retrieve the manifest content, read payload bytes, and read policy objects.
     """

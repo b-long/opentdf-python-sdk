@@ -6,6 +6,7 @@ from dataclasses import dataclass
 @dataclass
 class KASInfo:
     """Configuration for Key Access Server (KAS) information.
+
     This class stores details about a Key Access Server including its URL,
     public key, key ID, default status, and cryptographic algorithm.
     """

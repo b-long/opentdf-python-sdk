@@ -362,6 +362,7 @@ class KASClient:
         self, policy_json, client_public_key, key_access, session_key_type=None
     ):
         """Create a signed JWT for the rewrap request.
+
         The JWT is signed with the DPoP private key.
 
         Args:
@@ -400,6 +401,7 @@ class KASClient:
 
     def _create_connect_rpc_signed_token(self, key_access, policy_json):
         """Create a signed token specifically for Connect RPC requests.
+
         For now, this delegates to the existing JWT creation method.
         """
         return self._create_signed_request_jwt(
@@ -469,6 +471,7 @@ class KASClient:
 
     def get_public_key(self, kas_info):
         """Get KAS public key using Connect RPC.
+
         Checks cache first if available.
         """
         try:
@@ -569,6 +572,7 @@ class KASClient:
 
     def _prepare_rsa_keypair(self):
         """Prepare RSA key pair for unwrapping, reusing if possible.
+
         Uses separate ephemeral keys for encryption (not DPoP keys).
 
         Returns:

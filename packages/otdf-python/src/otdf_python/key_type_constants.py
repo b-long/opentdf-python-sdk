@@ -1,4 +1,5 @@
 """Constants for session key types used in the KAS client.
+
 This matches the Java SDK's KeyType enum pattern.
 """
 

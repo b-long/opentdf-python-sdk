@@ -15,6 +15,7 @@ class KAS(AbstractContextManager):
 
     def get_public_key(self, kas_info: Any) -> Any:
         """Retrieve the public key from KAS for RSA operations.
+
         If the public key is cached, returns the cached value.
         Otherwise, makes a request to the KAS.
 
@@ -217,6 +218,7 @@ class SDK(AbstractContextManager):
 
         def kas(self) -> KAS:
             """Return the KAS client for key access operations.
+
             This should be implemented to return an instance of KAS.
             """
             raise NotImplementedError
