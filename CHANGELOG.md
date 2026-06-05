@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.3](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.7.2...otdf-python-v0.7.3) (2026-06-05)
+
+
+### Bug Fixes
+
+* build wheel directly from source to resolve proto force-include path ([e08b72b](https://github.com/b-long/opentdf-python-sdk/commit/e08b72b4b1610c0ac20f939578a10af737122ade))
+
 ## [0.7.2](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.7.1...otdf-python-v0.7.2) (2026-06-05)
 
 
