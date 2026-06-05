@@ -8,7 +8,11 @@
       "package-name": "otdf-python",
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
-        "packages/otdf-python/pyproject.toml",
+        {
+          "path": "packages/otdf-python/pyproject.toml",
+          "type": "toml",
+          "jsonpath": "$.project.version"
+        },
         {
           "path": "uv.lock",
           "type": "toml",
