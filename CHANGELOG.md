@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.2](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.7.1...otdf-python-v0.7.2) (2026-06-05)
+
+
+### Bug Fixes
+
+* D205 docstrins & update to release-please-action@v5 ([#149](https://github.com/b-long/opentdf-python-sdk/issues/149)) ([951fa33](https://github.com/b-long/opentdf-python-sdk/commit/951fa33d541f4662c1b6ec8d5cccd08ab8e03b50))
+* fix/increase testing, fix misconfiguration ([#148](https://github.com/b-long/opentdf-python-sdk/issues/148)) ([1dc8c45](https://github.com/b-long/opentdf-python-sdk/commit/1dc8c4557bdcbcbf74b2f663c4e190664047cb7f))
+* **main:** fix release issue, required arguments from workspace root ([#147](https://github.com/b-long/opentdf-python-sdk/issues/147)) ([668f00a](https://github.com/b-long/opentdf-python-sdk/commit/668f00a083990b5cea686e5885216e0359ceaf55))
+* set changelog-path relative to package dir for root CHANGELOG.md ([d4932b3](https://github.com/b-long/opentdf-python-sdk/commit/d4932b3f6df9429c648b68918f2fd2d8cbed37e9))
+* use explicit jsonpath for otdf-python pyproject.toml version bump ([e11e229](https://github.com/b-long/opentdf-python-sdk/commit/e11e229f039c83f92821f0164a6afbb09daf076f))
+* use repo root as release-please package path for root CHANGELOG.md ([e033ed2](https://github.com/b-long/opentdf-python-sdk/commit/e033ed2a3704d0d3293f0cb71ec89c5892ca7689))
+
 ## [0.7.2](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.7.1...otdf-python-v0.7.2) (TBD)
 
 
