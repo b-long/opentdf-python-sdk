@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.7.2](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.7.1...otdf-python-v0.7.2) (TBD)
+
+
+### Bug Fixes
+
+* fix D205 docstring formatting across otdf-python source files ([#149](https://github.com/b-long/opentdf-python-sdk/issues/149)) ([c0910cb](https://github.com/b-long/opentdf-python-sdk/commit/c0910cbb599af4f05e1bb5ca5d130e85d39eb4fa))
+* fix/increase testing, fix misconfiguration ([#148](https://github.com/b-long/opentdf-python-sdk/issues/148)) ([1dc8c45](https://github.com/b-long/opentdf-python-sdk/commit/1dc8c4557bdcbcbf74b2f663c4e190664047cb7f))
+* **main:** fix release issue, required arguments from workspace root ([#147](https://github.com/b-long/opentdf-python-sdk/issues/147)) ([668f00a](https://github.com/b-long/opentdf-python-sdk/commit/668f00a083990b5cea686e5885216e0359ceaf55))
+* use --package flag with uv version for workspace layout ([#144](https://github.com/b-long/opentdf-python-sdk/issues/144)) ([12acfbb](https://github.com/b-long/opentdf-python-sdk/commit/12acfbb4f8d99c8c745f35cbd7bddfc41e63b8b4))
+
+## [0.7.1](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.7.0...otdf-python-v0.7.1) (2026-06-04)
+
+
+### Documentation
+
+* fix project structure path in README ([#145](https://github.com/b-long/opentdf-python-sdk/issues/145)) ([c10f98b](https://github.com/b-long/opentdf-python-sdk/commit/c10f98bb67e823a8bd061c8100d8493d2083699f))
+
+## [0.7.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.6.0...otdf-python-v0.7.0) (2026-06-04)
+
+
+### Features
+
+* **main:** update dependencies & switch to uv workspace layout ([#142](https://github.com/b-long/opentdf-python-sdk/issues/142)) ([649f63c](https://github.com/b-long/opentdf-python-sdk/commit/649f63ce4eee4b564b92afd3dbda2b3e3d55803e))
+
 ## [0.6.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.5.0...otdf-python-v0.6.0) (2026-05-21)
 
 
