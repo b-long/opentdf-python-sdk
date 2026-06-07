@@ -94,6 +94,11 @@ class ServiceStub(object):
                 request_serializer=policy_dot_obligations_dot_obligations__pb2.DeleteObligationValueRequest.SerializeToString,
                 response_deserializer=policy_dot_obligations_dot_obligations__pb2.DeleteObligationValueResponse.FromString,
                 _registered_method=True)
+        self.GetObligationTrigger = channel.unary_unary(
+                '/policy.obligations.Service/GetObligationTrigger',
+                request_serializer=policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerRequest.SerializeToString,
+                response_deserializer=policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerResponse.FromString,
+                _registered_method=True)
         self.AddObligationTrigger = channel.unary_unary(
                 '/policy.obligations.Service/AddObligationTrigger',
                 request_serializer=policy_dot_obligations_dot_obligations__pb2.AddObligationTriggerRequest.SerializeToString,
@@ -213,12 +218,18 @@ class ServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def AddObligationTrigger(self, request, context):
+    def GetObligationTrigger(self, request, context):
         """--------------------------------------*
         Trigger RPCs
         --------------------------------------
 
         """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AddObligationTrigger(self, request, context):
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -292,6 +303,11 @@ def add_ServiceServicer_to_server(servicer, server):
                     servicer.DeleteObligationValue,
                     request_deserializer=policy_dot_obligations_dot_obligations__pb2.DeleteObligationValueRequest.FromString,
                     response_serializer=policy_dot_obligations_dot_obligations__pb2.DeleteObligationValueResponse.SerializeToString,
+            ),
+            'GetObligationTrigger': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetObligationTrigger,
+                    request_deserializer=policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerRequest.FromString,
+                    response_serializer=policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerResponse.SerializeToString,
             ),
             'AddObligationTrigger': grpc.unary_unary_rpc_method_handler(
                     servicer.AddObligationTrigger,
@@ -631,6 +647,33 @@ class Service(object):
             '/policy.obligations.Service/DeleteObligationValue',
             policy_dot_obligations_dot_obligations__pb2.DeleteObligationValueRequest.SerializeToString,
             policy_dot_obligations_dot_obligations__pb2.DeleteObligationValueResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetObligationTrigger(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/policy.obligations.Service/GetObligationTrigger',
+            policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerRequest.SerializeToString,
+            policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerResponse.FromString,
             options,
             channel_credentials,
             insecure,

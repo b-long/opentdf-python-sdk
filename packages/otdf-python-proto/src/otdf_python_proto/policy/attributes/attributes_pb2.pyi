@@ -5,12 +5,24 @@ from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from policy import objects_pb2 as _objects_pb2
 from policy import selectors_pb2 as _selectors_pb2
 from google.protobuf.internal import containers as _containers
+from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from collections.abc import Iterable as _Iterable, Mapping as _Mapping
 from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
+
+class SortAttributesType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    SORT_ATTRIBUTES_TYPE_UNSPECIFIED: _ClassVar[SortAttributesType]
+    SORT_ATTRIBUTES_TYPE_NAME: _ClassVar[SortAttributesType]
+    SORT_ATTRIBUTES_TYPE_CREATED_AT: _ClassVar[SortAttributesType]
+    SORT_ATTRIBUTES_TYPE_UPDATED_AT: _ClassVar[SortAttributesType]
+SORT_ATTRIBUTES_TYPE_UNSPECIFIED: SortAttributesType
+SORT_ATTRIBUTES_TYPE_NAME: SortAttributesType
+SORT_ATTRIBUTES_TYPE_CREATED_AT: SortAttributesType
+SORT_ATTRIBUTES_TYPE_UPDATED_AT: SortAttributesType
 
 class AttributeKeyAccessServer(_message.Message):
     __slots__ = ("attribute_id", "key_access_server_id")
@@ -44,15 +56,25 @@ class ValueKey(_message.Message):
     key_id: str
     def __init__(self, value_id: _Optional[str] = ..., key_id: _Optional[str] = ...) -> None: ...
 
+class AttributesSort(_message.Message):
+    __slots__ = ("field", "direction")
+    FIELD_FIELD_NUMBER: _ClassVar[int]
+    DIRECTION_FIELD_NUMBER: _ClassVar[int]
+    field: SortAttributesType
+    direction: _selectors_pb2.SortDirection
+    def __init__(self, field: _Optional[_Union[SortAttributesType, str]] = ..., direction: _Optional[_Union[_selectors_pb2.SortDirection, str]] = ...) -> None: ...
+
 class ListAttributesRequest(_message.Message):
-    __slots__ = ("state", "namespace", "pagination")
+    __slots__ = ("state", "namespace", "pagination", "sort")
     STATE_FIELD_NUMBER: _ClassVar[int]
     NAMESPACE_FIELD_NUMBER: _ClassVar[int]
     PAGINATION_FIELD_NUMBER: _ClassVar[int]
+    SORT_FIELD_NUMBER: _ClassVar[int]
     state: _common_pb2.ActiveStateEnum
     namespace: str
     pagination: _selectors_pb2.PageRequest
-    def __init__(self, state: _Optional[_Union[_common_pb2.ActiveStateEnum, str]] = ..., namespace: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ...) -> None: ...
+    sort: _containers.RepeatedCompositeFieldContainer[AttributesSort]
+    def __init__(self, state: _Optional[_Union[_common_pb2.ActiveStateEnum, str]] = ..., namespace: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[AttributesSort, _Mapping]]] = ...) -> None: ...
 
 class ListAttributesResponse(_message.Message):
     __slots__ = ("attributes", "pagination")

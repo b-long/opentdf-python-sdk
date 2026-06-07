@@ -137,7 +137,7 @@ class KeyProviderConfig(_message.Message):
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., config_json: _Optional[bytes] = ..., manager: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
 
 class Namespace(_message.Message):
-    __slots__ = ("id", "name", "fqn", "active", "metadata", "grants", "kas_keys", "root_certs")
+    __slots__ = ("id", "name", "fqn", "active", "metadata", "grants", "kas_keys")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     FQN_FIELD_NUMBER: _ClassVar[int]
@@ -145,7 +145,6 @@ class Namespace(_message.Message):
     METADATA_FIELD_NUMBER: _ClassVar[int]
     GRANTS_FIELD_NUMBER: _ClassVar[int]
     KAS_KEYS_FIELD_NUMBER: _ClassVar[int]
-    ROOT_CERTS_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
     fqn: str
@@ -153,18 +152,7 @@ class Namespace(_message.Message):
     metadata: _common_pb2.Metadata
     grants: _containers.RepeatedCompositeFieldContainer[KeyAccessServer]
     kas_keys: _containers.RepeatedCompositeFieldContainer[SimpleKasKey]
-    root_certs: _containers.RepeatedCompositeFieldContainer[Certificate]
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., fqn: _Optional[str] = ..., active: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ..., grants: _Optional[_Iterable[_Union[KeyAccessServer, _Mapping]]] = ..., kas_keys: _Optional[_Iterable[_Union[SimpleKasKey, _Mapping]]] = ..., root_certs: _Optional[_Iterable[_Union[Certificate, _Mapping]]] = ...) -> None: ...
-
-class Certificate(_message.Message):
-    __slots__ = ("id", "pem", "metadata")
-    ID_FIELD_NUMBER: _ClassVar[int]
-    PEM_FIELD_NUMBER: _ClassVar[int]
-    METADATA_FIELD_NUMBER: _ClassVar[int]
-    id: str
-    pem: str
-    metadata: _common_pb2.Metadata
-    def __init__(self, id: _Optional[str] = ..., pem: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., fqn: _Optional[str] = ..., active: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ..., grants: _Optional[_Iterable[_Union[KeyAccessServer, _Mapping]]] = ..., kas_keys: _Optional[_Iterable[_Union[SimpleKasKey, _Mapping]]] = ...) -> None: ...
 
 class Attribute(_message.Message):
     __slots__ = ("id", "namespace", "name", "rule", "values", "grants", "fqn", "active", "kas_keys", "allow_traversal", "metadata")
@@ -219,7 +207,7 @@ class Value(_message.Message):
     def __init__(self, id: _Optional[str] = ..., attribute: _Optional[_Union[Attribute, _Mapping]] = ..., value: _Optional[str] = ..., grants: _Optional[_Iterable[_Union[KeyAccessServer, _Mapping]]] = ..., fqn: _Optional[str] = ..., active: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ..., subject_mappings: _Optional[_Iterable[_Union[SubjectMapping, _Mapping]]] = ..., kas_keys: _Optional[_Iterable[_Union[SimpleKasKey, _Mapping]]] = ..., resource_mappings: _Optional[_Iterable[_Union[ResourceMapping, _Mapping]]] = ..., obligations: _Optional[_Iterable[_Union[Obligation, _Mapping]]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
 
 class Action(_message.Message):
-    __slots__ = ("id", "standard", "custom", "name", "metadata")
+    __slots__ = ("id", "standard", "custom", "name", "namespace", "metadata")
     class StandardAction(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
         __slots__ = ()
         STANDARD_ACTION_UNSPECIFIED: _ClassVar[Action.StandardAction]
@@ -232,27 +220,31 @@ class Action(_message.Message):
     STANDARD_FIELD_NUMBER: _ClassVar[int]
     CUSTOM_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     id: str
     standard: Action.StandardAction
     custom: str
     name: str
+    namespace: Namespace
     metadata: _common_pb2.Metadata
-    def __init__(self, id: _Optional[str] = ..., standard: _Optional[_Union[Action.StandardAction, str]] = ..., custom: _Optional[str] = ..., name: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., standard: _Optional[_Union[Action.StandardAction, str]] = ..., custom: _Optional[str] = ..., name: _Optional[str] = ..., namespace: _Optional[_Union[Namespace, _Mapping]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
 
 class SubjectMapping(_message.Message):
-    __slots__ = ("id", "attribute_value", "subject_condition_set", "actions", "metadata")
+    __slots__ = ("id", "attribute_value", "subject_condition_set", "actions", "namespace", "metadata")
     ID_FIELD_NUMBER: _ClassVar[int]
     ATTRIBUTE_VALUE_FIELD_NUMBER: _ClassVar[int]
     SUBJECT_CONDITION_SET_FIELD_NUMBER: _ClassVar[int]
     ACTIONS_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     id: str
     attribute_value: Value
     subject_condition_set: SubjectConditionSet
     actions: _containers.RepeatedCompositeFieldContainer[Action]
+    namespace: Namespace
     metadata: _common_pb2.Metadata
-    def __init__(self, id: _Optional[str] = ..., attribute_value: _Optional[_Union[Value, _Mapping]] = ..., subject_condition_set: _Optional[_Union[SubjectConditionSet, _Mapping]] = ..., actions: _Optional[_Iterable[_Union[Action, _Mapping]]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., attribute_value: _Optional[_Union[Value, _Mapping]] = ..., subject_condition_set: _Optional[_Union[SubjectConditionSet, _Mapping]] = ..., actions: _Optional[_Iterable[_Union[Action, _Mapping]]] = ..., namespace: _Optional[_Union[Namespace, _Mapping]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
 
 class Condition(_message.Message):
     __slots__ = ("subject_external_selector_value", "operator", "subject_external_values")
@@ -279,14 +271,16 @@ class SubjectSet(_message.Message):
     def __init__(self, condition_groups: _Optional[_Iterable[_Union[ConditionGroup, _Mapping]]] = ...) -> None: ...
 
 class SubjectConditionSet(_message.Message):
-    __slots__ = ("id", "subject_sets", "metadata")
+    __slots__ = ("id", "namespace", "subject_sets", "metadata")
     ID_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FIELD_NUMBER: _ClassVar[int]
     SUBJECT_SETS_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     id: str
+    namespace: Namespace
     subject_sets: _containers.RepeatedCompositeFieldContainer[SubjectSet]
     metadata: _common_pb2.Metadata
-    def __init__(self, id: _Optional[str] = ..., subject_sets: _Optional[_Iterable[_Union[SubjectSet, _Mapping]]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., namespace: _Optional[_Union[Namespace, _Mapping]] = ..., subject_sets: _Optional[_Iterable[_Union[SubjectSet, _Mapping]]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
 
 class SubjectProperty(_message.Message):
     __slots__ = ("external_selector_value", "external_value")
@@ -381,16 +375,18 @@ class PublicKey(_message.Message):
     def __init__(self, remote: _Optional[str] = ..., cached: _Optional[_Union[KasPublicKeySet, _Mapping]] = ...) -> None: ...
 
 class RegisteredResource(_message.Message):
-    __slots__ = ("id", "name", "values", "metadata")
+    __slots__ = ("id", "name", "values", "namespace", "metadata")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     VALUES_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
     values: _containers.RepeatedCompositeFieldContainer[RegisteredResourceValue]
+    namespace: Namespace
     metadata: _common_pb2.Metadata
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., values: _Optional[_Iterable[_Union[RegisteredResourceValue, _Mapping]]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., values: _Optional[_Iterable[_Union[RegisteredResourceValue, _Mapping]]] = ..., namespace: _Optional[_Union[Namespace, _Mapping]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
 
 class RegisteredResourceValue(_message.Message):
     __slots__ = ("id", "value", "resource", "action_attribute_values", "metadata")

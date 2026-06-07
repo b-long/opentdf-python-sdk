@@ -11,12 +11,16 @@ from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class GetActionRequest(_message.Message):
-    __slots__ = ("id", "name")
+    __slots__ = ("id", "name", "namespace_id", "namespace_fqn")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ...) -> None: ...
+    namespace_id: str
+    namespace_fqn: str
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ...) -> None: ...
 
 class GetActionResponse(_message.Message):
     __slots__ = ("action", "subject_mappings")
@@ -27,10 +31,14 @@ class GetActionResponse(_message.Message):
     def __init__(self, action: _Optional[_Union[_objects_pb2.Action, _Mapping]] = ..., subject_mappings: _Optional[_Iterable[_Union[_objects_pb2.SubjectMapping, _Mapping]]] = ...) -> None: ...
 
 class ListActionsRequest(_message.Message):
-    __slots__ = ("pagination",)
+    __slots__ = ("namespace_id", "namespace_fqn", "pagination")
+    NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
     PAGINATION_FIELD_NUMBER: _ClassVar[int]
+    namespace_id: str
+    namespace_fqn: str
     pagination: _selectors_pb2.PageRequest
-    def __init__(self, pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ...) -> None: ...
+    def __init__(self, namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ...) -> None: ...
 
 class ListActionsResponse(_message.Message):
     __slots__ = ("actions_standard", "actions_custom", "pagination")
@@ -43,12 +51,16 @@ class ListActionsResponse(_message.Message):
     def __init__(self, actions_standard: _Optional[_Iterable[_Union[_objects_pb2.Action, _Mapping]]] = ..., actions_custom: _Optional[_Iterable[_Union[_objects_pb2.Action, _Mapping]]] = ..., pagination: _Optional[_Union[_selectors_pb2.PageResponse, _Mapping]] = ...) -> None: ...
 
 class CreateActionRequest(_message.Message):
-    __slots__ = ("name", "metadata")
+    __slots__ = ("name", "namespace_id", "namespace_fqn", "metadata")
     NAME_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     name: str
+    namespace_id: str
+    namespace_fqn: str
     metadata: _common_pb2.MetadataMutable
-    def __init__(self, name: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
+    def __init__(self, name: _Optional[str] = ..., namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
 
 class CreateActionResponse(_message.Message):
     __slots__ = ("action",)

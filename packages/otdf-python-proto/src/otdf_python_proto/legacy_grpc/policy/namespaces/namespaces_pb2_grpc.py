@@ -59,16 +59,6 @@ class NamespaceServiceStub(object):
                 request_serializer=policy_dot_namespaces_dot_namespaces__pb2.RemovePublicKeyFromNamespaceRequest.SerializeToString,
                 response_deserializer=policy_dot_namespaces_dot_namespaces__pb2.RemovePublicKeyFromNamespaceResponse.FromString,
                 _registered_method=True)
-        self.AssignCertificateToNamespace = channel.unary_unary(
-                '/policy.namespaces.NamespaceService/AssignCertificateToNamespace',
-                request_serializer=policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceRequest.SerializeToString,
-                response_deserializer=policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceResponse.FromString,
-                _registered_method=True)
-        self.RemoveCertificateFromNamespace = channel.unary_unary(
-                '/policy.namespaces.NamespaceService/RemoveCertificateFromNamespace',
-                request_serializer=policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceRequest.SerializeToString,
-                response_deserializer=policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceResponse.FromString,
-                _registered_method=True)
 
 
 class NamespaceServiceServicer(object):
@@ -137,19 +127,6 @@ class NamespaceServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def AssignCertificateToNamespace(self, request, context):
-        """Namespace <> Certificate RPCs
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def RemoveCertificateFromNamespace(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
 
 def add_NamespaceServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -197,16 +174,6 @@ def add_NamespaceServiceServicer_to_server(servicer, server):
                     servicer.RemovePublicKeyFromNamespace,
                     request_deserializer=policy_dot_namespaces_dot_namespaces__pb2.RemovePublicKeyFromNamespaceRequest.FromString,
                     response_serializer=policy_dot_namespaces_dot_namespaces__pb2.RemovePublicKeyFromNamespaceResponse.SerializeToString,
-            ),
-            'AssignCertificateToNamespace': grpc.unary_unary_rpc_method_handler(
-                    servicer.AssignCertificateToNamespace,
-                    request_deserializer=policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceRequest.FromString,
-                    response_serializer=policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceResponse.SerializeToString,
-            ),
-            'RemoveCertificateFromNamespace': grpc.unary_unary_rpc_method_handler(
-                    servicer.RemoveCertificateFromNamespace,
-                    request_deserializer=policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceRequest.FromString,
-                    response_serializer=policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -452,60 +419,6 @@ class NamespaceService(object):
             '/policy.namespaces.NamespaceService/RemovePublicKeyFromNamespace',
             policy_dot_namespaces_dot_namespaces__pb2.RemovePublicKeyFromNamespaceRequest.SerializeToString,
             policy_dot_namespaces_dot_namespaces__pb2.RemovePublicKeyFromNamespaceResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def AssignCertificateToNamespace(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/policy.namespaces.NamespaceService/AssignCertificateToNamespace',
-            policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceRequest.SerializeToString,
-            policy_dot_namespaces_dot_namespaces__pb2.AssignCertificateToNamespaceResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def RemoveCertificateFromNamespace(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/policy.namespaces.NamespaceService/RemoveCertificateFromNamespace',
-            policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceRequest.SerializeToString,
-            policy_dot_namespaces_dot_namespaces__pb2.RemoveCertificateFromNamespaceResponse.FromString,
             options,
             channel_credentials,
             insecure,
