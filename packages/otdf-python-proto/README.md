@@ -29,13 +29,14 @@ See [CONNECT_RPC.md](../docs/CONNECT_RPC.md) for additional information.
 To generate Connect RPC clients and protobuf files:
 
 ```bash
-cd otdf-python-proto
+cd packages/otdf-python-proto
 uv run python scripts/generate_connect_proto.py
 ```
 
 Or use the convenience script:
 
 ```bash
+cd packages/otdf-python-proto
 ./scripts/build_connect_proto.sh
 ```
 
@@ -50,13 +51,14 @@ This generates:
 To generate traditional gRPC clients (backward compatibility):
 
 ```bash
-cd otdf-python-proto
+cd packages/otdf-python-proto
 uv run python scripts/generate_proto.py
 ```
 
 Or use the legacy script:
 
 ```bash
+cd packages/otdf-python-proto
 ./scripts/build_proto.sh
 ```
 
@@ -65,7 +67,7 @@ Or use the legacy script:
 To download the latest proto files from OpenTDF platform:
 
 ```bash
-cd otdf-python-proto
+cd packages/otdf-python-proto
 uv run python scripts/generate_connect_proto.py --download
 ```
 
@@ -159,7 +161,7 @@ response = client.GetPolicy(request)
 If you're migrating from traditional gRPC clients to Connect RPC:
 
 1. Read the [Connect RPC Migration Guide](../docs/CONNECT_RPC.md)
-2. Run the Connect RPC generation: `./scripts/build_connect_proto.sh` (or from the submodule: `cd otdf-python-proto && uv run python scripts/generate_connect_proto.py`)
+2. Run the Connect RPC generation: `cd packages/otdf-python-proto && ./scripts/build_connect_proto.sh` (or: `cd packages/otdf-python-proto && uv run python scripts/generate_connect_proto.py`)
 3. Update your client code to use `*_connect.py` modules
 4. Test with your authentication and deployment setup
 5. Optionally remove legacy gRPC dependencies
