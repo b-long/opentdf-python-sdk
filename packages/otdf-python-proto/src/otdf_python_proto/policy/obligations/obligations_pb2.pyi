@@ -3,12 +3,34 @@ from policy import objects_pb2 as _objects_pb2
 from policy import selectors_pb2 as _selectors_pb2
 from buf.validate import validate_pb2 as _validate_pb2
 from google.protobuf.internal import containers as _containers
+from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from collections.abc import Iterable as _Iterable, Mapping as _Mapping
 from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
+
+class SortObligationsType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    SORT_OBLIGATIONS_TYPE_UNSPECIFIED: _ClassVar[SortObligationsType]
+    SORT_OBLIGATIONS_TYPE_NAME: _ClassVar[SortObligationsType]
+    SORT_OBLIGATIONS_TYPE_FQN: _ClassVar[SortObligationsType]
+    SORT_OBLIGATIONS_TYPE_CREATED_AT: _ClassVar[SortObligationsType]
+    SORT_OBLIGATIONS_TYPE_UPDATED_AT: _ClassVar[SortObligationsType]
+SORT_OBLIGATIONS_TYPE_UNSPECIFIED: SortObligationsType
+SORT_OBLIGATIONS_TYPE_NAME: SortObligationsType
+SORT_OBLIGATIONS_TYPE_FQN: SortObligationsType
+SORT_OBLIGATIONS_TYPE_CREATED_AT: SortObligationsType
+SORT_OBLIGATIONS_TYPE_UPDATED_AT: SortObligationsType
+
+class ObligationsSort(_message.Message):
+    __slots__ = ("field", "direction")
+    FIELD_FIELD_NUMBER: _ClassVar[int]
+    DIRECTION_FIELD_NUMBER: _ClassVar[int]
+    field: SortObligationsType
+    direction: _selectors_pb2.SortDirection
+    def __init__(self, field: _Optional[_Union[SortObligationsType, str]] = ..., direction: _Optional[_Union[_selectors_pb2.SortDirection, str]] = ...) -> None: ...
 
 class GetObligationRequest(_message.Message):
     __slots__ = ("id", "fqn")
@@ -106,14 +128,16 @@ class DeleteObligationResponse(_message.Message):
     def __init__(self, obligation: _Optional[_Union[_objects_pb2.Obligation, _Mapping]] = ...) -> None: ...
 
 class ListObligationsRequest(_message.Message):
-    __slots__ = ("namespace_id", "namespace_fqn", "pagination")
+    __slots__ = ("namespace_id", "namespace_fqn", "pagination", "sort")
     NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
     NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
     PAGINATION_FIELD_NUMBER: _ClassVar[int]
+    SORT_FIELD_NUMBER: _ClassVar[int]
     namespace_id: str
     namespace_fqn: str
     pagination: _selectors_pb2.PageRequest
-    def __init__(self, namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ...) -> None: ...
+    sort: _containers.RepeatedCompositeFieldContainer[ObligationsSort]
+    def __init__(self, namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[ObligationsSort, _Mapping]]] = ...) -> None: ...
 
 class ListObligationsResponse(_message.Message):
     __slots__ = ("obligations", "pagination")
@@ -209,6 +233,18 @@ class DeleteObligationValueResponse(_message.Message):
     VALUE_FIELD_NUMBER: _ClassVar[int]
     value: _objects_pb2.ObligationValue
     def __init__(self, value: _Optional[_Union[_objects_pb2.ObligationValue, _Mapping]] = ...) -> None: ...
+
+class GetObligationTriggerRequest(_message.Message):
+    __slots__ = ("id",)
+    ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    def __init__(self, id: _Optional[str] = ...) -> None: ...
+
+class GetObligationTriggerResponse(_message.Message):
+    __slots__ = ("trigger",)
+    TRIGGER_FIELD_NUMBER: _ClassVar[int]
+    trigger: _objects_pb2.ObligationTrigger
+    def __init__(self, trigger: _Optional[_Union[_objects_pb2.ObligationTrigger, _Mapping]] = ...) -> None: ...
 
 class AddObligationTriggerRequest(_message.Message):
     __slots__ = ("obligation_value", "action", "attribute_value", "context", "metadata")

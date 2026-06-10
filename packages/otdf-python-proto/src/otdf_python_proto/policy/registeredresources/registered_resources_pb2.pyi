@@ -3,6 +3,7 @@ from common import common_pb2 as _common_pb2
 from policy import objects_pb2 as _objects_pb2
 from policy import selectors_pb2 as _selectors_pb2
 from google.protobuf.internal import containers as _containers
+from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from collections.abc import Iterable as _Iterable, Mapping as _Mapping
@@ -10,15 +11,30 @@ from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class SortRegisteredResourcesType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    SORT_REGISTERED_RESOURCES_TYPE_UNSPECIFIED: _ClassVar[SortRegisteredResourcesType]
+    SORT_REGISTERED_RESOURCES_TYPE_NAME: _ClassVar[SortRegisteredResourcesType]
+    SORT_REGISTERED_RESOURCES_TYPE_CREATED_AT: _ClassVar[SortRegisteredResourcesType]
+    SORT_REGISTERED_RESOURCES_TYPE_UPDATED_AT: _ClassVar[SortRegisteredResourcesType]
+SORT_REGISTERED_RESOURCES_TYPE_UNSPECIFIED: SortRegisteredResourcesType
+SORT_REGISTERED_RESOURCES_TYPE_NAME: SortRegisteredResourcesType
+SORT_REGISTERED_RESOURCES_TYPE_CREATED_AT: SortRegisteredResourcesType
+SORT_REGISTERED_RESOURCES_TYPE_UPDATED_AT: SortRegisteredResourcesType
+
 class CreateRegisteredResourceRequest(_message.Message):
-    __slots__ = ("name", "values", "metadata")
+    __slots__ = ("name", "values", "namespace_id", "namespace_fqn", "metadata")
     NAME_FIELD_NUMBER: _ClassVar[int]
     VALUES_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     name: str
     values: _containers.RepeatedScalarFieldContainer[str]
+    namespace_id: str
+    namespace_fqn: str
     metadata: _common_pb2.MetadataMutable
-    def __init__(self, name: _Optional[str] = ..., values: _Optional[_Iterable[str]] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
+    def __init__(self, name: _Optional[str] = ..., values: _Optional[_Iterable[str]] = ..., namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
 
 class CreateRegisteredResourceResponse(_message.Message):
     __slots__ = ("resource",)
@@ -27,12 +43,16 @@ class CreateRegisteredResourceResponse(_message.Message):
     def __init__(self, resource: _Optional[_Union[_objects_pb2.RegisteredResource, _Mapping]] = ...) -> None: ...
 
 class GetRegisteredResourceRequest(_message.Message):
-    __slots__ = ("id", "name")
+    __slots__ = ("id", "name", "namespace_fqn", "namespace_id")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ...) -> None: ...
+    namespace_fqn: str
+    namespace_id: str
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., namespace_id: _Optional[str] = ...) -> None: ...
 
 class GetRegisteredResourceResponse(_message.Message):
     __slots__ = ("resource",)
@@ -40,11 +60,25 @@ class GetRegisteredResourceResponse(_message.Message):
     resource: _objects_pb2.RegisteredResource
     def __init__(self, resource: _Optional[_Union[_objects_pb2.RegisteredResource, _Mapping]] = ...) -> None: ...
 
+class RegisteredResourcesSort(_message.Message):
+    __slots__ = ("field", "direction")
+    FIELD_FIELD_NUMBER: _ClassVar[int]
+    DIRECTION_FIELD_NUMBER: _ClassVar[int]
+    field: SortRegisteredResourcesType
+    direction: _selectors_pb2.SortDirection
+    def __init__(self, field: _Optional[_Union[SortRegisteredResourcesType, str]] = ..., direction: _Optional[_Union[_selectors_pb2.SortDirection, str]] = ...) -> None: ...
+
 class ListRegisteredResourcesRequest(_message.Message):
-    __slots__ = ("pagination",)
+    __slots__ = ("namespace_id", "namespace_fqn", "pagination", "sort")
+    NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
     PAGINATION_FIELD_NUMBER: _ClassVar[int]
+    SORT_FIELD_NUMBER: _ClassVar[int]
+    namespace_id: str
+    namespace_fqn: str
     pagination: _selectors_pb2.PageRequest
-    def __init__(self, pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ...) -> None: ...
+    sort: _containers.RepeatedCompositeFieldContainer[RegisteredResourcesSort]
+    def __init__(self, namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[RegisteredResourcesSort, _Mapping]]] = ...) -> None: ...
 
 class ListRegisteredResourcesResponse(_message.Message):
     __slots__ = ("resources", "pagination")

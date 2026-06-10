@@ -4,12 +4,26 @@ from google.api import annotations_pb2 as _annotations_pb2
 from policy import objects_pb2 as _objects_pb2
 from policy import selectors_pb2 as _selectors_pb2
 from google.protobuf.internal import containers as _containers
+from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from collections.abc import Iterable as _Iterable, Mapping as _Mapping
 from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
+
+class SortKeyAccessServersType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    SORT_KEY_ACCESS_SERVERS_TYPE_UNSPECIFIED: _ClassVar[SortKeyAccessServersType]
+    SORT_KEY_ACCESS_SERVERS_TYPE_NAME: _ClassVar[SortKeyAccessServersType]
+    SORT_KEY_ACCESS_SERVERS_TYPE_URI: _ClassVar[SortKeyAccessServersType]
+    SORT_KEY_ACCESS_SERVERS_TYPE_CREATED_AT: _ClassVar[SortKeyAccessServersType]
+    SORT_KEY_ACCESS_SERVERS_TYPE_UPDATED_AT: _ClassVar[SortKeyAccessServersType]
+SORT_KEY_ACCESS_SERVERS_TYPE_UNSPECIFIED: SortKeyAccessServersType
+SORT_KEY_ACCESS_SERVERS_TYPE_NAME: SortKeyAccessServersType
+SORT_KEY_ACCESS_SERVERS_TYPE_URI: SortKeyAccessServersType
+SORT_KEY_ACCESS_SERVERS_TYPE_CREATED_AT: SortKeyAccessServersType
+SORT_KEY_ACCESS_SERVERS_TYPE_UPDATED_AT: SortKeyAccessServersType
 
 class GetKeyAccessServerRequest(_message.Message):
     __slots__ = ("id", "kas_id", "name", "uri")
@@ -29,11 +43,21 @@ class GetKeyAccessServerResponse(_message.Message):
     key_access_server: _objects_pb2.KeyAccessServer
     def __init__(self, key_access_server: _Optional[_Union[_objects_pb2.KeyAccessServer, _Mapping]] = ...) -> None: ...
 
+class KeyAccessServersSort(_message.Message):
+    __slots__ = ("field", "direction")
+    FIELD_FIELD_NUMBER: _ClassVar[int]
+    DIRECTION_FIELD_NUMBER: _ClassVar[int]
+    field: SortKeyAccessServersType
+    direction: _selectors_pb2.SortDirection
+    def __init__(self, field: _Optional[_Union[SortKeyAccessServersType, str]] = ..., direction: _Optional[_Union[_selectors_pb2.SortDirection, str]] = ...) -> None: ...
+
 class ListKeyAccessServersRequest(_message.Message):
-    __slots__ = ("pagination",)
+    __slots__ = ("pagination", "sort")
     PAGINATION_FIELD_NUMBER: _ClassVar[int]
+    SORT_FIELD_NUMBER: _ClassVar[int]
     pagination: _selectors_pb2.PageRequest
-    def __init__(self, pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ...) -> None: ...
+    sort: _containers.RepeatedCompositeFieldContainer[KeyAccessServersSort]
+    def __init__(self, pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[KeyAccessServersSort, _Mapping]]] = ...) -> None: ...
 
 class ListKeyAccessServersResponse(_message.Message):
     __slots__ = ("key_access_servers", "pagination")

@@ -3,12 +3,26 @@ from common import common_pb2 as _common_pb2
 from policy import objects_pb2 as _objects_pb2
 from policy import selectors_pb2 as _selectors_pb2
 from google.protobuf.internal import containers as _containers
+from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from collections.abc import Iterable as _Iterable, Mapping as _Mapping
 from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
+
+class SortNamespacesType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    SORT_NAMESPACES_TYPE_UNSPECIFIED: _ClassVar[SortNamespacesType]
+    SORT_NAMESPACES_TYPE_NAME: _ClassVar[SortNamespacesType]
+    SORT_NAMESPACES_TYPE_FQN: _ClassVar[SortNamespacesType]
+    SORT_NAMESPACES_TYPE_CREATED_AT: _ClassVar[SortNamespacesType]
+    SORT_NAMESPACES_TYPE_UPDATED_AT: _ClassVar[SortNamespacesType]
+SORT_NAMESPACES_TYPE_UNSPECIFIED: SortNamespacesType
+SORT_NAMESPACES_TYPE_NAME: SortNamespacesType
+SORT_NAMESPACES_TYPE_FQN: SortNamespacesType
+SORT_NAMESPACES_TYPE_CREATED_AT: SortNamespacesType
+SORT_NAMESPACES_TYPE_UPDATED_AT: SortNamespacesType
 
 class NamespaceKeyAccessServer(_message.Message):
     __slots__ = ("namespace_id", "key_access_server_id")
@@ -42,13 +56,23 @@ class GetNamespaceResponse(_message.Message):
     namespace: _objects_pb2.Namespace
     def __init__(self, namespace: _Optional[_Union[_objects_pb2.Namespace, _Mapping]] = ...) -> None: ...
 
+class NamespacesSort(_message.Message):
+    __slots__ = ("field", "direction")
+    FIELD_FIELD_NUMBER: _ClassVar[int]
+    DIRECTION_FIELD_NUMBER: _ClassVar[int]
+    field: SortNamespacesType
+    direction: _selectors_pb2.SortDirection
+    def __init__(self, field: _Optional[_Union[SortNamespacesType, str]] = ..., direction: _Optional[_Union[_selectors_pb2.SortDirection, str]] = ...) -> None: ...
+
 class ListNamespacesRequest(_message.Message):
-    __slots__ = ("state", "pagination")
+    __slots__ = ("state", "pagination", "sort")
     STATE_FIELD_NUMBER: _ClassVar[int]
     PAGINATION_FIELD_NUMBER: _ClassVar[int]
+    SORT_FIELD_NUMBER: _ClassVar[int]
     state: _common_pb2.ActiveStateEnum
     pagination: _selectors_pb2.PageRequest
-    def __init__(self, state: _Optional[_Union[_common_pb2.ActiveStateEnum, str]] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ...) -> None: ...
+    sort: _containers.RepeatedCompositeFieldContainer[NamespacesSort]
+    def __init__(self, state: _Optional[_Union[_common_pb2.ActiveStateEnum, str]] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[NamespacesSort, _Mapping]]] = ...) -> None: ...
 
 class ListNamespacesResponse(_message.Message):
     __slots__ = ("namespaces", "pagination")
@@ -145,41 +169,3 @@ class RemovePublicKeyFromNamespaceResponse(_message.Message):
     NAMESPACE_KEY_FIELD_NUMBER: _ClassVar[int]
     namespace_key: NamespaceKey
     def __init__(self, namespace_key: _Optional[_Union[NamespaceKey, _Mapping]] = ...) -> None: ...
-
-class NamespaceCertificate(_message.Message):
-    __slots__ = ("namespace", "certificate_id")
-    NAMESPACE_FIELD_NUMBER: _ClassVar[int]
-    CERTIFICATE_ID_FIELD_NUMBER: _ClassVar[int]
-    namespace: _common_pb2.IdFqnIdentifier
-    certificate_id: str
-    def __init__(self, namespace: _Optional[_Union[_common_pb2.IdFqnIdentifier, _Mapping]] = ..., certificate_id: _Optional[str] = ...) -> None: ...
-
-class AssignCertificateToNamespaceRequest(_message.Message):
-    __slots__ = ("namespace", "pem", "metadata")
-    NAMESPACE_FIELD_NUMBER: _ClassVar[int]
-    PEM_FIELD_NUMBER: _ClassVar[int]
-    METADATA_FIELD_NUMBER: _ClassVar[int]
-    namespace: _common_pb2.IdFqnIdentifier
-    pem: str
-    metadata: _common_pb2.MetadataMutable
-    def __init__(self, namespace: _Optional[_Union[_common_pb2.IdFqnIdentifier, _Mapping]] = ..., pem: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
-
-class AssignCertificateToNamespaceResponse(_message.Message):
-    __slots__ = ("namespace_certificate", "certificate")
-    NAMESPACE_CERTIFICATE_FIELD_NUMBER: _ClassVar[int]
-    CERTIFICATE_FIELD_NUMBER: _ClassVar[int]
-    namespace_certificate: NamespaceCertificate
-    certificate: _objects_pb2.Certificate
-    def __init__(self, namespace_certificate: _Optional[_Union[NamespaceCertificate, _Mapping]] = ..., certificate: _Optional[_Union[_objects_pb2.Certificate, _Mapping]] = ...) -> None: ...
-
-class RemoveCertificateFromNamespaceRequest(_message.Message):
-    __slots__ = ("namespace_certificate",)
-    NAMESPACE_CERTIFICATE_FIELD_NUMBER: _ClassVar[int]
-    namespace_certificate: NamespaceCertificate
-    def __init__(self, namespace_certificate: _Optional[_Union[NamespaceCertificate, _Mapping]] = ...) -> None: ...
-
-class RemoveCertificateFromNamespaceResponse(_message.Message):
-    __slots__ = ("namespace_certificate",)
-    NAMESPACE_CERTIFICATE_FIELD_NUMBER: _ClassVar[int]
-    namespace_certificate: NamespaceCertificate
-    def __init__(self, namespace_certificate: _Optional[_Union[NamespaceCertificate, _Mapping]] = ...) -> None: ...

@@ -49,6 +49,9 @@ class Service(Protocol):
     async def delete_obligation_value(self, request: policy_dot_obligations_dot_obligations__pb2.DeleteObligationValueRequest, ctx: RequestContext) -> policy_dot_obligations_dot_obligations__pb2.DeleteObligationValueResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
 
+    async def get_obligation_trigger(self, request: policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerRequest, ctx: RequestContext) -> policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerResponse:
+        raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
+
     async def add_obligation_trigger(self, request: policy_dot_obligations_dot_obligations__pb2.AddObligationTriggerRequest, ctx: RequestContext) -> policy_dot_obligations_dot_obligations__pb2.AddObligationTriggerResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
 
@@ -173,6 +176,16 @@ class ServiceASGIApplication(ConnectASGIApplication[Service]):
                         idempotency_level=IdempotencyLevel.UNKNOWN,
                     ),
                     function=svc.delete_obligation_value,
+                ),
+                "/policy.obligations.Service/GetObligationTrigger": Endpoint.unary(
+                    method=MethodInfo(
+                        name="GetObligationTrigger",
+                        service_name="policy.obligations.Service",
+                        input=policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerRequest,
+                        output=policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerResponse,
+                        idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
+                    ),
+                    function=svc.get_obligation_trigger,
                 ),
                 "/policy.obligations.Service/AddObligationTrigger": Endpoint.unary(
                     method=MethodInfo(
@@ -446,6 +459,28 @@ class ServiceClient(ConnectClient):
             timeout_ms=timeout_ms,
         )
 
+    async def get_obligation_trigger(
+        self,
+        request: policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerRequest,
+        *,
+        headers: Headers | Mapping[str, str] | None = None,
+        timeout_ms: int | None = None,
+        use_get: bool = False,
+    ) -> policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerResponse:
+        return await self.execute_unary(
+            request=request,
+            method=MethodInfo(
+                name="GetObligationTrigger",
+                service_name="policy.obligations.Service",
+                input=policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerRequest,
+                output=policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerResponse,
+                idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
+            ),
+            headers=headers,
+            timeout_ms=timeout_ms,
+            use_get=use_get,
+        )
+
     async def add_obligation_trigger(
         self,
         request: policy_dot_obligations_dot_obligations__pb2.AddObligationTriggerRequest,
@@ -531,6 +566,8 @@ class ServiceSync(Protocol):
     def update_obligation_value(self, request: policy_dot_obligations_dot_obligations__pb2.UpdateObligationValueRequest, ctx: RequestContext) -> policy_dot_obligations_dot_obligations__pb2.UpdateObligationValueResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
     def delete_obligation_value(self, request: policy_dot_obligations_dot_obligations__pb2.DeleteObligationValueRequest, ctx: RequestContext) -> policy_dot_obligations_dot_obligations__pb2.DeleteObligationValueResponse:
+        raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
+    def get_obligation_trigger(self, request: policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerRequest, ctx: RequestContext) -> policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
     def add_obligation_trigger(self, request: policy_dot_obligations_dot_obligations__pb2.AddObligationTriggerRequest, ctx: RequestContext) -> policy_dot_obligations_dot_obligations__pb2.AddObligationTriggerResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
@@ -653,6 +690,16 @@ class ServiceWSGIApplication(ConnectWSGIApplication):
                         idempotency_level=IdempotencyLevel.UNKNOWN,
                     ),
                     function=service.delete_obligation_value,
+                ),
+                "/policy.obligations.Service/GetObligationTrigger": EndpointSync.unary(
+                    method=MethodInfo(
+                        name="GetObligationTrigger",
+                        service_name="policy.obligations.Service",
+                        input=policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerRequest,
+                        output=policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerResponse,
+                        idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
+                    ),
+                    function=service.get_obligation_trigger,
                 ),
                 "/policy.obligations.Service/AddObligationTrigger": EndpointSync.unary(
                     method=MethodInfo(
@@ -924,6 +971,28 @@ class ServiceClientSync(ConnectClientSync):
             ),
             headers=headers,
             timeout_ms=timeout_ms,
+        )
+
+    def get_obligation_trigger(
+        self,
+        request: policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerRequest,
+        *,
+        headers: Headers | Mapping[str, str] | None = None,
+        timeout_ms: int | None = None,
+        use_get: bool = False,
+    ) -> policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerResponse:
+        return self.execute_unary(
+            request=request,
+            method=MethodInfo(
+                name="GetObligationTrigger",
+                service_name="policy.obligations.Service",
+                input=policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerRequest,
+                output=policy_dot_obligations_dot_obligations__pb2.GetObligationTriggerResponse,
+                idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
+            ),
+            headers=headers,
+            timeout_ms=timeout_ms,
+            use_get=use_get,
         )
 
     def add_obligation_trigger(

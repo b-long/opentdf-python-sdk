@@ -145,8 +145,8 @@ class TestGitTagOverride:
         assert used_tag == "service/v0.11.0"
 
     def test_another_custom_tag(self, tmp_path):
-        used_tag = self._run_with_tag(tmp_path, "service/v0.12.0")
-        assert used_tag == "service/v0.12.0"
+        used_tag = self._run_with_tag(tmp_path, "service/v0.8.0")
+        assert used_tag == "service/v0.8.0"
 
     def test_default_tag_is_used_when_no_tag_is_provided(self, tmp_path):
         """The default tag must be used when no git_tag is provided."""
@@ -172,7 +172,7 @@ class TestGitTagOverride:
         git_cmd = next(c for c in captured if c[0] == "git")
         branch_idx = git_cmd.index("--branch")
         default_tag = git_cmd[branch_idx + 1]
-        assert default_tag == "service/v0.12.0"
+        assert default_tag == "service/v0.14.0"
 
 
 class TestArgParsing:

@@ -28,7 +28,7 @@ from policy import objects_pb2 as policy_dot_objects__pb2
 from policy import selectors_pb2 as policy_dot_selectors__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1cpolicy/actions/actions.proto\x12\x0epolicy.actions\x1a\x1b\x62uf/validate/validate.proto\x1a\x13\x63ommon/common.proto\x1a\x14policy/objects.proto\x1a\x16policy/selectors.proto\"\xeb\x02\n\x10GetActionRequest\x12\x1a\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01H\x00R\x02id\x12\xa5\x02\n\x04name\x18\x02 \x01(\tB\x8e\x02\xbaH\x8a\x02r\x03\x18\xfd\x01\xba\x01\x81\x02\n\x12\x61\x63tion_name_format\x12\xad\x01\x41\x63tion name must be an alphanumeric string, allowing hyphens and underscores but not as the first or last character. The stored action name will be normalized to lower case.\x1a;this.matches(\'^[a-zA-Z0-9](?:[a-zA-Z0-9_-]*[a-zA-Z0-9])?$\')H\x00R\x04nameB\x13\n\nidentifier\x12\x05\xbaH\x02\x08\x01\"~\n\x11GetActionResponse\x12&\n\x06\x61\x63tion\x18\x01 \x01(\x0b\x32\x0e.policy.ActionR\x06\x61\x63tion\x12\x41\n\x10subject_mappings\x18\x02 \x03(\x0b\x32\x16.policy.SubjectMappingR\x0fsubjectMappings\"I\n\x12ListActionsRequest\x12\x33\n\npagination\x18\n \x01(\x0b\x32\x13.policy.PageRequestR\npagination\"\xbd\x01\n\x13ListActionsResponse\x12\x39\n\x10\x61\x63tions_standard\x18\x01 \x03(\x0b\x32\x0e.policy.ActionR\x0f\x61\x63tionsStandard\x12\x35\n\x0e\x61\x63tions_custom\x18\x02 \x03(\x0b\x32\x0e.policy.ActionR\ractionsCustom\x12\x34\n\npagination\x18\n \x01(\x0b\x32\x14.policy.PageResponseR\npagination\"\xf3\x02\n\x13\x43reateActionRequest\x12\xa6\x02\n\x04name\x18\x01 \x01(\tB\x91\x02\xbaH\x8d\x02r\x03\x18\xfd\x01\xba\x01\x81\x02\n\x12\x61\x63tion_name_format\x12\xad\x01\x41\x63tion name must be an alphanumeric string, allowing hyphens and underscores but not as the first or last character. The stored action name will be normalized to lower case.\x1a;this.matches(\'^[a-zA-Z0-9](?:[a-zA-Z0-9_-]*[a-zA-Z0-9])?$\')\xc8\x01\x01R\x04name\x12\x33\n\x08metadata\x18\x64 \x01(\x0b\x32\x17.common.MetadataMutableR\x08metadata\">\n\x14\x43reateActionResponse\x12&\n\x06\x61\x63tion\x18\x01 \x01(\x0b\x32\x0e.policy.ActionR\x06\x61\x63tion\"\xf3\x03\n\x13UpdateActionRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\xb6\x02\n\x04name\x18\x02 \x01(\tB\xa1\x02\xbaH\x9d\x02r\x03\x18\xfd\x01\xba\x01\x94\x02\n\x12\x61\x63tion_name_format\x12\xad\x01\x41\x63tion name must be an alphanumeric string, allowing hyphens and underscores but not as the first or last character. The stored action name will be normalized to lower case.\x1aNsize(this) == 0 || this.matches(\'^[a-zA-Z0-9](?:[a-zA-Z0-9_-]*[a-zA-Z0-9])?$\')R\x04name\x12\x33\n\x08metadata\x18\x64 \x01(\x0b\x32\x17.common.MetadataMutableR\x08metadata\x12T\n\x18metadata_update_behavior\x18\x65 \x01(\x0e\x32\x1a.common.MetadataUpdateEnumR\x16metadataUpdateBehavior\">\n\x14UpdateActionResponse\x12&\n\x06\x61\x63tion\x18\x01 \x01(\x0b\x32\x0e.policy.ActionR\x06\x61\x63tion\"/\n\x13\x44\x65leteActionRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\">\n\x14\x44\x65leteActionResponse\x12&\n\x06\x61\x63tion\x18\x01 \x01(\x0b\x32\x0e.policy.ActionR\x06\x61\x63tion2\xd4\x03\n\rActionService\x12R\n\tGetAction\x12 .policy.actions.GetActionRequest\x1a!.policy.actions.GetActionResponse\"\x00\x12X\n\x0bListActions\x12\".policy.actions.ListActionsRequest\x1a#.policy.actions.ListActionsResponse\"\x00\x12[\n\x0c\x43reateAction\x12#.policy.actions.CreateActionRequest\x1a$.policy.actions.CreateActionResponse\"\x00\x12[\n\x0cUpdateAction\x12#.policy.actions.UpdateActionRequest\x1a$.policy.actions.UpdateActionResponse\"\x00\x12[\n\x0c\x44\x65leteAction\x12#.policy.actions.DeleteActionRequest\x1a$.policy.actions.DeleteActionResponse\"\x00\x42{\n\x12\x63om.policy.actionsB\x0c\x41\x63tionsProtoP\x01\xa2\x02\x03PAX\xaa\x02\x0ePolicy.Actions\xca\x02\x0ePolicy\\Actions\xe2\x02\x1aPolicy\\Actions\\GPBMetadata\xea\x02\x0fPolicy::Actionsb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1cpolicy/actions/actions.proto\x12\x0epolicy.actions\x1a\x1b\x62uf/validate/validate.proto\x1a\x13\x63ommon/common.proto\x1a\x14policy/objects.proto\x1a\x16policy/selectors.proto\"\xf5\x03\n\x10GetActionRequest\x12\x1a\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01H\x00R\x02id\x12\xa5\x02\n\x04name\x18\x02 \x01(\tB\x8e\x02\xbaH\x8a\x02r\x03\x18\xfd\x01\xba\x01\x81\x02\n\x12\x61\x63tion_name_format\x12\xad\x01\x41\x63tion name must be an alphanumeric string, allowing hyphens and underscores but not as the first or last character. The stored action name will be normalized to lower case.\x1a;this.matches(\'^[a-zA-Z0-9](?:[a-zA-Z0-9_-]*[a-zA-Z0-9])?$\')H\x00R\x04name\x12.\n\x0cnamespace_id\x18\x03 \x01(\tB\x0b\xbaH\x08r\x03\xb0\x01\x01\xd8\x01\x01R\x0bnamespaceId\x12\x32\n\rnamespace_fqn\x18\x04 \x01(\tB\r\xbaH\nr\x05\x10\x01\x88\x01\x01\xd8\x01\x01R\x0cnamespaceFqn:$\xbaH!\"\x1f\n\x0cnamespace_id\n\rnamespace_fqn\x10\x00\x42\x13\n\nidentifier\x12\x05\xbaH\x02\x08\x01\"~\n\x11GetActionResponse\x12&\n\x06\x61\x63tion\x18\x01 \x01(\x0b\x32\x0e.policy.ActionR\x06\x61\x63tion\x12\x41\n\x10subject_mappings\x18\x02 \x03(\x0b\x32\x16.policy.SubjectMappingR\x0fsubjectMappings\"\xcd\x01\n\x12ListActionsRequest\x12+\n\x0cnamespace_id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x0bnamespaceId\x12/\n\rnamespace_fqn\x18\x02 \x01(\tB\n\xbaH\x07r\x05\x10\x01\x88\x01\x01R\x0cnamespaceFqn\x12\x33\n\npagination\x18\n \x01(\x0b\x32\x13.policy.PageRequestR\npagination:$\xbaH!\"\x1f\n\x0cnamespace_id\n\rnamespace_fqn\x10\x00\"\xbd\x01\n\x13ListActionsResponse\x12\x39\n\x10\x61\x63tions_standard\x18\x01 \x03(\x0b\x32\x0e.policy.ActionR\x0f\x61\x63tionsStandard\x12\x35\n\x0e\x61\x63tions_custom\x18\x02 \x03(\x0b\x32\x0e.policy.ActionR\ractionsCustom\x12\x34\n\npagination\x18\n \x01(\x0b\x32\x14.policy.PageResponseR\npagination\"\xf7\x03\n\x13\x43reateActionRequest\x12\xa6\x02\n\x04name\x18\x01 \x01(\tB\x91\x02\xbaH\x8d\x02r\x03\x18\xfd\x01\xba\x01\x81\x02\n\x12\x61\x63tion_name_format\x12\xad\x01\x41\x63tion name must be an alphanumeric string, allowing hyphens and underscores but not as the first or last character. The stored action name will be normalized to lower case.\x1a;this.matches(\'^[a-zA-Z0-9](?:[a-zA-Z0-9_-]*[a-zA-Z0-9])?$\')\xc8\x01\x01R\x04name\x12+\n\x0cnamespace_id\x18\x02 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x0bnamespaceId\x12/\n\rnamespace_fqn\x18\x03 \x01(\tB\n\xbaH\x07r\x05\x10\x01\x88\x01\x01R\x0cnamespaceFqn\x12\x33\n\x08metadata\x18\x64 \x01(\x0b\x32\x17.common.MetadataMutableR\x08metadata:$\xbaH!\"\x1f\n\x0cnamespace_id\n\rnamespace_fqn\x10\x00\">\n\x14\x43reateActionResponse\x12&\n\x06\x61\x63tion\x18\x01 \x01(\x0b\x32\x0e.policy.ActionR\x06\x61\x63tion\"\xf3\x03\n\x13UpdateActionRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\xb6\x02\n\x04name\x18\x02 \x01(\tB\xa1\x02\xbaH\x9d\x02r\x03\x18\xfd\x01\xba\x01\x94\x02\n\x12\x61\x63tion_name_format\x12\xad\x01\x41\x63tion name must be an alphanumeric string, allowing hyphens and underscores but not as the first or last character. The stored action name will be normalized to lower case.\x1aNsize(this) == 0 || this.matches(\'^[a-zA-Z0-9](?:[a-zA-Z0-9_-]*[a-zA-Z0-9])?$\')R\x04name\x12\x33\n\x08metadata\x18\x64 \x01(\x0b\x32\x17.common.MetadataMutableR\x08metadata\x12T\n\x18metadata_update_behavior\x18\x65 \x01(\x0e\x32\x1a.common.MetadataUpdateEnumR\x16metadataUpdateBehavior\">\n\x14UpdateActionResponse\x12&\n\x06\x61\x63tion\x18\x01 \x01(\x0b\x32\x0e.policy.ActionR\x06\x61\x63tion\"/\n\x13\x44\x65leteActionRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\">\n\x14\x44\x65leteActionResponse\x12&\n\x06\x61\x63tion\x18\x01 \x01(\x0b\x32\x0e.policy.ActionR\x06\x61\x63tion2\xd4\x03\n\rActionService\x12R\n\tGetAction\x12 .policy.actions.GetActionRequest\x1a!.policy.actions.GetActionResponse\"\x00\x12X\n\x0bListActions\x12\".policy.actions.ListActionsRequest\x1a#.policy.actions.ListActionsResponse\"\x00\x12[\n\x0c\x43reateAction\x12#.policy.actions.CreateActionRequest\x1a$.policy.actions.CreateActionResponse\"\x00\x12[\n\x0cUpdateAction\x12#.policy.actions.UpdateActionRequest\x1a$.policy.actions.UpdateActionResponse\"\x00\x12[\n\x0c\x44\x65leteAction\x12#.policy.actions.DeleteActionRequest\x1a$.policy.actions.DeleteActionResponse\"\x00\x42{\n\x12\x63om.policy.actionsB\x0c\x41\x63tionsProtoP\x01\xa2\x02\x03PAX\xaa\x02\x0ePolicy.Actions\xca\x02\x0ePolicy\\Actions\xe2\x02\x1aPolicy\\Actions\\GPBMetadata\xea\x02\x0fPolicy::Actionsb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -42,8 +42,26 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_GETACTIONREQUEST'].fields_by_name['id']._serialized_options = b'\272H\005r\003\260\001\001'
   _globals['_GETACTIONREQUEST'].fields_by_name['name']._loaded_options = None
   _globals['_GETACTIONREQUEST'].fields_by_name['name']._serialized_options = b'\272H\212\002r\003\030\375\001\272\001\201\002\n\022action_name_format\022\255\001Action name must be an alphanumeric string, allowing hyphens and underscores but not as the first or last character. The stored action name will be normalized to lower case.\032;this.matches(\'^[a-zA-Z0-9](?:[a-zA-Z0-9_-]*[a-zA-Z0-9])?$\')'
+  _globals['_GETACTIONREQUEST'].fields_by_name['namespace_id']._loaded_options = None
+  _globals['_GETACTIONREQUEST'].fields_by_name['namespace_id']._serialized_options = b'\272H\010r\003\260\001\001\330\001\001'
+  _globals['_GETACTIONREQUEST'].fields_by_name['namespace_fqn']._loaded_options = None
+  _globals['_GETACTIONREQUEST'].fields_by_name['namespace_fqn']._serialized_options = b'\272H\nr\005\020\001\210\001\001\330\001\001'
+  _globals['_GETACTIONREQUEST']._loaded_options = None
+  _globals['_GETACTIONREQUEST']._serialized_options = b'\272H!\"\037\n\014namespace_id\n\rnamespace_fqn\020\000'
+  _globals['_LISTACTIONSREQUEST'].fields_by_name['namespace_id']._loaded_options = None
+  _globals['_LISTACTIONSREQUEST'].fields_by_name['namespace_id']._serialized_options = b'\272H\005r\003\260\001\001'
+  _globals['_LISTACTIONSREQUEST'].fields_by_name['namespace_fqn']._loaded_options = None
+  _globals['_LISTACTIONSREQUEST'].fields_by_name['namespace_fqn']._serialized_options = b'\272H\007r\005\020\001\210\001\001'
+  _globals['_LISTACTIONSREQUEST']._loaded_options = None
+  _globals['_LISTACTIONSREQUEST']._serialized_options = b'\272H!\"\037\n\014namespace_id\n\rnamespace_fqn\020\000'
   _globals['_CREATEACTIONREQUEST'].fields_by_name['name']._loaded_options = None
   _globals['_CREATEACTIONREQUEST'].fields_by_name['name']._serialized_options = b'\272H\215\002r\003\030\375\001\272\001\201\002\n\022action_name_format\022\255\001Action name must be an alphanumeric string, allowing hyphens and underscores but not as the first or last character. The stored action name will be normalized to lower case.\032;this.matches(\'^[a-zA-Z0-9](?:[a-zA-Z0-9_-]*[a-zA-Z0-9])?$\')\310\001\001'
+  _globals['_CREATEACTIONREQUEST'].fields_by_name['namespace_id']._loaded_options = None
+  _globals['_CREATEACTIONREQUEST'].fields_by_name['namespace_id']._serialized_options = b'\272H\005r\003\260\001\001'
+  _globals['_CREATEACTIONREQUEST'].fields_by_name['namespace_fqn']._loaded_options = None
+  _globals['_CREATEACTIONREQUEST'].fields_by_name['namespace_fqn']._serialized_options = b'\272H\007r\005\020\001\210\001\001'
+  _globals['_CREATEACTIONREQUEST']._loaded_options = None
+  _globals['_CREATEACTIONREQUEST']._serialized_options = b'\272H!\"\037\n\014namespace_id\n\rnamespace_fqn\020\000'
   _globals['_UPDATEACTIONREQUEST'].fields_by_name['id']._loaded_options = None
   _globals['_UPDATEACTIONREQUEST'].fields_by_name['id']._serialized_options = b'\272H\005r\003\260\001\001'
   _globals['_UPDATEACTIONREQUEST'].fields_by_name['name']._loaded_options = None
@@ -51,25 +69,25 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_DELETEACTIONREQUEST'].fields_by_name['id']._loaded_options = None
   _globals['_DELETEACTIONREQUEST'].fields_by_name['id']._serialized_options = b'\272H\005r\003\260\001\001'
   _globals['_GETACTIONREQUEST']._serialized_start=145
-  _globals['_GETACTIONREQUEST']._serialized_end=508
-  _globals['_GETACTIONRESPONSE']._serialized_start=510
-  _globals['_GETACTIONRESPONSE']._serialized_end=636
-  _globals['_LISTACTIONSREQUEST']._serialized_start=638
-  _globals['_LISTACTIONSREQUEST']._serialized_end=711
-  _globals['_LISTACTIONSRESPONSE']._serialized_start=714
-  _globals['_LISTACTIONSRESPONSE']._serialized_end=903
-  _globals['_CREATEACTIONREQUEST']._serialized_start=906
-  _globals['_CREATEACTIONREQUEST']._serialized_end=1277
-  _globals['_CREATEACTIONRESPONSE']._serialized_start=1279
-  _globals['_CREATEACTIONRESPONSE']._serialized_end=1341
-  _globals['_UPDATEACTIONREQUEST']._serialized_start=1344
-  _globals['_UPDATEACTIONREQUEST']._serialized_end=1843
-  _globals['_UPDATEACTIONRESPONSE']._serialized_start=1845
-  _globals['_UPDATEACTIONRESPONSE']._serialized_end=1907
-  _globals['_DELETEACTIONREQUEST']._serialized_start=1909
-  _globals['_DELETEACTIONREQUEST']._serialized_end=1956
-  _globals['_DELETEACTIONRESPONSE']._serialized_start=1958
-  _globals['_DELETEACTIONRESPONSE']._serialized_end=2020
-  _globals['_ACTIONSERVICE']._serialized_start=2023
-  _globals['_ACTIONSERVICE']._serialized_end=2491
+  _globals['_GETACTIONREQUEST']._serialized_end=646
+  _globals['_GETACTIONRESPONSE']._serialized_start=648
+  _globals['_GETACTIONRESPONSE']._serialized_end=774
+  _globals['_LISTACTIONSREQUEST']._serialized_start=777
+  _globals['_LISTACTIONSREQUEST']._serialized_end=982
+  _globals['_LISTACTIONSRESPONSE']._serialized_start=985
+  _globals['_LISTACTIONSRESPONSE']._serialized_end=1174
+  _globals['_CREATEACTIONREQUEST']._serialized_start=1177
+  _globals['_CREATEACTIONREQUEST']._serialized_end=1680
+  _globals['_CREATEACTIONRESPONSE']._serialized_start=1682
+  _globals['_CREATEACTIONRESPONSE']._serialized_end=1744
+  _globals['_UPDATEACTIONREQUEST']._serialized_start=1747
+  _globals['_UPDATEACTIONREQUEST']._serialized_end=2246
+  _globals['_UPDATEACTIONRESPONSE']._serialized_start=2248
+  _globals['_UPDATEACTIONRESPONSE']._serialized_end=2310
+  _globals['_DELETEACTIONREQUEST']._serialized_start=2312
+  _globals['_DELETEACTIONREQUEST']._serialized_end=2359
+  _globals['_DELETEACTIONRESPONSE']._serialized_start=2361
+  _globals['_DELETEACTIONRESPONSE']._serialized_end=2423
+  _globals['_ACTIONSERVICE']._serialized_start=2426
+  _globals['_ACTIONSERVICE']._serialized_end=2894
 # @@protoc_insertion_point(module_scope)

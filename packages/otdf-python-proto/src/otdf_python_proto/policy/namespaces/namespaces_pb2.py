@@ -28,7 +28,7 @@ from policy import objects_pb2 as policy_dot_objects__pb2
 from policy import selectors_pb2 as policy_dot_selectors__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\"policy/namespaces/namespaces.proto\x12\x11policy.namespaces\x1a\x1b\x62uf/validate/validate.proto\x1a\x13\x63ommon/common.proto\x1a\x14policy/objects.proto\x1a\x16policy/selectors.proto\"\x86\x01\n\x18NamespaceKeyAccessServer\x12+\n\x0cnamespace_id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x0bnamespaceId\x12\x39\n\x14key_access_server_id\x18\x02 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x11keyAccessServerId:\x02\x18\x01\"b\n\x0cNamespaceKey\x12.\n\x0cnamespace_id\x18\x01 \x01(\tB\x0b\xbaH\x08r\x03\xb0\x01\x01\xc8\x01\x01R\x0bnamespaceId\x12\"\n\x06key_id\x18\x02 \x01(\tB\x0b\xbaH\x08r\x03\xb0\x01\x01\xc8\x01\x01R\x05keyId\"\xbe\x03\n\x13GetNamespaceRequest\x12\x1d\n\x02id\x18\x01 \x01(\tB\r\x18\x01\xbaH\x08r\x03\xb0\x01\x01\xd8\x01\x01R\x02id\x12-\n\x0cnamespace_id\x18\x02 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01H\x00R\x0bnamespaceId\x12\x1e\n\x03\x66qn\x18\x03 \x01(\tB\n\xbaH\x07r\x05\x10\x01\x88\x01\x01H\x00R\x03\x66qn:\xaa\x02\xbaH\xa6\x02\x1a\xa2\x01\n\x10\x65xclusive_fields\x12PEither use deprecated \'id\' field or one of \'namespace_id\' or \'fqn\', but not both\x1a<!(has(this.id) && (has(this.namespace_id) || has(this.fqn)))\x1a\x7f\n\x0frequired_fields\x12\x33\x45ither id or one of namespace_id or fqn must be set\x1a\x37has(this.id) || has(this.namespace_id) || has(this.fqn)B\x0c\n\nidentifier\"G\n\x14GetNamespaceResponse\x12/\n\tnamespace\x18\x01 \x01(\x0b\x32\x11.policy.NamespaceR\tnamespace\"{\n\x15ListNamespacesRequest\x12-\n\x05state\x18\x01 \x01(\x0e\x32\x17.common.ActiveStateEnumR\x05state\x12\x33\n\npagination\x18\n \x01(\x0b\x32\x13.policy.PageRequestR\npagination\"\x81\x01\n\x16ListNamespacesResponse\x12\x31\n\nnamespaces\x18\x01 \x03(\x0b\x32\x11.policy.NamespaceR\nnamespaces\x12\x34\n\npagination\x18\n \x01(\x0b\x32\x14.policy.PageResponseR\npagination\"\xfe\x04\n\x16\x43reateNamespaceRequest\x12\xae\x04\n\x04name\x18\x01 \x01(\tB\x99\x04\xbaH\x95\x04r\x03\x18\xfd\x01\xba\x01\x89\x04\n\x10namespace_format\x12\xa1\x03Namespace must be a valid hostname. It should include at least one dot, with each segment (label) starting and ending with an alphanumeric character. Each label must be 1 to 63 characters long, allowing hyphens but not as the first or last character. The top-level domain (the last segment after the final dot) must consist of at least two alphabetic characters. The stored namespace will be normalized to lower case.\x1aQthis.matches(\'^([a-zA-Z0-9]([a-zA-Z0-9\\\\-]{0,61}[a-zA-Z0-9])?\\\\.)+[a-zA-Z]{2,}$\')\xc8\x01\x01R\x04name\x12\x33\n\x08metadata\x18\x64 \x01(\x0b\x32\x17.common.MetadataMutableR\x08metadata\"J\n\x17\x43reateNamespaceResponse\x12/\n\tnamespace\x18\x01 \x01(\x0b\x32\x11.policy.NamespaceR\tnamespace\"\xbd\x01\n\x16UpdateNamespaceRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x33\n\x08metadata\x18\x64 \x01(\x0b\x32\x17.common.MetadataMutableR\x08metadata\x12T\n\x18metadata_update_behavior\x18\x65 \x01(\x0e\x32\x1a.common.MetadataUpdateEnumR\x16metadataUpdateBehavior\"J\n\x17UpdateNamespaceResponse\x12/\n\tnamespace\x18\x01 \x01(\x0b\x32\x11.policy.NamespaceR\tnamespace\"6\n\x1a\x44\x65\x61\x63tivateNamespaceRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\"\x1d\n\x1b\x44\x65\x61\x63tivateNamespaceResponse\"\x99\x01\n\'AssignKeyAccessServerToNamespaceRequest\x12j\n\x1bnamespace_key_access_server\x18\x01 \x01(\x0b\x32+.policy.namespaces.NamespaceKeyAccessServerR\x18namespaceKeyAccessServer:\x02\x18\x01\"\x96\x01\n(AssignKeyAccessServerToNamespaceResponse\x12j\n\x1bnamespace_key_access_server\x18\x01 \x01(\x0b\x32+.policy.namespaces.NamespaceKeyAccessServerR\x18namespaceKeyAccessServer\"\x9b\x01\n)RemoveKeyAccessServerFromNamespaceRequest\x12j\n\x1bnamespace_key_access_server\x18\x01 \x01(\x0b\x32+.policy.namespaces.NamespaceKeyAccessServerR\x18namespaceKeyAccessServer:\x02\x18\x01\"\x98\x01\n*RemoveKeyAccessServerFromNamespaceResponse\x12j\n\x1bnamespace_key_access_server\x18\x01 \x01(\x0b\x32+.policy.namespaces.NamespaceKeyAccessServerR\x18namespaceKeyAccessServer\"q\n!AssignPublicKeyToNamespaceRequest\x12L\n\rnamespace_key\x18\x01 \x01(\x0b\x32\x1f.policy.namespaces.NamespaceKeyB\x06\xbaH\x03\xc8\x01\x01R\x0cnamespaceKey\"j\n\"AssignPublicKeyToNamespaceResponse\x12\x44\n\rnamespace_key\x18\x01 \x01(\x0b\x32\x1f.policy.namespaces.NamespaceKeyR\x0cnamespaceKey\"s\n#RemovePublicKeyFromNamespaceRequest\x12L\n\rnamespace_key\x18\x01 \x01(\x0b\x32\x1f.policy.namespaces.NamespaceKeyB\x06\xbaH\x03\xc8\x01\x01R\x0cnamespaceKey\"l\n$RemovePublicKeyFromNamespaceResponse\x12\x44\n\rnamespace_key\x18\x01 \x01(\x0b\x32\x1f.policy.namespaces.NamespaceKeyR\x0cnamespaceKey\"\x89\x01\n\x14NamespaceCertificate\x12=\n\tnamespace\x18\x01 \x01(\x0b\x32\x17.common.IdFqnIdentifierB\x06\xbaH\x03\xc8\x01\x01R\tnamespace\x12\x32\n\x0e\x63\x65rtificate_id\x18\x02 \x01(\tB\x0b\xbaH\x08r\x03\xb0\x01\x01\xc8\x01\x01R\rcertificateId\"\xb3\x01\n#AssignCertificateToNamespaceRequest\x12=\n\tnamespace\x18\x01 \x01(\x0b\x32\x17.common.IdFqnIdentifierB\x06\xbaH\x03\xc8\x01\x01R\tnamespace\x12\x18\n\x03pem\x18\x02 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\x03pem\x12\x33\n\x08metadata\x18\x64 \x01(\x0b\x32\x17.common.MetadataMutableR\x08metadata\"\xbb\x01\n$AssignCertificateToNamespaceResponse\x12\\\n\x15namespace_certificate\x18\x01 \x01(\x0b\x32\'.policy.namespaces.NamespaceCertificateR\x14namespaceCertificate\x12\x35\n\x0b\x63\x65rtificate\x18\x02 \x01(\x0b\x32\x13.policy.CertificateR\x0b\x63\x65rtificate\"\x8d\x01\n%RemoveCertificateFromNamespaceRequest\x12\x64\n\x15namespace_certificate\x18\x01 \x01(\x0b\x32\'.policy.namespaces.NamespaceCertificateB\x06\xbaH\x03\xc8\x01\x01R\x14namespaceCertificate\"\x86\x01\n&RemoveCertificateFromNamespaceResponse\x12\\\n\x15namespace_certificate\x18\x01 \x01(\x0b\x32\'.policy.namespaces.NamespaceCertificateR\x14namespaceCertificate2\xd0\x0b\n\x10NamespaceService\x12\x64\n\x0cGetNamespace\x12&.policy.namespaces.GetNamespaceRequest\x1a\'.policy.namespaces.GetNamespaceResponse\"\x03\x90\x02\x01\x12j\n\x0eListNamespaces\x12(.policy.namespaces.ListNamespacesRequest\x1a).policy.namespaces.ListNamespacesResponse\"\x03\x90\x02\x01\x12j\n\x0f\x43reateNamespace\x12).policy.namespaces.CreateNamespaceRequest\x1a*.policy.namespaces.CreateNamespaceResponse\"\x00\x12j\n\x0fUpdateNamespace\x12).policy.namespaces.UpdateNamespaceRequest\x1a*.policy.namespaces.UpdateNamespaceResponse\"\x00\x12v\n\x13\x44\x65\x61\x63tivateNamespace\x12-.policy.namespaces.DeactivateNamespaceRequest\x1a..policy.namespaces.DeactivateNamespaceResponse\"\x00\x12\xa0\x01\n AssignKeyAccessServerToNamespace\x12:.policy.namespaces.AssignKeyAccessServerToNamespaceRequest\x1a;.policy.namespaces.AssignKeyAccessServerToNamespaceResponse\"\x03\x88\x02\x01\x12\xa6\x01\n\"RemoveKeyAccessServerFromNamespace\x12<.policy.namespaces.RemoveKeyAccessServerFromNamespaceRequest\x1a=.policy.namespaces.RemoveKeyAccessServerFromNamespaceResponse\"\x03\x88\x02\x01\x12\x8b\x01\n\x1a\x41ssignPublicKeyToNamespace\x12\x34.policy.namespaces.AssignPublicKeyToNamespaceRequest\x1a\x35.policy.namespaces.AssignPublicKeyToNamespaceResponse\"\x00\x12\x91\x01\n\x1cRemovePublicKeyFromNamespace\x12\x36.policy.namespaces.RemovePublicKeyFromNamespaceRequest\x1a\x37.policy.namespaces.RemovePublicKeyFromNamespaceResponse\"\x00\x12\x91\x01\n\x1c\x41ssignCertificateToNamespace\x12\x36.policy.namespaces.AssignCertificateToNamespaceRequest\x1a\x37.policy.namespaces.AssignCertificateToNamespaceResponse\"\x00\x12\x97\x01\n\x1eRemoveCertificateFromNamespace\x12\x38.policy.namespaces.RemoveCertificateFromNamespaceRequest\x1a\x39.policy.namespaces.RemoveCertificateFromNamespaceResponse\"\x00\x42\x8d\x01\n\x15\x63om.policy.namespacesB\x0fNamespacesProtoP\x01\xa2\x02\x03PNX\xaa\x02\x11Policy.Namespaces\xca\x02\x11Policy\\Namespaces\xe2\x02\x1dPolicy\\Namespaces\\GPBMetadata\xea\x02\x12Policy::Namespacesb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\"policy/namespaces/namespaces.proto\x12\x11policy.namespaces\x1a\x1b\x62uf/validate/validate.proto\x1a\x13\x63ommon/common.proto\x1a\x14policy/objects.proto\x1a\x16policy/selectors.proto\"\x86\x01\n\x18NamespaceKeyAccessServer\x12+\n\x0cnamespace_id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x0bnamespaceId\x12\x39\n\x14key_access_server_id\x18\x02 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x11keyAccessServerId:\x02\x18\x01\"b\n\x0cNamespaceKey\x12.\n\x0cnamespace_id\x18\x01 \x01(\tB\x0b\xbaH\x08r\x03\xb0\x01\x01\xc8\x01\x01R\x0bnamespaceId\x12\"\n\x06key_id\x18\x02 \x01(\tB\x0b\xbaH\x08r\x03\xb0\x01\x01\xc8\x01\x01R\x05keyId\"\xbe\x03\n\x13GetNamespaceRequest\x12\x1d\n\x02id\x18\x01 \x01(\tB\r\x18\x01\xbaH\x08r\x03\xb0\x01\x01\xd8\x01\x01R\x02id\x12-\n\x0cnamespace_id\x18\x02 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01H\x00R\x0bnamespaceId\x12\x1e\n\x03\x66qn\x18\x03 \x01(\tB\n\xbaH\x07r\x05\x10\x01\x88\x01\x01H\x00R\x03\x66qn:\xaa\x02\xbaH\xa6\x02\x1a\xa2\x01\n\x10\x65xclusive_fields\x12PEither use deprecated \'id\' field or one of \'namespace_id\' or \'fqn\', but not both\x1a<!(has(this.id) && (has(this.namespace_id) || has(this.fqn)))\x1a\x7f\n\x0frequired_fields\x12\x33\x45ither id or one of namespace_id or fqn must be set\x1a\x37has(this.id) || has(this.namespace_id) || has(this.fqn)B\x0c\n\nidentifier\"G\n\x14GetNamespaceResponse\x12/\n\tnamespace\x18\x01 \x01(\x0b\x32\x11.policy.NamespaceR\tnamespace\"\x82\x01\n\x0eNamespacesSort\x12;\n\x05\x66ield\x18\x01 \x01(\x0e\x32%.policy.namespaces.SortNamespacesTypeR\x05\x66ield\x12\x33\n\tdirection\x18\x02 \x01(\x0e\x32\x15.policy.SortDirectionR\tdirection\"\xbc\x01\n\x15ListNamespacesRequest\x12-\n\x05state\x18\x01 \x01(\x0e\x32\x17.common.ActiveStateEnumR\x05state\x12\x33\n\npagination\x18\n \x01(\x0b\x32\x13.policy.PageRequestR\npagination\x12?\n\x04sort\x18\x0b \x03(\x0b\x32!.policy.namespaces.NamespacesSortB\x08\xbaH\x05\x92\x01\x02\x10\x01R\x04sort\"\x81\x01\n\x16ListNamespacesResponse\x12\x31\n\nnamespaces\x18\x01 \x03(\x0b\x32\x11.policy.NamespaceR\nnamespaces\x12\x34\n\npagination\x18\n \x01(\x0b\x32\x14.policy.PageResponseR\npagination\"\xfe\x04\n\x16\x43reateNamespaceRequest\x12\xae\x04\n\x04name\x18\x01 \x01(\tB\x99\x04\xbaH\x95\x04r\x03\x18\xfd\x01\xba\x01\x89\x04\n\x10namespace_format\x12\xa1\x03Namespace must be a valid hostname. It should include at least one dot, with each segment (label) starting and ending with an alphanumeric character. Each label must be 1 to 63 characters long, allowing hyphens but not as the first or last character. The top-level domain (the last segment after the final dot) must consist of at least two alphabetic characters. The stored namespace will be normalized to lower case.\x1aQthis.matches(\'^([a-zA-Z0-9]([a-zA-Z0-9\\\\-]{0,61}[a-zA-Z0-9])?\\\\.)+[a-zA-Z]{2,}$\')\xc8\x01\x01R\x04name\x12\x33\n\x08metadata\x18\x64 \x01(\x0b\x32\x17.common.MetadataMutableR\x08metadata\"J\n\x17\x43reateNamespaceResponse\x12/\n\tnamespace\x18\x01 \x01(\x0b\x32\x11.policy.NamespaceR\tnamespace\"\xbd\x01\n\x16UpdateNamespaceRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x33\n\x08metadata\x18\x64 \x01(\x0b\x32\x17.common.MetadataMutableR\x08metadata\x12T\n\x18metadata_update_behavior\x18\x65 \x01(\x0e\x32\x1a.common.MetadataUpdateEnumR\x16metadataUpdateBehavior\"J\n\x17UpdateNamespaceResponse\x12/\n\tnamespace\x18\x01 \x01(\x0b\x32\x11.policy.NamespaceR\tnamespace\"6\n\x1a\x44\x65\x61\x63tivateNamespaceRequest\x12\x18\n\x02id\x18\x01 \x01(\tB\x08\xbaH\x05r\x03\xb0\x01\x01R\x02id\"\x1d\n\x1b\x44\x65\x61\x63tivateNamespaceResponse\"\x99\x01\n\'AssignKeyAccessServerToNamespaceRequest\x12j\n\x1bnamespace_key_access_server\x18\x01 \x01(\x0b\x32+.policy.namespaces.NamespaceKeyAccessServerR\x18namespaceKeyAccessServer:\x02\x18\x01\"\x96\x01\n(AssignKeyAccessServerToNamespaceResponse\x12j\n\x1bnamespace_key_access_server\x18\x01 \x01(\x0b\x32+.policy.namespaces.NamespaceKeyAccessServerR\x18namespaceKeyAccessServer\"\x9b\x01\n)RemoveKeyAccessServerFromNamespaceRequest\x12j\n\x1bnamespace_key_access_server\x18\x01 \x01(\x0b\x32+.policy.namespaces.NamespaceKeyAccessServerR\x18namespaceKeyAccessServer:\x02\x18\x01\"\x98\x01\n*RemoveKeyAccessServerFromNamespaceResponse\x12j\n\x1bnamespace_key_access_server\x18\x01 \x01(\x0b\x32+.policy.namespaces.NamespaceKeyAccessServerR\x18namespaceKeyAccessServer\"q\n!AssignPublicKeyToNamespaceRequest\x12L\n\rnamespace_key\x18\x01 \x01(\x0b\x32\x1f.policy.namespaces.NamespaceKeyB\x06\xbaH\x03\xc8\x01\x01R\x0cnamespaceKey\"j\n\"AssignPublicKeyToNamespaceResponse\x12\x44\n\rnamespace_key\x18\x01 \x01(\x0b\x32\x1f.policy.namespaces.NamespaceKeyR\x0cnamespaceKey\"s\n#RemovePublicKeyFromNamespaceRequest\x12L\n\rnamespace_key\x18\x01 \x01(\x0b\x32\x1f.policy.namespaces.NamespaceKeyB\x06\xbaH\x03\xc8\x01\x01R\x0cnamespaceKey\"l\n$RemovePublicKeyFromNamespaceResponse\x12\x44\n\rnamespace_key\x18\x01 \x01(\x0b\x32\x1f.policy.namespaces.NamespaceKeyR\x0cnamespaceKey*\xc1\x01\n\x12SortNamespacesType\x12$\n SORT_NAMESPACES_TYPE_UNSPECIFIED\x10\x00\x12\x1d\n\x19SORT_NAMESPACES_TYPE_NAME\x10\x01\x12\x1c\n\x18SORT_NAMESPACES_TYPE_FQN\x10\x02\x12#\n\x1fSORT_NAMESPACES_TYPE_CREATED_AT\x10\x03\x12#\n\x1fSORT_NAMESPACES_TYPE_UPDATED_AT\x10\x04\x32\xa2\t\n\x10NamespaceService\x12\x64\n\x0cGetNamespace\x12&.policy.namespaces.GetNamespaceRequest\x1a\'.policy.namespaces.GetNamespaceResponse\"\x03\x90\x02\x01\x12j\n\x0eListNamespaces\x12(.policy.namespaces.ListNamespacesRequest\x1a).policy.namespaces.ListNamespacesResponse\"\x03\x90\x02\x01\x12j\n\x0f\x43reateNamespace\x12).policy.namespaces.CreateNamespaceRequest\x1a*.policy.namespaces.CreateNamespaceResponse\"\x00\x12j\n\x0fUpdateNamespace\x12).policy.namespaces.UpdateNamespaceRequest\x1a*.policy.namespaces.UpdateNamespaceResponse\"\x00\x12v\n\x13\x44\x65\x61\x63tivateNamespace\x12-.policy.namespaces.DeactivateNamespaceRequest\x1a..policy.namespaces.DeactivateNamespaceResponse\"\x00\x12\xa0\x01\n AssignKeyAccessServerToNamespace\x12:.policy.namespaces.AssignKeyAccessServerToNamespaceRequest\x1a;.policy.namespaces.AssignKeyAccessServerToNamespaceResponse\"\x03\x88\x02\x01\x12\xa6\x01\n\"RemoveKeyAccessServerFromNamespace\x12<.policy.namespaces.RemoveKeyAccessServerFromNamespaceRequest\x1a=.policy.namespaces.RemoveKeyAccessServerFromNamespaceResponse\"\x03\x88\x02\x01\x12\x8b\x01\n\x1a\x41ssignPublicKeyToNamespace\x12\x34.policy.namespaces.AssignPublicKeyToNamespaceRequest\x1a\x35.policy.namespaces.AssignPublicKeyToNamespaceResponse\"\x00\x12\x91\x01\n\x1cRemovePublicKeyFromNamespace\x12\x36.policy.namespaces.RemovePublicKeyFromNamespaceRequest\x1a\x37.policy.namespaces.RemovePublicKeyFromNamespaceResponse\"\x00\x42\x8d\x01\n\x15\x63om.policy.namespacesB\x0fNamespacesProtoP\x01\xa2\x02\x03PNX\xaa\x02\x11Policy.Namespaces\xca\x02\x11Policy\\Namespaces\xe2\x02\x1dPolicy\\Namespaces\\GPBMetadata\xea\x02\x12Policy::Namespacesb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -54,6 +54,8 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_GETNAMESPACEREQUEST'].fields_by_name['fqn']._serialized_options = b'\272H\007r\005\020\001\210\001\001'
   _globals['_GETNAMESPACEREQUEST']._loaded_options = None
   _globals['_GETNAMESPACEREQUEST']._serialized_options = b'\272H\246\002\032\242\001\n\020exclusive_fields\022PEither use deprecated \'id\' field or one of \'namespace_id\' or \'fqn\', but not both\032<!(has(this.id) && (has(this.namespace_id) || has(this.fqn)))\032\177\n\017required_fields\0223Either id or one of namespace_id or fqn must be set\0327has(this.id) || has(this.namespace_id) || has(this.fqn)'
+  _globals['_LISTNAMESPACESREQUEST'].fields_by_name['sort']._loaded_options = None
+  _globals['_LISTNAMESPACESREQUEST'].fields_by_name['sort']._serialized_options = b'\272H\005\222\001\002\020\001'
   _globals['_CREATENAMESPACEREQUEST'].fields_by_name['name']._loaded_options = None
   _globals['_CREATENAMESPACEREQUEST'].fields_by_name['name']._serialized_options = b'\272H\225\004r\003\030\375\001\272\001\211\004\n\020namespace_format\022\241\003Namespace must be a valid hostname. It should include at least one dot, with each segment (label) starting and ending with an alphanumeric character. Each label must be 1 to 63 characters long, allowing hyphens but not as the first or last character. The top-level domain (the last segment after the final dot) must consist of at least two alphabetic characters. The stored namespace will be normalized to lower case.\032Qthis.matches(\'^([a-zA-Z0-9]([a-zA-Z0-9\\\\-]{0,61}[a-zA-Z0-9])?\\\\.)+[a-zA-Z]{2,}$\')\310\001\001'
   _globals['_UPDATENAMESPACEREQUEST'].fields_by_name['id']._loaded_options = None
@@ -68,16 +70,6 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_ASSIGNPUBLICKEYTONAMESPACEREQUEST'].fields_by_name['namespace_key']._serialized_options = b'\272H\003\310\001\001'
   _globals['_REMOVEPUBLICKEYFROMNAMESPACEREQUEST'].fields_by_name['namespace_key']._loaded_options = None
   _globals['_REMOVEPUBLICKEYFROMNAMESPACEREQUEST'].fields_by_name['namespace_key']._serialized_options = b'\272H\003\310\001\001'
-  _globals['_NAMESPACECERTIFICATE'].fields_by_name['namespace']._loaded_options = None
-  _globals['_NAMESPACECERTIFICATE'].fields_by_name['namespace']._serialized_options = b'\272H\003\310\001\001'
-  _globals['_NAMESPACECERTIFICATE'].fields_by_name['certificate_id']._loaded_options = None
-  _globals['_NAMESPACECERTIFICATE'].fields_by_name['certificate_id']._serialized_options = b'\272H\010r\003\260\001\001\310\001\001'
-  _globals['_ASSIGNCERTIFICATETONAMESPACEREQUEST'].fields_by_name['namespace']._loaded_options = None
-  _globals['_ASSIGNCERTIFICATETONAMESPACEREQUEST'].fields_by_name['namespace']._serialized_options = b'\272H\003\310\001\001'
-  _globals['_ASSIGNCERTIFICATETONAMESPACEREQUEST'].fields_by_name['pem']._loaded_options = None
-  _globals['_ASSIGNCERTIFICATETONAMESPACEREQUEST'].fields_by_name['pem']._serialized_options = b'\272H\003\310\001\001'
-  _globals['_REMOVECERTIFICATEFROMNAMESPACEREQUEST'].fields_by_name['namespace_certificate']._loaded_options = None
-  _globals['_REMOVECERTIFICATEFROMNAMESPACEREQUEST'].fields_by_name['namespace_certificate']._serialized_options = b'\272H\003\310\001\001'
   _globals['_NAMESPACESERVICE'].methods_by_name['GetNamespace']._loaded_options = None
   _globals['_NAMESPACESERVICE'].methods_by_name['GetNamespace']._serialized_options = b'\220\002\001'
   _globals['_NAMESPACESERVICE'].methods_by_name['ListNamespaces']._loaded_options = None
@@ -86,6 +78,8 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_NAMESPACESERVICE'].methods_by_name['AssignKeyAccessServerToNamespace']._serialized_options = b'\210\002\001'
   _globals['_NAMESPACESERVICE'].methods_by_name['RemoveKeyAccessServerFromNamespace']._loaded_options = None
   _globals['_NAMESPACESERVICE'].methods_by_name['RemoveKeyAccessServerFromNamespace']._serialized_options = b'\210\002\001'
+  _globals['_SORTNAMESPACESTYPE']._serialized_start=3513
+  _globals['_SORTNAMESPACESTYPE']._serialized_end=3706
   _globals['_NAMESPACEKEYACCESSSERVER']._serialized_start=154
   _globals['_NAMESPACEKEYACCESSSERVER']._serialized_end=288
   _globals['_NAMESPACEKEY']._serialized_start=290
@@ -94,48 +88,40 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_GETNAMESPACEREQUEST']._serialized_end=837
   _globals['_GETNAMESPACERESPONSE']._serialized_start=839
   _globals['_GETNAMESPACERESPONSE']._serialized_end=910
-  _globals['_LISTNAMESPACESREQUEST']._serialized_start=912
-  _globals['_LISTNAMESPACESREQUEST']._serialized_end=1035
-  _globals['_LISTNAMESPACESRESPONSE']._serialized_start=1038
-  _globals['_LISTNAMESPACESRESPONSE']._serialized_end=1167
-  _globals['_CREATENAMESPACEREQUEST']._serialized_start=1170
-  _globals['_CREATENAMESPACEREQUEST']._serialized_end=1808
-  _globals['_CREATENAMESPACERESPONSE']._serialized_start=1810
-  _globals['_CREATENAMESPACERESPONSE']._serialized_end=1884
-  _globals['_UPDATENAMESPACEREQUEST']._serialized_start=1887
-  _globals['_UPDATENAMESPACEREQUEST']._serialized_end=2076
-  _globals['_UPDATENAMESPACERESPONSE']._serialized_start=2078
-  _globals['_UPDATENAMESPACERESPONSE']._serialized_end=2152
-  _globals['_DEACTIVATENAMESPACEREQUEST']._serialized_start=2154
-  _globals['_DEACTIVATENAMESPACEREQUEST']._serialized_end=2208
-  _globals['_DEACTIVATENAMESPACERESPONSE']._serialized_start=2210
-  _globals['_DEACTIVATENAMESPACERESPONSE']._serialized_end=2239
-  _globals['_ASSIGNKEYACCESSSERVERTONAMESPACEREQUEST']._serialized_start=2242
-  _globals['_ASSIGNKEYACCESSSERVERTONAMESPACEREQUEST']._serialized_end=2395
-  _globals['_ASSIGNKEYACCESSSERVERTONAMESPACERESPONSE']._serialized_start=2398
-  _globals['_ASSIGNKEYACCESSSERVERTONAMESPACERESPONSE']._serialized_end=2548
-  _globals['_REMOVEKEYACCESSSERVERFROMNAMESPACEREQUEST']._serialized_start=2551
-  _globals['_REMOVEKEYACCESSSERVERFROMNAMESPACEREQUEST']._serialized_end=2706
-  _globals['_REMOVEKEYACCESSSERVERFROMNAMESPACERESPONSE']._serialized_start=2709
-  _globals['_REMOVEKEYACCESSSERVERFROMNAMESPACERESPONSE']._serialized_end=2861
-  _globals['_ASSIGNPUBLICKEYTONAMESPACEREQUEST']._serialized_start=2863
-  _globals['_ASSIGNPUBLICKEYTONAMESPACEREQUEST']._serialized_end=2976
-  _globals['_ASSIGNPUBLICKEYTONAMESPACERESPONSE']._serialized_start=2978
-  _globals['_ASSIGNPUBLICKEYTONAMESPACERESPONSE']._serialized_end=3084
-  _globals['_REMOVEPUBLICKEYFROMNAMESPACEREQUEST']._serialized_start=3086
-  _globals['_REMOVEPUBLICKEYFROMNAMESPACEREQUEST']._serialized_end=3201
-  _globals['_REMOVEPUBLICKEYFROMNAMESPACERESPONSE']._serialized_start=3203
-  _globals['_REMOVEPUBLICKEYFROMNAMESPACERESPONSE']._serialized_end=3311
-  _globals['_NAMESPACECERTIFICATE']._serialized_start=3314
-  _globals['_NAMESPACECERTIFICATE']._serialized_end=3451
-  _globals['_ASSIGNCERTIFICATETONAMESPACEREQUEST']._serialized_start=3454
-  _globals['_ASSIGNCERTIFICATETONAMESPACEREQUEST']._serialized_end=3633
-  _globals['_ASSIGNCERTIFICATETONAMESPACERESPONSE']._serialized_start=3636
-  _globals['_ASSIGNCERTIFICATETONAMESPACERESPONSE']._serialized_end=3823
-  _globals['_REMOVECERTIFICATEFROMNAMESPACEREQUEST']._serialized_start=3826
-  _globals['_REMOVECERTIFICATEFROMNAMESPACEREQUEST']._serialized_end=3967
-  _globals['_REMOVECERTIFICATEFROMNAMESPACERESPONSE']._serialized_start=3970
-  _globals['_REMOVECERTIFICATEFROMNAMESPACERESPONSE']._serialized_end=4104
-  _globals['_NAMESPACESERVICE']._serialized_start=4107
-  _globals['_NAMESPACESERVICE']._serialized_end=5595
+  _globals['_NAMESPACESSORT']._serialized_start=913
+  _globals['_NAMESPACESSORT']._serialized_end=1043
+  _globals['_LISTNAMESPACESREQUEST']._serialized_start=1046
+  _globals['_LISTNAMESPACESREQUEST']._serialized_end=1234
+  _globals['_LISTNAMESPACESRESPONSE']._serialized_start=1237
+  _globals['_LISTNAMESPACESRESPONSE']._serialized_end=1366
+  _globals['_CREATENAMESPACEREQUEST']._serialized_start=1369
+  _globals['_CREATENAMESPACEREQUEST']._serialized_end=2007
+  _globals['_CREATENAMESPACERESPONSE']._serialized_start=2009
+  _globals['_CREATENAMESPACERESPONSE']._serialized_end=2083
+  _globals['_UPDATENAMESPACEREQUEST']._serialized_start=2086
+  _globals['_UPDATENAMESPACEREQUEST']._serialized_end=2275
+  _globals['_UPDATENAMESPACERESPONSE']._serialized_start=2277
+  _globals['_UPDATENAMESPACERESPONSE']._serialized_end=2351
+  _globals['_DEACTIVATENAMESPACEREQUEST']._serialized_start=2353
+  _globals['_DEACTIVATENAMESPACEREQUEST']._serialized_end=2407
+  _globals['_DEACTIVATENAMESPACERESPONSE']._serialized_start=2409
+  _globals['_DEACTIVATENAMESPACERESPONSE']._serialized_end=2438
+  _globals['_ASSIGNKEYACCESSSERVERTONAMESPACEREQUEST']._serialized_start=2441
+  _globals['_ASSIGNKEYACCESSSERVERTONAMESPACEREQUEST']._serialized_end=2594
+  _globals['_ASSIGNKEYACCESSSERVERTONAMESPACERESPONSE']._serialized_start=2597
+  _globals['_ASSIGNKEYACCESSSERVERTONAMESPACERESPONSE']._serialized_end=2747
+  _globals['_REMOVEKEYACCESSSERVERFROMNAMESPACEREQUEST']._serialized_start=2750
+  _globals['_REMOVEKEYACCESSSERVERFROMNAMESPACEREQUEST']._serialized_end=2905
+  _globals['_REMOVEKEYACCESSSERVERFROMNAMESPACERESPONSE']._serialized_start=2908
+  _globals['_REMOVEKEYACCESSSERVERFROMNAMESPACERESPONSE']._serialized_end=3060
+  _globals['_ASSIGNPUBLICKEYTONAMESPACEREQUEST']._serialized_start=3062
+  _globals['_ASSIGNPUBLICKEYTONAMESPACEREQUEST']._serialized_end=3175
+  _globals['_ASSIGNPUBLICKEYTONAMESPACERESPONSE']._serialized_start=3177
+  _globals['_ASSIGNPUBLICKEYTONAMESPACERESPONSE']._serialized_end=3283
+  _globals['_REMOVEPUBLICKEYFROMNAMESPACEREQUEST']._serialized_start=3285
+  _globals['_REMOVEPUBLICKEYFROMNAMESPACEREQUEST']._serialized_end=3400
+  _globals['_REMOVEPUBLICKEYFROMNAMESPACERESPONSE']._serialized_start=3402
+  _globals['_REMOVEPUBLICKEYFROMNAMESPACERESPONSE']._serialized_end=3510
+  _globals['_NAMESPACESERVICE']._serialized_start=3709
+  _globals['_NAMESPACESERVICE']._serialized_end=4895
 # @@protoc_insertion_point(module_scope)
