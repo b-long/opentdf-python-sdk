@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.7.3...otdf-python-v0.8.0) (2026-06-10)
+
+
+### Features
+
+* **main:** update proto GIT_TAG to service/v0.14.0 ([#141](https://github.com/b-long/opentdf-python-sdk/issues/141)) ([7d5a5b6](https://github.com/b-long/opentdf-python-sdk/commit/7d5a5b608a37b763ac84fb017b1bcc44604ee851))
+
 ## [0.7.3](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.7.2...otdf-python-v0.7.3) (2026-06-05)
 
 
