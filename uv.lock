@@ -439,7 +439,7 @@ wheels = [
 
 [[package]]
 name = "otdf-python"
-version = "0.7.3"
+version = "0.8.0"
 source = { editable = "packages/otdf-python" }
 dependencies = [
     { name = "connect-python" },
@@ -488,7 +488,7 @@ dev = [
 
 [[package]]
 name = "otdf-python-proto"
-version = "0.7.3"
+version = "0.8.0"
 source = { editable = "packages/otdf-python-proto" }
 dependencies = [
     { name = "connect-python" },
