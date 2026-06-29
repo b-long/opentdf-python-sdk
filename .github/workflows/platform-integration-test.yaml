@@ -23,14 +23,14 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout this repo
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
 
       # - uses: bufbuild/buf-setup-action@382440cdb8ec7bc25a68d7b4711163d95f7cc3aa
       #   with:
       #     github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check out platform
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           repository: opentdf/platform
           ref: service/v0.8.2
