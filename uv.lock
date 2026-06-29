@@ -478,7 +478,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "grpcio-tools", specifier = ">=1.74.0" },
-    { name = "protoc-gen-connect-python", specifier = ">=0.6.0,<0.7" },
+    { name = "protoc-gen-connect-python", specifier = ">=0.9.0,<0.10" },
     { name = "protoc-gen-openapiv2", specifier = ">=0.0.1" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
     { name = "pytest", specifier = ">=8.4.1" },
@@ -556,15 +556,15 @@ wheels = [
 
 [[package]]
 name = "protoc-gen-connect-python"
-version = "0.6.0"
+version = "0.9.0"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8f/3a/721ca3c27870596240b0d13dab40145b5de68147e4fdcdf9afc7684e905d/protoc_gen_connect_python-0.6.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:f7395905489de4af43e001b0439aa10680d35c023c9e61e9c7df08f5d5b4a41b", size = 1827154, upload-time = "2025-12-08T04:45:52.917Z" },
-    { url = "https://files.pythonhosted.org/packages/6e/92/45e07f3060a458809530c8dc48fa3a291e35ecc3560759b26a5aa371c4cb/protoc_gen_connect_python-0.6.0-py3-none-macosx_11_0_x86_64.whl", hash = "sha256:dd0673917cb357e3796d1f088bf5aba5cbc39ef785e68aa1c69d8663ff476be5", size = 1951153, upload-time = "2025-12-08T04:45:54.314Z" },
-    { url = "https://files.pythonhosted.org/packages/48/63/3d0b1ced6d0341afa3c7338eed46e4a070233d83577d7368a5acacce0781/protoc_gen_connect_python-0.6.0-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.musllinux_1_1_aarch64.whl", hash = "sha256:53fcb349100d3d1c1f297d0f3391daf25d75adaea0907acbfd8fa88b1ce6b028", size = 1761360, upload-time = "2025-12-08T04:45:55.861Z" },
-    { url = "https://files.pythonhosted.org/packages/11/6a/b123d1dfd4aecbc52f7ee325cddfa3ef972250e064365c1b10edf48a5736/protoc_gen_connect_python-0.6.0-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.musllinux_1_1_x86_64.whl", hash = "sha256:461d3c6a4ed73120404e65bd299dc4ddeea95a22abe08165119f0eae7c9abc9b", size = 1928744, upload-time = "2025-12-08T04:45:57.557Z" },
-    { url = "https://files.pythonhosted.org/packages/f1/d9/de885f34566df97ecc9ac782d11ff923ebf250c01dc9cf0159bfb694b094/protoc_gen_connect_python-0.6.0-py3-none-win_amd64.whl", hash = "sha256:cc02f64587bbb7ddd5c22686af1b521886121ffd97bc82f7dfec96564de44ca9", size = 1988083, upload-time = "2025-12-08T04:45:58.867Z" },
-    { url = "https://files.pythonhosted.org/packages/d4/1a/c3d7bf5eda1c0724f219dcc16bd219b6fcc41d3ab846e3a8af2f94b1a81f/protoc_gen_connect_python-0.6.0-py3-none-win_arm64.whl", hash = "sha256:1b89eff4e2289ac72b682a2637dc9cb60647a9b16fa6c56a6bdf229545f5bac8", size = 1793631, upload-time = "2025-12-08T04:46:00.401Z" },
+    { url = "https://files.pythonhosted.org/packages/4a/c3/216e30a2153eba4141f373e1266ff372107009674095a60ea718909736b4/protoc_gen_connect_python-0.9.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:821c9023e02db313b88c037f9a425316c01c2de58b3e3947c001ff1f060d4cac", size = 1876792, upload-time = "2026-03-19T02:40:51.527Z" },
+    { url = "https://files.pythonhosted.org/packages/6e/61/a577047b2b2832eb331777e6ce9a1fddffe09ea760023f0586f56019d5c5/protoc_gen_connect_python-0.9.0-py3-none-macosx_11_0_x86_64.whl", hash = "sha256:507f1c6a9de6c6d2442f6d1bf1c639cc699c510c5abacb1b63535c578c5fe3ae", size = 2021337, upload-time = "2026-03-19T02:40:53.697Z" },
+    { url = "https://files.pythonhosted.org/packages/30/01/c4f798f586fc82fdb794ce0504651f9c68dff716343d028bdcecb8f88c29/protoc_gen_connect_python-0.9.0-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.musllinux_1_1_aarch64.whl", hash = "sha256:3ffb917bce4a5d8af0af804711b24fc627e06843faefca3b5c6f700b7bd7307e", size = 1822549, upload-time = "2026-03-19T02:40:55.216Z" },
+    { url = "https://files.pythonhosted.org/packages/43/b3/8c6bac0e73c7c837297f078d0025fc1dbfa72834dfa8c78a1453cd123837/protoc_gen_connect_python-0.9.0-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.musllinux_1_1_x86_64.whl", hash = "sha256:7d563196a2d43797b1a72edfa7fdf2aa00dccefa9ca969e19466f7928049f1cf", size = 2011338, upload-time = "2026-03-19T02:40:56.818Z" },
+    { url = "https://files.pythonhosted.org/packages/0c/48/4adb0616be7617c8f2bdbec490e1086640c6eb9b4ece35ad6228cdc26c51/protoc_gen_connect_python-0.9.0-py3-none-win_amd64.whl", hash = "sha256:bd83efaff9d2eb703b69d057e95569755eec875a3728ce2f4944acb6f03538f6", size = 2062026, upload-time = "2026-03-19T02:40:58.416Z" },
+    { url = "https://files.pythonhosted.org/packages/e1/ea/7a4522f935f6b6c156054e283d0d00431ae52a5d677c5148a174e92aa6f0/protoc_gen_connect_python-0.9.0-py3-none-win_arm64.whl", hash = "sha256:0f6d7e11ccd82009f951da2f2770ef817fd1dc5664de8fedbef60372ef6ab256", size = 1843570, upload-time = "2026-03-19T02:40:59.991Z" },
 ]
 
 [[package]]

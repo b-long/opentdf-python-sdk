@@ -57,7 +57,7 @@ dev = [
     "pytest>=8.4.1",
     "ruff>=0.12.10",
     "tomli>=2.2.1 ; python_version < '3.11'",
-    "protoc-gen-connect-python>=0.6.0,<0.7",
+    "protoc-gen-connect-python>=0.9.0,<0.10",
     "grpcio-tools>=1.74.0",
     "protoc-gen-openapiv2>=0.0.1",
 ]
