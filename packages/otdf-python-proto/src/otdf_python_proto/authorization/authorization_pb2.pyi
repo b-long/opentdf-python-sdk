@@ -1,4 +1,3 @@
-from google.api import annotations_pb2 as _annotations_pb2
 from google.protobuf import any_pb2 as _any_pb2
 from policy import objects_pb2 as _objects_pb2
 from google.protobuf.internal import containers as _containers

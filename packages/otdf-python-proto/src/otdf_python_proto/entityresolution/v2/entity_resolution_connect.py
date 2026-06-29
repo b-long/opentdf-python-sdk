@@ -7,6 +7,7 @@ from typing import Protocol
 
 from connectrpc.client import ConnectClient, ConnectClientSync
 from connectrpc.code import Code
+from connectrpc.compression import Compression
 from connectrpc.errors import ConnectError
 from connectrpc.interceptor import Interceptor, InterceptorSync
 from connectrpc.method import IdempotencyLevel, MethodInfo
@@ -24,7 +25,7 @@ class EntityResolutionService(Protocol):
 
 
 class EntityResolutionServiceASGIApplication(ConnectASGIApplication[EntityResolutionService]):
-    def __init__(self, service: EntityResolutionService | AsyncGenerator[EntityResolutionService], *, interceptors: Iterable[Interceptor]=(), read_max_bytes: int | None = None) -> None:
+    def __init__(self, service: EntityResolutionService | AsyncGenerator[EntityResolutionService], *, interceptors: Iterable[Interceptor]=(), read_max_bytes: int | None = None, compressions: Iterable[Compression] | None = None) -> None:
         super().__init__(
             service=service,
             endpoints=lambda svc: {
@@ -51,6 +52,7 @@ class EntityResolutionServiceASGIApplication(ConnectASGIApplication[EntityResolu
             },
             interceptors=interceptors,
             read_max_bytes=read_max_bytes,
+            compressions=compressions,
         )
 
     @property
@@ -109,7 +111,7 @@ class EntityResolutionServiceSync(Protocol):
 
 
 class EntityResolutionServiceWSGIApplication(ConnectWSGIApplication):
-    def __init__(self, service: EntityResolutionServiceSync, interceptors: Iterable[InterceptorSync]=(), read_max_bytes: int | None = None) -> None:
+    def __init__(self, service: EntityResolutionServiceSync, interceptors: Iterable[InterceptorSync]=(), read_max_bytes: int | None = None, compressions: Iterable[Compression] | None = None) -> None:
         super().__init__(
             endpoints={
                 "/entityresolution.v2.EntityResolutionService/ResolveEntities": EndpointSync.unary(
@@ -135,6 +137,7 @@ class EntityResolutionServiceWSGIApplication(ConnectWSGIApplication):
             },
             interceptors=interceptors,
             read_max_bytes=read_max_bytes,
+            compressions=compressions,
         )
 
     @property

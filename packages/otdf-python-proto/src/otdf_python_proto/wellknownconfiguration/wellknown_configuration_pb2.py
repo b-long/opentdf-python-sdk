@@ -22,11 +22,10 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
-from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n4wellknownconfiguration/wellknown_configuration.proto\x12\x16wellknownconfiguration\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xce\x01\n\x0fWellKnownConfig\x12`\n\rconfiguration\x18\x01 \x03(\x0b\x32:.wellknownconfiguration.WellKnownConfig.ConfigurationEntryR\rconfiguration\x1aY\n\x12\x43onfigurationEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12-\n\x05value\x18\x02 \x01(\x0b\x32\x17.google.protobuf.StructR\x05value:\x02\x38\x01\"\"\n GetWellKnownConfigurationRequest\"b\n!GetWellKnownConfigurationResponse\x12=\n\rconfiguration\x18\x01 \x01(\x0b\x32\x17.google.protobuf.StructR\rconfiguration2\xd4\x01\n\x10WellKnownService\x12\xbf\x01\n\x19GetWellKnownConfiguration\x12\x38.wellknownconfiguration.GetWellKnownConfigurationRequest\x1a\x39.wellknownconfiguration.GetWellKnownConfigurationResponse\"-\x90\x02\x01\x82\xd3\xe4\x93\x02$\x12\"/.well-known/opentdf-configurationB\xb1\x01\n\x1a\x63om.wellknownconfigurationB\x1bWellknownConfigurationProtoP\x01\xa2\x02\x03WXX\xaa\x02\x16Wellknownconfiguration\xca\x02\x16Wellknownconfiguration\xe2\x02\"Wellknownconfiguration\\GPBMetadata\xea\x02\x16Wellknownconfigurationb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n4wellknownconfiguration/wellknown_configuration.proto\x12\x16wellknownconfiguration\x1a\x1cgoogle/protobuf/struct.proto\"\xce\x01\n\x0fWellKnownConfig\x12`\n\rconfiguration\x18\x01 \x03(\x0b\x32:.wellknownconfiguration.WellKnownConfig.ConfigurationEntryR\rconfiguration\x1aY\n\x12\x43onfigurationEntry\x12\x10\n\x03key\x18\x01 \x01(\tR\x03key\x12-\n\x05value\x18\x02 \x01(\x0b\x32\x17.google.protobuf.StructR\x05value:\x02\x38\x01\"\"\n GetWellKnownConfigurationRequest\"b\n!GetWellKnownConfigurationResponse\x12=\n\rconfiguration\x18\x01 \x01(\x0b\x32\x17.google.protobuf.StructR\rconfiguration2\xaa\x01\n\x10WellKnownService\x12\x95\x01\n\x19GetWellKnownConfiguration\x12\x38.wellknownconfiguration.GetWellKnownConfigurationRequest\x1a\x39.wellknownconfiguration.GetWellKnownConfigurationResponse\"\x03\x90\x02\x01\x42\xb1\x01\n\x1a\x63om.wellknownconfigurationB\x1bWellknownConfigurationProtoP\x01\xa2\x02\x03WXX\xaa\x02\x16Wellknownconfiguration\xca\x02\x16Wellknownconfiguration\xe2\x02\"Wellknownconfiguration\\GPBMetadata\xea\x02\x16Wellknownconfigurationb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -37,15 +36,15 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_WELLKNOWNCONFIG_CONFIGURATIONENTRY']._loaded_options = None
   _globals['_WELLKNOWNCONFIG_CONFIGURATIONENTRY']._serialized_options = b'8\001'
   _globals['_WELLKNOWNSERVICE'].methods_by_name['GetWellKnownConfiguration']._loaded_options = None
-  _globals['_WELLKNOWNSERVICE'].methods_by_name['GetWellKnownConfiguration']._serialized_options = b'\220\002\001\202\323\344\223\002$\022\"/.well-known/opentdf-configuration'
-  _globals['_WELLKNOWNCONFIG']._serialized_start=141
-  _globals['_WELLKNOWNCONFIG']._serialized_end=347
-  _globals['_WELLKNOWNCONFIG_CONFIGURATIONENTRY']._serialized_start=258
-  _globals['_WELLKNOWNCONFIG_CONFIGURATIONENTRY']._serialized_end=347
-  _globals['_GETWELLKNOWNCONFIGURATIONREQUEST']._serialized_start=349
-  _globals['_GETWELLKNOWNCONFIGURATIONREQUEST']._serialized_end=383
-  _globals['_GETWELLKNOWNCONFIGURATIONRESPONSE']._serialized_start=385
-  _globals['_GETWELLKNOWNCONFIGURATIONRESPONSE']._serialized_end=483
-  _globals['_WELLKNOWNSERVICE']._serialized_start=486
-  _globals['_WELLKNOWNSERVICE']._serialized_end=698
+  _globals['_WELLKNOWNSERVICE'].methods_by_name['GetWellKnownConfiguration']._serialized_options = b'\220\002\001'
+  _globals['_WELLKNOWNCONFIG']._serialized_start=111
+  _globals['_WELLKNOWNCONFIG']._serialized_end=317
+  _globals['_WELLKNOWNCONFIG_CONFIGURATIONENTRY']._serialized_start=228
+  _globals['_WELLKNOWNCONFIG_CONFIGURATIONENTRY']._serialized_end=317
+  _globals['_GETWELLKNOWNCONFIGURATIONREQUEST']._serialized_start=319
+  _globals['_GETWELLKNOWNCONFIGURATIONREQUEST']._serialized_end=353
+  _globals['_GETWELLKNOWNCONFIGURATIONRESPONSE']._serialized_start=355
+  _globals['_GETWELLKNOWNCONFIGURATIONRESPONSE']._serialized_end=453
+  _globals['_WELLKNOWNSERVICE']._serialized_start=456
+  _globals['_WELLKNOWNSERVICE']._serialized_end=626
 # @@protoc_insertion_point(module_scope)

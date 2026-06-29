@@ -7,6 +7,7 @@ from typing import Protocol
 
 from connectrpc.client import ConnectClient, ConnectClientSync
 from connectrpc.code import Code
+from connectrpc.compression import Compression
 from connectrpc.errors import ConnectError
 from connectrpc.interceptor import Interceptor, InterceptorSync
 from connectrpc.method import IdempotencyLevel, MethodInfo
@@ -60,7 +61,7 @@ class KeyAccessServerRegistryService(Protocol):
 
 
 class KeyAccessServerRegistryServiceASGIApplication(ConnectASGIApplication[KeyAccessServerRegistryService]):
-    def __init__(self, service: KeyAccessServerRegistryService | AsyncGenerator[KeyAccessServerRegistryService], *, interceptors: Iterable[Interceptor]=(), read_max_bytes: int | None = None) -> None:
+    def __init__(self, service: KeyAccessServerRegistryService | AsyncGenerator[KeyAccessServerRegistryService], *, interceptors: Iterable[Interceptor]=(), read_max_bytes: int | None = None, compressions: Iterable[Compression] | None = None) -> None:
         super().__init__(
             service=service,
             endpoints=lambda svc: {
@@ -207,6 +208,7 @@ class KeyAccessServerRegistryServiceASGIApplication(ConnectASGIApplication[KeyAc
             },
             interceptors=interceptors,
             read_max_bytes=read_max_bytes,
+            compressions=compressions,
         )
 
     @property
@@ -535,7 +537,7 @@ class KeyAccessServerRegistryServiceSync(Protocol):
 
 
 class KeyAccessServerRegistryServiceWSGIApplication(ConnectWSGIApplication):
-    def __init__(self, service: KeyAccessServerRegistryServiceSync, interceptors: Iterable[InterceptorSync]=(), read_max_bytes: int | None = None) -> None:
+    def __init__(self, service: KeyAccessServerRegistryServiceSync, interceptors: Iterable[InterceptorSync]=(), read_max_bytes: int | None = None, compressions: Iterable[Compression] | None = None) -> None:
         super().__init__(
             endpoints={
                 "/policy.kasregistry.KeyAccessServerRegistryService/ListKeyAccessServers": EndpointSync.unary(
@@ -681,6 +683,7 @@ class KeyAccessServerRegistryServiceWSGIApplication(ConnectWSGIApplication):
             },
             interceptors=interceptors,
             read_max_bytes=read_max_bytes,
+            compressions=compressions,
         )
 
     @property

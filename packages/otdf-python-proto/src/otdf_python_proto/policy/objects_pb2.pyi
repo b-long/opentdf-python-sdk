@@ -44,6 +44,9 @@ class KasPublicKeyAlgEnum(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     KAS_PUBLIC_KEY_ALG_ENUM_EC_SECP256R1: _ClassVar[KasPublicKeyAlgEnum]
     KAS_PUBLIC_KEY_ALG_ENUM_EC_SECP384R1: _ClassVar[KasPublicKeyAlgEnum]
     KAS_PUBLIC_KEY_ALG_ENUM_EC_SECP521R1: _ClassVar[KasPublicKeyAlgEnum]
+    KAS_PUBLIC_KEY_ALG_ENUM_HPQT_XWING: _ClassVar[KasPublicKeyAlgEnum]
+    KAS_PUBLIC_KEY_ALG_ENUM_HPQT_SECP256R1_MLKEM768: _ClassVar[KasPublicKeyAlgEnum]
+    KAS_PUBLIC_KEY_ALG_ENUM_HPQT_SECP384R1_MLKEM1024: _ClassVar[KasPublicKeyAlgEnum]
 
 class Algorithm(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -53,6 +56,9 @@ class Algorithm(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     ALGORITHM_EC_P256: _ClassVar[Algorithm]
     ALGORITHM_EC_P384: _ClassVar[Algorithm]
     ALGORITHM_EC_P521: _ClassVar[Algorithm]
+    ALGORITHM_HPQT_XWING: _ClassVar[Algorithm]
+    ALGORITHM_HPQT_SECP256R1_MLKEM768: _ClassVar[Algorithm]
+    ALGORITHM_HPQT_SECP384R1_MLKEM1024: _ClassVar[Algorithm]
 
 class KeyStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -87,12 +93,18 @@ KAS_PUBLIC_KEY_ALG_ENUM_RSA_4096: KasPublicKeyAlgEnum
 KAS_PUBLIC_KEY_ALG_ENUM_EC_SECP256R1: KasPublicKeyAlgEnum
 KAS_PUBLIC_KEY_ALG_ENUM_EC_SECP384R1: KasPublicKeyAlgEnum
 KAS_PUBLIC_KEY_ALG_ENUM_EC_SECP521R1: KasPublicKeyAlgEnum
+KAS_PUBLIC_KEY_ALG_ENUM_HPQT_XWING: KasPublicKeyAlgEnum
+KAS_PUBLIC_KEY_ALG_ENUM_HPQT_SECP256R1_MLKEM768: KasPublicKeyAlgEnum
+KAS_PUBLIC_KEY_ALG_ENUM_HPQT_SECP384R1_MLKEM1024: KasPublicKeyAlgEnum
 ALGORITHM_UNSPECIFIED: Algorithm
 ALGORITHM_RSA_2048: Algorithm
 ALGORITHM_RSA_4096: Algorithm
 ALGORITHM_EC_P256: Algorithm
 ALGORITHM_EC_P384: Algorithm
 ALGORITHM_EC_P521: Algorithm
+ALGORITHM_HPQT_XWING: Algorithm
+ALGORITHM_HPQT_SECP256R1_MLKEM768: Algorithm
+ALGORITHM_HPQT_SECP384R1_MLKEM1024: Algorithm
 KEY_STATUS_UNSPECIFIED: KeyStatus
 KEY_STATUS_ACTIVE: KeyStatus
 KEY_STATUS_ROTATED: KeyStatus
@@ -291,16 +303,18 @@ class SubjectProperty(_message.Message):
     def __init__(self, external_selector_value: _Optional[str] = ..., external_value: _Optional[str] = ...) -> None: ...
 
 class ResourceMappingGroup(_message.Message):
-    __slots__ = ("id", "namespace_id", "name", "metadata")
+    __slots__ = ("id", "namespace_id", "name", "fqn", "metadata")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
+    FQN_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     id: str
     namespace_id: str
     name: str
+    fqn: str
     metadata: _common_pb2.Metadata
-    def __init__(self, id: _Optional[str] = ..., namespace_id: _Optional[str] = ..., name: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., namespace_id: _Optional[str] = ..., name: _Optional[str] = ..., fqn: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
 
 class ResourceMapping(_message.Message):
     __slots__ = ("id", "metadata", "attribute_value", "terms", "group")
@@ -389,7 +403,7 @@ class RegisteredResource(_message.Message):
     def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., values: _Optional[_Iterable[_Union[RegisteredResourceValue, _Mapping]]] = ..., namespace: _Optional[_Union[Namespace, _Mapping]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
 
 class RegisteredResourceValue(_message.Message):
-    __slots__ = ("id", "value", "resource", "action_attribute_values", "metadata")
+    __slots__ = ("id", "value", "resource", "action_attribute_values", "fqn", "metadata")
     class ActionAttributeValue(_message.Message):
         __slots__ = ("id", "action", "attribute_value", "metadata")
         ID_FIELD_NUMBER: _ClassVar[int]
@@ -405,13 +419,15 @@ class RegisteredResourceValue(_message.Message):
     VALUE_FIELD_NUMBER: _ClassVar[int]
     RESOURCE_FIELD_NUMBER: _ClassVar[int]
     ACTION_ATTRIBUTE_VALUES_FIELD_NUMBER: _ClassVar[int]
+    FQN_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     id: str
     value: str
     resource: RegisteredResource
     action_attribute_values: _containers.RepeatedCompositeFieldContainer[RegisteredResourceValue.ActionAttributeValue]
+    fqn: str
     metadata: _common_pb2.Metadata
-    def __init__(self, id: _Optional[str] = ..., value: _Optional[str] = ..., resource: _Optional[_Union[RegisteredResource, _Mapping]] = ..., action_attribute_values: _Optional[_Iterable[_Union[RegisteredResourceValue.ActionAttributeValue, _Mapping]]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., value: _Optional[str] = ..., resource: _Optional[_Union[RegisteredResource, _Mapping]] = ..., action_attribute_values: _Optional[_Iterable[_Union[RegisteredResourceValue.ActionAttributeValue, _Mapping]]] = ..., fqn: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
 
 class PolicyEnforcementPoint(_message.Message):
     __slots__ = ("client_id",)
@@ -458,20 +474,22 @@ class ObligationValue(_message.Message):
     def __init__(self, id: _Optional[str] = ..., obligation: _Optional[_Union[Obligation, _Mapping]] = ..., value: _Optional[str] = ..., triggers: _Optional[_Iterable[_Union[ObligationTrigger, _Mapping]]] = ..., fqn: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
 
 class ObligationTrigger(_message.Message):
-    __slots__ = ("id", "obligation_value", "action", "attribute_value", "context", "metadata")
+    __slots__ = ("id", "obligation_value", "action", "attribute_value", "context", "namespace", "metadata")
     ID_FIELD_NUMBER: _ClassVar[int]
     OBLIGATION_VALUE_FIELD_NUMBER: _ClassVar[int]
     ACTION_FIELD_NUMBER: _ClassVar[int]
     ATTRIBUTE_VALUE_FIELD_NUMBER: _ClassVar[int]
     CONTEXT_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     id: str
     obligation_value: ObligationValue
     action: Action
     attribute_value: Value
     context: _containers.RepeatedCompositeFieldContainer[RequestContext]
+    namespace: Namespace
     metadata: _common_pb2.Metadata
-    def __init__(self, id: _Optional[str] = ..., obligation_value: _Optional[_Union[ObligationValue, _Mapping]] = ..., action: _Optional[_Union[Action, _Mapping]] = ..., attribute_value: _Optional[_Union[Value, _Mapping]] = ..., context: _Optional[_Iterable[_Union[RequestContext, _Mapping]]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., obligation_value: _Optional[_Union[ObligationValue, _Mapping]] = ..., action: _Optional[_Union[Action, _Mapping]] = ..., attribute_value: _Optional[_Union[Value, _Mapping]] = ..., context: _Optional[_Iterable[_Union[RequestContext, _Mapping]]] = ..., namespace: _Optional[_Union[Namespace, _Mapping]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
 
 class KasKey(_message.Message):
     __slots__ = ("kas_id", "key", "kas_uri")

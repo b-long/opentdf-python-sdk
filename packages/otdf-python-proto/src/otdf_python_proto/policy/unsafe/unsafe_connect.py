@@ -7,6 +7,7 @@ from typing import Protocol
 
 from connectrpc.client import ConnectClient, ConnectClientSync
 from connectrpc.code import Code
+from connectrpc.compression import Compression
 from connectrpc.errors import ConnectError
 from connectrpc.interceptor import Interceptor, InterceptorSync
 from connectrpc.method import IdempotencyLevel, MethodInfo
@@ -48,7 +49,7 @@ class UnsafeService(Protocol):
 
 
 class UnsafeServiceASGIApplication(ConnectASGIApplication[UnsafeService]):
-    def __init__(self, service: UnsafeService | AsyncGenerator[UnsafeService], *, interceptors: Iterable[Interceptor]=(), read_max_bytes: int | None = None) -> None:
+    def __init__(self, service: UnsafeService | AsyncGenerator[UnsafeService], *, interceptors: Iterable[Interceptor]=(), read_max_bytes: int | None = None, compressions: Iterable[Compression] | None = None) -> None:
         super().__init__(
             service=service,
             endpoints=lambda svc: {
@@ -155,6 +156,7 @@ class UnsafeServiceASGIApplication(ConnectASGIApplication[UnsafeService]):
             },
             interceptors=interceptors,
             read_max_bytes=read_max_bytes,
+            compressions=compressions,
         )
 
     @property
@@ -389,7 +391,7 @@ class UnsafeServiceSync(Protocol):
 
 
 class UnsafeServiceWSGIApplication(ConnectWSGIApplication):
-    def __init__(self, service: UnsafeServiceSync, interceptors: Iterable[InterceptorSync]=(), read_max_bytes: int | None = None) -> None:
+    def __init__(self, service: UnsafeServiceSync, interceptors: Iterable[InterceptorSync]=(), read_max_bytes: int | None = None, compressions: Iterable[Compression] | None = None) -> None:
         super().__init__(
             endpoints={
                 "/policy.unsafe.UnsafeService/UnsafeUpdateNamespace": EndpointSync.unary(
@@ -495,6 +497,7 @@ class UnsafeServiceWSGIApplication(ConnectWSGIApplication):
             },
             interceptors=interceptors,
             read_max_bytes=read_max_bytes,
+            compressions=compressions,
         )
 
     @property
