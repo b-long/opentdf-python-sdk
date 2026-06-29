@@ -1,7 +1,6 @@
 from authorization import authorization_pb2 as _authorization_pb2
-from google.protobuf import struct_pb2 as _struct_pb2
 from google.protobuf import any_pb2 as _any_pb2
-from google.api import annotations_pb2 as _annotations_pb2
+from google.protobuf import struct_pb2 as _struct_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message

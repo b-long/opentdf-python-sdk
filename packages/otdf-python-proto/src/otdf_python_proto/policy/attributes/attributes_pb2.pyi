@@ -1,6 +1,5 @@
 from buf.validate import validate_pb2 as _validate_pb2
 from common import common_pb2 as _common_pb2
-from google.api import annotations_pb2 as _annotations_pb2
 from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from policy import objects_pb2 as _objects_pb2
 from policy import selectors_pb2 as _selectors_pb2
@@ -184,15 +183,29 @@ class ListAttributeValuesResponse(_message.Message):
     pagination: _selectors_pb2.PageResponse
     def __init__(self, values: _Optional[_Iterable[_Union[_objects_pb2.Value, _Mapping]]] = ..., pagination: _Optional[_Union[_selectors_pb2.PageResponse, _Mapping]] = ...) -> None: ...
 
+class AttributeValueObligationTriggerRequest(_message.Message):
+    __slots__ = ("obligation_value", "action", "context", "metadata")
+    OBLIGATION_VALUE_FIELD_NUMBER: _ClassVar[int]
+    ACTION_FIELD_NUMBER: _ClassVar[int]
+    CONTEXT_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
+    obligation_value: _common_pb2.IdFqnIdentifier
+    action: _common_pb2.IdNameIdentifier
+    context: _objects_pb2.RequestContext
+    metadata: _common_pb2.MetadataMutable
+    def __init__(self, obligation_value: _Optional[_Union[_common_pb2.IdFqnIdentifier, _Mapping]] = ..., action: _Optional[_Union[_common_pb2.IdNameIdentifier, _Mapping]] = ..., context: _Optional[_Union[_objects_pb2.RequestContext, _Mapping]] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
+
 class CreateAttributeValueRequest(_message.Message):
-    __slots__ = ("attribute_id", "value", "metadata")
+    __slots__ = ("attribute_id", "value", "obligation_triggers", "metadata")
     ATTRIBUTE_ID_FIELD_NUMBER: _ClassVar[int]
     VALUE_FIELD_NUMBER: _ClassVar[int]
+    OBLIGATION_TRIGGERS_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     attribute_id: str
     value: str
+    obligation_triggers: _containers.RepeatedCompositeFieldContainer[AttributeValueObligationTriggerRequest]
     metadata: _common_pb2.MetadataMutable
-    def __init__(self, attribute_id: _Optional[str] = ..., value: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
+    def __init__(self, attribute_id: _Optional[str] = ..., value: _Optional[str] = ..., obligation_triggers: _Optional[_Iterable[_Union[AttributeValueObligationTriggerRequest, _Mapping]]] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
 
 class CreateAttributeValueResponse(_message.Message):
     __slots__ = ("value",)

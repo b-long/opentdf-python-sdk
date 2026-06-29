@@ -7,6 +7,7 @@ from typing import Protocol
 
 from connectrpc.client import ConnectClient, ConnectClientSync
 from connectrpc.code import Code
+from connectrpc.compression import Compression
 from connectrpc.errors import ConnectError
 from connectrpc.interceptor import Interceptor, InterceptorSync
 from connectrpc.method import IdempotencyLevel, MethodInfo
@@ -75,7 +76,7 @@ class AttributesService(Protocol):
 
 
 class AttributesServiceASGIApplication(ConnectASGIApplication[AttributesService]):
-    def __init__(self, service: AttributesService | AsyncGenerator[AttributesService], *, interceptors: Iterable[Interceptor]=(), read_max_bytes: int | None = None) -> None:
+    def __init__(self, service: AttributesService | AsyncGenerator[AttributesService], *, interceptors: Iterable[Interceptor]=(), read_max_bytes: int | None = None, compressions: Iterable[Compression] | None = None) -> None:
         super().__init__(
             service=service,
             endpoints=lambda svc: {
@@ -272,6 +273,7 @@ class AttributesServiceASGIApplication(ConnectASGIApplication[AttributesService]
             },
             interceptors=interceptors,
             read_max_bytes=read_max_bytes,
+            compressions=compressions,
         )
 
     @property
@@ -714,7 +716,7 @@ class AttributesServiceSync(Protocol):
 
 
 class AttributesServiceWSGIApplication(ConnectWSGIApplication):
-    def __init__(self, service: AttributesServiceSync, interceptors: Iterable[InterceptorSync]=(), read_max_bytes: int | None = None) -> None:
+    def __init__(self, service: AttributesServiceSync, interceptors: Iterable[InterceptorSync]=(), read_max_bytes: int | None = None, compressions: Iterable[Compression] | None = None) -> None:
         super().__init__(
             endpoints={
                 "/policy.attributes.AttributesService/ListAttributes": EndpointSync.unary(
@@ -910,6 +912,7 @@ class AttributesServiceWSGIApplication(ConnectWSGIApplication):
             },
             interceptors=interceptors,
             read_max_bytes=read_max_bytes,
+            compressions=compressions,
         )
 
     @property

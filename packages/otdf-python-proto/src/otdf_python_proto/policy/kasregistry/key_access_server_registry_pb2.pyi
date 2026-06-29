@@ -1,6 +1,5 @@
 from buf.validate import validate_pb2 as _validate_pb2
 from common import common_pb2 as _common_pb2
-from google.api import annotations_pb2 as _annotations_pb2
 from policy import objects_pb2 as _objects_pb2
 from policy import selectors_pb2 as _selectors_pb2
 from google.protobuf.internal import containers as _containers
@@ -19,11 +18,22 @@ class SortKeyAccessServersType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper
     SORT_KEY_ACCESS_SERVERS_TYPE_URI: _ClassVar[SortKeyAccessServersType]
     SORT_KEY_ACCESS_SERVERS_TYPE_CREATED_AT: _ClassVar[SortKeyAccessServersType]
     SORT_KEY_ACCESS_SERVERS_TYPE_UPDATED_AT: _ClassVar[SortKeyAccessServersType]
+
+class SortKasKeysType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    SORT_KAS_KEYS_TYPE_UNSPECIFIED: _ClassVar[SortKasKeysType]
+    SORT_KAS_KEYS_TYPE_KEY_ID: _ClassVar[SortKasKeysType]
+    SORT_KAS_KEYS_TYPE_CREATED_AT: _ClassVar[SortKasKeysType]
+    SORT_KAS_KEYS_TYPE_UPDATED_AT: _ClassVar[SortKasKeysType]
 SORT_KEY_ACCESS_SERVERS_TYPE_UNSPECIFIED: SortKeyAccessServersType
 SORT_KEY_ACCESS_SERVERS_TYPE_NAME: SortKeyAccessServersType
 SORT_KEY_ACCESS_SERVERS_TYPE_URI: SortKeyAccessServersType
 SORT_KEY_ACCESS_SERVERS_TYPE_CREATED_AT: SortKeyAccessServersType
 SORT_KEY_ACCESS_SERVERS_TYPE_UPDATED_AT: SortKeyAccessServersType
+SORT_KAS_KEYS_TYPE_UNSPECIFIED: SortKasKeysType
+SORT_KAS_KEYS_TYPE_KEY_ID: SortKasKeysType
+SORT_KAS_KEYS_TYPE_CREATED_AT: SortKasKeysType
+SORT_KAS_KEYS_TYPE_UPDATED_AT: SortKasKeysType
 
 class GetKeyAccessServerRequest(_message.Message):
     __slots__ = ("id", "kas_id", "name", "uri")
@@ -66,6 +76,14 @@ class ListKeyAccessServersResponse(_message.Message):
     key_access_servers: _containers.RepeatedCompositeFieldContainer[_objects_pb2.KeyAccessServer]
     pagination: _selectors_pb2.PageResponse
     def __init__(self, key_access_servers: _Optional[_Iterable[_Union[_objects_pb2.KeyAccessServer, _Mapping]]] = ..., pagination: _Optional[_Union[_selectors_pb2.PageResponse, _Mapping]] = ...) -> None: ...
+
+class KasKeysSort(_message.Message):
+    __slots__ = ("field", "direction")
+    FIELD_FIELD_NUMBER: _ClassVar[int]
+    DIRECTION_FIELD_NUMBER: _ClassVar[int]
+    field: SortKasKeysType
+    direction: _selectors_pb2.SortDirection
+    def __init__(self, field: _Optional[_Union[SortKasKeysType, str]] = ..., direction: _Optional[_Union[_selectors_pb2.SortDirection, str]] = ...) -> None: ...
 
 class CreateKeyAccessServerRequest(_message.Message):
     __slots__ = ("uri", "public_key", "source_type", "name", "metadata")
@@ -345,20 +363,22 @@ class GetKeyResponse(_message.Message):
     def __init__(self, kas_key: _Optional[_Union[_objects_pb2.KasKey, _Mapping]] = ...) -> None: ...
 
 class ListKeysRequest(_message.Message):
-    __slots__ = ("key_algorithm", "kas_id", "kas_name", "kas_uri", "legacy", "pagination")
+    __slots__ = ("key_algorithm", "kas_id", "kas_name", "kas_uri", "legacy", "pagination", "sort")
     KEY_ALGORITHM_FIELD_NUMBER: _ClassVar[int]
     KAS_ID_FIELD_NUMBER: _ClassVar[int]
     KAS_NAME_FIELD_NUMBER: _ClassVar[int]
     KAS_URI_FIELD_NUMBER: _ClassVar[int]
     LEGACY_FIELD_NUMBER: _ClassVar[int]
     PAGINATION_FIELD_NUMBER: _ClassVar[int]
+    SORT_FIELD_NUMBER: _ClassVar[int]
     key_algorithm: _objects_pb2.Algorithm
     kas_id: str
     kas_name: str
     kas_uri: str
     legacy: bool
     pagination: _selectors_pb2.PageRequest
-    def __init__(self, key_algorithm: _Optional[_Union[_objects_pb2.Algorithm, str]] = ..., kas_id: _Optional[str] = ..., kas_name: _Optional[str] = ..., kas_uri: _Optional[str] = ..., legacy: bool = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ...) -> None: ...
+    sort: _containers.RepeatedCompositeFieldContainer[KasKeysSort]
+    def __init__(self, key_algorithm: _Optional[_Union[_objects_pb2.Algorithm, str]] = ..., kas_id: _Optional[str] = ..., kas_name: _Optional[str] = ..., kas_uri: _Optional[str] = ..., legacy: bool = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[KasKeysSort, _Mapping]]] = ...) -> None: ...
 
 class ListKeysResponse(_message.Message):
     __slots__ = ("kas_keys", "pagination")

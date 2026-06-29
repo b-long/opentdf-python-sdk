@@ -22,12 +22,11 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
-from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from google.protobuf import any_pb2 as google_dot_protobuf_dot_any__pb2
 from policy import objects_pb2 as policy_dot_objects__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n!authorization/authorization.proto\x12\rauthorization\x1a\x1cgoogle/api/annotations.proto\x1a\x19google/protobuf/any.proto\x1a\x14policy/objects.proto\")\n\x05Token\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n\x03jwt\x18\x02 \x01(\tR\x03jwt\"\xc9\x03\n\x06\x45ntity\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\x12%\n\remail_address\x18\x02 \x01(\tH\x00R\x0c\x65mailAddress\x12\x1d\n\tuser_name\x18\x03 \x01(\tH\x00R\x08userName\x12,\n\x11remote_claims_url\x18\x04 \x01(\tH\x00R\x0fremoteClaimsUrl\x12\x14\n\x04uuid\x18\x05 \x01(\tH\x00R\x04uuid\x12.\n\x06\x63laims\x18\x06 \x01(\x0b\x32\x14.google.protobuf.AnyH\x00R\x06\x63laims\x12\x35\n\x06\x63ustom\x18\x07 \x01(\x0b\x32\x1b.authorization.EntityCustomH\x00R\x06\x63ustom\x12\x1d\n\tclient_id\x18\x08 \x01(\tH\x00R\x08\x63lientId\x12:\n\x08\x63\x61tegory\x18\t \x01(\x0e\x32\x1e.authorization.Entity.CategoryR\x08\x63\x61tegory\"T\n\x08\x43\x61tegory\x12\x18\n\x14\x43\x41TEGORY_UNSPECIFIED\x10\x00\x12\x14\n\x10\x43\x41TEGORY_SUBJECT\x10\x01\x12\x18\n\x14\x43\x41TEGORY_ENVIRONMENT\x10\x02\x42\r\n\x0b\x65ntity_type\"B\n\x0c\x45ntityCustom\x12\x32\n\textension\x18\x01 \x01(\x0b\x32\x14.google.protobuf.AnyR\textension\"P\n\x0b\x45ntityChain\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\x12\x31\n\x08\x65ntities\x18\x02 \x03(\x0b\x32\x15.authorization.EntityR\x08\x65ntities\"\xcf\x01\n\x0f\x44\x65\x63isionRequest\x12(\n\x07\x61\x63tions\x18\x01 \x03(\x0b\x32\x0e.policy.ActionR\x07\x61\x63tions\x12?\n\rentity_chains\x18\x02 \x03(\x0b\x32\x1a.authorization.EntityChainR\x0c\x65ntityChains\x12Q\n\x13resource_attributes\x18\x03 \x03(\x0b\x32 .authorization.ResourceAttributeR\x12resourceAttributes\"\xce\x02\n\x10\x44\x65\x63isionResponse\x12&\n\x0f\x65ntity_chain_id\x18\x01 \x01(\tR\rentityChainId\x12\x34\n\x16resource_attributes_id\x18\x02 \x01(\tR\x14resourceAttributesId\x12&\n\x06\x61\x63tion\x18\x03 \x01(\x0b\x32\x0e.policy.ActionR\x06\x61\x63tion\x12\x44\n\x08\x64\x65\x63ision\x18\x04 \x01(\x0e\x32(.authorization.DecisionResponse.DecisionR\x08\x64\x65\x63ision\x12 \n\x0bobligations\x18\x05 \x03(\tR\x0bobligations\"L\n\x08\x44\x65\x63ision\x12\x18\n\x14\x44\x45\x43ISION_UNSPECIFIED\x10\x00\x12\x11\n\rDECISION_DENY\x10\x01\x12\x13\n\x0f\x44\x45\x43ISION_PERMIT\x10\x02\"b\n\x13GetDecisionsRequest\x12K\n\x11\x64\x65\x63ision_requests\x18\x01 \x03(\x0b\x32\x1e.authorization.DecisionRequestR\x10\x64\x65\x63isionRequests\"f\n\x14GetDecisionsResponse\x12N\n\x12\x64\x65\x63ision_responses\x18\x01 \x03(\x0b\x32\x1f.authorization.DecisionResponseR\x11\x64\x65\x63isionResponses\"\xfa\x01\n\x16GetEntitlementsRequest\x12\x31\n\x08\x65ntities\x18\x01 \x03(\x0b\x32\x15.authorization.EntityR\x08\x65ntities\x12;\n\x05scope\x18\x02 \x01(\x0b\x32 .authorization.ResourceAttributeH\x00R\x05scope\x88\x01\x01\x12\x45\n\x1cwith_comprehensive_hierarchy\x18\x03 \x01(\x08H\x01R\x1awithComprehensiveHierarchy\x88\x01\x01\x42\x08\n\x06_scopeB\x1f\n\x1d_with_comprehensive_hierarchy\"c\n\x12\x45ntityEntitlements\x12\x1b\n\tentity_id\x18\x01 \x01(\tR\x08\x65ntityId\x12\x30\n\x14\x61ttribute_value_fqns\x18\x02 \x03(\tR\x12\x61ttributeValueFqns\"{\n\x11ResourceAttribute\x12\x34\n\x16resource_attributes_id\x18\x01 \x01(\tR\x14resourceAttributesId\x12\x30\n\x14\x61ttribute_value_fqns\x18\x02 \x03(\tR\x12\x61ttributeValueFqns\"`\n\x17GetEntitlementsResponse\x12\x45\n\x0c\x65ntitlements\x18\x01 \x03(\x0b\x32!.authorization.EntityEntitlementsR\x0c\x65ntitlements\"\xc1\x01\n\x14TokenDecisionRequest\x12(\n\x07\x61\x63tions\x18\x01 \x03(\x0b\x32\x0e.policy.ActionR\x07\x61\x63tions\x12,\n\x06tokens\x18\x02 \x03(\x0b\x32\x14.authorization.TokenR\x06tokens\x12Q\n\x13resource_attributes\x18\x03 \x03(\x0b\x32 .authorization.ResourceAttributeR\x12resourceAttributes\"n\n\x1aGetDecisionsByTokenRequest\x12P\n\x11\x64\x65\x63ision_requests\x18\x01 \x03(\x0b\x32#.authorization.TokenDecisionRequestR\x10\x64\x65\x63isionRequests\"m\n\x1bGetDecisionsByTokenResponse\x12N\n\x12\x64\x65\x63ision_responses\x18\x01 \x03(\x0b\x32\x1f.authorization.DecisionResponseR\x11\x64\x65\x63isionResponses2\x9c\x03\n\x14\x41uthorizationService\x12u\n\x0cGetDecisions\x12\".authorization.GetDecisionsRequest\x1a#.authorization.GetDecisionsResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\"\x11/v1/authorization:\x01*\x12\x8d\x01\n\x13GetDecisionsByToken\x12).authorization.GetDecisionsByTokenRequest\x1a*.authorization.GetDecisionsByTokenResponse\"\x1f\x82\xd3\xe4\x93\x02\x19\"\x17/v1/token/authorization\x12}\n\x0fGetEntitlements\x12%.authorization.GetEntitlementsRequest\x1a&.authorization.GetEntitlementsResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\"\x10/v1/entitlements:\x01*B{\n\x11\x63om.authorizationB\x12\x41uthorizationProtoP\x01\xa2\x02\x03\x41XX\xaa\x02\rAuthorization\xca\x02\rAuthorization\xe2\x02\x19\x41uthorization\\GPBMetadata\xea\x02\rAuthorizationb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n!authorization/authorization.proto\x12\rauthorization\x1a\x19google/protobuf/any.proto\x1a\x14policy/objects.proto\")\n\x05Token\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n\x03jwt\x18\x02 \x01(\tR\x03jwt\"\xc9\x03\n\x06\x45ntity\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\x12%\n\remail_address\x18\x02 \x01(\tH\x00R\x0c\x65mailAddress\x12\x1d\n\tuser_name\x18\x03 \x01(\tH\x00R\x08userName\x12,\n\x11remote_claims_url\x18\x04 \x01(\tH\x00R\x0fremoteClaimsUrl\x12\x14\n\x04uuid\x18\x05 \x01(\tH\x00R\x04uuid\x12.\n\x06\x63laims\x18\x06 \x01(\x0b\x32\x14.google.protobuf.AnyH\x00R\x06\x63laims\x12\x35\n\x06\x63ustom\x18\x07 \x01(\x0b\x32\x1b.authorization.EntityCustomH\x00R\x06\x63ustom\x12\x1d\n\tclient_id\x18\x08 \x01(\tH\x00R\x08\x63lientId\x12:\n\x08\x63\x61tegory\x18\t \x01(\x0e\x32\x1e.authorization.Entity.CategoryR\x08\x63\x61tegory\"T\n\x08\x43\x61tegory\x12\x18\n\x14\x43\x41TEGORY_UNSPECIFIED\x10\x00\x12\x14\n\x10\x43\x41TEGORY_SUBJECT\x10\x01\x12\x18\n\x14\x43\x41TEGORY_ENVIRONMENT\x10\x02\x42\r\n\x0b\x65ntity_type\"B\n\x0c\x45ntityCustom\x12\x32\n\textension\x18\x01 \x01(\x0b\x32\x14.google.protobuf.AnyR\textension\"P\n\x0b\x45ntityChain\x12\x0e\n\x02id\x18\x01 \x01(\tR\x02id\x12\x31\n\x08\x65ntities\x18\x02 \x03(\x0b\x32\x15.authorization.EntityR\x08\x65ntities\"\xcf\x01\n\x0f\x44\x65\x63isionRequest\x12(\n\x07\x61\x63tions\x18\x01 \x03(\x0b\x32\x0e.policy.ActionR\x07\x61\x63tions\x12?\n\rentity_chains\x18\x02 \x03(\x0b\x32\x1a.authorization.EntityChainR\x0c\x65ntityChains\x12Q\n\x13resource_attributes\x18\x03 \x03(\x0b\x32 .authorization.ResourceAttributeR\x12resourceAttributes\"\xce\x02\n\x10\x44\x65\x63isionResponse\x12&\n\x0f\x65ntity_chain_id\x18\x01 \x01(\tR\rentityChainId\x12\x34\n\x16resource_attributes_id\x18\x02 \x01(\tR\x14resourceAttributesId\x12&\n\x06\x61\x63tion\x18\x03 \x01(\x0b\x32\x0e.policy.ActionR\x06\x61\x63tion\x12\x44\n\x08\x64\x65\x63ision\x18\x04 \x01(\x0e\x32(.authorization.DecisionResponse.DecisionR\x08\x64\x65\x63ision\x12 \n\x0bobligations\x18\x05 \x03(\tR\x0bobligations\"L\n\x08\x44\x65\x63ision\x12\x18\n\x14\x44\x45\x43ISION_UNSPECIFIED\x10\x00\x12\x11\n\rDECISION_DENY\x10\x01\x12\x13\n\x0f\x44\x45\x43ISION_PERMIT\x10\x02\"b\n\x13GetDecisionsRequest\x12K\n\x11\x64\x65\x63ision_requests\x18\x01 \x03(\x0b\x32\x1e.authorization.DecisionRequestR\x10\x64\x65\x63isionRequests\"f\n\x14GetDecisionsResponse\x12N\n\x12\x64\x65\x63ision_responses\x18\x01 \x03(\x0b\x32\x1f.authorization.DecisionResponseR\x11\x64\x65\x63isionResponses\"\xfa\x01\n\x16GetEntitlementsRequest\x12\x31\n\x08\x65ntities\x18\x01 \x03(\x0b\x32\x15.authorization.EntityR\x08\x65ntities\x12;\n\x05scope\x18\x02 \x01(\x0b\x32 .authorization.ResourceAttributeH\x00R\x05scope\x88\x01\x01\x12\x45\n\x1cwith_comprehensive_hierarchy\x18\x03 \x01(\x08H\x01R\x1awithComprehensiveHierarchy\x88\x01\x01\x42\x08\n\x06_scopeB\x1f\n\x1d_with_comprehensive_hierarchy\"c\n\x12\x45ntityEntitlements\x12\x1b\n\tentity_id\x18\x01 \x01(\tR\x08\x65ntityId\x12\x30\n\x14\x61ttribute_value_fqns\x18\x02 \x03(\tR\x12\x61ttributeValueFqns\"{\n\x11ResourceAttribute\x12\x34\n\x16resource_attributes_id\x18\x01 \x01(\tR\x14resourceAttributesId\x12\x30\n\x14\x61ttribute_value_fqns\x18\x02 \x03(\tR\x12\x61ttributeValueFqns\"`\n\x17GetEntitlementsResponse\x12\x45\n\x0c\x65ntitlements\x18\x01 \x03(\x0b\x32!.authorization.EntityEntitlementsR\x0c\x65ntitlements\"\xc1\x01\n\x14TokenDecisionRequest\x12(\n\x07\x61\x63tions\x18\x01 \x03(\x0b\x32\x0e.policy.ActionR\x07\x61\x63tions\x12,\n\x06tokens\x18\x02 \x03(\x0b\x32\x14.authorization.TokenR\x06tokens\x12Q\n\x13resource_attributes\x18\x03 \x03(\x0b\x32 .authorization.ResourceAttributeR\x12resourceAttributes\"n\n\x1aGetDecisionsByTokenRequest\x12P\n\x11\x64\x65\x63ision_requests\x18\x01 \x03(\x0b\x32#.authorization.TokenDecisionRequestR\x10\x64\x65\x63isionRequests\"m\n\x1bGetDecisionsByTokenResponse\x12N\n\x12\x64\x65\x63ision_responses\x18\x01 \x03(\x0b\x32\x1f.authorization.DecisionResponseR\x11\x64\x65\x63isionResponses2\xc5\x02\n\x14\x41uthorizationService\x12Y\n\x0cGetDecisions\x12\".authorization.GetDecisionsRequest\x1a#.authorization.GetDecisionsResponse\"\x00\x12n\n\x13GetDecisionsByToken\x12).authorization.GetDecisionsByTokenRequest\x1a*.authorization.GetDecisionsByTokenResponse\"\x00\x12\x62\n\x0fGetEntitlements\x12%.authorization.GetEntitlementsRequest\x1a&.authorization.GetEntitlementsResponse\"\x00\x42{\n\x11\x63om.authorizationB\x12\x41uthorizationProtoP\x01\xa2\x02\x03\x41XX\xaa\x02\rAuthorization\xca\x02\rAuthorization\xe2\x02\x19\x41uthorization\\GPBMetadata\xea\x02\rAuthorizationb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -35,46 +34,40 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'authorization.authorization
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'\n\021com.authorizationB\022AuthorizationProtoP\001\242\002\003AXX\252\002\rAuthorization\312\002\rAuthorization\342\002\031Authorization\\GPBMetadata\352\002\rAuthorization'
-  _globals['_AUTHORIZATIONSERVICE'].methods_by_name['GetDecisions']._loaded_options = None
-  _globals['_AUTHORIZATIONSERVICE'].methods_by_name['GetDecisions']._serialized_options = b'\202\323\344\223\002\026\"\021/v1/authorization:\001*'
-  _globals['_AUTHORIZATIONSERVICE'].methods_by_name['GetDecisionsByToken']._loaded_options = None
-  _globals['_AUTHORIZATIONSERVICE'].methods_by_name['GetDecisionsByToken']._serialized_options = b'\202\323\344\223\002\031\"\027/v1/token/authorization'
-  _globals['_AUTHORIZATIONSERVICE'].methods_by_name['GetEntitlements']._loaded_options = None
-  _globals['_AUTHORIZATIONSERVICE'].methods_by_name['GetEntitlements']._serialized_options = b'\202\323\344\223\002\025\"\020/v1/entitlements:\001*'
-  _globals['_TOKEN']._serialized_start=131
-  _globals['_TOKEN']._serialized_end=172
-  _globals['_ENTITY']._serialized_start=175
-  _globals['_ENTITY']._serialized_end=632
-  _globals['_ENTITY_CATEGORY']._serialized_start=533
-  _globals['_ENTITY_CATEGORY']._serialized_end=617
-  _globals['_ENTITYCUSTOM']._serialized_start=634
-  _globals['_ENTITYCUSTOM']._serialized_end=700
-  _globals['_ENTITYCHAIN']._serialized_start=702
-  _globals['_ENTITYCHAIN']._serialized_end=782
-  _globals['_DECISIONREQUEST']._serialized_start=785
-  _globals['_DECISIONREQUEST']._serialized_end=992
-  _globals['_DECISIONRESPONSE']._serialized_start=995
-  _globals['_DECISIONRESPONSE']._serialized_end=1329
-  _globals['_DECISIONRESPONSE_DECISION']._serialized_start=1253
-  _globals['_DECISIONRESPONSE_DECISION']._serialized_end=1329
-  _globals['_GETDECISIONSREQUEST']._serialized_start=1331
-  _globals['_GETDECISIONSREQUEST']._serialized_end=1429
-  _globals['_GETDECISIONSRESPONSE']._serialized_start=1431
-  _globals['_GETDECISIONSRESPONSE']._serialized_end=1533
-  _globals['_GETENTITLEMENTSREQUEST']._serialized_start=1536
-  _globals['_GETENTITLEMENTSREQUEST']._serialized_end=1786
-  _globals['_ENTITYENTITLEMENTS']._serialized_start=1788
-  _globals['_ENTITYENTITLEMENTS']._serialized_end=1887
-  _globals['_RESOURCEATTRIBUTE']._serialized_start=1889
-  _globals['_RESOURCEATTRIBUTE']._serialized_end=2012
-  _globals['_GETENTITLEMENTSRESPONSE']._serialized_start=2014
-  _globals['_GETENTITLEMENTSRESPONSE']._serialized_end=2110
-  _globals['_TOKENDECISIONREQUEST']._serialized_start=2113
-  _globals['_TOKENDECISIONREQUEST']._serialized_end=2306
-  _globals['_GETDECISIONSBYTOKENREQUEST']._serialized_start=2308
-  _globals['_GETDECISIONSBYTOKENREQUEST']._serialized_end=2418
-  _globals['_GETDECISIONSBYTOKENRESPONSE']._serialized_start=2420
-  _globals['_GETDECISIONSBYTOKENRESPONSE']._serialized_end=2529
-  _globals['_AUTHORIZATIONSERVICE']._serialized_start=2532
-  _globals['_AUTHORIZATIONSERVICE']._serialized_end=2944
+  _globals['_TOKEN']._serialized_start=101
+  _globals['_TOKEN']._serialized_end=142
+  _globals['_ENTITY']._serialized_start=145
+  _globals['_ENTITY']._serialized_end=602
+  _globals['_ENTITY_CATEGORY']._serialized_start=503
+  _globals['_ENTITY_CATEGORY']._serialized_end=587
+  _globals['_ENTITYCUSTOM']._serialized_start=604
+  _globals['_ENTITYCUSTOM']._serialized_end=670
+  _globals['_ENTITYCHAIN']._serialized_start=672
+  _globals['_ENTITYCHAIN']._serialized_end=752
+  _globals['_DECISIONREQUEST']._serialized_start=755
+  _globals['_DECISIONREQUEST']._serialized_end=962
+  _globals['_DECISIONRESPONSE']._serialized_start=965
+  _globals['_DECISIONRESPONSE']._serialized_end=1299
+  _globals['_DECISIONRESPONSE_DECISION']._serialized_start=1223
+  _globals['_DECISIONRESPONSE_DECISION']._serialized_end=1299
+  _globals['_GETDECISIONSREQUEST']._serialized_start=1301
+  _globals['_GETDECISIONSREQUEST']._serialized_end=1399
+  _globals['_GETDECISIONSRESPONSE']._serialized_start=1401
+  _globals['_GETDECISIONSRESPONSE']._serialized_end=1503
+  _globals['_GETENTITLEMENTSREQUEST']._serialized_start=1506
+  _globals['_GETENTITLEMENTSREQUEST']._serialized_end=1756
+  _globals['_ENTITYENTITLEMENTS']._serialized_start=1758
+  _globals['_ENTITYENTITLEMENTS']._serialized_end=1857
+  _globals['_RESOURCEATTRIBUTE']._serialized_start=1859
+  _globals['_RESOURCEATTRIBUTE']._serialized_end=1982
+  _globals['_GETENTITLEMENTSRESPONSE']._serialized_start=1984
+  _globals['_GETENTITLEMENTSRESPONSE']._serialized_end=2080
+  _globals['_TOKENDECISIONREQUEST']._serialized_start=2083
+  _globals['_TOKENDECISIONREQUEST']._serialized_end=2276
+  _globals['_GETDECISIONSBYTOKENREQUEST']._serialized_start=2278
+  _globals['_GETDECISIONSBYTOKENREQUEST']._serialized_end=2388
+  _globals['_GETDECISIONSBYTOKENRESPONSE']._serialized_start=2390
+  _globals['_GETDECISIONSBYTOKENRESPONSE']._serialized_end=2499
+  _globals['_AUTHORIZATIONSERVICE']._serialized_start=2502
+  _globals['_AUTHORIZATIONSERVICE']._serialized_end=2827
 # @@protoc_insertion_point(module_scope)

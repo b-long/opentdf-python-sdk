@@ -7,6 +7,7 @@ from typing import Protocol
 
 from connectrpc.client import ConnectClient, ConnectClientSync
 from connectrpc.code import Code
+from connectrpc.compression import Compression
 from connectrpc.errors import ConnectError
 from connectrpc.interceptor import Interceptor, InterceptorSync
 from connectrpc.method import IdempotencyLevel, MethodInfo
@@ -51,7 +52,7 @@ class ResourceMappingService(Protocol):
 
 
 class ResourceMappingServiceASGIApplication(ConnectASGIApplication[ResourceMappingService]):
-    def __init__(self, service: ResourceMappingService | AsyncGenerator[ResourceMappingService], *, interceptors: Iterable[Interceptor]=(), read_max_bytes: int | None = None) -> None:
+    def __init__(self, service: ResourceMappingService | AsyncGenerator[ResourceMappingService], *, interceptors: Iterable[Interceptor]=(), read_max_bytes: int | None = None, compressions: Iterable[Compression] | None = None) -> None:
         super().__init__(
             service=service,
             endpoints=lambda svc: {
@@ -168,6 +169,7 @@ class ResourceMappingServiceASGIApplication(ConnectASGIApplication[ResourceMappi
             },
             interceptors=interceptors,
             read_max_bytes=read_max_bytes,
+            compressions=compressions,
         )
 
     @property
@@ -434,7 +436,7 @@ class ResourceMappingServiceSync(Protocol):
 
 
 class ResourceMappingServiceWSGIApplication(ConnectWSGIApplication):
-    def __init__(self, service: ResourceMappingServiceSync, interceptors: Iterable[InterceptorSync]=(), read_max_bytes: int | None = None) -> None:
+    def __init__(self, service: ResourceMappingServiceSync, interceptors: Iterable[InterceptorSync]=(), read_max_bytes: int | None = None, compressions: Iterable[Compression] | None = None) -> None:
         super().__init__(
             endpoints={
                 "/policy.resourcemapping.ResourceMappingService/ListResourceMappingGroups": EndpointSync.unary(
@@ -550,6 +552,7 @@ class ResourceMappingServiceWSGIApplication(ConnectWSGIApplication):
             },
             interceptors=interceptors,
             read_max_bytes=read_max_bytes,
+            compressions=compressions,
         )
 
     @property

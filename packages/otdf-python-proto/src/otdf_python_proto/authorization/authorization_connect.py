@@ -7,6 +7,7 @@ from typing import Protocol
 
 from connectrpc.client import ConnectClient, ConnectClientSync
 from connectrpc.code import Code
+from connectrpc.compression import Compression
 from connectrpc.errors import ConnectError
 from connectrpc.interceptor import Interceptor, InterceptorSync
 from connectrpc.method import IdempotencyLevel, MethodInfo
@@ -27,7 +28,7 @@ class AuthorizationService(Protocol):
 
 
 class AuthorizationServiceASGIApplication(ConnectASGIApplication[AuthorizationService]):
-    def __init__(self, service: AuthorizationService | AsyncGenerator[AuthorizationService], *, interceptors: Iterable[Interceptor]=(), read_max_bytes: int | None = None) -> None:
+    def __init__(self, service: AuthorizationService | AsyncGenerator[AuthorizationService], *, interceptors: Iterable[Interceptor]=(), read_max_bytes: int | None = None, compressions: Iterable[Compression] | None = None) -> None:
         super().__init__(
             service=service,
             endpoints=lambda svc: {
@@ -64,6 +65,7 @@ class AuthorizationServiceASGIApplication(ConnectASGIApplication[AuthorizationSe
             },
             interceptors=interceptors,
             read_max_bytes=read_max_bytes,
+            compressions=compressions,
         )
 
     @property
@@ -144,7 +146,7 @@ class AuthorizationServiceSync(Protocol):
 
 
 class AuthorizationServiceWSGIApplication(ConnectWSGIApplication):
-    def __init__(self, service: AuthorizationServiceSync, interceptors: Iterable[InterceptorSync]=(), read_max_bytes: int | None = None) -> None:
+    def __init__(self, service: AuthorizationServiceSync, interceptors: Iterable[InterceptorSync]=(), read_max_bytes: int | None = None, compressions: Iterable[Compression] | None = None) -> None:
         super().__init__(
             endpoints={
                 "/authorization.AuthorizationService/GetDecisions": EndpointSync.unary(
@@ -180,6 +182,7 @@ class AuthorizationServiceWSGIApplication(ConnectWSGIApplication):
             },
             interceptors=interceptors,
             read_max_bytes=read_max_bytes,
+            compressions=compressions,
         )
 
     @property
