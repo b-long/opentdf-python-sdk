@@ -66,7 +66,7 @@ jobs:
       - name: Build package
         shell: bash
         run: |
-          uv build --wheel --package otdf-python
+          uv build --package otdf-python
 
       - name: Test import
         shell: bash
