@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.9.0...otdf-python-v0.9.1) (2026-06-30)
+
+
+### Bug Fixes
+
+* publish wheels & sdists to PyPI ([#165](https://github.com/b-long/opentdf-python-sdk/issues/165)) ([eb967c3](https://github.com/b-long/opentdf-python-sdk/commit/eb967c308917b33e269f3f72ec6574f01a305743))
+
 ## [0.9.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.8.0...otdf-python-v0.9.0) (2026-06-30)
 
 
