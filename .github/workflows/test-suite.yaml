@@ -69,7 +69,7 @@ jobs:
       - name: Build otdf-python wheel using uv
         run: |
           uv sync --frozen
-          uv build --wheel --package otdf-python
+          uv build --package otdf-python
         shell: bash
 
       - name: Check wheel with twine
