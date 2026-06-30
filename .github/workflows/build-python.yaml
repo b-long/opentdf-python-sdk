@@ -10,7 +10,7 @@ jobs:
       wheel: ${{ steps.find_wheel.outputs.wheel_path }}
     steps:
       - name: Checkout this repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
