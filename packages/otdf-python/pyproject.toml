@@ -47,9 +47,16 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/otdf_python"]
+# force-include for proto sources is handled dynamically by hatch_build.py
+# to support both source-tree builds and sdist-based builds
 
-[tool.hatch.build.targets.wheel.force-include]
-"../otdf-python-proto/src/otdf_python_proto" = "otdf_python_proto"
+[tool.hatch.build.targets.sdist]
+packages = ["src/otdf_python"]
+
+[tool.hatch.build.targets.sdist.force-include]
+"../otdf-python-proto/src/otdf_python_proto" = "_proto/otdf_python_proto"
+
+[tool.hatch.build.hooks.custom]
 
 [dependency-groups]
 dev = [
