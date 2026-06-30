@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.9.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.8.0...otdf-python-v0.9.0) (2026-06-30)
+
+
+### Features
+
+* **main:** update to service/v0.16.0 ([#154](https://github.com/b-long/opentdf-python-sdk/issues/154)) ([700dfb4](https://github.com/b-long/opentdf-python-sdk/commit/700dfb4d0d180a874f50adb682111cd43fd98692))
+
+
+### Bug Fixes
+
+* add 'twine check' step to CI workflows ([#163](https://github.com/b-long/opentdf-python-sdk/issues/163)) ([a1d4a5f](https://github.com/b-long/opentdf-python-sdk/commit/a1d4a5f59990e19d418e516c52db058f4dc0b7a9))
+* enable dependabot ([#157](https://github.com/b-long/opentdf-python-sdk/issues/157)) ([f6f6f95](https://github.com/b-long/opentdf-python-sdk/commit/f6f6f953d27b2ec9b0bd40b65dfca01b44846ee6))
+
 ## [0.8.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.7.3...otdf-python-v0.8.0) (2026-06-10)
 
 
