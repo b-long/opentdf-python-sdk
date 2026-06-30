@@ -21,7 +21,7 @@ jobs:
       - name: Build otdf-python wheel using uv
         run: |
           uv sync --frozen
-          uv build
+          uv build --wheel --package otdf-python
         shell: bash
 
       - name: Check wheel with twine
