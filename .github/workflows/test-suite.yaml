@@ -72,6 +72,10 @@ jobs:
           uv build --wheel --package otdf-python
         shell: bash
 
+      - name: Check wheel with twine
+        run: uvx twine check dist/*
+        shell: bash
+
       - name: Find built wheel
         id: find_wheel
         run: |
