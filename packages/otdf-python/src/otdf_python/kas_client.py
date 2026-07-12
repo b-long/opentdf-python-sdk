@@ -703,13 +703,17 @@ class KASClient:
             session_key_type: Optional session key type (RSA_KEY_TYPE or EC_KEY_TYPE)
 
         """
-        # Get access token for authentication if token source is available
+        # Rewrap always requires authentication — fail fast rather than send
+        # an unauthenticated request KAS will reject with a misleading
+        # "missing authorization header".
         access_token = None
         if self.token_source:
             try:
                 access_token = self.token_source()
             except Exception as e:
-                logging.warning(f"Failed to get access token: {e}")
+                raise SDKException(
+                    f"Failed to get access token for KAS rewrap: {e}"
+                ) from e
 
         # Normalize the URL
         normalized_kas_url = self._normalize_kas_url(key_access.url)

@@ -173,7 +173,7 @@ def build_sdk(args) -> SDK:
     oidc_endpoint = getattr(args, "oidc_endpoint", None) or os.environ.get("KCFULLURL")
     # kas-endpoint may be comma-separated; also accept single KASURL env.
     if not getattr(args, "kas_endpoint", None) and os.environ.get("KASURL"):
-        setattr(args, "kas_endpoint", os.environ["KASURL"])
+        args.kas_endpoint = os.environ["KASURL"]
 
     if platform_url:
         builder.set_platform_endpoint(platform_url)
@@ -184,11 +184,11 @@ def build_sdk(args) -> SDK:
             )
             builder.use_insecure_plaintext_connection(True)
         # Keep args.platform_url set for create_tdf_config / nano KAS derivation
-        setattr(args, "platform_url", platform_url)
+        args.platform_url = platform_url
 
     if oidc_endpoint:
         builder.set_issuer_endpoint(oidc_endpoint)
-        setattr(args, "oidc_endpoint", oidc_endpoint)
+        args.oidc_endpoint = oidc_endpoint
 
     _configure_auth(builder, args)
 
@@ -247,6 +247,7 @@ def cmd_supports(args) -> int:
 
     Returns:
         0 if supported, 1 if not supported, 2 if unknown.
+
     """
     feature = getattr(args, "feature", None)
     if feature not in _KNOWN_FEATURES:
@@ -268,10 +269,13 @@ def create_tdf_config(sdk: SDK, args) -> TDFConfig:
     config = sdk.new_tdf_config(attributes=attributes)
 
     if hasattr(args, "kas_endpoint") and args.kas_endpoint:
-        # Add KAS endpoints
+        # Explicit endpoints replace the platform-derived default; extending
+        # would give the same KAS two key access objects in the manifest.
         kas_endpoints = parse_kas_endpoints(args.kas_endpoint)
-        kas_info_list = [KASInfo(url=kas_url) for kas_url in kas_endpoints]
-        config.kas_info_list.extend(kas_info_list)
+        config.kas_info_list = [
+            KASInfo(url=kas_url, default=(i == 0))
+            for i, kas_url in enumerate(kas_endpoints)
+        ]
 
     if hasattr(args, "mime_type") and args.mime_type:
         config.mime_type = args.mime_type
@@ -638,6 +642,21 @@ Where creds.json contains:
     return parser
 
 
+def _dispatch_command(parser, args) -> None:
+    """Route a parsed command to its handler."""
+    if args.command == "encrypt":
+        cmd_encrypt(args)
+    elif args.command == "decrypt":
+        cmd_decrypt(args)
+    elif args.command == "inspect":
+        cmd_inspect(args)
+    elif args.command == "supports":
+        sys.exit(cmd_supports(args))
+    else:
+        parser.print_help()
+        sys.exit(1)
+
+
 def main():
     """Execute the CLI entry point."""
     parser = create_parser()
@@ -652,18 +671,7 @@ def main():
         sys.exit(1)
 
     try:
-        if args.command == "encrypt":
-            cmd_encrypt(args)
-        elif args.command == "decrypt":
-            cmd_decrypt(args)
-        elif args.command == "inspect":
-            cmd_inspect(args)
-        elif args.command == "supports":
-            sys.exit(cmd_supports(args))
-        else:
-            parser.print_help()
-            sys.exit(1)
-
+        _dispatch_command(parser, args)
     except CLIError as e:
         logger.error(f"{e.level}: {e.message}")
         if e.cause:

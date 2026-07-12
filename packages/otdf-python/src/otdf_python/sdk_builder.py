@@ -290,6 +290,50 @@ class SDKBuilder:
 
         self._discover_token_endpoint_from_issuer(platform_issuer)
 
+    def _candidate_issuer_urls(self) -> list[str]:
+        """Issuer URLs to try for OIDC discovery, in order.
+
+        An endpoint that already names a realm (contains ``/realms/``) is
+        used verbatim — appending another realm segment would double the
+        path (…/realms/opentdf/realms/opentdf) and 404. A bare Keycloak
+        base URL gets the default realm appended, with the bare URL as a
+        fallback for non-Keycloak issuers.
+        """
+        base = (self.issuer_endpoint or "").rstrip("/")
+        if not base:
+            return []
+        if "/realms/" in base:
+            return [base]
+        return [f"{base}/realms/opentdf", base]
+
+    def _discover_token_endpoint_from_issuer_endpoint(self) -> None:
+        """Discover the token endpoint from the configured issuer endpoint.
+
+        Raises:
+            AutoConfigureException: If discovery fails for every candidate
+
+        """
+
+        def try_issuer(issuer_url: str) -> Exception | None:
+            try:
+                self._discover_token_endpoint_from_issuer(issuer_url)
+            except Exception as e:
+                return e
+            return None
+
+        last_error: Exception | None = None
+        for issuer_url in self._candidate_issuer_urls():
+            last_error = try_issuer(issuer_url)
+            if last_error is None:
+                return
+        if last_error is not None:
+            raise AutoConfigureException(
+                f"Error during token endpoint discovery: {last_error!s}"
+            ) from last_error
+        raise AutoConfigureException(
+            "Issuer endpoint must be configured for OIDC token discovery"
+        )
+
     def _discover_token_endpoint_from_issuer(self, issuer_url: str) -> None:
         """Discover token endpoint using OIDC discovery from issuer.
 
@@ -335,9 +379,7 @@ class SDKBuilder:
                 # If platform fails and we have an explicit issuer, try that
                 if self.issuer_endpoint:
                     try:
-                        realm_name = "opentdf"  # Default realm name
-                        issuer_url = f"{self.issuer_endpoint}/realms/{realm_name}"
-                        self._discover_token_endpoint_from_issuer(issuer_url)
+                        self._discover_token_endpoint_from_issuer_endpoint()
                         return
                     except Exception:
                         # Re-raise the original platform error
@@ -348,9 +390,7 @@ class SDKBuilder:
 
         # Fall back to explicit issuer endpoint
         if self.issuer_endpoint:
-            realm_name = "opentdf"  # Default realm name
-            issuer_url = f"{self.issuer_endpoint}/realms/{realm_name}"
-            self._discover_token_endpoint_from_issuer(issuer_url)
+            self._discover_token_endpoint_from_issuer_endpoint()
             return
 
         raise AutoConfigureException(
