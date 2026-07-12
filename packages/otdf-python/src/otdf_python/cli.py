@@ -169,35 +169,33 @@ def build_sdk(args) -> SDK:
     """
     builder = SDKBuilder()
 
-    platform_url = args.platform_url or os.environ.get("PLATFORMURL")
-    oidc_endpoint = args.oidc_endpoint or os.environ.get("KCFULLURL")
+    platform_url = getattr(args, "platform_url", None) or os.environ.get("PLATFORMURL")
+    oidc_endpoint = getattr(args, "oidc_endpoint", None) or os.environ.get("KCFULLURL")
     # kas-endpoint may be comma-separated; also accept single KASURL env.
     if not getattr(args, "kas_endpoint", None) and os.environ.get("KASURL"):
-        args.kas_endpoint = os.environ["KASURL"]
+        setattr(args, "kas_endpoint", os.environ["KASURL"])
 
     if platform_url:
         builder.set_platform_endpoint(platform_url)
         # Auto-detect HTTP URLs and enable plaintext mode
-        if platform_url.startswith("http://") and (
-            not hasattr(args, "plaintext") or not args.plaintext
-        ):
+        if platform_url.startswith("http://") and not getattr(args, "plaintext", None):
             logger.debug(
                 f"Auto-detected HTTP URL {platform_url}, enabling plaintext mode"
             )
             builder.use_insecure_plaintext_connection(True)
         # Keep args.platform_url set for create_tdf_config / nano KAS derivation
-        args.platform_url = platform_url
+        setattr(args, "platform_url", platform_url)
 
     if oidc_endpoint:
         builder.set_issuer_endpoint(oidc_endpoint)
-        args.oidc_endpoint = oidc_endpoint
+        setattr(args, "oidc_endpoint", oidc_endpoint)
 
     _configure_auth(builder, args)
 
-    if hasattr(args, "plaintext") and args.plaintext:
+    if getattr(args, "plaintext", None):
         builder.use_insecure_plaintext_connection(True)
 
-    if args.insecure:
+    if getattr(args, "insecure", None):
         builder.use_insecure_skip_verify(True)
 
     _configure_kas_allowlist(builder, args)
@@ -244,15 +242,19 @@ _KNOWN_FEATURES: frozenset[str] = frozenset(
 )
 
 
-def cmd_supports(args) -> None:
-    """Exit 0 if feature is supported, 1 if not, 2 if unknown."""
-    feature = args.feature
+def cmd_supports(args) -> int:
+    """Check if a feature is supported (xtest CLI contract).
+
+    Returns:
+        0 if supported, 1 if not supported, 2 if unknown.
+    """
+    feature = getattr(args, "feature", None)
     if feature not in _KNOWN_FEATURES:
         logger.error(f"Unknown feature: {feature}")
-        sys.exit(2)
+        return 2
     if feature in _SUPPORTED_FEATURES:
-        sys.exit(0)
-    sys.exit(1)
+        return 0
+    return 1
 
 
 def create_tdf_config(sdk: SDK, args) -> TDFConfig:
@@ -657,7 +659,7 @@ def main():
         elif args.command == "inspect":
             cmd_inspect(args)
         elif args.command == "supports":
-            cmd_supports(args)
+            sys.exit(cmd_supports(args))
         else:
             parser.print_help()
             sys.exit(1)

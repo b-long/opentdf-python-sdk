@@ -2,6 +2,16 @@
 
 import subprocess
 import sys
+from types import SimpleNamespace
+
+from otdf_python.cli import cmd_supports
+
+
+def test_cmd_supports_returns_codes_in_process():
+    """cmd_supports returns exit codes without calling sys.exit (review feedback)."""
+    assert cmd_supports(SimpleNamespace(feature="autoconfigure")) == 0
+    assert cmd_supports(SimpleNamespace(feature="ecwrap")) == 1
+    assert cmd_supports(SimpleNamespace(feature="not-a-real-feature")) == 2
 
 
 def test_supports_autoconfigure_exit_0():
