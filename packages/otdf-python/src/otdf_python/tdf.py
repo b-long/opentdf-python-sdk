@@ -83,7 +83,7 @@ class TDF:
         seen_urls = set()
         unique_kas_infos = []
         for kas in kas_infos:
-            url_key = (getattr(kas, "url", "") or "").rstrip("/")
+            url_key = (getattr(kas, "url", "") or "").rstrip("/").lower()
             if url_key in seen_urls:
                 continue
             seen_urls.add(url_key)
