@@ -83,7 +83,7 @@ class TDF:
         seen_urls = set()
         unique_kas_infos = []
         for kas in kas_infos:
-            url = getattr(kas, "url", "") or ""
+            url = (getattr(kas, "url", "") or "").strip()
             if not url:
                 raise ValueError("KAS info must have a valid non-empty URL")
             url_key = url.rstrip("/").lower()
