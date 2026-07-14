@@ -57,6 +57,30 @@ def test_validate_kas_infos_dedupes_same_url():
     assert len(validated) == 1
 
 
+def test_validate_kas_infos_dedupes_case_insensitive_url():
+    tdf = TDF(services=None)
+    kas_infos = [
+        KASInfo(url="http://localhost:8080/kas", public_key="PK", kid="r1"),
+        KASInfo(url="HTTP://LOCALHOST:8080/KAS", public_key="PK", kid="r1"),
+    ]
+    validated = tdf._validate_kas_infos(kas_infos)
+    assert len(validated) == 1
+
+
+def test_validate_kas_infos_rejects_empty_url():
+    tdf = TDF(services=None)
+    kas_infos = [KASInfo(url="", public_key="PK", kid="r1")]
+    with pytest.raises(ValueError, match="non-empty URL"):
+        tdf._validate_kas_infos(kas_infos)
+
+
+def test_validate_kas_infos_rejects_whitespace_only_url():
+    tdf = TDF(services=None)
+    kas_infos = [KASInfo(url="   ", public_key="PK", kid="r1")]
+    with pytest.raises(ValueError, match="non-empty URL"):
+        tdf._validate_kas_infos(kas_infos)
+
+
 def _builder_with_issuer(issuer: str) -> SDKBuilder:
     builder = SDKBuilder()
     builder.issuer_endpoint = issuer
