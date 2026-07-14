@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.10.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.9.1...otdf-python-v0.10.0) (2026-07-14)
+
+
+### Features
+
+* **cli:** add supports subcommand and xtest env auth fallbacks ([#167](https://github.com/b-long/opentdf-python-sdk/issues/167)) ([39a5c8f](https://github.com/b-long/opentdf-python-sdk/commit/39a5c8f1b25f400b8a6d82b529944903330612dd))
+
+
+### Bug Fixes
+
+* **main:** normalize URL key in `_validate_kas_infos` ([#170](https://github.com/b-long/opentdf-python-sdk/issues/170)) ([aab88f7](https://github.com/b-long/opentdf-python-sdk/commit/aab88f702f8eb9adf1fa22fc2e3ea7ee62d28a6b))
+
 ## [0.9.1](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.9.0...otdf-python-v0.9.1) (2026-06-30)
 
 
