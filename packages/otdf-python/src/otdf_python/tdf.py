@@ -77,6 +77,19 @@ class TDF:
         if not isinstance(kas_infos, list):
             kas_infos = [kas_infos]
 
+        # One key access object per KAS: drop entries that only repeat an
+        # earlier URL (e.g. a platform-derived default plus the same KAS
+        # passed explicitly).
+        seen_urls = set()
+        unique_kas_infos = []
+        for kas in kas_infos:
+            url_key = (getattr(kas, "url", "") or "").rstrip("/")
+            if url_key in seen_urls:
+                continue
+            seen_urls.add(url_key)
+            unique_kas_infos.append(kas)
+        kas_infos = unique_kas_infos
+
         validated_kas_infos = []
         for kas in kas_infos:
             # If public key is missing, try to fetch it from the KAS service

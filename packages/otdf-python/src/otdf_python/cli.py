@@ -9,6 +9,7 @@ import argparse
 import contextlib
 import json
 import logging
+import os
 import sys
 from dataclasses import asdict
 from importlib import metadata
@@ -113,7 +114,14 @@ def load_client_credentials(creds_file_path: str) -> tuple[str, str]:
 
 
 def _configure_auth(builder: SDKBuilder, args) -> None:
-    """Configure authentication on the SDK builder."""
+    """Configure authentication on the SDK builder.
+
+    Preference order:
+    1. Explicit --client-id / --client-secret flags
+    2. --with-client-creds-file
+    3. --auth clientId:clientSecret
+    4. CLIENTID / CLIENTSECRET environment variables (xtest / local platform)
+    """
     if args.client_id and args.client_secret:
         builder.client_secret(args.client_id, args.client_secret)
     elif hasattr(args, "with_client_creds_file") and args.with_client_creds_file:
@@ -127,10 +135,14 @@ def _configure_auth(builder: SDKBuilder, args) -> None:
                 f"Auth expects <clientId>:<clientSecret>, received {args.auth}",
             )
         builder.client_secret(auth_parts[0], auth_parts[1])
+    elif os.environ.get("CLIENTID") and os.environ.get("CLIENTSECRET"):
+        builder.client_secret(os.environ["CLIENTID"], os.environ["CLIENTSECRET"])
+        logger.debug("Using CLIENTID/CLIENTSECRET from environment")
     else:
         raise CLIError(
             "CRITICAL",
-            "Authentication required: provide --with-client-creds-file OR --client-id and --client-secret",
+            "Authentication required: provide --with-client-creds-file, "
+            "--client-id/--client-secret, or set CLIENTID and CLIENTSECRET env vars",
         )
 
 
@@ -149,34 +161,101 @@ def _configure_kas_allowlist(builder: SDKBuilder, args) -> None:
 
 
 def build_sdk(args) -> SDK:
-    """Build SDK instance from CLI arguments."""
+    """Build SDK instance from CLI arguments.
+
+    Falls back to PLATFORMURL / KCFULLURL / KASURL environment variables
+    (xtest contract) when flags are omitted, so shims need not pass secrets
+    on argv.
+    """
     builder = SDKBuilder()
 
-    if args.platform_url:
-        builder.set_platform_endpoint(args.platform_url)
+    platform_url = getattr(args, "platform_url", None) or os.environ.get("PLATFORMURL")
+    oidc_endpoint = getattr(args, "oidc_endpoint", None) or os.environ.get("KCFULLURL")
+    # kas-endpoint may be comma-separated; also accept single KASURL env.
+    if not getattr(args, "kas_endpoint", None) and os.environ.get("KASURL"):
+        args.kas_endpoint = os.environ["KASURL"]
+
+    if platform_url:
+        builder.set_platform_endpoint(platform_url)
         # Auto-detect HTTP URLs and enable plaintext mode
-        if args.platform_url.startswith("http://") and (
-            not hasattr(args, "plaintext") or not args.plaintext
-        ):
+        if platform_url.startswith("http://") and not getattr(args, "plaintext", None):
             logger.debug(
-                f"Auto-detected HTTP URL {args.platform_url}, enabling plaintext mode"
+                f"Auto-detected HTTP URL {platform_url}, enabling plaintext mode"
             )
             builder.use_insecure_plaintext_connection(True)
+        # Keep args.platform_url set for create_tdf_config / nano KAS derivation
+        args.platform_url = platform_url
 
-    if args.oidc_endpoint:
-        builder.set_issuer_endpoint(args.oidc_endpoint)
+    if oidc_endpoint:
+        builder.set_issuer_endpoint(oidc_endpoint)
+        args.oidc_endpoint = oidc_endpoint
 
     _configure_auth(builder, args)
 
-    if hasattr(args, "plaintext") and args.plaintext:
+    if getattr(args, "plaintext", None):
         builder.use_insecure_plaintext_connection(True)
 
-    if args.insecure:
+    if getattr(args, "insecure", None):
         builder.use_insecure_skip_verify(True)
 
     _configure_kas_allowlist(builder, args)
 
     return builder.build()
+
+
+# Features the Python SDK currently exercises honestly in community xtest Stage-1.
+# Keep conservative: only advertise what encrypt/decrypt paths actually honor.
+_SUPPORTED_FEATURES: frozenset[str] = frozenset(
+    {
+        "autoconfigure",
+        "connectrpc",
+        "hexless",
+        "kasallowlist",
+    }
+)
+
+_KNOWN_FEATURES: frozenset[str] = frozenset(
+    {
+        "assertions",
+        "assertion_verification",
+        "attribute_traversal",
+        "audit_logging",
+        "autoconfigure",
+        "better-messages-2024",
+        "bulk_rewrap",
+        "connectrpc",
+        "dpop",
+        "dpop_nonce_challenge",
+        "ecwrap",
+        "hexless",
+        "hexaflexible",
+        "kasallowlist",
+        "key_management",
+        "mechanism-rsa-4096",
+        "mechanism-ec-curves-384-521",
+        "mechanism-xwing",
+        "mechanism-secpmlkem",
+        "mechanism-mlkem",
+        "ns_grants",
+        "obligations",
+    }
+)
+
+
+def cmd_supports(args) -> int:
+    """Check if a feature is supported (xtest CLI contract).
+
+    Returns:
+        0 if supported, 1 if not supported, 2 if unknown.
+
+    """
+    feature = getattr(args, "feature", None)
+    if feature not in _KNOWN_FEATURES:
+        logger.error(f"Unknown feature: {feature}")
+        return 2
+    if feature in _SUPPORTED_FEATURES:
+        return 0
+    return 1
 
 
 def create_tdf_config(sdk: SDK, args) -> TDFConfig:
@@ -190,10 +269,13 @@ def create_tdf_config(sdk: SDK, args) -> TDFConfig:
     config = sdk.new_tdf_config(attributes=attributes)
 
     if hasattr(args, "kas_endpoint") and args.kas_endpoint:
-        # Add KAS endpoints
+        # Explicit endpoints replace the platform-derived default; extending
+        # would give the same KAS two key access objects in the manifest.
         kas_endpoints = parse_kas_endpoints(args.kas_endpoint)
-        kas_info_list = [KASInfo(url=kas_url) for kas_url in kas_endpoints]
-        config.kas_info_list.extend(kas_info_list)
+        config.kas_info_list = [
+            KASInfo(url=kas_url, default=(i == 0))
+            for i, kas_url in enumerate(kas_endpoints)
+        ]
 
     if hasattr(args, "mime_type") and args.mime_type:
         config.mime_type = args.mime_type
@@ -550,7 +632,29 @@ Where creds.json contains:
     )
     inspect_parser.add_argument("file", help="Path to encrypted file")
 
+    # Supports command (xtest feature probe)
+    supports_parser = subparsers.add_parser(
+        "supports",
+        help="Check if a feature is supported (exit 0=yes, 1=no, 2=unknown)",
+    )
+    supports_parser.add_argument("feature", help="Feature name (e.g. ecwrap, hexless)")
+
     return parser
+
+
+def _dispatch_command(parser, args) -> None:
+    """Route a parsed command to its handler."""
+    if args.command == "encrypt":
+        cmd_encrypt(args)
+    elif args.command == "decrypt":
+        cmd_decrypt(args)
+    elif args.command == "inspect":
+        cmd_inspect(args)
+    elif args.command == "supports":
+        sys.exit(cmd_supports(args))
+    else:
+        parser.print_help()
+        sys.exit(1)
 
 
 def main():
@@ -567,16 +671,7 @@ def main():
         sys.exit(1)
 
     try:
-        if args.command == "encrypt":
-            cmd_encrypt(args)
-        elif args.command == "decrypt":
-            cmd_decrypt(args)
-        elif args.command == "inspect":
-            cmd_inspect(args)
-        else:
-            parser.print_help()
-            sys.exit(1)
-
+        _dispatch_command(parser, args)
     except CLIError as e:
         logger.error(f"{e.level}: {e.message}")
         if e.cause:
