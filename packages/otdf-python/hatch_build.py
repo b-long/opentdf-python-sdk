@@ -8,7 +8,7 @@ from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 class CustomBuildHook(BuildHookInterface):
     """Dynamically resolves proto sources for wheel builds from source tree or sdist."""
 
-    def initialize(self, version, build_data):
+    def initialize(self, _version, build_data):
         """Set force_include for otdf_python_proto based on build context."""
         if self.target_name != "wheel":
             return

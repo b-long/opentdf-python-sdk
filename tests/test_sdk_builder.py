@@ -131,7 +131,7 @@ def test_ssl_context_from_directory():
 def test_get_token_from_client_credentials(mock_post, mock_get):
     """Test getting OAuth token from client credentials."""
 
-    def get_side_effect(url, **kwargs):
+    def get_side_effect(url, **_kwargs):
         resp = MagicMock()
         if "openid-configuration" in url:
             resp.status_code = 200
@@ -165,7 +165,7 @@ def test_get_token_from_client_credentials(mock_post, mock_get):
 def test_get_token_failure(mock_post, mock_get):
     """Test handling of token acquisition failure."""
 
-    def get_side_effect(url, **kwargs):
+    def get_side_effect(url, **_kwargs):
         resp = MagicMock()
         if "openid-configuration" in url:
             resp.status_code = 200

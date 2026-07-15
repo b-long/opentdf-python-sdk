@@ -43,7 +43,7 @@ class PolicyInfo:
         return offset - start
 
     @staticmethod
-    def from_bytes_with_size(buffer: bytes, ecc_mode):
+    def from_bytes_with_size(buffer: bytes, _ecc_mode):
         # Parse policy_type (1 byte), body_len (2 bytes), body
         # Note: binding is NOT part of PolicyInfo - it's read separately in Header
         offset = 0

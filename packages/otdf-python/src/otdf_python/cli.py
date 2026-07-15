@@ -286,7 +286,7 @@ def create_tdf_config(sdk: SDK, args) -> TDFConfig:
     return config
 
 
-def create_nano_tdf_config(sdk: SDK, args) -> NanoTDFConfig:
+def create_nano_tdf_config(_sdk: SDK, args) -> NanoTDFConfig:
     """Create NanoTDF configuration from CLI arguments."""
     attributes = (
         parse_attributes(args.attributes)
