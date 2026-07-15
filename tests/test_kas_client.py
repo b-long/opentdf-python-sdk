@@ -65,7 +65,7 @@ def test_get_public_key_fetches_and_caches(mock_access_service_client):
     mock_rpc_response.kid = "kid2"
     mock_rpc_response.public_key = "public-key-data"
 
-    def mock_public_key_call(*args, **kwargs):
+    def mock_public_key_call(*_args, **_kwargs):
         return mock_rpc_response
 
     mock_rpc_client_instance.public_key = mock_public_key_call
