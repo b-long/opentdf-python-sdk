@@ -97,9 +97,9 @@ class KAS(AbstractContextManager):
 
     def unwrap_nanotdf(
         self,
-        curve: Any,
-        header: str,
-        kas_url: str,
+        curve: Any,  # noqa: ARG002
+        header: str,  # noqa: ARG002
+        kas_url: str,  # noqa: ARG002
         wrapped_key: bytes | None = None,
         kas_private_key: str | None = None,
         mock: bool = False,

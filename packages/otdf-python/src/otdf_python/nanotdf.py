@@ -468,7 +468,7 @@ class NanoTDF:
         return len(header_bytes) + 3 + payload_length
 
     def _kas_unwrap(
-        self, nano_tdf_data: bytes, header_len: int, wrapped_key: bytes
+        self, nano_tdf_data: bytes, header_len: int, _wrapped_key: bytes
     ) -> bytes | None:
         try:
             # For NanoTDF, send the entire header to KAS
@@ -622,7 +622,7 @@ class NanoTDF:
         # Try KAS unwrap first if services available
         if self.services:
             try:
-                key = self._kas_unwrap(nano_tdf_data, header_len, wrapped_key=b"")
+                key = self._kas_unwrap(nano_tdf_data, header_len, b"")
                 if key:
                     logging.info(
                         "Successfully unwrapped NanoTDF key via KAS (ECDH mode)"
