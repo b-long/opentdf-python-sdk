@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.10.1](.../compare/otdf-python-v0.10.0...otdf-python-v0.10.1) (2026-07-26)
+
+### Security
+
+* bump setuptools to 83.0.0, fixing a MANIFEST.in exclusion bypass
+  ([CVE-2026-59890](https://github.com/advisories/GHSA-h35f-9h28-mq5c))
+
+### Bug Fixes
+
+* remove mention of nonexistent develop branch (#175) (c3d6ab9)
+
 ## [0.10.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.9.1...otdf-python-v0.10.0) (2026-07-14)
 
 
