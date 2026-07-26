@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.1](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.10.0...otdf-python-v0.10.1) (2026-07-26)
+
+
+### Bug Fixes
+
+* remove mention of nonexistent develop branch ([#175](https://github.com/b-long/opentdf-python-sdk/issues/175)) ([c3d6ab9](https://github.com/b-long/opentdf-python-sdk/commit/c3d6ab996624f99d3f132afc2992c452b8ab7fff))
+
 ## [0.10.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.9.1...otdf-python-v0.10.0) (2026-07-14)
 
 
