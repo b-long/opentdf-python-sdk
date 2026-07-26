@@ -113,7 +113,7 @@ jobs:
         run: go run ./service provision fixtures
         working-directory: platform
       - name: Start server in background
-        uses: JarvusInnovations/background-action@2428e7b970a846423095c79d43f759abf979a635
+        uses: JarvusInnovations/background-action@1f5e5fa2462e48a95f97b54b4842d076d1008e3b
         with:
           run: |
             go run ./service start
