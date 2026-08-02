@@ -1,0 +1,60 @@
+# Overrides for docker-compose.platform.yaml needed to run the platform
+# integration tests in CI (and locally). See issue #26 for the background
+# on each of these -- briefly:
+#
+# - The platform, its Keycloak provisioning data, and its policy fixtures
+#   must all come from the SAME git tag. NanoTDF rewrap (kas ec rewrap)
+#   breaks against every platform release newer than service/v0.8.1 that
+#   was tried (v0.16.0 through :nightly), independent of otdfctl/SDK
+#   version, so everything is pinned to that tag for now.
+# - Our own keycloak_data.yaml (matching the v0.8.1 realm schema) replaces
+#   the copy the base compose file downloads from opentdf/platform@main,
+#   since we need `directAccessGrantsEnabled: true` on the "opentdf" client
+#   for the OAuth2 password grant used by the PE integration tests.
+# - Keycloak's plaintext port is published and opentdf.yaml's issuer is
+#   patched to match, instead of going through Caddy's TLS route. Our
+#   Connect RPC client for KAS (pyqwest-based) cannot disable TLS
+#   certificate verification for https:// URLs, so the platform and
+#   Keycloak endpoints used by the Python SDK/tests need to stay plaintext.
+#   (otdfctl doesn't have this limitation and is fine going through Caddy.)
+services:
+  platform-provision-keycloak:
+    image: registry.opentdf.io/platform:v0.8.1
+  platform-provision-fixtures:
+    image: registry.opentdf.io/platform:v0.8.1
+  platform:
+    image: registry.opentdf.io/platform:v0.8.1
+
+  download-platform-config:
+    command: ['wget', '-O', '/configs/opentdf.yaml', 'https://raw.githubusercontent.com/opentdf/platform/service/v0.8.1/opentdf-example.yaml']
+
+  download-fixtures:
+    command: ['wget', '-O', '/configs/service/internal/fixtures/policy_fixtures.yaml', 'https://raw.githubusercontent.com/opentdf/platform/service/v0.8.1/service/internal/fixtures/policy_fixtures.yaml']
+
+  download-keycloak-data:
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        cp /custom/keycloak_data.yaml /configs/keycloak_data.yaml
+        echo "Copied local keycloak_data.yaml into /configs"
+    volumes:
+      - configs:/configs
+      - ./keycloak_data.yaml:/custom/keycloak_data.yaml:ro
+
+  keycloak:
+    ports:
+      - "8888:8888"
+
+  patch-platform-config:
+    command:
+      - sh
+      - -c
+      - |
+        apk add --no-cache sed
+        sed -i 's|http://keycloak:8888|http://keycloak.opentdf.local:8888|g' /configs/opentdf.yaml
+        echo "Patched opentdf.yaml to use keycloak.opentdf.local:8888 (plaintext)"
+
+volumes:
+  configs:
+    name: opentdf_configs

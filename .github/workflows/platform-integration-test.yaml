@@ -1,8 +1,11 @@
-# Based on
-#   https://github.com/opentdf/java-sdk/blob/v0.6.1/.github/workflows/checks.yaml
+# Runs the OpenTDF platform locally via `docker compose`, following
+#   https://opentdf.io/getting-started#getting-the-platform-running
+# instead of building the platform from source (see issue #26).
 #
-# Except, that this is a "Composite Action", and specifies 'shell: bash' for
-# each 'run:' step.
+# docker-compose.platform.yaml is a vendored copy of the quickstart's
+# docker-compose.yaml. docker-compose.platform.override.yaml and
+# keycloak_data.yaml carry the local changes needed to make it usable here
+# -- see the comments in those files for why each one is needed.
 name: "NEW: Platform Integration testing"
 
 on:
@@ -25,109 +28,33 @@ jobs:
       - name: Checkout this repo
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
 
-      # - uses: bufbuild/buf-setup-action@382440cdb8ec7bc25a68d7b4711163d95f7cc3aa
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update /etc/hosts
+        shell: bash
+        run: |
+          echo -e "127.0.0.1 platform.opentdf.local\n127.0.0.1 keycloak.opentdf.local" | sudo tee -a /etc/hosts
 
-      - name: Check out platform
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
-        with:
-          repository: opentdf/platform
-          ref: service/v0.8.2
-          path: platform
+      - name: Bring the platform up
+        shell: bash
+        run: |
+          docker compose \
+            --file .github/docker-compose.platform.yaml \
+            --file .github/docker-compose.platform.override.yaml \
+            up -d --wait --wait-timeout 360
+
       - name: Set up go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
         with:
           go-version: "1.24.x"
           check-latest: false
-          cache-dependency-path: |
-            platform/service/go.sum
-            platform/examples/go.sum
-            platform/protocol/go/go.sum
-            platform/sdk/go.sum
-      - run: go mod download
-        shell: bash
-        working-directory: platform
-      - run: go mod verify
-        shell: bash
-        working-directory: platform
-      - name: Create keys
-        shell: bash
-        run: |
-          .github/scripts/init-temp-keys.sh
-          # Edit Keycloak sample file for our use case
-          yq -i '.realms[0].clients[0].client.directAccessGrantsEnabled = true | .realms[0].clients[0].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
-          yq -i '.realms[0].clients[1].client.directAccessGrantsEnabled = true | .realms[0].clients[1].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
-          yq -i '.realms[0].clients[4].client.directAccessGrantsEnabled = true | .realms[0].clients[4].client.serviceAccountsEnabled = true' service/cmd/keycloak_data.yaml
 
-          cp opentdf-example.yaml opentdf.yaml
-          # Edit 'opentdf.yaml' for our use case
-          yq -i 'del(.db) | .services.entityresolution.url = "http://localhost:8888/auth" | .server.auth.issuer = "http://localhost:8888/auth/realms/opentdf"' opentdf.yaml
-          # The above expression can also be written as 3 separate commands:
-          # yq -i 'del(.db)' opentdf.yaml
-          # yq -i '.services.entityresolution.url = "http://localhost:8888/auth"' opentdf.yaml
-          # yq -i '.server.auth.issuer = "http://localhost:8888/auth/realms/opentdf"' opentdf.yaml
-          yq -i '
-          .server.cryptoProvider = {
-            "type": "standard",
-            "standard": {
-              "keys": [
-                {
-                  "kid": "r1",
-                  "alg": "rsa:2048",
-                  "private": "kas-private.pem",
-                  "cert": "kas-cert.pem"
-                },
-                {
-                  "kid": "e1",
-                  "alg": "ec:secp256r1",
-                  "private": "kas-ec-private.pem",
-                  "cert": "kas-ec-cert.pem"
-                }
-              ]
-            }
-          }
-          ' opentdf.yaml
-          sudo chmod -R 777 ./keys
-        working-directory: platform
-      # - name: Trust the locally issued cert
-      #   run: |
-      #     keytool \
-      #       -importcert \
-      #       -storepass changeit \
-      #       -noprompt \
-      #       -file localhost.crt \
-      #       -keystore $JAVA_HOME/lib/security/cacerts \
-      #       -alias localhost-for-tests
-      #   working-directory: platform/keys
-      - name: Bring the services up
-        shell: bash
-        run: docker compose up -d --wait --wait-timeout 240
-        working-directory: platform
-      - name: Provision keycloak
-        shell: bash
-        run: go run ./service provision keycloak
-        working-directory: platform
-      - name: Provision fixtures
-        shell: bash
-        run: go run ./service provision fixtures
-        working-directory: platform
-      - name: Start server in background
-        uses: JarvusInnovations/background-action@2428e7b970a846423095c79d43f759abf979a635
-        with:
-          run: |
-            go run ./service start
-          wait-on: |
-            tcp:localhost:8080
-          log-output-if: true
-          wait-for: 90s
-          working-directory: platform
       - name: Get grpcurl
         shell: bash
         run: go install github.com/fullstorydev/grpcurl/cmd/grpcurl@v1.8.9
+
       - name: Make sure that the platform is up
         shell: bash
         run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
           grpcurl -plaintext localhost:8080 list && \
           grpcurl -plaintext localhost:8080 kas.AccessService/PublicKey
 
@@ -146,7 +73,7 @@ jobs:
       - name: Encrypt file with otdfctl (no attributes)
         run: |
           export PATH=$PATH:$(go env GOPATH)/bin
-          otdfctl encrypt -o secret.txt.tdf --host http://localhost:8080 --tls-no-verify --with-client-creds-file creds.json secret.txt
+          otdfctl encrypt -o secret.txt.tdf --host http://localhost:8080 --with-client-creds-file creds.json secret.txt
         shell: bash
 
       - name: Set up uv
@@ -161,7 +88,7 @@ jobs:
           OPENTDF_CLIENT_ID: "opentdf"
           OPENTDF_CLIENT_SECRET: "secret"
           OPENTDF_HOSTNAME: "localhost:8080"
-          OIDC_TOKEN_ENDPOINT: "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
+          OIDC_TOKEN_ENDPOINT: "http://keycloak.opentdf.local:8888/auth/realms/opentdf/protocol/openid-connect/token"
           OPENTDF_KAS_URL: "http://localhost:8080/kas"
           INSECURE_SKIP_VERIFY: "TRUE"
           TEST_OPENTDF_ATTRIBUTE_1: "https://example.net/attr/attr1/value/value1"
@@ -178,7 +105,8 @@ jobs:
           OPENTDF_CLIENT_SECRET: "secret"
           OPENTDF_PLATFORM_HOST: "localhost:8080"
           OPENTDF_PLATFORM_URL: "http://localhost:8080"
-          OIDC_OP_TOKEN_ENDPOINT: "http://localhost:8888/auth/realms/opentdf/protocol/openid-connect/token"
+          OPENTDF_KEYCLOAK_HOST: "keycloak.opentdf.local:8888"
+          OIDC_OP_TOKEN_ENDPOINT: "http://keycloak.opentdf.local:8888/auth/realms/opentdf/protocol/openid-connect/token"
           OPENTDF_KAS_URL: "http://localhost:8080/kas"
           INSECURE_SKIP_VERIFY: "TRUE"
           TEST_OPENTDF_ATTRIBUTE_1: "https://example.net/attr/attr1/value/value1"
