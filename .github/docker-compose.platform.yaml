@@ -1,9 +1,14 @@
 # Vendored from https://opentdf.io/quickstart/docker-compose.yaml
 # (the "Getting the Platform Running" section of
-# https://opentdf.io/getting-started#getting-the-platform-running).
+# https://opentdf.io/getting-started#getting-the-platform-running), with one
+# deliberate deviation from the upstream file: the `platform*` services'
+# image tags were changed from the literal `:nightly` to `:${PLATFORM_VERSION}`,
+# so the version we're pinned to (see docker-compose.platform.env) is
+# declared in exactly one place instead of being overridden after the fact.
+# If re-vendoring this file from upstream, reapply that change.
 #
-# See docker-compose.platform.override.yaml for the local overrides needed
-# to make this usable in CI (see issue #26).
+# See docker-compose.platform.override.yaml for the other local overrides
+# needed to make this usable in CI (see issue #26).
 networks:
   default:
     name: opentdf_platform
@@ -193,7 +198,7 @@ services:
 
   # Provision Keycloak with initial configuration
   platform-provision-keycloak:
-    image: registry.opentdf.io/platform:nightly
+    image: registry.opentdf.io/platform:${PLATFORM_VERSION}
     command: ["provision", "keycloak", "-e", "https://keycloak.opentdf.local:9443/auth", "-f", "/configs/keycloak_data.yaml"]
     depends_on:
       keycloak:
@@ -235,7 +240,7 @@ services:
 
   # Add sample attributes and metadata  
   platform-provision-fixtures:
-    image: registry.opentdf.io/platform:nightly
+    image: registry.opentdf.io/platform:${PLATFORM_VERSION}
     command: ["provision", "fixtures", "--config-file", "/configs/opentdf.yaml"]
     working_dir: /configs
     depends_on:
@@ -284,7 +289,7 @@ services:
 
   # Main OpenTDF Platform server
   platform:
-    image: registry.opentdf.io/platform:nightly
+    image: registry.opentdf.io/platform:${PLATFORM_VERSION}
     command: ["start", "--config-file", "/configs/opentdf.yaml"]
     depends_on:
       platform-provision-fixtures:

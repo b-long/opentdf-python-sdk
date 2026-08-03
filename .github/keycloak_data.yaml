@@ -1,12 +1,14 @@
 # Vendored from
-# https://raw.githubusercontent.com/opentdf/platform/service/v0.8.1/service/cmd/keycloak_data.yaml
-# with one change: `directAccessGrantsEnabled: true` added to the "opentdf"
-# client, which our integration tests need for the OAuth2 password grant
+# https://raw.githubusercontent.com/opentdf/platform/service/<PLATFORM_VERSION>/service/cmd/keycloak_data.yaml
+# (see PLATFORM_VERSION in docker-compose.platform.env) with one change:
+# `directAccessGrantsEnabled: true` added to the "opentdf" client, which our
+# integration tests need for the OAuth2 password grant
 # (see tests/integration/support_sdk.py::get_user_access_token).
 #
-# This must stay pinned to the same platform version/tag as the images in
-# docker-compose.platform.override.yaml -- the realm schema this file uses
-# is not compatible with newer platform releases (see issue #26).
+# This is a static file, so if PLATFORM_VERSION is ever bumped, re-fetch it
+# from the URL above (with that version substituted in) and re-apply the
+# change above -- the realm schema here is not compatible with newer
+# platform releases (see issue #26).
 baseUrl: &baseUrl http://localhost:8888
 serverBaseUrl: &serverBaseUrl http://localhost:8080
 customAudMapper: &customAudMapper

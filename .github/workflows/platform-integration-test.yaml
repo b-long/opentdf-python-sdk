@@ -44,6 +44,7 @@ jobs:
           docker compose \
             --file .github/docker-compose.platform.yaml \
             --file .github/docker-compose.platform.override.yaml \
+            --env-file .github/docker-compose.platform.env \
             up -d
 
       - name: Set up go
@@ -73,10 +74,12 @@ jobs:
           docker compose \
             --file .github/docker-compose.platform.yaml \
             --file .github/docker-compose.platform.override.yaml \
+            --env-file .github/docker-compose.platform.env \
             ps -a
           docker compose \
             --file .github/docker-compose.platform.yaml \
             --file .github/docker-compose.platform.override.yaml \
+            --env-file .github/docker-compose.platform.env \
             logs platform
           exit 1
 
