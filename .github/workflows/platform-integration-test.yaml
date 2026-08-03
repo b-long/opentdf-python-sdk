@@ -36,10 +36,15 @@ jobs:
       - name: Bring the platform up
         shell: bash
         run: |
+          # Note: intentionally not using `--wait` here. This compose file
+          # has many one-shot init/provisioning containers (restart: "no"),
+          # and `docker compose up --wait` unreliably reports failure for
+          # those even when every container has exited cleanly -- readiness
+          # is instead confirmed below by polling grpcurl.
           docker compose \
             --file .github/docker-compose.platform.yaml \
             --file .github/docker-compose.platform.override.yaml \
-            up -d --wait --wait-timeout 360
+            up -d
 
       - name: Set up go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
@@ -55,8 +60,25 @@ jobs:
         shell: bash
         run: |
           export PATH=$PATH:$(go env GOPATH)/bin
-          grpcurl -plaintext localhost:8080 list && \
-          grpcurl -plaintext localhost:8080 kas.AccessService/PublicKey
+          for i in $(seq 1 60); do
+            if grpcurl -plaintext localhost:8080 list >/dev/null 2>&1; then
+              echo "Platform is up after ${i} attempt(s)"
+              grpcurl -plaintext localhost:8080 list
+              grpcurl -plaintext localhost:8080 kas.AccessService/PublicKey
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Platform did not come up in time"
+          docker compose \
+            --file .github/docker-compose.platform.yaml \
+            --file .github/docker-compose.platform.override.yaml \
+            ps -a
+          docker compose \
+            --file .github/docker-compose.platform.yaml \
+            --file .github/docker-compose.platform.override.yaml \
+            logs platform
+          exit 1
 
       - name: Install otdfctl
         run: go install github.com/opentdf/otdfctl@v0.28.0
