@@ -3,9 +3,9 @@
 # instead of building the platform from source (see issue #26).
 #
 # docker-compose.platform.yaml is a vendored copy of the quickstart's
-# docker-compose.yaml. docker-compose.platform.override.yaml and
-# keycloak_data.yaml carry the local changes needed to make it usable here
-# -- see the comments in those files for why each one is needed.
+# docker-compose.yaml. docker-compose.platform.override.yaml carries the
+# local changes needed to make it usable here -- see the comments in that
+# file for why each one is needed.
 name: "NEW: Platform Integration testing"
 
 on:

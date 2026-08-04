@@ -10,11 +10,14 @@
 #   platform release newer than that tag was tried against (v0.16.0 through
 #   :nightly), independent of otdfctl/SDK version, so everything is pinned
 #   for now.
-# - Our own keycloak_data.yaml (matching that same version's realm schema)
-#   replaces the copy the base compose file downloads from
-#   opentdf/platform@main, since we need `directAccessGrantsEnabled: true`
-#   on the "opentdf" client for the OAuth2 password grant used by the PE
-#   integration tests.
+# - The Keycloak provisioning data must come from the SAME git tag as the
+#   platform image (see download-keycloak-data below), patched with
+#   `directAccessGrantsEnabled: true` on the "opentdf" client via `yq`, which
+#   our integration tests need for the OAuth2 password grant (see
+#   tests/integration/support_sdk.py::get_user_access_token). This mirrors
+#   how the pre-docker-compose CI patched the same file with `yq` after
+#   checking out the platform repo at this tag -- see git history of
+#   platform-integration-test.yaml before this pipeline used docker compose.
 # - Keycloak's plaintext port is published and opentdf.yaml's issuer is
 #   patched to match, instead of going through Caddy's TLS route. Our
 #   Connect RPC client for KAS (pyqwest-based) cannot disable TLS
@@ -51,15 +54,13 @@ services:
     restart: "no"
 
   download-keycloak-data:
-    entrypoint: /bin/sh
     command:
       - -c
       - |
-        cp /custom/keycloak_data.yaml /configs/keycloak_data.yaml
-        echo "Copied local keycloak_data.yaml into /configs"
-    volumes:
-      - configs:/configs
-      - ./keycloak_data.yaml:/custom/keycloak_data.yaml:ro
+        apk add --no-cache yq
+        wget -O /configs/keycloak_data.yaml 'https://raw.githubusercontent.com/opentdf/platform/service/${PLATFORM_VERSION}/service/cmd/keycloak_data.yaml'
+        yq -i '.realms[0].clients[0].client.directAccessGrantsEnabled = true' /configs/keycloak_data.yaml
+        echo "Downloaded keycloak_data.yaml (service/${PLATFORM_VERSION}) and patched directAccessGrantsEnabled for the opentdf client"
 
   keycloak:
     ports:
