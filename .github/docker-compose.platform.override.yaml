@@ -10,13 +10,12 @@
 #   platform release newer than that tag was tried against (v0.16.0 through
 #   :nightly), independent of otdfctl/SDK version, so everything is pinned
 #   for now.
-# - The Keycloak provisioning data must come from the SAME git tag as the
-#   platform image (see download-keycloak-data below), patched with
-#   `directAccessGrantsEnabled: true` on the "opentdf" client via `yq`, which
-#   our integration tests need for the OAuth2 password grant (see
-#   tests/integration/support_sdk.py::get_user_access_token). This mirrors
-#   how the pre-docker-compose CI patched the same file with `yq` after
-#   checking out the platform repo at this tag -- see git history of
+# - The Keycloak provisioning data (download-keycloak-data below) is also
+#   patched with `directAccessGrantsEnabled: true` on the "opentdf" client
+#   via `yq`, which our integration tests need for the OAuth2 password grant
+#   (see tests/integration/support_sdk.py::get_user_access_token). This
+#   mirrors how the pre-docker-compose CI patched the same file with `yq`
+#   after checking out the platform repo at this tag -- see git history of
 #   platform-integration-test.yaml before this pipeline used docker compose.
 # - Keycloak's plaintext port is published and opentdf.yaml's issuer is
 #   patched to match, instead of going through Caddy's TLS route. Our
@@ -42,7 +41,14 @@ services:
     command: ['wget', '-O', '/configs/service/internal/fixtures/policy_fixtures.yaml', 'https://raw.githubusercontent.com/opentdf/platform/service/${PLATFORM_VERSION}/service/internal/fixtures/policy_fixtures.yaml']
 
   download-init-script:
-    command: ['wget', '-O', '/configs/init-temp-keys.sh', 'https://raw.githubusercontent.com/opentdf/platform/service/${PLATFORM_VERSION}/.github/scripts/init-temp-keys.sh']
+    # Unlike download-platform-config/download-fixtures below, the base
+    # service sets `entrypoint: /bin/sh`, so the command must be shell
+    # script text (`-c ...`), not an exec-form argv list -- otherwise sh
+    # tries to run "wget" as a script file and exits 2.
+    command:
+      - -c
+      - |
+        wget -O /configs/init-temp-keys.sh 'https://raw.githubusercontent.com/opentdf/platform/service/${PLATFORM_VERSION}/.github/scripts/init-temp-keys.sh'
 
   generate-pqc-keys:
     image: alpine:3.23
