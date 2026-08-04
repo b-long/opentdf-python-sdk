@@ -21,12 +21,34 @@
 #   certificate verification for https:// URLs, so the platform and
 #   Keycloak endpoints used by the Python SDK/tests need to stay plaintext.
 #   (otdfctl doesn't have this limitation and is fine going through Caddy.)
+# - Every file the base compose file fetches from opentdf/platform@main is
+#   repinned here to the same git tag as PLATFORM_VERSION (`service/<version>`),
+#   so nothing in this pipeline tracks main unpinned -- see download-init-script
+#   below. The one exception is generate-pqc-keys: the PQC keygen tool
+#   (service/cmd/keygen) doesn't exist yet at service/${PLATFORM_VERSION}, and
+#   the opentdf.yaml pinned to that tag only references the RSA/EC keys that
+#   generate-keys already creates, not PQC/hybrid ones -- so its output isn't
+#   consumed at this pin. It's turned into a no-op below instead of being
+#   pointed at a ref that doesn't have the tool. Revisit both when
+#   PLATFORM_VERSION is next bumped.
 services:
   download-platform-config:
     command: ['wget', '-O', '/configs/opentdf.yaml', 'https://raw.githubusercontent.com/opentdf/platform/service/${PLATFORM_VERSION}/opentdf-example.yaml']
 
   download-fixtures:
     command: ['wget', '-O', '/configs/service/internal/fixtures/policy_fixtures.yaml', 'https://raw.githubusercontent.com/opentdf/platform/service/${PLATFORM_VERSION}/service/internal/fixtures/policy_fixtures.yaml']
+
+  download-init-script:
+    command: ['wget', '-O', '/configs/init-temp-keys.sh', 'https://raw.githubusercontent.com/opentdf/platform/service/${PLATFORM_VERSION}/.github/scripts/init-temp-keys.sh']
+
+  generate-pqc-keys:
+    image: alpine:3.23
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        echo "Skipping PQC key generation: service/cmd/keygen doesn't exist at service/${PLATFORM_VERSION}, and its output isn't referenced by opentdf.yaml at that pin."
+    restart: "no"
 
   download-keycloak-data:
     entrypoint: /bin/sh
