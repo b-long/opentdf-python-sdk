@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.10.2](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.10.1...otdf-python-v0.10.2) (2026-08-20)
+
+### Security
+
+* bump cryptography to 50.0.0, addressing [CVE-2026-69247](https://github.com/advisories/GHSA-g6cj-pr64-35w5).  Recommend all users update to the latest version.
+
+### Miscellaneous Chores
+
+* release ([c7f1b04](https://github.com/b-long/opentdf-python-sdk/commit/c7f1b0483f550a5888c2943c203a815d6ca4d0d2))
+
 ## [0.10.1](.../compare/otdf-python-v0.10.0...otdf-python-v0.10.1) (2026-07-26)
 
 ### Security
