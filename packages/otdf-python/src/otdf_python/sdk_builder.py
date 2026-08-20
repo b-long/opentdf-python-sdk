@@ -273,7 +273,9 @@ class SDKBuilder:
             )
 
         config_doc = response.json()
-        configuration = config_doc.get("configuration", {})
+        # Newer platform versions return the fields directly at the top
+        # level instead of nested under a "configuration" key.
+        configuration = config_doc.get("configuration") or config_doc
 
         # Try to get token endpoint from IDP configuration
         idp_config = configuration.get("idp", {})
