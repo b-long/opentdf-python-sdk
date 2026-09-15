@@ -4,8 +4,7 @@ from contextlib import AbstractContextManager
 from io import BytesIO
 from typing import Any, BinaryIO
 
-from otdf_python.config import KASInfo, NanoTDFConfig, TDFConfig
-from otdf_python.nanotdf import NanoTDF
+from otdf_python.config import KASInfo, TDFConfig
 from otdf_python.sdk_exceptions import SDKException
 from otdf_python.tdf import TDF, TDFReader, TDFReaderConfig
 
@@ -95,38 +94,6 @@ class KAS(AbstractContextManager):
         """
         return self._kas_client.unwrap(key_access, policy, session_key_type)
 
-    def unwrap_nanotdf(
-        self,
-        curve: Any,  # noqa: ARG002
-        header: str,  # noqa: ARG002
-        kas_url: str,  # noqa: ARG002
-        wrapped_key: bytes | None = None,
-        kas_private_key: str | None = None,
-        mock: bool = False,
-    ) -> bytes:
-        """Unwraps the NanoTDF key using the KAS. If mock=True, performs local unwrap using the private key (for tests).
-
-        Args:
-            curve: EC curve used
-            header: NanoTDF header
-            kas_url: URL of the KAS
-            wrapped_key: Optional wrapped key bytes (for mock mode)
-            kas_private_key: Optional KAS private key (for mock mode)
-            mock: If True, unwrap locally using provided private key
-
-        Returns:
-            Unwrapped key as bytes
-
-        """
-        if mock and wrapped_key and kas_private_key:
-            from .asym_crypto import AsymDecryption
-
-            asym = AsymDecryption(private_key_pem=kas_private_key)
-            return asym.decrypt(wrapped_key)
-
-        # This would be implemented using nanotdf-specific logic
-        raise NotImplementedError("KAS unwrap_nanotdf not implemented.")
-
     def get_key_cache(self) -> Any:
         """Return the KAS key cache.
 
@@ -210,7 +177,7 @@ class SDK(AbstractContextManager):
 
     """
     Main SDK class for interacting with the OpenTDF platform.
-    Provides various services for TDF/NanoTDF operations and platform API calls.
+    Provides various services for TDF operations and platform API calls.
     """
 
     class Services(AbstractContextManager):
@@ -313,46 +280,6 @@ class SDK(AbstractContextManager):
         """
         tdf = TDF(self.services)
         return tdf.create_tdf(payload, config, output_stream)
-
-    def create_nano_tdf(
-        self, payload: bytes | BytesIO, output_stream: BinaryIO, config: "NanoTDFConfig"
-    ) -> int:
-        """Create a NanoTDF with the provided payload.
-
-        Args:
-            payload: The payload data as bytes or BytesIO
-            output_stream: The output stream to write the NanoTDF to
-            config: NanoTDFConfig for the NanoTDF creation
-
-        Returns:
-            int: The size of the created NanoTDF
-
-        Raises:
-            SDKException: If there's an error creating the NanoTDF
-
-        """
-        nano_tdf = NanoTDF(self.services)
-        return nano_tdf.create_nano_tdf(payload, output_stream, config)
-
-    def read_nano_tdf(
-        self,
-        nano_tdf_data: bytes | BytesIO,
-        output_stream: BinaryIO,
-        config: NanoTDFConfig,
-    ) -> None:
-        """Read a NanoTDF and write the payload to the output stream.
-
-        Args:
-            nano_tdf_data: The NanoTDF data as bytes or BytesIO
-            output_stream: The output stream to write the payload to
-            config: NanoTDFConfig configuration for the NanoTDF reader
-
-        Raises:
-            SDKException: If there's an error reading the NanoTDF
-
-        """
-        nano_tdf = NanoTDF(self.services)
-        nano_tdf.read_nano_tdf(nano_tdf_data, output_stream, config)
 
     @staticmethod
     def is_tdf(data: bytes | BinaryIO) -> bool:
