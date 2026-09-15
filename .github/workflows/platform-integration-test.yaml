@@ -108,6 +108,23 @@ jobs:
           cache-dependency-glob: "uv.lock"
           python-version: ${{ inputs.python_version }}
 
+      - name: Download built wheel
+        uses: actions/download-artifact@v7
+        with:
+          name: python-wheel
+          path: dist
+
+      - name: Install test dependencies and the built wheel under test
+        shell: bash
+        run: |
+          # Install the dev dependency group (pytest, etc.) without installing
+          # the otdf-python / otdf-python-proto workspace members from source,
+          # then install the caller-provided wheel on top. This ensures the
+          # tests below exercise the actual built artifact rather than an
+          # editable install of the checkout.
+          uv sync --no-install-workspace
+          uv pip install "${{ inputs.wheel }}"
+
       - name: Run all tests, minus integration tests
         env:
           OPENTDF_CLIENT_ID: "opentdf"
@@ -119,9 +136,9 @@ jobs:
           TEST_OPENTDF_ATTRIBUTE_1: "https://example.net/attr/attr1/value/value1"
           TEST_OPENTDF_ATTRIBUTE_2: "https://example.com/attr/attr1/value/value1"
         run: |
-          uv sync
-          # Skip the tests marked "integration"
-          uv run pytest -m "not integration" --tb=short -vv tests
+          # Skip the tests marked "integration". --no-sync avoids uv
+          # re-installing the workspace members editable over the wheel.
+          uv run --no-sync pytest -m "not integration" --tb=short -vv tests
         shell: bash
 
       - name: Run integration tests
@@ -140,9 +157,9 @@ jobs:
           # Run check_entitlements.sh
           ./.github/check_entitlements.sh
 
-          uv sync
-          # Skip the tests marked "integration"
-          uv run pytest -m "integration" --tb=short -vv tests
+          # Skip the tests marked "integration". --no-sync avoids uv
+          # re-installing the workspace members editable over the wheel.
+          uv run --no-sync pytest -m "integration" --tb=short -vv tests
         shell: bash
 
   # platform-xtest:
