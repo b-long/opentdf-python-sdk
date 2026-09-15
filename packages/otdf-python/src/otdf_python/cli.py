@@ -325,9 +325,7 @@ def cmd_encrypt(args):
             logger.debug("Creating TDF")
             config = create_tdf_config(sdk, args)
             output_stream = BytesIO()
-            _manifest, size, _ = sdk.create_tdf(
-                BytesIO(payload), config, output_stream
-            )
+            _manifest, size, _ = sdk.create_tdf(BytesIO(payload), config, output_stream)
             output_file.write(output_stream.getvalue())
             logger.info(f"Created TDF of size {size} bytes")
 
