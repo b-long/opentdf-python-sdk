@@ -29,7 +29,7 @@ class NoOpCollectionStore(CollectionStore):
     def store(self, header, key: CollectionKey):
         """Discard key operation (no-op)."""
 
-    def get_key(self, header) -> CollectionKey:
+    def get_key(self, _header) -> CollectionKey:
         return self.NO_PRIVATE_KEY
 
 

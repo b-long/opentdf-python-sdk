@@ -25,7 +25,7 @@ class PolicyBindingSerializer:
 
     @staticmethod
     def deserialize(
-        json_data: Any, typeofT: type | None = None, context: Any = None
+        json_data: Any, _typeof_t: type | None = None, _context: Any = None
     ) -> Any:
         if isinstance(json_data, dict):
             return PolicyBinding(**json_data)
@@ -35,7 +35,7 @@ class PolicyBindingSerializer:
 
     @staticmethod
     def serialize(
-        src: Any, typeofSrc: type | None = None, context: Any = None
+        src: Any, _typeof_src: type | None = None, _context: Any = None
     ) -> dict | str:
         if isinstance(src, PolicyBinding):
             return vars(src)

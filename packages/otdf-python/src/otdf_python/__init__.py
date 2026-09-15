@@ -5,14 +5,13 @@ Provides both programmatic APIs and command-line interface for encryption and de
 """
 
 from .cli import main as cli_main
-from .config import KASInfo, NanoTDFConfig, TDFConfig
+from .config import KASInfo, TDFConfig
 from .sdk import SDK
 from .sdk_builder import SDKBuilder
 
 __all__ = [
     "SDK",
     "KASInfo",
-    "NanoTDFConfig",
     "SDKBuilder",
     "TDFConfig",
     "cli_main",

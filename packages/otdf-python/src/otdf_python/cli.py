@@ -16,7 +16,7 @@ from importlib import metadata
 from io import BytesIO
 from pathlib import Path
 
-from otdf_python.config import KASInfo, NanoTDFConfig, TDFConfig
+from otdf_python.config import KASInfo, TDFConfig
 from otdf_python.sdk import SDK
 from otdf_python.sdk_builder import SDKBuilder
 from otdf_python.sdk_exceptions import SDKException
@@ -183,7 +183,7 @@ def build_sdk(args) -> SDK:
                 f"Auto-detected HTTP URL {platform_url}, enabling plaintext mode"
             )
             builder.use_insecure_plaintext_connection(True)
-        # Keep args.platform_url set for create_tdf_config / nano KAS derivation
+        # Keep args.platform_url set for create_tdf_config KAS derivation
         args.platform_url = platform_url
 
     if oidc_endpoint:
@@ -286,38 +286,6 @@ def create_tdf_config(sdk: SDK, args) -> TDFConfig:
     return config
 
 
-def create_nano_tdf_config(sdk: SDK, args) -> NanoTDFConfig:
-    """Create NanoTDF configuration from CLI arguments."""
-    attributes = (
-        parse_attributes(args.attributes)
-        if hasattr(args, "attributes") and args.attributes
-        else []
-    )
-
-    config = NanoTDFConfig(attributes=attributes)
-
-    if hasattr(args, "kas_endpoint") and args.kas_endpoint:
-        # Add KAS endpoints
-        kas_endpoints = parse_kas_endpoints(args.kas_endpoint)
-        kas_info_list = [KASInfo(url=kas_url) for kas_url in kas_endpoints]
-        config.kas_info_list.extend(kas_info_list)
-    elif args.platform_url:
-        # If no explicit KAS endpoint provided, derive from platform URL
-        # This matches the default KAS path convention
-        kas_url = args.platform_url.rstrip("/") + "/kas"
-        logger.debug(f"Deriving KAS endpoint from platform URL: {kas_url}")
-        kas_info = KASInfo(url=kas_url)
-        config.kas_info_list.append(kas_info)
-
-    if hasattr(args, "policy_binding") and args.policy_binding:
-        if args.policy_binding.lower() == "ecdsa":
-            config.ecc_mode = "ecdsa"
-        else:
-            config.ecc_mode = "gmac"  # default
-
-    return config
-
-
 def cmd_encrypt(args):
     """Handle encrypt command."""
     logger.info("Running encrypt command")
@@ -338,27 +306,14 @@ def cmd_encrypt(args):
             output_path = Path(args.output)
             with output_path.open("wb") as output_file:
                 try:
-                    # Create appropriate config based on container type
-                    container_type = getattr(args, "container_type", "tdf")
-
-                    if container_type == "nano":
-                        logger.debug("Creating NanoTDF")
-                        config = create_nano_tdf_config(sdk, args)
-                        output_stream = BytesIO()
-                        size = sdk.create_nano_tdf(
-                            BytesIO(payload), output_stream, config
-                        )
-                        output_file.write(output_stream.getvalue())
-                        logger.info(f"Created NanoTDF of size {size} bytes")
-                    else:
-                        logger.debug("Creating TDF")
-                        config = create_tdf_config(sdk, args)
-                        output_stream = BytesIO()
-                        _manifest, size, _ = sdk.create_tdf(
-                            BytesIO(payload), config, output_stream
-                        )
-                        output_file.write(output_stream.getvalue())
-                        logger.info(f"Created TDF of size {size} bytes")
+                    logger.debug("Creating TDF")
+                    config = create_tdf_config(sdk, args)
+                    output_stream = BytesIO()
+                    _manifest, size, _ = sdk.create_tdf(
+                        BytesIO(payload), config, output_stream
+                    )
+                    output_file.write(output_stream.getvalue())
+                    logger.info(f"Created TDF of size {size} bytes")
 
                 except Exception:
                     # Clean up the output file if there was an error
@@ -367,25 +322,12 @@ def cmd_encrypt(args):
                     raise
         else:
             output_file = sys.stdout.buffer
-            # Create appropriate config based on container type
-            container_type = getattr(args, "container_type", "tdf")
-
-            if container_type == "nano":
-                logger.debug("Creating NanoTDF")
-                config = create_nano_tdf_config(sdk, args)
-                output_stream = BytesIO()
-                size = sdk.create_nano_tdf(BytesIO(payload), output_stream, config)
-                output_file.write(output_stream.getvalue())
-                logger.info(f"Created NanoTDF of size {size} bytes")
-            else:
-                logger.debug("Creating TDF")
-                config = create_tdf_config(sdk, args)
-                output_stream = BytesIO()
-                _manifest, size, _ = sdk.create_tdf(
-                    BytesIO(payload), config, output_stream
-                )
-                output_file.write(output_stream.getvalue())
-                logger.info(f"Created TDF of size {size} bytes")
+            logger.debug("Creating TDF")
+            config = create_tdf_config(sdk, args)
+            output_stream = BytesIO()
+            _manifest, size, _ = sdk.create_tdf(BytesIO(payload), config, output_stream)
+            output_file.write(output_stream.getvalue())
+            logger.info(f"Created TDF of size {size} bytes")
 
     finally:
         sdk.close()
@@ -411,22 +353,12 @@ def cmd_decrypt(args):
             output_path = Path(args.output)
             with output_path.open("wb") as output_file:
                 try:
-                    # Try to determine if it's a NanoTDF or regular TDF
-                    # NanoTDFs have a specific header format, regular TDFs are ZIP files
-                    if encrypted_data.startswith(b"PK"):
-                        # Regular TDF (ZIP format)
-                        logger.debug("Decrypting TDF")
-                        tdf_reader = sdk.load_tdf(encrypted_data)
-                        # Access payload directly from TDFReader
-                        payload_bytes = tdf_reader.payload
-                        output_file.write(payload_bytes)
-                        logger.info("Successfully decrypted TDF")
-                    else:
-                        # Assume NanoTDF
-                        logger.debug("Decrypting NanoTDF")
-                        config = create_nano_tdf_config(sdk, args)
-                        sdk.read_nano_tdf(BytesIO(encrypted_data), output_file, config)
-                        logger.info("Successfully decrypted NanoTDF")
+                    logger.debug("Decrypting TDF")
+                    tdf_reader = sdk.load_tdf(encrypted_data)
+                    # Access payload directly from TDFReader
+                    payload_bytes = tdf_reader.payload
+                    output_file.write(payload_bytes)
+                    logger.info("Successfully decrypted TDF")
 
                 except Exception:
                     # Clean up the output file if there was an error
@@ -434,21 +366,11 @@ def cmd_decrypt(args):
                     raise
         else:
             output_file = sys.stdout.buffer
-            # Try to determine if it's a NanoTDF or regular TDF
-            # NanoTDFs have a specific header format, regular TDFs are ZIP files
-            if encrypted_data.startswith(b"PK"):
-                # Regular TDF (ZIP format)
-                logger.debug("Decrypting TDF")
-                tdf_reader = sdk.load_tdf(encrypted_data)
-                payload_bytes = tdf_reader.payload
-                output_file.write(payload_bytes)
-                logger.info("Successfully decrypted TDF")
-            else:
-                # Assume NanoTDF
-                logger.debug("Decrypting NanoTDF")
-                config = create_nano_tdf_config(sdk, args)
-                sdk.read_nano_tdf(BytesIO(encrypted_data), output_file, config)
-                logger.info("Successfully decrypted NanoTDF")
+            logger.debug("Decrypting TDF")
+            tdf_reader = sdk.load_tdf(encrypted_data)
+            payload_bytes = tdf_reader.payload
+            output_file.write(payload_bytes)
+            logger.info("Successfully decrypted TDF")
 
     finally:
         sdk.close()
@@ -469,37 +391,22 @@ def cmd_inspect(args):
             with input_path.open("rb") as input_file:
                 encrypted_data = input_file.read()
 
-            if encrypted_data.startswith(b"PK"):
-                # Regular TDF
-                logger.debug("Inspecting TDF")
-                tdf_reader = sdk.load_tdf(BytesIO(encrypted_data))
-                manifest = tdf_reader.manifest
+            logger.debug("Inspecting TDF")
+            tdf_reader = sdk.load_tdf(BytesIO(encrypted_data))
+            manifest = tdf_reader.manifest
 
-                # Try to get data attributes
-                try:
-                    data_attributes = []  # This would need to be implemented in the SDK
-                    inspection_result = {
-                        "manifest": asdict(manifest),
-                        "dataAttributes": data_attributes,
-                    }
-                except Exception as e:
-                    logger.warning(f"Could not retrieve data attributes: {e}")
-                    inspection_result = {"manifest": asdict(manifest)}
+            # Try to get data attributes
+            try:
+                data_attributes = []  # This would need to be implemented in the SDK
+                inspection_result = {
+                    "manifest": asdict(manifest),
+                    "dataAttributes": data_attributes,
+                }
+            except Exception as e:
+                logger.warning(f"Could not retrieve data attributes: {e}")
+                inspection_result = {"manifest": asdict(manifest)}
 
-                print(json.dumps(inspection_result, indent=2, default=str))
-            else:
-                # NanoTDF - for now just show basic info
-                logger.debug("Inspecting NanoTDF")
-                print(
-                    json.dumps(
-                        {
-                            "type": "NanoTDF",
-                            "size": len(encrypted_data),
-                            "note": "NanoTDF inspection not fully implemented",
-                        },
-                        indent=2,
-                    )
-                )
+            print(json.dumps(inspection_result, indent=2, default=str))
 
         finally:
             sdk.close()
@@ -510,11 +417,10 @@ def cmd_inspect(args):
         with input_path.open("rb") as input_file:
             encrypted_data = input_file.read()
 
-        file_type = "TDF" if encrypted_data.startswith(b"PK") else "NanoTDF"
         print(
             json.dumps(
                 {
-                    "type": file_type,
+                    "type": "TDF",
                     "size": len(encrypted_data),
                     "note": "Full inspection requires authentication",
                 },
@@ -600,23 +506,11 @@ Where creds.json contains:
     encrypt_parser.add_argument(
         "--attributes", help="Data attributes (comma-separated)"
     )
-    encrypt_parser.add_argument(
-        "--container-type",
-        choices=["tdf", "nano"],
-        default="tdf",
-        help="Container format",
-    )
     encrypt_parser.add_argument("--mime-type", help="MIME type of the input file")
     encrypt_parser.add_argument(
         "--autoconfigure",
         action="store_true",
         help="Enable automatic configuration from attributes",
-    )
-    encrypt_parser.add_argument(
-        "--policy-binding",
-        choices=["ecdsa", "gmac"],
-        default="gmac",
-        help="Policy binding type (nano only)",
     )
 
     # Decrypt command

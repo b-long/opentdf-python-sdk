@@ -18,7 +18,7 @@ def project_root(request) -> Path:
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
-def pytest_runtest_makereport(item, call):
+def pytest_runtest_makereport(item):
     """Collect server logs when test fails after each test phase.
 
     This hook automatically collects server logs when a test fails.
