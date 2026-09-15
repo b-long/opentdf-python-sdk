@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.10.2...otdf-python-v0.11.0) (2026-09-15)
+
+
+### Features
+
+* run platform int. tests via `docker compose` ([#177](https://github.com/b-long/opentdf-python-sdk/issues/177)) ([2dd828e](https://github.com/b-long/opentdf-python-sdk/commit/2dd828ec90ea82c6e435b2d5c874cefb9eb172cc))
+
 ## [0.10.2](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.10.1...otdf-python-v0.10.2) (2026-08-20)
 
 ### Security
