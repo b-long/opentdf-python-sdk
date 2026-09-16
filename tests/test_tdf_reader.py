@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from otdf_python.policy_object import PolicyObject
+from otdf_python.sdk_exceptions import SDKException
 from otdf_python.tdf_reader import (
     LEGACY_TDF_MANIFEST_FILE_NAME,
     TDF_MANIFEST_FILE_NAME,
@@ -234,3 +235,13 @@ class TestTDFReaderEntryResolution:
             self._reader_with(
                 ["manifest.json", "0.payload"], '{"payload": {"url": "custom.bin"}}'
             )
+
+    def test_invalid_utf8_manifest_wrapped_as_sdk_exception(self):
+        with patch("otdf_python.tdf_reader.ZipReader") as mock_zip_reader:
+            inst = mock_zip_reader.return_value
+            inst.namelist.return_value = ["manifest.json", "0.payload"]
+            inst.read.side_effect = lambda n: (
+                b"\xff\xfe" if n == "manifest.json" else b"PAYLOAD"
+            )
+            with pytest.raises(SDKException):
+                TDFReader(io.BytesIO(b"x"))

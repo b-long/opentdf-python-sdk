@@ -91,6 +91,12 @@ class TDFReader:
             manifest_text = self._zip_reader.read(self._manifest_name).decode("utf-8")
             payload_url = payload_url_from_manifest_json(manifest_text)
             self._payload_name = resolve_payload_name(payload_url, namelist)
+        except UnicodeDecodeError as e:
+            # UnicodeDecodeError is a ValueError subclass, but it means the
+            # manifest entry is corrupt, not that the tdf is missing an
+            # entry (the resolvers' own ValueErrors). Wrap it like any
+            # other unexpected failure instead of letting it pass through.
+            raise SDKException("Error initializing TDFReader") from e
         except Exception as e:
             if isinstance(e, ValueError):
                 raise
