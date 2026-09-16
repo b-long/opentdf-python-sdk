@@ -400,7 +400,7 @@ class TDF:
         )
         payload_info = ManifestPayload(
             type="reference",  # Changed from "file" to "reference" to match Java SDK
-            url="0.payload",
+            url=TDFWriter.TDF_PAYLOAD_FILE_NAME,
             protocol="zip",
             mimeType=config.mime_type,  # Use MIME type from config
             isEncrypted=True,  # Changed from is_encrypted to isEncrypted

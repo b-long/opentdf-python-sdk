@@ -28,11 +28,14 @@ def test_tdf_create_and_load():
     data = out.getvalue() if hasattr(out, "getvalue") else out.read()
     with zipfile.ZipFile(io.BytesIO(data), "r") as z:
         files = z.namelist()
-        assert "0.manifest.json" in files
-        assert "0.payload" in files
-        manifest_json = json.loads(z.read("0.manifest.json").decode())
+        assert "manifest.json" in files
+        assert "0.manifest.json" not in files
+        manifest_json = json.loads(z.read("manifest.json").decode())
         assert manifest_json["schemaVersion"] == TDF.TDF_VERSION
-        encrypted_payload = z.read("0.payload")
+        assert "tdf_spec_version" not in manifest_json
+        assert "tdf_spec_version" not in manifest_json["payload"]
+        assert manifest_json["payload"]["url"] in files
+        encrypted_payload = z.read(manifest_json["payload"]["url"])
         assert encrypted_payload != payload  # Should be encrypted
         assert len(encrypted_payload) > 0
     # Test round-trip decryption

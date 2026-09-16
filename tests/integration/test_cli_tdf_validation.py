@@ -6,7 +6,7 @@ import zipfile
 from pathlib import Path
 
 import pytest
-from otdf_python.tdf_reader import TDF_MANIFEST_FILE_NAME, TDF_PAYLOAD_FILE_NAME
+from otdf_python.tdf_reader import TDF_MANIFEST_FILE_NAME
 
 from tests.support_cli_args import (
     run_cli_decrypt,
@@ -89,18 +89,16 @@ def _validate_tdf_zip_structure(tdf_path: Path) -> None:
                 f"  {i + 1}. {filename} (size: {file_info.file_size} bytes, compressed: {file_info.compress_size} bytes)"
             )
 
-        # TDF files should contain specific files
-        required_files = [TDF_MANIFEST_FILE_NAME, TDF_PAYLOAD_FILE_NAME]
-        for required_file in required_files:
-            assert required_file in file_list, (
-                f"TDF missing required file: {required_file}"
-            )
+        names = zip_file.namelist()
+        assert TDF_MANIFEST_FILE_NAME in names, (
+            f"Missing {TDF_MANIFEST_FILE_NAME} in {names}"
+        )
+        manifest_content = zip_file.read(TDF_MANIFEST_FILE_NAME)
+        manifest_data = json.loads(manifest_content)
+        assert manifest_data["payload"]["url"] in names
 
         # Validate manifest.json can be read and parsed
         try:
-            manifest_content = zip_file.read(TDF_MANIFEST_FILE_NAME)
-            manifest_data = json.loads(manifest_content.decode("utf-8"))
-
             print("\n=== Manifest Structure Analysis ===")
             print(f"Manifest size: {len(manifest_content)} bytes")
             print(f"Top-level keys: {list(manifest_data.keys())}")
