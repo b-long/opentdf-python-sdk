@@ -1,5 +1,9 @@
 """Basic tests for the Python SDK class."""
 
+import io
+import json
+import zipfile
+
 import pytest
 from otdf_python.sdk import SDK
 
@@ -105,3 +109,33 @@ def test_assertion_exception():
 
     with pytest.raises(SDK.AssertionException, match="assertion failed"):
         raise SDK.AssertionException("assertion failed", "id123")
+
+
+def _zip_with(entries: dict[str, bytes]) -> bytes:
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        for name, content in entries.items():
+            z.writestr(name, content)
+    return buf.getvalue()
+
+
+def test_is_tdf_accepts_spec_layout():
+    manifest = json.dumps({"payload": {"url": "0.payload"}}).encode()
+    assert SDK.is_tdf(_zip_with({"manifest.json": manifest, "0.payload": b"x"}))
+
+
+def test_is_tdf_accepts_legacy_layout():
+    manifest = json.dumps({"payload": {"url": "0.payload"}}).encode()
+    assert SDK.is_tdf(_zip_with({"0.manifest.json": manifest, "0.payload": b"x"}))
+
+
+def test_is_tdf_accepts_extra_entries_and_custom_payload_name():
+    manifest = json.dumps({"payload": {"url": "blob"}}).encode()
+    assert SDK.is_tdf(
+        _zip_with({"manifest.json": manifest, "blob": b"x", "extra.txt": b"y"})
+    )
+
+
+def test_is_tdf_rejects_missing_payload_entry():
+    manifest = json.dumps({"payload": {"url": "blob"}}).encode()
+    assert not SDK.is_tdf(_zip_with({"manifest.json": manifest, "0.payload": b"x"}))

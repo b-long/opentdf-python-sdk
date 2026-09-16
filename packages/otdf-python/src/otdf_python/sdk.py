@@ -365,16 +365,24 @@ class SDK(AbstractContextManager):
             bool: True if the data is a TDF, False otherwise
 
         """
+        import json
         import zipfile
         from io import BytesIO
+
+        from otdf_python.tdf_reader import resolve_manifest_name, resolve_payload_name
 
         try:
             file_like = BytesIO(data) if isinstance(data, bytes | bytearray) else data
             with zipfile.ZipFile(file_like) as zf:
-                names = set(zf.namelist())
-                return {"0.manifest.json", "0.payload"}.issubset(names) and len(
-                    names
-                ) == 2
+                names = zf.namelist()
+                manifest_name = resolve_manifest_name(names)
+                manifest = json.loads(zf.read(manifest_name))
+                payload = (
+                    manifest.get("payload") if isinstance(manifest, dict) else None
+                )
+                url = payload.get("url") if isinstance(payload, dict) else None
+                resolve_payload_name(url, names)
+                return True
         except Exception:
             return False
 

@@ -28,6 +28,7 @@ from otdf_python.manifest import (
     ManifestSegment,
 )
 from otdf_python.policy_stub import NULL_POLICY_UUID
+from otdf_python.tdf_reader import resolve_manifest_name, resolve_payload_name
 from otdf_python.tdf_writer import TDFWriter
 
 
@@ -433,7 +434,8 @@ class TDF:
         tdf_bytes_io = io.BytesIO(tdf_data) if isinstance(tdf_data, bytes) else tdf_data
 
         with zipfile.ZipFile(tdf_bytes_io, "r") as z:
-            manifest_json = z.read("0.manifest.json").decode()
+            names = z.namelist()
+            manifest_json = z.read(resolve_manifest_name(names)).decode()
             manifest = Manifest.from_json(manifest_json)
 
             if not manifest.encryptionInformation:
@@ -464,7 +466,8 @@ class TDF:
             segments = (
                 manifest.encryptionInformation.integrityInformation.segments
             )  # Changed field name
-            encrypted_payload = z.read("0.payload")
+            payload_url = manifest.payload.url if manifest.payload else None
+            encrypted_payload = z.read(resolve_payload_name(payload_url, names))
             payload = self._decrypt_segments(aesgcm, segments, encrypted_payload)
             return TDFReader(payload=payload, manifest=manifest)
 
@@ -487,7 +490,8 @@ class TDF:
         from .asym_crypto import AsymDecryption
 
         with zipfile.ZipFile(io.BytesIO(tdf_bytes), "r") as z:
-            manifest_json = z.read("0.manifest.json").decode()
+            names = z.namelist()
+            manifest_json = z.read(resolve_manifest_name(names)).decode()
             manifest = Manifest.from_json(manifest_json)
 
             if not manifest.encryptionInformation:
@@ -510,7 +514,8 @@ class TDF:
             segments = (
                 manifest.encryptionInformation.integrityInformation.segments
             )  # Changed field names
-            encrypted_payload = z.read("0.payload")
+            payload_url = manifest.payload.url if manifest.payload else None
+            encrypted_payload = z.read(resolve_payload_name(payload_url, names))
             offset = 0
             for seg in segments:
                 enc_len = seg.encryptedSegmentSize  # Changed field name
