@@ -2,14 +2,20 @@
 
 import io
 import json
+import re
 from unittest.mock import MagicMock, patch
 
 import pytest
 from otdf_python.policy_object import PolicyObject
+from otdf_python.sdk_exceptions import SDKException
 from otdf_python.tdf_reader import (
+    LEGACY_TDF_MANIFEST_FILE_NAME,
     TDF_MANIFEST_FILE_NAME,
     TDF_PAYLOAD_FILE_NAME,
     TDFReader,
+    payload_url_from_manifest_json,
+    resolve_manifest_name,
+    resolve_payload_name,
 )
 
 
@@ -150,3 +156,92 @@ class TestTDFReader:
         assert result.body.dissem == ["user1", "user2"]
         mock_reader.read.assert_called_with(TDF_MANIFEST_FILE_NAME)
         mock_manifest.from_json.assert_called_once()
+
+
+class TestEntryNameResolvers:
+    def test_manifest_prefers_spec_name(self):
+        names = ["0.manifest.json", "manifest.json", "0.payload"]
+        assert resolve_manifest_name(names) == "manifest.json"
+
+    def test_manifest_falls_back_to_legacy_name(self):
+        assert (
+            resolve_manifest_name(["0.manifest.json", "0.payload"]) == "0.manifest.json"
+        )
+
+    def test_manifest_missing(self):
+        with pytest.raises(ValueError, match="tdf doesn't contain a manifest"):
+            resolve_manifest_name(["0.payload"])
+
+    def test_payload_from_url(self):
+        assert (
+            resolve_payload_name("data.bin", ["manifest.json", "data.bin"])
+            == "data.bin"
+        )
+
+    def test_payload_url_missing_entry_is_error_and_quotes_url(self):
+        with pytest.raises(ValueError, match=re.escape("'data.bin'")):
+            resolve_payload_name("data.bin", ["manifest.json", "0.payload"])
+
+    def test_payload_fallback_when_url_empty(self):
+        assert resolve_payload_name("", ["manifest.json", "0.payload"]) == "0.payload"
+        assert resolve_payload_name(None, ["manifest.json", "0.payload"]) == "0.payload"
+
+    def test_payload_fallback_missing(self):
+        with pytest.raises(ValueError, match="tdf doesn't contain a payload"):
+            resolve_payload_name(None, ["manifest.json"])
+
+    @pytest.mark.parametrize("bad", ["../x", "/abs", "a\\b", "x/../y"])
+    def test_payload_unsafe_url_rejected(self, bad):
+        with pytest.raises(ValueError, match="unsafe"):
+            resolve_payload_name(bad, ["manifest.json", bad])
+
+    def test_payload_url_from_manifest_json(self):
+        assert (
+            payload_url_from_manifest_json('{"payload": {"url": "p.bin"}}') == "p.bin"
+        )
+        assert payload_url_from_manifest_json('{"payload": {}}') is None
+        assert payload_url_from_manifest_json("{}") is None
+        assert payload_url_from_manifest_json("not json") is None
+
+
+class TestTDFReaderEntryResolution:
+    def _reader_with(self, names, manifest_text):
+        with patch("otdf_python.tdf_reader.ZipReader") as mock_zip_reader:
+            inst = mock_zip_reader.return_value
+            inst.namelist.return_value = names
+            inst.read.side_effect = lambda n: (
+                manifest_text.encode() if n.endswith("manifest.json") else b"PAYLOAD"
+            )
+            reader = TDFReader(io.BytesIO(b"x"))
+            return reader, inst
+
+    def test_reads_legacy_manifest_name(self):
+        reader, inst = self._reader_with(
+            ["0.manifest.json", "0.payload"], '{"payload": {"url": "0.payload"}}'
+        )
+        assert reader.manifest() == '{"payload": {"url": "0.payload"}}'
+        inst.read.assert_called_with(LEGACY_TDF_MANIFEST_FILE_NAME)
+
+    def test_payload_name_comes_from_manifest_url(self):
+        reader, inst = self._reader_with(
+            ["manifest.json", "custom.bin"], '{"payload": {"url": "custom.bin"}}'
+        )
+        buf = bytearray(7)
+        assert reader.read_payload_bytes(buf) == 7
+        inst.read.assert_called_with("custom.bin")
+
+    def test_payload_url_missing_entry_fails_at_init(self):
+        with pytest.raises(ValueError, match=re.escape("'custom.bin'")):
+            self._reader_with(
+                ["manifest.json", "0.payload"], '{"payload": {"url": "custom.bin"}}'
+            )
+
+    def test_invalid_utf8_manifest_wrapped_as_sdk_exception(self):
+        with patch("otdf_python.tdf_reader.ZipReader") as mock_zip_reader:
+            inst = mock_zip_reader.return_value
+            inst.namelist.return_value = ["manifest.json", "0.payload"]
+            inst.read.side_effect = lambda n: (
+                b"\xff\xfe" if n == "manifest.json" else b"PAYLOAD"
+            )
+            with pytest.raises(SDKException):
+                TDFReader(io.BytesIO(b"x"))

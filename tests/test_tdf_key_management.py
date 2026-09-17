@@ -90,7 +90,7 @@ class TestTDFKeyManagement(unittest.TestCase):
             )
 
             # Add manifest to zip
-            zf.writestr("0.manifest.json", manifest.to_json())
+            zf.writestr("manifest.json", manifest.to_json())
 
             # Add encrypted payload
             zf.writestr(

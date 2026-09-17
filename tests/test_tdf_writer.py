@@ -22,7 +22,7 @@ class TestTDFWriter(unittest.TestCase):
         self.assertGreater(size, 0)
         out.seek(0)
         with zipfile.ZipFile(out, "r") as z:
-            self.assertEqual(z.read("0.manifest.json"), manifest.encode("utf-8"))
+            self.assertEqual(z.read("manifest.json"), manifest.encode("utf-8"))
             self.assertEqual(z.read("0.payload"), b"payload data")
 
     def test_getvalue(self):
@@ -34,7 +34,7 @@ class TestTDFWriter(unittest.TestCase):
         writer.finish()
         data = writer.getvalue()
         with zipfile.ZipFile(io.BytesIO(data), "r") as z:
-            self.assertEqual(z.read("0.manifest.json"), b"{}")
+            self.assertEqual(z.read("manifest.json"), b"{}")
             self.assertEqual(z.read("0.payload"), b"abc")
 
     def test_large_payload_chunks(self):
@@ -62,6 +62,16 @@ class TestTDFWriter(unittest.TestCase):
         # After finish, writing should raise ValueError
         with self.assertRaises(ValueError), writer.payload() as f:
             f.write(b"should fail")
+
+    def test_manifest_entry_is_spec_name(self):
+        writer = TDFWriter()
+        writer.append_manifest("{}")
+        with writer.payload() as f:
+            f.write(b"x")
+        writer.finish()
+        with zipfile.ZipFile(io.BytesIO(writer.getvalue()), "r") as z:
+            self.assertEqual(sorted(z.namelist()), ["0.payload", "manifest.json"])
+            self.assertNotIn("0.manifest.json", z.namelist())
 
 
 if __name__ == "__main__":

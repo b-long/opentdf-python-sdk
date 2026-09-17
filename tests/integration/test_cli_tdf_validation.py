@@ -6,7 +6,7 @@ import zipfile
 from pathlib import Path
 
 import pytest
-from otdf_python.tdf_reader import TDF_MANIFEST_FILE_NAME, TDF_PAYLOAD_FILE_NAME
+from otdf_python.tdf_reader import resolve_manifest_name
 
 from tests.support_cli_args import (
     run_cli_decrypt,
@@ -20,6 +20,17 @@ from tests.support_common import (
 from tests.support_otdfctl_args import (
     run_otdfctl_decrypt_command,
     run_otdfctl_encrypt_command,
+)
+
+# Accepted, documented interop break: released otdfctl still looks for the
+# legacy `0.manifest.json` zip entry, while the Python SDK now writes the
+# spec-mandated `manifest.json` entry (see README "TDF container format").
+# An upstream otdfctl/platform reader-fallback PR is planned; until it lands,
+# any scenario where otdfctl decrypts Python-produced TDF output is expected
+# to fail with "zip: file not found".
+OTDFCTL_DECRYPT_XFAIL_REASON = (
+    "otdfctl cannot read the spec manifest.json entry yet "
+    "(upstream reader-fallback pending)"
 )
 
 
@@ -89,18 +100,14 @@ def _validate_tdf_zip_structure(tdf_path: Path) -> None:
                 f"  {i + 1}. {filename} (size: {file_info.file_size} bytes, compressed: {file_info.compress_size} bytes)"
             )
 
-        # TDF files should contain specific files
-        required_files = [TDF_MANIFEST_FILE_NAME, TDF_PAYLOAD_FILE_NAME]
-        for required_file in required_files:
-            assert required_file in file_list, (
-                f"TDF missing required file: {required_file}"
-            )
+        names = zip_file.namelist()
+        manifest_name = resolve_manifest_name(names)
+        manifest_content = zip_file.read(manifest_name)
+        manifest_data = json.loads(manifest_content)
+        assert manifest_data["payload"]["url"] in names
 
         # Validate manifest.json can be read and parsed
         try:
-            manifest_content = zip_file.read(TDF_MANIFEST_FILE_NAME)
-            manifest_data = json.loads(manifest_content.decode("utf-8"))
-
             print("\n=== Manifest Structure Analysis ===")
             print(f"Manifest size: {len(manifest_content)} bytes")
             print(f"Top-level keys: {list(manifest_data.keys())}")
@@ -233,8 +240,17 @@ def _run_otdfctl_decrypt(
     temp_path: Path,
     collect_server_logs,
     expected_content: str,
+    *,
+    expect_failure_reason: str | None = None,
 ) -> Path:
-    """Run otdfctl decrypt on a TDF file and verify the decrypted content matches expected."""
+    """Run otdfctl decrypt on a TDF file and verify the decrypted content matches expected.
+
+    If `expect_failure_reason` is set, a nonzero exit from this specific
+    otdfctl-decrypt step is treated as an accepted, documented interop break
+    (xfail) instead of a hard failure. Once otdfctl gains the ability to read
+    the spec `manifest.json` entry, this branch is simply never taken and the
+    test reports a normal pass.
+    """
     decrypt_output = temp_path / f"{tdf_path.stem}_decrypted.txt"
 
     otdfctl_decrypt_result = run_otdfctl_decrypt_command(
@@ -243,6 +259,14 @@ def _run_otdfctl_decrypt(
         output_file=decrypt_output,
         cwd=temp_path,
     )
+
+    if expect_failure_reason is not None and otdfctl_decrypt_result.returncode != 0:
+        print(
+            "otdfctl decrypt failed as expected (accepted interop break):\n"
+            f"stdout={otdfctl_decrypt_result.stdout}\n"
+            f"stderr={otdfctl_decrypt_result.stderr}"
+        )
+        pytest.xfail(expect_failure_reason)
 
     handle_subprocess_error(
         otdfctl_decrypt_result, collect_server_logs, "otdfctl decrypt"
@@ -356,13 +380,22 @@ def test_python_encrypt(collect_server_logs, temp_credentials_file, project_root
         validate_tdf3_file(python_tdf_output, "Python CLI")
         _validate_tdf_zip_structure(python_tdf_output)
 
+        # Python writer must emit the spec-named manifest entry, not the legacy name.
+        with zipfile.ZipFile(python_tdf_output, "r") as zip_file:
+            python_names = zip_file.namelist()
+        assert "manifest.json" in python_names
+        assert "0.manifest.json" not in python_names
+
         # Test that the TDF can be decrypted by otdfctl
+        # Accepted, documented interop break: otdfctl still looks for the
+        # legacy `0.manifest.json` entry (see README "TDF container format").
         _run_otdfctl_decrypt(
             python_tdf_output,
             temp_credentials_file,
             temp_path,
             collect_server_logs,
             input_content,
+            expect_failure_reason=OTDFCTL_DECRYPT_XFAIL_REASON,
         )
 
         print(
@@ -430,12 +463,15 @@ def test_cross_tool_compatibility(
         )
 
         # Decrypt with otdfctl
+        # Accepted, documented interop break: otdfctl still looks for the
+        # legacy `0.manifest.json` entry (see README "TDF container format").
         _run_otdfctl_decrypt(
             python_tdf_output,
             temp_credentials_file,
             temp_path,
             collect_server_logs,
             input_content,
+            expect_failure_reason=OTDFCTL_DECRYPT_XFAIL_REASON,
         )
 
         print(
@@ -488,12 +524,15 @@ def test_different_content_types(
             validate_tdf3_file(python_tdf_output, f"Python CLI ({filename})")
 
             # Decrypt and validate content
+            # Accepted, documented interop break: otdfctl still looks for the
+            # legacy `0.manifest.json` entry (see README "TDF container format").
             _run_otdfctl_decrypt(
                 python_tdf_output,
                 temp_credentials_file,
                 temp_path,
                 collect_server_logs,
                 content,
+                expect_failure_reason=OTDFCTL_DECRYPT_XFAIL_REASON,
             )
 
             print(f"✓ Successfully processed {filename}")
