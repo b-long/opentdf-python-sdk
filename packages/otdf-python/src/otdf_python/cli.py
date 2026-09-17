@@ -205,12 +205,15 @@ def build_sdk(args) -> SDK:
 
 # Features the Python SDK currently exercises honestly in community xtest Stage-1.
 # Keep conservative: only advertise what encrypt/decrypt paths actually honor.
+# "spec-container": writes manifest.json at the zip root and resolves the
+# payload entry from manifest.payload.url (opentdf/spec container rules).
 _SUPPORTED_FEATURES: frozenset[str] = frozenset(
     {
         "autoconfigure",
         "connectrpc",
         "hexless",
         "kasallowlist",
+        "spec-container",
     }
 )
 
@@ -238,6 +241,7 @@ _KNOWN_FEATURES: frozenset[str] = frozenset(
         "mechanism-mlkem",
         "ns_grants",
         "obligations",
+        "spec-container",
     }
 )
 
