@@ -6,7 +6,7 @@ import zipfile
 from pathlib import Path
 
 import pytest
-from otdf_python.tdf_reader import TDF_MANIFEST_FILE_NAME
+from otdf_python.tdf_reader import resolve_manifest_name
 
 from tests.support_cli_args import (
     run_cli_decrypt,
@@ -90,10 +90,8 @@ def _validate_tdf_zip_structure(tdf_path: Path) -> None:
             )
 
         names = zip_file.namelist()
-        assert TDF_MANIFEST_FILE_NAME in names, (
-            f"Missing {TDF_MANIFEST_FILE_NAME} in {names}"
-        )
-        manifest_content = zip_file.read(TDF_MANIFEST_FILE_NAME)
+        manifest_name = resolve_manifest_name(names)
+        manifest_content = zip_file.read(manifest_name)
         manifest_data = json.loads(manifest_content)
         assert manifest_data["payload"]["url"] in names
 
@@ -353,6 +351,12 @@ def test_python_encrypt(collect_server_logs, temp_credentials_file, project_root
         # Validate the TDF file structure
         validate_tdf3_file(python_tdf_output, "Python CLI")
         _validate_tdf_zip_structure(python_tdf_output)
+
+        # Python writer must emit the spec-named manifest entry, not the legacy name.
+        with zipfile.ZipFile(python_tdf_output, "r") as zip_file:
+            python_names = zip_file.namelist()
+        assert "manifest.json" in python_names
+        assert "0.manifest.json" not in python_names
 
         # Test that the TDF can be decrypted by otdfctl
         _run_otdfctl_decrypt(
