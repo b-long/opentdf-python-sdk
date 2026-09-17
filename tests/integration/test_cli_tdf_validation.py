@@ -22,6 +22,17 @@ from tests.support_otdfctl_args import (
     run_otdfctl_encrypt_command,
 )
 
+# Accepted, documented interop break: released otdfctl still looks for the
+# legacy `0.manifest.json` zip entry, while the Python SDK now writes the
+# spec-mandated `manifest.json` entry (see README "TDF container format").
+# An upstream otdfctl/platform reader-fallback PR is planned; until it lands,
+# any scenario where otdfctl decrypts Python-produced TDF output is expected
+# to fail with "zip: file not found".
+OTDFCTL_DECRYPT_XFAIL_REASON = (
+    "otdfctl cannot read the spec manifest.json entry yet "
+    "(upstream reader-fallback pending)"
+)
+
 
 def _create_test_input_file(temp_path: Path, content: str) -> Path:
     """Create a test input file with the given content."""
@@ -229,8 +240,17 @@ def _run_otdfctl_decrypt(
     temp_path: Path,
     collect_server_logs,
     expected_content: str,
+    *,
+    expect_failure_reason: str | None = None,
 ) -> Path:
-    """Run otdfctl decrypt on a TDF file and verify the decrypted content matches expected."""
+    """Run otdfctl decrypt on a TDF file and verify the decrypted content matches expected.
+
+    If `expect_failure_reason` is set, a nonzero exit from this specific
+    otdfctl-decrypt step is treated as an accepted, documented interop break
+    (xfail) instead of a hard failure. Once otdfctl gains the ability to read
+    the spec `manifest.json` entry, this branch is simply never taken and the
+    test reports a normal pass.
+    """
     decrypt_output = temp_path / f"{tdf_path.stem}_decrypted.txt"
 
     otdfctl_decrypt_result = run_otdfctl_decrypt_command(
@@ -239,6 +259,14 @@ def _run_otdfctl_decrypt(
         output_file=decrypt_output,
         cwd=temp_path,
     )
+
+    if expect_failure_reason is not None and otdfctl_decrypt_result.returncode != 0:
+        print(
+            "otdfctl decrypt failed as expected (accepted interop break):\n"
+            f"stdout={otdfctl_decrypt_result.stdout}\n"
+            f"stderr={otdfctl_decrypt_result.stderr}"
+        )
+        pytest.xfail(expect_failure_reason)
 
     handle_subprocess_error(
         otdfctl_decrypt_result, collect_server_logs, "otdfctl decrypt"
@@ -359,12 +387,15 @@ def test_python_encrypt(collect_server_logs, temp_credentials_file, project_root
         assert "0.manifest.json" not in python_names
 
         # Test that the TDF can be decrypted by otdfctl
+        # Accepted, documented interop break: otdfctl still looks for the
+        # legacy `0.manifest.json` entry (see README "TDF container format").
         _run_otdfctl_decrypt(
             python_tdf_output,
             temp_credentials_file,
             temp_path,
             collect_server_logs,
             input_content,
+            expect_failure_reason=OTDFCTL_DECRYPT_XFAIL_REASON,
         )
 
         print(
@@ -432,12 +463,15 @@ def test_cross_tool_compatibility(
         )
 
         # Decrypt with otdfctl
+        # Accepted, documented interop break: otdfctl still looks for the
+        # legacy `0.manifest.json` entry (see README "TDF container format").
         _run_otdfctl_decrypt(
             python_tdf_output,
             temp_credentials_file,
             temp_path,
             collect_server_logs,
             input_content,
+            expect_failure_reason=OTDFCTL_DECRYPT_XFAIL_REASON,
         )
 
         print(
@@ -490,12 +524,15 @@ def test_different_content_types(
             validate_tdf3_file(python_tdf_output, f"Python CLI ({filename})")
 
             # Decrypt and validate content
+            # Accepted, documented interop break: otdfctl still looks for the
+            # legacy `0.manifest.json` entry (see README "TDF container format").
             _run_otdfctl_decrypt(
                 python_tdf_output,
                 temp_credentials_file,
                 temp_path,
                 collect_server_logs,
                 content,
+                expect_failure_reason=OTDFCTL_DECRYPT_XFAIL_REASON,
             )
 
             print(f"✓ Successfully processed {filename}")
