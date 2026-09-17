@@ -97,6 +97,12 @@ with open("decrypted.txt", "wb") as f:
 
 ```
 
+## TDF container format
+
+TDF archives are written with the spec-mandated `manifest.json` zip entry (per opentdf/spec) instead of the legacy `0.manifest.json`. Readers accept both names, so archives written by older versions of this SDK remain readable forever. The payload zip entry is resolved from `manifest.payload.url` rather than assumed. `schemaVersion` is unchanged (still `4.3.0`); `tdf_spec_version` is now read at either its legacy or spec-conformant placement, but never written.
+
+**Interoperability note:** archives written by this version cannot currently be opened by released `otdfctl`, or by the upstream `opentdf/platform` Go, Java, or JS SDKs, until they add a `manifest.json` read fallback (an upstream reader-fallback PR is planned). If you interoperate with those tools today, hold off upgrading until that fallback ships.
+
 ## Project Structure
 
 ```
