@@ -129,15 +129,15 @@ services:
       KC_HTTPS_CLIENT_AUTH: "request"
       ###
       # The following environment variable resolves SIGILL with Code 134 when running Java processes on Apple M4 chips
-      # 
+      #
       # On Apple Silicon (M4 chip):
       #   export JAVA_OPTS_APPEND="-XX:UseSVE=0"
       #   docker-compose up
-      # 
+      #
       # On other architectures:
       #   export JAVA_OPTS_APPEND=""
       #   docker-compose up
-      # 
+      #
       # Or set directly: JAVA_OPTS_APPEND="-XX:UseSVE=0" docker-compose up
       JAVA_OPTS_APPEND: "${JAVA_OPTS_APPEND:-}"
       ###
@@ -149,21 +149,21 @@ services:
       test:
         - CMD-SHELL
         - |
-          [ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { 
-            public static void main(String[] args) throws java.lang.Throwable { 
-              javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true); 
-              javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext.getInstance(\"SSL\"); 
-              sc.init(null, new javax.net.ssl.TrustManager[]{ 
-                new javax.net.ssl.X509TrustManager() { 
-                  public java.security.cert.X509Certificate[] getAcceptedIssuers() { return null; } 
-                  public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {} 
-                  public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {} 
-                } 
-              }, new java.security.SecureRandom()); 
-              javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory()); 
-              java.net.HttpURLConnection conn = (java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection(); 
-              System.exit(java.net.HttpURLConnection.HTTP_OK == conn.getResponseCode() ? 0 : 1); 
-            } 
+          [ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck {
+            public static void main(String[] args) throws java.lang.Throwable {
+              javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
+              javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext.getInstance(\"SSL\");
+              sc.init(null, new javax.net.ssl.TrustManager[]{
+                new javax.net.ssl.X509TrustManager() {
+                  public java.security.cert.X509Certificate[] getAcceptedIssuers() { return null; }
+                  public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
+                  public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
+                }
+              }, new java.security.SecureRandom());
+              javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+              java.net.HttpURLConnection conn = (java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection();
+              System.exit(java.net.HttpURLConnection.HTTP_OK == conn.getResponseCode() ? 0 : 1);
+            }
           }" > /tmp/HealthCheck.java && java ${JAVA_OPTS_APPEND} /tmp/HealthCheck.java http://localhost:8888/auth 2>/dev/null
       interval: 10s
       timeout: 10s
@@ -238,7 +238,7 @@ services:
         ln -sf /configs/service/internal/fixtures ./service
     restart: "no"
 
-  # Add sample attributes and metadata  
+  # Add sample attributes and metadata
   platform-provision-fixtures:
     image: registry.opentdf.io/platform:${PLATFORM_VERSION}
     command: ["provision", "fixtures", "--config-file", "/configs/opentdf.yaml"]
@@ -390,13 +390,13 @@ services:
         URL='https://raw.githubusercontent.com/opentdf/platform/main/service/cmd/keycloak_data.yaml'
         OUTPUT='/configs/keycloak_data.yaml'
         MAX_ATTEMPTS=3
-        
+
         for i in $$(seq 1 $$MAX_ATTEMPTS); do
           echo "Attempt $$i of $$MAX_ATTEMPTS: Downloading keycloak_data.yaml..."
-          
+
           if wget -O "$$OUTPUT" "$$URL"; then
             echo "Download successful"
-            
+
             # Validate the downloaded file
             if [ -f "$$OUTPUT" ] && [ -s "$$OUTPUT" ]; then
               if head -1 "$$OUTPUT" | grep -q -E '^(---|\w+:)'; then
@@ -412,13 +412,13 @@ services:
           else
             echo "Download failed (attempt $$i)"
           fi
-          
+
           if [ $$i -lt $$MAX_ATTEMPTS ]; then
             echo "Retrying in 2 seconds..."
             sleep 2
           fi
         done
-        
+
         echo "ERROR: Failed to download and validate keycloak_data.yaml after $$MAX_ATTEMPTS attempts"
         exit 1
     restart: "no"
@@ -449,13 +449,13 @@ services:
         URL='https://raw.githubusercontent.com/opentdf/platform/main/.github/scripts/init-temp-keys.sh'
         OUTPUT='/configs/init-temp-keys.sh'
         MAX_ATTEMPTS=3
-        
+
         for i in $$(seq 1 $$MAX_ATTEMPTS); do
           echo "Attempt $$i of $$MAX_ATTEMPTS: Downloading init-temp-keys.sh..."
-          
+
           if wget -O "$$OUTPUT" "$$URL"; then
             echo "Download successful"
-            
+
             # Validate the downloaded file
             if [ -f "$$OUTPUT" ] && [ -s "$$OUTPUT" ]; then
               if head -1 "$$OUTPUT" | grep -q '^#!/'; then
@@ -471,13 +471,13 @@ services:
           else
             echo "Download failed (attempt $$i)"
           fi
-          
+
           if [ $$i -lt $$MAX_ATTEMPTS ]; then
             echo "Retrying in 2 seconds..."
             sleep 2
           fi
         done
-        
+
         echo "ERROR: Failed to download and validate init-temp-keys.sh after $$MAX_ATTEMPTS attempts"
         exit 1
     restart: "no"
@@ -499,31 +499,31 @@ services:
       - |
         apk add --no-cache openssl openjdk11-jre bash
         cd /keys
-        
+
         # Generate KAS RSA private key
         openssl genpkey -algorithm RSA -out /keys/kas-private.pem -pkeyopt rsa_keygen_bits:2048
         openssl rsa -in /keys/kas-private.pem -pubout -out /keys/kas-cert.pem
-        
+
         # Generate ECC Key
         openssl ecparam -name prime256v1 > /tmp/ecparams.tmp
         openssl req -x509 -nodes -newkey ec:/tmp/ecparams.tmp -subj "/CN=kas" -keyout /keys/kas-ec-private.pem -out /keys/kas-ec-cert.pem -days 365
-        
+
         # Generate CA
         openssl req -x509 -nodes -newkey RSA:2048 -subj "/CN=ca" -keyout /keys/keycloak-ca-private.pem -out /keys/keycloak-ca.pem -days 365
-        
+
         # Generate localhost certificate
         printf "subjectAltName=DNS:localhost,IP:127.0.0.1" > /tmp/sanX509.conf
         printf "[req]\ndistinguished_name=req_distinguished_name\n[req_distinguished_name]\n[alt_names]\nDNS.1=localhost\nIP.1=127.0.0.1" > /tmp/req.conf
         openssl req -new -nodes -newkey rsa:2048 -keyout /keys/localhost.key -out /tmp/localhost.req -batch -subj "/CN=localhost" -config /tmp/req.conf
         openssl x509 -req -in /tmp/localhost.req -CA /keys/keycloak-ca.pem -CAkey /keys/keycloak-ca-private.pem -CAcreateserial -out /keys/localhost.crt -days 3650 -sha256 -extfile /tmp/sanX509.conf
-        
+
         # Generate sample user certificate
         openssl req -new -nodes -newkey rsa:2048 -keyout /keys/sampleuser.key -out /tmp/sampleuser.req -batch -subj "/CN=sampleuser"
         openssl x509 -req -in /tmp/sampleuser.req -CA /keys/keycloak-ca.pem -CAkey /keys/keycloak-ca-private.pem -CAcreateserial -out /keys/sampleuser.crt -days 3650
-        
+
         # Convert to PKCS12
         openssl pkcs12 -export -in /keys/keycloak-ca.pem -inkey /keys/keycloak-ca-private.pem -out /keys/ca.p12 -nodes -passout pass:password
-        
+
         # Convert PKCS12 to JKS using keytool (no Docker needed)
         keytool -importkeystore \
           -srckeystore /keys/ca.p12 \
@@ -533,7 +533,7 @@ services:
           -srcstorepass "password" \
           -deststorepass "password" \
           -noprompt
-        
+
         echo "Keys generated successfully"
     environment:
       JAVA_OPTS_APPEND: "${JAVA_OPTS_APPEND:-}"
