@@ -86,6 +86,8 @@ class ManifestPayload:
     protocol: str
     mimeType: str
     isEncrypted: bool
+    # Read-only: some spec revisions place the version here. Never written.
+    tdf_spec_version: str | None = None
 
 
 @dataclass
@@ -116,6 +118,18 @@ class Manifest:
     encryptionInformation: ManifestEncryptionInformation | None = None
     payload: ManifestPayload | None = None
     assertions: list[ManifestAssertion] = field(default_factory=list)
+    # Read-only: spec prose places tdf_spec_version at the top level. Never written.
+    tdf_spec_version: str | None = None
+
+    def spec_version(self) -> str | None:
+        """Resolve the spec version: schemaVersion, then tdf_spec_version, then payload.tdf_spec_version."""
+        if self.schemaVersion:
+            return self.schemaVersion
+        if self.tdf_spec_version:
+            return self.tdf_spec_version
+        if self.payload and self.payload.tdf_spec_version:
+            return self.payload.tdf_spec_version
+        return None
 
     def _remove_none_values_and_empty_lists(self, obj):
         """Recursively remove None values and empty lists from dictionaries and lists."""
@@ -147,7 +161,9 @@ class Manifest:
             manifest_dict["encryptionInformation"] = asdict(self.encryptionInformation)
 
         if self.payload is not None:
-            manifest_dict["payload"] = asdict(self.payload)
+            payload_dict = asdict(self.payload)
+            payload_dict.pop("tdf_spec_version", None)
+            manifest_dict["payload"] = payload_dict
 
         if self.schemaVersion is not None:
             manifest_dict["schemaVersion"] = self.schemaVersion
@@ -229,6 +245,7 @@ class Manifest:
 
         return Manifest(
             schemaVersion=d.get("schemaVersion", d.get("tdf_version")),
+            tdf_spec_version=d.get("tdf_spec_version"),
             encryptionInformation=_enc_info(
                 d.get("encryptionInformation", d.get("encryption_information"))
             )

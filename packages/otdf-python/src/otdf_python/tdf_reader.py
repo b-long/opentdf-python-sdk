@@ -1,13 +1,69 @@
 """TDFReader is responsible for reading and processing Trusted Data Format (TDF) files."""
 
+import json
+from collections.abc import Iterable
+
 from .manifest import Manifest
 from .policy_object import PolicyObject
 from .sdk_exceptions import SDKException
 from .zip_reader import ZipReader
 
-# Constants from TDFWriter
-TDF_MANIFEST_FILE_NAME = "0.manifest.json"
+# Spec (opentdf/spec schema/OpenTDF/README.md): the manifest entry MUST be
+# `manifest.json` at the archive root. `0.manifest.json` is what every SDK
+# wrote before this change and is accepted forever on read.
+TDF_MANIFEST_FILE_NAME = "manifest.json"
+LEGACY_TDF_MANIFEST_FILE_NAME = "0.manifest.json"
+# Payload entry name. Written by TDFWriter and into manifest.payload.url.
+# On read this is only a fallback for manifests with an empty payload.url.
 TDF_PAYLOAD_FILE_NAME = "0.payload"
+
+
+def resolve_manifest_name(names: Iterable[str]) -> str:
+    """Return the zip entry holding the manifest, spec name first."""
+    name_set = set(names)
+    for candidate in (TDF_MANIFEST_FILE_NAME, LEGACY_TDF_MANIFEST_FILE_NAME):
+        if candidate in name_set:
+            return candidate
+    raise ValueError("tdf doesn't contain a manifest")
+
+
+def _is_safe_entry_name(name: str) -> bool:
+    if not name or name.startswith("/") or "\\" in name:
+        return False
+    return ".." not in name.split("/")
+
+
+def resolve_payload_name(payload_url: str | None, names: Iterable[str]) -> str:
+    """Return the zip entry holding the payload.
+
+    Uses manifest.payload.url when present; falls back to `0.payload` only
+    when the url is empty or missing.
+    """
+    name_set = set(names)
+    if payload_url:
+        if not _is_safe_entry_name(payload_url):
+            raise ValueError(f"unsafe payload url in manifest: {payload_url!r}")
+        if payload_url in name_set:
+            return payload_url
+        raise ValueError(f"tdf doesn't contain payload entry {payload_url!r}")
+    if TDF_PAYLOAD_FILE_NAME in name_set:
+        return TDF_PAYLOAD_FILE_NAME
+    raise ValueError("tdf doesn't contain a payload")
+
+
+def payload_url_from_manifest_json(manifest_text: str) -> str | None:
+    """Extract payload.url without requiring a fully valid manifest."""
+    try:
+        data = json.loads(manifest_text)
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    payload = data.get("payload")
+    if not isinstance(payload, dict):
+        return None
+    url = payload.get("url")
+    return url if isinstance(url, str) else None
 
 
 class TDFReader:
@@ -31,15 +87,16 @@ class TDFReader:
         try:
             self._zip_reader = ZipReader(tdf)
             namelist = self._zip_reader.namelist()
-
-            if TDF_MANIFEST_FILE_NAME not in namelist:
-                raise ValueError("tdf doesn't contain a manifest")
-            if TDF_PAYLOAD_FILE_NAME not in namelist:
-                raise ValueError("tdf doesn't contain a payload")
-
-            # Store the names for later use
-            self._manifest_name = TDF_MANIFEST_FILE_NAME
-            self._payload_name = TDF_PAYLOAD_FILE_NAME
+            self._manifest_name = resolve_manifest_name(namelist)
+            manifest_text = self._zip_reader.read(self._manifest_name).decode("utf-8")
+            payload_url = payload_url_from_manifest_json(manifest_text)
+            self._payload_name = resolve_payload_name(payload_url, namelist)
+        except UnicodeDecodeError as e:
+            # UnicodeDecodeError is a ValueError subclass, but it means the
+            # manifest entry is corrupt, not that the tdf is missing an
+            # entry (the resolvers' own ValueErrors). Wrap it like any
+            # other unexpected failure instead of letting it pass through.
+            raise SDKException("Error initializing TDFReader") from e
         except Exception as e:
             if isinstance(e, ValueError):
                 raise

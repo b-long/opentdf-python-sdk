@@ -42,3 +42,7 @@ def test_supports_unknown_exit_2():
         check=False,
     )
     assert r.returncode == 2
+
+
+def test_supports_spec_container():
+    assert cmd_supports(SimpleNamespace(feature="spec-container")) == 0

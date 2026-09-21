@@ -3,6 +3,7 @@
 import json
 
 from otdf_python.config import KASInfo, TDFConfig
+from otdf_python.manifest import Manifest
 from otdf_python.tdf import TDF
 
 from tests.mock_crypto import generate_rsa_keypair
@@ -99,3 +100,48 @@ def test_manifest_roundtrip_serialization():
         "wrappedKey"
     ]
     assert original_wrapped_key == roundtrip_wrapped_key
+
+
+def _minimal(**top):
+    base = {
+        "payload": {
+            "type": "reference",
+            "url": "0.payload",
+            "protocol": "zip",
+            "mimeType": "text/plain",
+            "isEncrypted": True,
+        }
+    }
+    base.update(top)
+    return base
+
+
+def test_spec_version_prefers_schema_version():
+    m = _minimal(schemaVersion="4.3.0", tdf_spec_version="9.9.9")
+    m["payload"]["tdf_spec_version"] = "8.8.8"
+    assert Manifest.from_json(json.dumps(m)).spec_version() == "4.3.0"
+
+
+def test_spec_version_falls_back_to_top_level_tdf_spec_version():
+    m = _minimal(tdf_spec_version="9.9.9")
+    m["payload"]["tdf_spec_version"] = "8.8.8"
+    assert Manifest.from_json(json.dumps(m)).spec_version() == "9.9.9"
+
+
+def test_spec_version_falls_back_to_payload_tdf_spec_version():
+    m = _minimal()
+    m["payload"]["tdf_spec_version"] = "8.8.8"
+    assert Manifest.from_json(json.dumps(m)).spec_version() == "8.8.8"
+
+
+def test_spec_version_absent_is_none():
+    assert Manifest.from_json(json.dumps(_minimal())).spec_version() is None
+
+
+def test_tdf_spec_version_never_serialized():
+    m = _minimal(schemaVersion="4.3.0", tdf_spec_version="9.9.9")
+    m["payload"]["tdf_spec_version"] = "8.8.8"
+    out = json.loads(Manifest.from_json(json.dumps(m)).to_json())
+    assert "tdf_spec_version" not in out
+    assert "tdf_spec_version" not in out["payload"]
+    assert out["schemaVersion"] == "4.3.0"

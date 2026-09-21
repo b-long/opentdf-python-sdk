@@ -8,8 +8,10 @@ from otdf_python.zip_writer import ZipWriter
 class TDFWriter:
     """TDF file writer for creating encrypted TDF packages."""
 
+    # Spec: manifest entry MUST be `manifest.json` at the archive root.
+    TDF_MANIFEST_FILE_NAME = "manifest.json"
+    # Payload entry name; TDF.create_tdf writes this same value into manifest.payload.url.
     TDF_PAYLOAD_FILE_NAME = "0.payload"
-    TDF_MANIFEST_FILE_NAME = "0.manifest.json"
 
     def __init__(self, out_stream: io.BytesIO | None = None):
         """Initialize TDF writer."""
