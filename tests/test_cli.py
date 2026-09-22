@@ -62,7 +62,6 @@ def test_cli_encrypt_help(project_root):
     assert result.returncode == 0
     assert "Path to file to encrypt" in result.stdout
     assert "--attributes" in result.stdout
-    assert "--container-type" in result.stdout
 
 
 def test_cli_decrypt_help(project_root):

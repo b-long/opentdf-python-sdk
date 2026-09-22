@@ -1,4 +1,4 @@
-"""Configuration classes for TDF and NanoTDF operations."""
+"""Configuration classes for TDF operations."""
 
 from dataclasses import dataclass, field
 from enum import Enum
@@ -55,19 +55,6 @@ class TDFConfig:
     hex_encode_root_and_segment_hashes: bool = False
     render_version_info_in_manifest: bool = True
     policy_object: Any | None = None
-
-
-@dataclass
-class NanoTDFConfig:
-    """NanoTDF encryption configuration."""
-
-    ecc_mode: str | None = None
-    cipher: str | None = None
-    config: str | None = None
-    attributes: list[str] = field(default_factory=list)
-    kas_info_list: list[KASInfo] = field(default_factory=list)
-    collection_config: str | None = None
-    policy_type: str | None = None
 
 
 # Utility function to normalize KAS URLs (Python equivalent)
