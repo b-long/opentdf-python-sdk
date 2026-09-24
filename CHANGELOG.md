@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.11.0...otdf-python-v1.0.0) (2026-09-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* **tdf:** TDF archives are now written with the spec-mandated manifest.json entry instead of 0.manifest.json. Readers accept both names. Files written by this version cannot be opened by released otdfctl, upstream Go, Java, or JS SDKs until they add a manifest.json fallback.
+
+### Features
+
+* **tdf:** spec-compliant container — manifest.json entry, payload from payload.url ([#188](https://github.com/b-long/opentdf-python-sdk/issues/188)) ([4216468](https://github.com/b-long/opentdf-python-sdk/commit/42164681ddae1cc161331f835b3358dc7442052f))
+
+
+### Bug Fixes
+
+* remove duplicated parsing in `sdk.py` ([#192](https://github.com/b-long/opentdf-python-sdk/issues/192)) ([6c4785f](https://github.com/b-long/opentdf-python-sdk/commit/6c4785f96a307be979254561eed421dfee2f225f))
+
 ## [0.11.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.10.2...otdf-python-v0.11.0) (2026-09-15)
 
 
