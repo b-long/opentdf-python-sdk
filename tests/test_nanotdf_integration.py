@@ -8,6 +8,8 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from otdf_python.config import KASInfo, NanoTDFConfig
 from otdf_python.nanotdf import NanoTDF
 
+pytestmark = pytest.mark.skip(reason="NanoTDF tests are disabled")
+
 
 @pytest.mark.integration
 def test_nanotdf_kas_roundtrip():

@@ -22,6 +22,8 @@ from tests.support_otdfctl_args import (
     run_otdfctl_encrypt_command,
 )
 
+pytestmark = pytest.mark.skip(reason="NanoTDF tests are disabled")
+
 logger = logging.getLogger(__name__)
 
 

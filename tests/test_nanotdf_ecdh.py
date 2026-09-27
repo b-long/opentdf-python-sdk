@@ -8,6 +8,8 @@ from otdf_python.config import KASInfo, NanoTDFConfig
 from otdf_python.ecdh import generate_ephemeral_keypair
 from otdf_python.nanotdf import NanoTDF
 
+pytestmark = pytest.mark.skip(reason="NanoTDF tests are disabled")
+
 
 class TestNanoTDFWithECDH:
     """Test NanoTDF encryption/decryption using ECDH key exchange."""

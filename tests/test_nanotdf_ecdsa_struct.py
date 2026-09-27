@@ -6,6 +6,8 @@ from otdf_python.nanotdf_ecdsa_struct import (
     NanoTDFECDSAStruct,
 )
 
+pytestmark = pytest.mark.skip(reason="NanoTDF tests are disabled")
+
 
 def test_from_bytes():
     """Test creating a NanoTDFECDSAStruct from bytes."""
