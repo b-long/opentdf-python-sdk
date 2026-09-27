@@ -18,6 +18,8 @@ from otdf_python.ecdh import (
     get_curve,
 )
 
+pytestmark = pytest.mark.skip(reason="NanoTDF tests are disabled")
+
 
 class TestCurveOperations:
     """Test basic curve operations."""

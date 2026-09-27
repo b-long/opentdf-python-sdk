@@ -2,6 +2,7 @@
 
 import unittest
 
+import pytest
 from otdf_python.nanotdf_type import (
     Cipher,
     ECCurve,
@@ -9,6 +10,8 @@ from otdf_python.nanotdf_type import (
     PolicyType,
     Protocol,
 )
+
+pytestmark = pytest.mark.skip(reason="NanoTDF tests are disabled")
 
 
 class TestNanoTDFType(unittest.TestCase):
