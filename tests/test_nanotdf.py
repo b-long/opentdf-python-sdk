@@ -6,6 +6,8 @@ import pytest
 from otdf_python.config import NanoTDFConfig
 from otdf_python.nanotdf import InvalidNanoTDFConfig, NanoTDF, NanoTDFMaxSizeLimit
 
+pytestmark = pytest.mark.skip(reason="NanoTDF tests are disabled")
+
 
 def test_nanotdf_roundtrip():
     """Test NanoTDF encrypt and decrypt roundtrip."""

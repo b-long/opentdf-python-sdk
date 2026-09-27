@@ -44,7 +44,9 @@ class AesGcm:
     def encrypt_with_iv(
         self,
         iv: bytes,
-        auth_tag_len: int,
+        # Kept for signature parity with the Java SDK; the cryptography lib
+        # derives the tag length itself.
+        auth_tag_len: int,  # noqa: ARG002
         plaintext: bytes,
         offset: int = 0,
         length: int | None = None,
@@ -58,6 +60,11 @@ class AesGcm:
         return self.aesgcm.decrypt(encrypted.iv, encrypted.ciphertext, None)
 
     def decrypt_with_iv(
-        self, iv: bytes, auth_tag_len: int, cipher_data: bytes
+        self,
+        iv: bytes,
+        # Kept for signature parity with the Java SDK; the cryptography lib
+        # derives the tag length itself.
+        auth_tag_len: int,  # noqa: ARG002
+        cipher_data: bytes,
     ) -> bytes:
         return self.aesgcm.decrypt(iv, cipher_data, None)

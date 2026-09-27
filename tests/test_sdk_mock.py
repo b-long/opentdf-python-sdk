@@ -6,19 +6,19 @@ from otdf_python.sdk import KAS, SDK
 class MockKAS(KAS):
     """Mock KAS implementation for testing."""
 
-    def get_public_key(self, kas_info):
+    def get_public_key(self, _kas_info):
         """Return mock public key."""
         return "mock-public-key"
 
-    def get_ec_public_key(self, kas_info, curve):
+    def get_ec_public_key(self, _kas_info, _curve):
         """Return mock EC public key."""
         return "mock-ec-public-key"
 
-    def unwrap(self, key_access, policy, session_key_type):
+    def unwrap(self, _key_access, _policy, _session_key_type):
         """Return mock unwrapped key."""
         return b"mock-unwrapped-key"
 
-    def unwrap_nanotdf(self, curve, header, kas_url):
+    def unwrap_nanotdf(self, _curve, _header, _kas_url):
         """Return mock unwrapped NanoTDF key."""
         return b"mock-unwrapped-nanotdf"
 

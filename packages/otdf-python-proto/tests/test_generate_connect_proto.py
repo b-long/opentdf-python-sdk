@@ -121,7 +121,7 @@ class TestGitTagOverride:
 
         captured: list[list] = []
 
-        def fake_run(cmd, **kwargs):
+        def fake_run(cmd, **_kwargs):
             captured.append(cmd)
             if cmd[0] == "git":
                 # Simulate a successful clone by creating the service dir with one proto.
@@ -155,7 +155,7 @@ class TestGitTagOverride:
 
         captured: list[list] = []
 
-        def fake_run(cmd, **kwargs):
+        def fake_run(cmd, **_kwargs):
             captured.append(cmd)
             if cmd[0] == "git":
                 temp_repo = tmp_path / "temp_platform_repo"
@@ -248,7 +248,7 @@ class TestNoDeadReturnAfterFinally:
         assert result is False
 
     def test_function_returns_false_when_no_protos_copied(self, tmp_path):
-        def fake_run(cmd, **kwargs):
+        def fake_run(cmd, **_kwargs):
             if cmd[0] == "git":
                 # Clone succeeds but leaves an empty service dir (no .proto files)
                 service_dir = tmp_path / "temp_platform_repo" / "service"
@@ -265,7 +265,7 @@ class TestNoDeadReturnAfterFinally:
         """finally block must clean up temp_platform_repo regardless of outcome."""
         temp_repo = tmp_path / "temp_platform_repo"
 
-        def fake_run(cmd, **kwargs):
+        def fake_run(cmd, **_kwargs):
             if cmd[0] == "git":
                 service_dir = temp_repo / "service" / "kas"
                 service_dir.mkdir(parents=True)
@@ -280,7 +280,7 @@ class TestNoDeadReturnAfterFinally:
     def test_temp_dir_cleaned_up_on_failure(self, tmp_path):
         temp_repo = tmp_path / "temp_platform_repo"
 
-        def fake_run(cmd, **kwargs):
+        def fake_run(cmd, **_kwargs):
             if cmd[0] == "git":
                 temp_repo.mkdir(exist_ok=True)
                 raise gen.subprocess.CalledProcessError(1, "git")
