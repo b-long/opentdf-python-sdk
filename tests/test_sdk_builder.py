@@ -2,7 +2,7 @@
 
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 import pytest
 from otdf_python.sdk import SDK
@@ -191,6 +191,92 @@ def test_get_token_failure(mock_post, mock_get):
         builder._get_token_from_client_credentials()
 
     assert "Token request failed: 401" in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    "outer_fields",
+    [
+        {"idp": {"token_endpoint": "https://outer.example.com/token"}},
+        {"platform_issuer": "https://outer.example.com"},
+    ],
+    ids=["idp", "platform-issuer"],
+)
+def test_empty_platform_configuration_ignores_outer_fields(outer_fields):
+    """An empty nested configuration must not expose unrelated outer fields."""
+    builder = SDKBuilder()
+    builder.set_platform_endpoint("https://platform.example.com")
+    builder.client_secret("client", "secret")
+    response = MagicMock(status_code=200)
+    response.json.return_value = {"configuration": {}, **outer_fields}
+
+    with (
+        patch("otdf_python.sdk_builder.httpx.get", return_value=response) as get,
+        pytest.raises(AutoConfigureException, match="No platform_issuer found"),
+    ):
+        builder._discover_token_endpoint_from_platform()
+
+    get.assert_called_once_with(
+        "https://platform.example.com/.well-known/opentdf-configuration",
+        verify=True,
+    )
+    assert builder.oauth_config is not None
+    assert builder.oauth_config.token_endpoint is None
+
+
+@pytest.mark.parametrize("wrapper", ["missing", "null", "nested"])
+@pytest.mark.parametrize(
+    "configuration",
+    [
+        {"idp": {"token_endpoint": "https://issuer.example.com/token"}},
+        {"platform_issuer": "https://issuer.example.com"},
+    ],
+    ids=["idp", "platform-issuer"],
+)
+def test_platform_discovery_configuration_formats(configuration, wrapper):
+    """Keep top-level and nested discovery formats and nested-field precedence."""
+    if wrapper == "missing":
+        config_doc = configuration
+    elif wrapper == "null":
+        config_doc = {"configuration": None, **configuration}
+    else:
+        config_doc = {
+            "configuration": configuration,
+            "idp": {"token_endpoint": "https://outer.example.com/token"},
+            "platform_issuer": "https://outer.example.com",
+        }
+
+    platform_response = MagicMock(status_code=200)
+    platform_response.json.return_value = config_doc
+    issuer_response = MagicMock(status_code=200)
+    issuer_response.json.return_value = {
+        "token_endpoint": "https://issuer.example.com/token"
+    }
+    builder = SDKBuilder()
+    builder.set_platform_endpoint("https://platform.example.com")
+    builder.client_secret("client", "secret")
+
+    with patch(
+        "otdf_python.sdk_builder.httpx.get",
+        side_effect=[platform_response, issuer_response],
+    ) as get:
+        builder._discover_token_endpoint_from_platform()
+
+    expected_calls = [
+        call(
+            "https://platform.example.com/.well-known/opentdf-configuration",
+            verify=True,
+        )
+    ]
+    if "platform_issuer" in configuration:
+        expected_calls.append(
+            call(
+                "https://issuer.example.com/.well-known/openid-configuration",
+                verify=True,
+            )
+        )
+    assert get.call_args_list == expected_calls
+    assert builder.oauth_config is not None
+    assert builder.oauth_config.token_endpoint == "https://issuer.example.com/token"
 
 
 def test_build_without_platform_endpoint():
