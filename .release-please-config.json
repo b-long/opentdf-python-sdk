@@ -1,6 +1,7 @@
 {
   "release-type": "python",
   "include-v-in-tag": true,
+  "bump-minor-pre-major": true,
   "bootstrap-sha": "5ed358b3e2e0fd12dc336133f701b4ba5d8a298c",
   "packages": {
     ".": {
