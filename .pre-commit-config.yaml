@@ -45,3 +45,7 @@ repos:
       - id: conventional-pre-commit
         stages: [commit-msg]
         args: [--verbose, feat, fix, docs, style, refactor, perf, revert, build, test, chore, ci]
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.31.1
+    hooks:
+      - id: zizmor
