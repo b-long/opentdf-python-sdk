@@ -6,10 +6,7 @@
 #   from the SAME git tag as the platform image (docker-compose.platform.yaml
 #   already pins the image itself to PLATFORM_VERSION, declared once in
 #   docker-compose.platform.env -- pass that file via `docker compose
-#   --env-file`). NanoTDF rewrap (kas ec rewrap) breaks against every
-#   platform release newer than that tag was tried against (v0.16.0 through
-#   :nightly), independent of otdfctl/SDK version, so everything is pinned
-#   for now.
+#   --env-file`).
 # - The Keycloak provisioning data (download-keycloak-data below) is also
 #   patched with `directAccessGrantsEnabled: true` on the "opentdf" client
 #   via `yq`, which our integration tests need for the OAuth2 password grant
