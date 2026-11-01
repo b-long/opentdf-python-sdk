@@ -6,10 +6,7 @@
 #   from the SAME git tag as the platform image (docker-compose.platform.yaml
 #   already pins the image itself to PLATFORM_VERSION, declared once in
 #   docker-compose.platform.env -- pass that file via `docker compose
-#   --env-file`). NanoTDF rewrap (kas ec rewrap) breaks against every
-#   platform release newer than that tag was tried against (v0.16.0 through
-#   :nightly), independent of otdfctl/SDK version, so everything is pinned
-#   for now.
+#   --env-file`).
 # - The Keycloak provisioning data (download-keycloak-data below) is also
 #   patched with `directAccessGrantsEnabled: true` on the "opentdf" client
 #   via `yq`, which our integration tests need for the OAuth2 password grant
@@ -26,13 +23,8 @@
 # - Every file the base compose file fetches from opentdf/platform@main is
 #   repinned here to the same git tag as PLATFORM_VERSION (`service/<version>`),
 #   so nothing in this pipeline tracks main unpinned -- see download-init-script
-#   below. The one exception is generate-pqc-keys: the PQC keygen tool
-#   (service/cmd/keygen) doesn't exist yet at service/${PLATFORM_VERSION}, and
-#   the opentdf.yaml pinned to that tag only references the RSA/EC keys that
-#   generate-keys already creates, not PQC/hybrid ones -- so its output isn't
-#   consumed at this pin. It's turned into a no-op below instead of being
-#   pointed at a ref that doesn't have the tool. Revisit both when
-#   PLATFORM_VERSION is next bumped.
+#   below. That includes generate-pqc-keys, which builds the hybrid PQC KAS
+#   keys referenced by opentdf.yaml from service/cmd/keygen at the same tag.
 services:
   download-platform-config:
     command: ['wget', '-O', '/configs/opentdf.yaml', 'https://raw.githubusercontent.com/opentdf/platform/service/${PLATFORM_VERSION}/opentdf-example.yaml']
@@ -51,13 +43,29 @@ services:
         wget -O /configs/init-temp-keys.sh 'https://raw.githubusercontent.com/opentdf/platform/service/${PLATFORM_VERSION}/.github/scripts/init-temp-keys.sh'
 
   generate-pqc-keys:
-    image: alpine:3.23
-    entrypoint: /bin/sh
+    # Same as the base service, except the sparse checkout is pulled from
+    # service/${PLATFORM_VERSION} instead of main.
     command:
       - -c
       - |
-        echo "Skipping PQC key generation: service/cmd/keygen doesn't exist at service/${PLATFORM_VERSION}, and its output isn't referenced by opentdf.yaml at that pin."
-    restart: "no"
+        set -e
+        apk add --no-cache git
+        WORKDIR=$$(mktemp -d)
+        cd "$$WORKDIR"
+        git init -q
+        git remote add origin https://github.com/opentdf/platform.git
+        git config core.sparseCheckout true
+        echo "lib/" >> .git/info/sparse-checkout
+        echo "service/cmd/keygen/" >> .git/info/sparse-checkout
+        echo "service/go.mod" >> .git/info/sparse-checkout
+        echo "service/go.sum" >> .git/info/sparse-checkout
+        echo "protocol/" >> .git/info/sparse-checkout
+        echo "sdk/" >> .git/info/sparse-checkout
+        git pull --depth 1 -q origin 'service/${PLATFORM_VERSION}'
+        cd service
+        GOWORK=off go run ./cmd/keygen -output /keys
+        echo "PQC keys generated successfully (service/${PLATFORM_VERSION})"
+        rm -rf "$$WORKDIR"
 
   download-keycloak-data:
     command:
