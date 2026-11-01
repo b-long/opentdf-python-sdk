@@ -3,6 +3,9 @@ name: "Build Python Wheel"
 on:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -10,10 +13,12 @@ jobs:
       wheel: ${{ steps.find_wheel.outputs.wheel_path }}
     steps:
       - name: Checkout this repo
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"

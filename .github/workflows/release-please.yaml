@@ -6,16 +6,19 @@ on:
       - main
   workflow_dispatch:
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   # Run full test suite before any release operations
   test-suite:
-    uses: ./.github/workflows/test-suite.yaml
+    permissions:
+      contents: read
+    uses: $/.github/workflows/test-suite.yaml
 
   release-please:
+    permissions:
+      contents: write
+      pull-requests: write
     runs-on: ubuntu-latest
     needs: test-suite
     if: needs.test-suite.outputs.tests_passed == 'true'
@@ -23,10 +26,12 @@ jobs:
       releases_created: ${{ steps.release-main.outputs.releases_created }}
       paths_released: ${{ steps.release-main.outputs.paths_released }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # Release-please for main branch (creates stable releases)
-      - uses: googleapis/release-please-action@v5
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         id: release-main
         with:
           config-file: .release-please-config.json
@@ -44,12 +49,15 @@ jobs:
     if: ${{ needs.release-please.outputs.releases_created == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
         with:
           version: "latest"
+          enable-cache: false
 
       - name: Build package
         shell: bash
@@ -68,7 +76,7 @@ jobs:
       #   https://pypi.org/manage/project/otdf-python/settings/publishing/
       - name: Publish package distributions to PyPI
         if: github.ref == 'refs/heads/main'
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
         with:
           # repository-url: https://pypi.org/legacy/
           packages-dir: dist/
