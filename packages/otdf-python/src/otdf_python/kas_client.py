@@ -553,7 +553,7 @@ class KASClient:
             return RSA_KEY_TYPE
         return session_key_type
 
-    def _prepare_ec_keypair(self, session_key_type):
+    def _prepare_ec_keypair(self, _session_key_type):
         """Prepare EC key pair for unwrapping.
 
         Args:

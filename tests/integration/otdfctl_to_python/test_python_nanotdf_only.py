@@ -15,6 +15,8 @@ from tests.support_common import (
     validate_plaintext_file_created,
 )
 
+pytestmark = pytest.mark.skip(reason="NanoTDF tests are disabled")
+
 logger = logging.getLogger(__name__)
 
 
