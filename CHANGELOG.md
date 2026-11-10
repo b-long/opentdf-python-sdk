@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.12.0...otdf-python-v0.13.0) (2026-11-10)
+
+
+### Features
+
+* sync platform & protos to OpenTDF v0.30.0 ([#206](https://github.com/b-long/opentdf-python-sdk/issues/206)) ([6d7ad63](https://github.com/b-long/opentdf-python-sdk/commit/6d7ad63e5ef73c71a897a74b62cfa1e7db0105a2))
+
 ## [0.12.0](https://github.com/b-long/opentdf-python-sdk/compare/otdf-python-v0.11.0...otdf-python-v0.12.0) (2026-11-01)
 
 
