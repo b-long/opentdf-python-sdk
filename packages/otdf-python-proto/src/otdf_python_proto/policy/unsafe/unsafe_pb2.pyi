@@ -150,3 +150,19 @@ class UnsafeDeleteKasKeyResponse(_message.Message):
     KEY_FIELD_NUMBER: _ClassVar[int]
     key: _objects_pb2.KasKey
     def __init__(self, key: _Optional[_Union[_objects_pb2.KasKey, _Mapping]] = ...) -> None: ...
+
+class UnsafeUpdateKeyRequest(_message.Message):
+    __slots__ = ("id", "target_key_mode", "provider_config_id")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    TARGET_KEY_MODE_FIELD_NUMBER: _ClassVar[int]
+    PROVIDER_CONFIG_ID_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    target_key_mode: _objects_pb2.KeyMode
+    provider_config_id: str
+    def __init__(self, id: _Optional[str] = ..., target_key_mode: _Optional[_Union[_objects_pb2.KeyMode, str]] = ..., provider_config_id: _Optional[str] = ...) -> None: ...
+
+class UnsafeUpdateKeyResponse(_message.Message):
+    __slots__ = ("key",)
+    KEY_FIELD_NUMBER: _ClassVar[int]
+    key: _objects_pb2.KasKey
+    def __init__(self, key: _Optional[_Union[_objects_pb2.KasKey, _Mapping]] = ...) -> None: ...

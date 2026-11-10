@@ -29,6 +29,12 @@ class AttributesService(Protocol):
     async def get_attribute_values_by_fqns(self, request: policy_dot_attributes_dot_attributes__pb2.GetAttributeValuesByFqnsRequest, ctx: RequestContext) -> policy_dot_attributes_dot_attributes__pb2.GetAttributeValuesByFqnsResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
 
+    async def get_key_mappings_by_fqns(self, request: policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsRequest, ctx: RequestContext) -> policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsResponse:
+        raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
+
+    async def get_entitleable_attributes_by_fqns(self, request: policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsRequest, ctx: RequestContext) -> policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsResponse:
+        raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
+
     async def create_attribute(self, request: policy_dot_attributes_dot_attributes__pb2.CreateAttributeRequest, ctx: RequestContext) -> policy_dot_attributes_dot_attributes__pb2.CreateAttributeResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
 
@@ -119,6 +125,26 @@ class AttributesServiceASGIApplication(ConnectASGIApplication[AttributesService]
                         idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
                     ),
                     function=svc.get_attribute_values_by_fqns,
+                ),
+                "/policy.attributes.AttributesService/GetKeyMappingsByFqns": Endpoint.unary(
+                    method=MethodInfo(
+                        name="GetKeyMappingsByFqns",
+                        service_name="policy.attributes.AttributesService",
+                        input=policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsRequest,
+                        output=policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsResponse,
+                        idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
+                    ),
+                    function=svc.get_key_mappings_by_fqns,
+                ),
+                "/policy.attributes.AttributesService/GetEntitleableAttributesByFqns": Endpoint.unary(
+                    method=MethodInfo(
+                        name="GetEntitleableAttributesByFqns",
+                        service_name="policy.attributes.AttributesService",
+                        input=policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsRequest,
+                        output=policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsResponse,
+                        idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
+                    ),
+                    function=svc.get_entitleable_attributes_by_fqns,
                 ),
                 "/policy.attributes.AttributesService/CreateAttribute": Endpoint.unary(
                     method=MethodInfo(
@@ -364,6 +390,50 @@ class AttributesServiceClient(ConnectClient):
                 service_name="policy.attributes.AttributesService",
                 input=policy_dot_attributes_dot_attributes__pb2.GetAttributeValuesByFqnsRequest,
                 output=policy_dot_attributes_dot_attributes__pb2.GetAttributeValuesByFqnsResponse,
+                idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
+            ),
+            headers=headers,
+            timeout_ms=timeout_ms,
+            use_get=use_get,
+        )
+
+    async def get_key_mappings_by_fqns(
+        self,
+        request: policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsRequest,
+        *,
+        headers: Headers | Mapping[str, str] | None = None,
+        timeout_ms: int | None = None,
+        use_get: bool = False,
+    ) -> policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsResponse:
+        return await self.execute_unary(
+            request=request,
+            method=MethodInfo(
+                name="GetKeyMappingsByFqns",
+                service_name="policy.attributes.AttributesService",
+                input=policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsRequest,
+                output=policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsResponse,
+                idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
+            ),
+            headers=headers,
+            timeout_ms=timeout_ms,
+            use_get=use_get,
+        )
+
+    async def get_entitleable_attributes_by_fqns(
+        self,
+        request: policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsRequest,
+        *,
+        headers: Headers | Mapping[str, str] | None = None,
+        timeout_ms: int | None = None,
+        use_get: bool = False,
+    ) -> policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsResponse:
+        return await self.execute_unary(
+            request=request,
+            method=MethodInfo(
+                name="GetEntitleableAttributesByFqns",
+                service_name="policy.attributes.AttributesService",
+                input=policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsRequest,
+                output=policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsResponse,
                 idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
             ),
             headers=headers,
@@ -683,6 +753,10 @@ class AttributesServiceSync(Protocol):
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
     def get_attribute_values_by_fqns(self, request: policy_dot_attributes_dot_attributes__pb2.GetAttributeValuesByFqnsRequest, ctx: RequestContext) -> policy_dot_attributes_dot_attributes__pb2.GetAttributeValuesByFqnsResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
+    def get_key_mappings_by_fqns(self, request: policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsRequest, ctx: RequestContext) -> policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsResponse:
+        raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
+    def get_entitleable_attributes_by_fqns(self, request: policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsRequest, ctx: RequestContext) -> policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsResponse:
+        raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
     def create_attribute(self, request: policy_dot_attributes_dot_attributes__pb2.CreateAttributeRequest, ctx: RequestContext) -> policy_dot_attributes_dot_attributes__pb2.CreateAttributeResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
     def update_attribute(self, request: policy_dot_attributes_dot_attributes__pb2.UpdateAttributeRequest, ctx: RequestContext) -> policy_dot_attributes_dot_attributes__pb2.UpdateAttributeResponse:
@@ -758,6 +832,26 @@ class AttributesServiceWSGIApplication(ConnectWSGIApplication):
                         idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
                     ),
                     function=service.get_attribute_values_by_fqns,
+                ),
+                "/policy.attributes.AttributesService/GetKeyMappingsByFqns": EndpointSync.unary(
+                    method=MethodInfo(
+                        name="GetKeyMappingsByFqns",
+                        service_name="policy.attributes.AttributesService",
+                        input=policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsRequest,
+                        output=policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsResponse,
+                        idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
+                    ),
+                    function=service.get_key_mappings_by_fqns,
+                ),
+                "/policy.attributes.AttributesService/GetEntitleableAttributesByFqns": EndpointSync.unary(
+                    method=MethodInfo(
+                        name="GetEntitleableAttributesByFqns",
+                        service_name="policy.attributes.AttributesService",
+                        input=policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsRequest,
+                        output=policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsResponse,
+                        idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
+                    ),
+                    function=service.get_entitleable_attributes_by_fqns,
                 ),
                 "/policy.attributes.AttributesService/CreateAttribute": EndpointSync.unary(
                     method=MethodInfo(
@@ -1003,6 +1097,50 @@ class AttributesServiceClientSync(ConnectClientSync):
                 service_name="policy.attributes.AttributesService",
                 input=policy_dot_attributes_dot_attributes__pb2.GetAttributeValuesByFqnsRequest,
                 output=policy_dot_attributes_dot_attributes__pb2.GetAttributeValuesByFqnsResponse,
+                idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
+            ),
+            headers=headers,
+            timeout_ms=timeout_ms,
+            use_get=use_get,
+        )
+
+    def get_key_mappings_by_fqns(
+        self,
+        request: policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsRequest,
+        *,
+        headers: Headers | Mapping[str, str] | None = None,
+        timeout_ms: int | None = None,
+        use_get: bool = False,
+    ) -> policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsResponse:
+        return self.execute_unary(
+            request=request,
+            method=MethodInfo(
+                name="GetKeyMappingsByFqns",
+                service_name="policy.attributes.AttributesService",
+                input=policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsRequest,
+                output=policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsResponse,
+                idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
+            ),
+            headers=headers,
+            timeout_ms=timeout_ms,
+            use_get=use_get,
+        )
+
+    def get_entitleable_attributes_by_fqns(
+        self,
+        request: policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsRequest,
+        *,
+        headers: Headers | Mapping[str, str] | None = None,
+        timeout_ms: int | None = None,
+        use_get: bool = False,
+    ) -> policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsResponse:
+        return self.execute_unary(
+            request=request,
+            method=MethodInfo(
+                name="GetEntitleableAttributesByFqns",
+                service_name="policy.attributes.AttributesService",
+                input=policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsRequest,
+                output=policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsResponse,
                 idempotency_level=IdempotencyLevel.NO_SIDE_EFFECTS,
             ),
             headers=headers,

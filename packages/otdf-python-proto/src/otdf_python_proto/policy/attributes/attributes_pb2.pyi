@@ -3,6 +3,7 @@ from common import common_pb2 as _common_pb2
 from google.protobuf import wrappers_pb2 as _wrappers_pb2
 from policy import objects_pb2 as _objects_pb2
 from policy import selectors_pb2 as _selectors_pb2
+from policy.subjectmapping import subject_mapping_pb2 as _subject_mapping_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
@@ -64,16 +65,18 @@ class AttributesSort(_message.Message):
     def __init__(self, field: _Optional[_Union[SortAttributesType, str]] = ..., direction: _Optional[_Union[_selectors_pb2.SortDirection, str]] = ...) -> None: ...
 
 class ListAttributesRequest(_message.Message):
-    __slots__ = ("state", "namespace", "pagination", "sort")
+    __slots__ = ("state", "namespace", "pagination", "sort", "search")
     STATE_FIELD_NUMBER: _ClassVar[int]
     NAMESPACE_FIELD_NUMBER: _ClassVar[int]
     PAGINATION_FIELD_NUMBER: _ClassVar[int]
     SORT_FIELD_NUMBER: _ClassVar[int]
+    SEARCH_FIELD_NUMBER: _ClassVar[int]
     state: _common_pb2.ActiveStateEnum
     namespace: str
     pagination: _selectors_pb2.PageRequest
     sort: _containers.RepeatedCompositeFieldContainer[AttributesSort]
-    def __init__(self, state: _Optional[_Union[_common_pb2.ActiveStateEnum, str]] = ..., namespace: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[AttributesSort, _Mapping]]] = ...) -> None: ...
+    search: _selectors_pb2.Search
+    def __init__(self, state: _Optional[_Union[_common_pb2.ActiveStateEnum, str]] = ..., namespace: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[AttributesSort, _Mapping]]] = ..., search: _Optional[_Union[_selectors_pb2.Search, _Mapping]] = ...) -> None: ...
 
 class ListAttributesResponse(_message.Message):
     __slots__ = ("attributes", "pagination")
@@ -195,17 +198,35 @@ class AttributeValueObligationTriggerRequest(_message.Message):
     metadata: _common_pb2.MetadataMutable
     def __init__(self, obligation_value: _Optional[_Union[_common_pb2.IdFqnIdentifier, _Mapping]] = ..., action: _Optional[_Union[_common_pb2.IdNameIdentifier, _Mapping]] = ..., context: _Optional[_Union[_objects_pb2.RequestContext, _Mapping]] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
 
+class AttributeValueSubjectMappingRequest(_message.Message):
+    __slots__ = ("actions", "existing_subject_condition_set_id", "new_subject_condition_set", "namespace_id", "namespace_fqn", "metadata")
+    ACTIONS_FIELD_NUMBER: _ClassVar[int]
+    EXISTING_SUBJECT_CONDITION_SET_ID_FIELD_NUMBER: _ClassVar[int]
+    NEW_SUBJECT_CONDITION_SET_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
+    actions: _containers.RepeatedCompositeFieldContainer[_objects_pb2.Action]
+    existing_subject_condition_set_id: str
+    new_subject_condition_set: _subject_mapping_pb2.SubjectConditionSetCreate
+    namespace_id: str
+    namespace_fqn: str
+    metadata: _common_pb2.MetadataMutable
+    def __init__(self, actions: _Optional[_Iterable[_Union[_objects_pb2.Action, _Mapping]]] = ..., existing_subject_condition_set_id: _Optional[str] = ..., new_subject_condition_set: _Optional[_Union[_subject_mapping_pb2.SubjectConditionSetCreate, _Mapping]] = ..., namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
+
 class CreateAttributeValueRequest(_message.Message):
-    __slots__ = ("attribute_id", "value", "obligation_triggers", "metadata")
+    __slots__ = ("attribute_id", "value", "obligation_triggers", "subject_mappings", "metadata")
     ATTRIBUTE_ID_FIELD_NUMBER: _ClassVar[int]
     VALUE_FIELD_NUMBER: _ClassVar[int]
     OBLIGATION_TRIGGERS_FIELD_NUMBER: _ClassVar[int]
+    SUBJECT_MAPPINGS_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     attribute_id: str
     value: str
     obligation_triggers: _containers.RepeatedCompositeFieldContainer[AttributeValueObligationTriggerRequest]
+    subject_mappings: _containers.RepeatedCompositeFieldContainer[AttributeValueSubjectMappingRequest]
     metadata: _common_pb2.MetadataMutable
-    def __init__(self, attribute_id: _Optional[str] = ..., value: _Optional[str] = ..., obligation_triggers: _Optional[_Iterable[_Union[AttributeValueObligationTriggerRequest, _Mapping]]] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
+    def __init__(self, attribute_id: _Optional[str] = ..., value: _Optional[str] = ..., obligation_triggers: _Optional[_Iterable[_Union[AttributeValueObligationTriggerRequest, _Mapping]]] = ..., subject_mappings: _Optional[_Iterable[_Union[AttributeValueSubjectMappingRequest, _Mapping]]] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
 
 class CreateAttributeValueResponse(_message.Message):
     __slots__ = ("value",)
@@ -266,6 +287,89 @@ class GetAttributeValuesByFqnsResponse(_message.Message):
     FQN_ATTRIBUTE_VALUES_FIELD_NUMBER: _ClassVar[int]
     fqn_attribute_values: _containers.MessageMap[str, GetAttributeValuesByFqnsResponse.AttributeAndValue]
     def __init__(self, fqn_attribute_values: _Optional[_Mapping[str, GetAttributeValuesByFqnsResponse.AttributeAndValue]] = ...) -> None: ...
+
+class GetKeyMappingsByFqnsRequest(_message.Message):
+    __slots__ = ("fqns",)
+    FQNS_FIELD_NUMBER: _ClassVar[int]
+    fqns: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, fqns: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class GetKeyMappingsByFqnsResponse(_message.Message):
+    __slots__ = ("fqn_key_mappings",)
+    class AttributeKeyMapping(_message.Message):
+        __slots__ = ("rule", "keys")
+        RULE_FIELD_NUMBER: _ClassVar[int]
+        KEYS_FIELD_NUMBER: _ClassVar[int]
+        rule: _objects_pb2.AttributeRuleTypeEnum
+        keys: _containers.RepeatedCompositeFieldContainer[_objects_pb2.SimpleKasKey]
+        def __init__(self, rule: _Optional[_Union[_objects_pb2.AttributeRuleTypeEnum, str]] = ..., keys: _Optional[_Iterable[_Union[_objects_pb2.SimpleKasKey, _Mapping]]] = ...) -> None: ...
+    class FqnKeyMappingsEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: GetKeyMappingsByFqnsResponse.AttributeKeyMapping
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[_Union[GetKeyMappingsByFqnsResponse.AttributeKeyMapping, _Mapping]] = ...) -> None: ...
+    FQN_KEY_MAPPINGS_FIELD_NUMBER: _ClassVar[int]
+    fqn_key_mappings: _containers.MessageMap[str, GetKeyMappingsByFqnsResponse.AttributeKeyMapping]
+    def __init__(self, fqn_key_mappings: _Optional[_Mapping[str, GetKeyMappingsByFqnsResponse.AttributeKeyMapping]] = ...) -> None: ...
+
+class GetEntitleableAttributesByFqnsRequest(_message.Message):
+    __slots__ = ("fqns",)
+    FQNS_FIELD_NUMBER: _ClassVar[int]
+    fqns: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, fqns: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class GetEntitleableAttributesByFqnsResponse(_message.Message):
+    __slots__ = ("definitions", "fqn_entitleable_attributes")
+    class EntitleableValue(_message.Message):
+        __slots__ = ("fqn", "value_id", "subject_mappings", "active")
+        FQN_FIELD_NUMBER: _ClassVar[int]
+        VALUE_ID_FIELD_NUMBER: _ClassVar[int]
+        SUBJECT_MAPPINGS_FIELD_NUMBER: _ClassVar[int]
+        ACTIVE_FIELD_NUMBER: _ClassVar[int]
+        fqn: str
+        value_id: str
+        subject_mappings: _containers.RepeatedCompositeFieldContainer[_objects_pb2.SubjectMapping]
+        active: _wrappers_pb2.BoolValue
+        def __init__(self, fqn: _Optional[str] = ..., value_id: _Optional[str] = ..., subject_mappings: _Optional[_Iterable[_Union[_objects_pb2.SubjectMapping, _Mapping]]] = ..., active: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
+    class EntitleableDefinition(_message.Message):
+        __slots__ = ("rule", "values", "namespace", "dynamic_value_mappings")
+        RULE_FIELD_NUMBER: _ClassVar[int]
+        VALUES_FIELD_NUMBER: _ClassVar[int]
+        NAMESPACE_FIELD_NUMBER: _ClassVar[int]
+        DYNAMIC_VALUE_MAPPINGS_FIELD_NUMBER: _ClassVar[int]
+        rule: _objects_pb2.AttributeRuleTypeEnum
+        values: _containers.RepeatedCompositeFieldContainer[GetEntitleableAttributesByFqnsResponse.EntitleableValue]
+        namespace: _objects_pb2.Namespace
+        dynamic_value_mappings: _containers.RepeatedCompositeFieldContainer[_objects_pb2.DynamicValueMapping]
+        def __init__(self, rule: _Optional[_Union[_objects_pb2.AttributeRuleTypeEnum, str]] = ..., values: _Optional[_Iterable[_Union[GetEntitleableAttributesByFqnsResponse.EntitleableValue, _Mapping]]] = ..., namespace: _Optional[_Union[_objects_pb2.Namespace, _Mapping]] = ..., dynamic_value_mappings: _Optional[_Iterable[_Union[_objects_pb2.DynamicValueMapping, _Mapping]]] = ...) -> None: ...
+    class EntitleableAttribute(_message.Message):
+        __slots__ = ("definition_fqn", "value")
+        DEFINITION_FQN_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        definition_fqn: str
+        value: GetEntitleableAttributesByFqnsResponse.EntitleableValue
+        def __init__(self, definition_fqn: _Optional[str] = ..., value: _Optional[_Union[GetEntitleableAttributesByFqnsResponse.EntitleableValue, _Mapping]] = ...) -> None: ...
+    class DefinitionsEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: GetEntitleableAttributesByFqnsResponse.EntitleableDefinition
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[_Union[GetEntitleableAttributesByFqnsResponse.EntitleableDefinition, _Mapping]] = ...) -> None: ...
+    class FqnEntitleableAttributesEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: GetEntitleableAttributesByFqnsResponse.EntitleableAttribute
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[_Union[GetEntitleableAttributesByFqnsResponse.EntitleableAttribute, _Mapping]] = ...) -> None: ...
+    DEFINITIONS_FIELD_NUMBER: _ClassVar[int]
+    FQN_ENTITLEABLE_ATTRIBUTES_FIELD_NUMBER: _ClassVar[int]
+    definitions: _containers.MessageMap[str, GetEntitleableAttributesByFqnsResponse.EntitleableDefinition]
+    fqn_entitleable_attributes: _containers.MessageMap[str, GetEntitleableAttributesByFqnsResponse.EntitleableAttribute]
+    def __init__(self, definitions: _Optional[_Mapping[str, GetEntitleableAttributesByFqnsResponse.EntitleableDefinition]] = ..., fqn_entitleable_attributes: _Optional[_Mapping[str, GetEntitleableAttributesByFqnsResponse.EntitleableAttribute]] = ...) -> None: ...
 
 class AssignKeyAccessServerToAttributeRequest(_message.Message):
     __slots__ = ("attribute_key_access_server",)

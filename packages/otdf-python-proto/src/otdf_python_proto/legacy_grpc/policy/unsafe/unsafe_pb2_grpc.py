@@ -62,6 +62,11 @@ class UnsafeServiceStub(object):
                 request_serializer=policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteAttributeValueRequest.SerializeToString,
                 response_deserializer=policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteAttributeValueResponse.FromString,
                 _registered_method=True)
+        self.UnsafeUpdateKey = channel.unary_unary(
+                '/policy.unsafe.UnsafeService/UnsafeUpdateKey',
+                request_serializer=policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyRequest.SerializeToString,
+                response_deserializer=policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyResponse.FromString,
+                _registered_method=True)
         self.UnsafeDeleteKasKey = channel.unary_unary(
                 '/policy.unsafe.UnsafeService/UnsafeDeleteKasKey',
                 request_serializer=policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteKasKeyRequest.SerializeToString,
@@ -138,11 +143,17 @@ class UnsafeServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def UnsafeDeleteKasKey(self, request, context):
+    def UnsafeUpdateKey(self, request, context):
         """--------------------------------------*
         Kas Key RPCs
         ---------------------------------------
         """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UnsafeDeleteKasKey(self, request, context):
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -194,6 +205,11 @@ def add_UnsafeServiceServicer_to_server(servicer, server):
                     servicer.UnsafeDeleteAttributeValue,
                     request_deserializer=policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteAttributeValueRequest.FromString,
                     response_serializer=policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteAttributeValueResponse.SerializeToString,
+            ),
+            'UnsafeUpdateKey': grpc.unary_unary_rpc_method_handler(
+                    servicer.UnsafeUpdateKey,
+                    request_deserializer=policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyRequest.FromString,
+                    response_serializer=policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyResponse.SerializeToString,
             ),
             'UnsafeDeleteKasKey': grpc.unary_unary_rpc_method_handler(
                     servicer.UnsafeDeleteKasKey,
@@ -447,6 +463,33 @@ class UnsafeService(object):
             '/policy.unsafe.UnsafeService/UnsafeDeleteAttributeValue',
             policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteAttributeValueRequest.SerializeToString,
             policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteAttributeValueResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UnsafeUpdateKey(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/policy.unsafe.UnsafeService/UnsafeUpdateKey',
+            policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyRequest.SerializeToString,
+            policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyResponse.FromString,
             options,
             channel_credentials,
             insecure,

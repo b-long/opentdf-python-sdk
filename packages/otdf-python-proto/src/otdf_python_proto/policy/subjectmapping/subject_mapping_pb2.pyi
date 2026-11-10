@@ -62,16 +62,18 @@ class SubjectMappingsSort(_message.Message):
     def __init__(self, field: _Optional[_Union[SortSubjectMappingsType, str]] = ..., direction: _Optional[_Union[_selectors_pb2.SortDirection, str]] = ...) -> None: ...
 
 class ListSubjectMappingsRequest(_message.Message):
-    __slots__ = ("namespace_id", "namespace_fqn", "pagination", "sort")
+    __slots__ = ("namespace_id", "namespace_fqn", "pagination", "sort", "search")
     NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
     NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
     PAGINATION_FIELD_NUMBER: _ClassVar[int]
     SORT_FIELD_NUMBER: _ClassVar[int]
+    SEARCH_FIELD_NUMBER: _ClassVar[int]
     namespace_id: str
     namespace_fqn: str
     pagination: _selectors_pb2.PageRequest
     sort: _containers.RepeatedCompositeFieldContainer[SubjectMappingsSort]
-    def __init__(self, namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[SubjectMappingsSort, _Mapping]]] = ...) -> None: ...
+    search: _selectors_pb2.Search
+    def __init__(self, namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[SubjectMappingsSort, _Mapping]]] = ..., search: _Optional[_Union[_selectors_pb2.Search, _Mapping]] = ...) -> None: ...
 
 class ListSubjectMappingsResponse(_message.Message):
     __slots__ = ("subject_mappings", "pagination")
@@ -160,16 +162,18 @@ class SubjectConditionSetsSort(_message.Message):
     def __init__(self, field: _Optional[_Union[SortSubjectConditionSetsType, str]] = ..., direction: _Optional[_Union[_selectors_pb2.SortDirection, str]] = ...) -> None: ...
 
 class ListSubjectConditionSetsRequest(_message.Message):
-    __slots__ = ("namespace_id", "namespace_fqn", "pagination", "sort")
+    __slots__ = ("namespace_id", "namespace_fqn", "pagination", "sort", "search")
     NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
     NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
     PAGINATION_FIELD_NUMBER: _ClassVar[int]
     SORT_FIELD_NUMBER: _ClassVar[int]
+    SEARCH_FIELD_NUMBER: _ClassVar[int]
     namespace_id: str
     namespace_fqn: str
     pagination: _selectors_pb2.PageRequest
     sort: _containers.RepeatedCompositeFieldContainer[SubjectConditionSetsSort]
-    def __init__(self, namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[SubjectConditionSetsSort, _Mapping]]] = ...) -> None: ...
+    search: _selectors_pb2.Search
+    def __init__(self, namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[SubjectConditionSetsSort, _Mapping]]] = ..., search: _Optional[_Union[_selectors_pb2.Search, _Mapping]] = ...) -> None: ...
 
 class ListSubjectConditionSetsResponse(_message.Message):
     __slots__ = ("subject_condition_sets", "pagination")

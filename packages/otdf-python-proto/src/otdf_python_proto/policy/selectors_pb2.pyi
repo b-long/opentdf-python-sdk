@@ -1,3 +1,4 @@
+from buf.validate import validate_pb2 as _validate_pb2
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
@@ -80,6 +81,12 @@ class AttributeValueSelector(_message.Message):
     with_resource_maps: bool
     with_attribute: AttributeValueSelector.AttributeSelector
     def __init__(self, with_key_access_grants: bool = ..., with_subject_maps: bool = ..., with_resource_maps: bool = ..., with_attribute: _Optional[_Union[AttributeValueSelector.AttributeSelector, _Mapping]] = ...) -> None: ...
+
+class Search(_message.Message):
+    __slots__ = ("term",)
+    TERM_FIELD_NUMBER: _ClassVar[int]
+    term: str
+    def __init__(self, term: _Optional[str] = ...) -> None: ...
 
 class PageRequest(_message.Message):
     __slots__ = ("limit", "offset")

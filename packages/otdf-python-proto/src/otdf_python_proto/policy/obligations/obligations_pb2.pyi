@@ -128,16 +128,18 @@ class DeleteObligationResponse(_message.Message):
     def __init__(self, obligation: _Optional[_Union[_objects_pb2.Obligation, _Mapping]] = ...) -> None: ...
 
 class ListObligationsRequest(_message.Message):
-    __slots__ = ("namespace_id", "namespace_fqn", "pagination", "sort")
+    __slots__ = ("namespace_id", "namespace_fqn", "pagination", "sort", "search")
     NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
     NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
     PAGINATION_FIELD_NUMBER: _ClassVar[int]
     SORT_FIELD_NUMBER: _ClassVar[int]
+    SEARCH_FIELD_NUMBER: _ClassVar[int]
     namespace_id: str
     namespace_fqn: str
     pagination: _selectors_pb2.PageRequest
     sort: _containers.RepeatedCompositeFieldContainer[ObligationsSort]
-    def __init__(self, namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[ObligationsSort, _Mapping]]] = ...) -> None: ...
+    search: _selectors_pb2.Search
+    def __init__(self, namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[ObligationsSort, _Mapping]]] = ..., search: _Optional[_Union[_selectors_pb2.Search, _Mapping]] = ...) -> None: ...
 
 class ListObligationsResponse(_message.Message):
     __slots__ = ("obligations", "pagination")

@@ -47,6 +47,8 @@ class KasPublicKeyAlgEnum(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     KAS_PUBLIC_KEY_ALG_ENUM_HPQT_XWING: _ClassVar[KasPublicKeyAlgEnum]
     KAS_PUBLIC_KEY_ALG_ENUM_HPQT_SECP256R1_MLKEM768: _ClassVar[KasPublicKeyAlgEnum]
     KAS_PUBLIC_KEY_ALG_ENUM_HPQT_SECP384R1_MLKEM1024: _ClassVar[KasPublicKeyAlgEnum]
+    KAS_PUBLIC_KEY_ALG_ENUM_MLKEM_768: _ClassVar[KasPublicKeyAlgEnum]
+    KAS_PUBLIC_KEY_ALG_ENUM_MLKEM_1024: _ClassVar[KasPublicKeyAlgEnum]
 
 class Algorithm(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -59,6 +61,8 @@ class Algorithm(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     ALGORITHM_HPQT_XWING: _ClassVar[Algorithm]
     ALGORITHM_HPQT_SECP256R1_MLKEM768: _ClassVar[Algorithm]
     ALGORITHM_HPQT_SECP384R1_MLKEM1024: _ClassVar[Algorithm]
+    ALGORITHM_MLKEM_768: _ClassVar[Algorithm]
+    ALGORITHM_MLKEM_1024: _ClassVar[Algorithm]
 
 class KeyStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -96,6 +100,8 @@ KAS_PUBLIC_KEY_ALG_ENUM_EC_SECP521R1: KasPublicKeyAlgEnum
 KAS_PUBLIC_KEY_ALG_ENUM_HPQT_XWING: KasPublicKeyAlgEnum
 KAS_PUBLIC_KEY_ALG_ENUM_HPQT_SECP256R1_MLKEM768: KasPublicKeyAlgEnum
 KAS_PUBLIC_KEY_ALG_ENUM_HPQT_SECP384R1_MLKEM1024: KasPublicKeyAlgEnum
+KAS_PUBLIC_KEY_ALG_ENUM_MLKEM_768: KasPublicKeyAlgEnum
+KAS_PUBLIC_KEY_ALG_ENUM_MLKEM_1024: KasPublicKeyAlgEnum
 ALGORITHM_UNSPECIFIED: Algorithm
 ALGORITHM_RSA_2048: Algorithm
 ALGORITHM_RSA_4096: Algorithm
@@ -105,6 +111,8 @@ ALGORITHM_EC_P521: Algorithm
 ALGORITHM_HPQT_XWING: Algorithm
 ALGORITHM_HPQT_SECP256R1_MLKEM768: Algorithm
 ALGORITHM_HPQT_SECP384R1_MLKEM1024: Algorithm
+ALGORITHM_MLKEM_768: Algorithm
+ALGORITHM_MLKEM_1024: Algorithm
 KEY_STATUS_UNSPECIFIED: KeyStatus
 KEY_STATUS_ACTIVE: KeyStatus
 KEY_STATUS_ROTATED: KeyStatus
@@ -258,6 +266,32 @@ class SubjectMapping(_message.Message):
     metadata: _common_pb2.Metadata
     def __init__(self, id: _Optional[str] = ..., attribute_value: _Optional[_Union[Value, _Mapping]] = ..., subject_condition_set: _Optional[_Union[SubjectConditionSet, _Mapping]] = ..., actions: _Optional[_Iterable[_Union[Action, _Mapping]]] = ..., namespace: _Optional[_Union[Namespace, _Mapping]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
 
+class DynamicValueResolver(_message.Message):
+    __slots__ = ("subject_external_selector_value", "operator")
+    SUBJECT_EXTERNAL_SELECTOR_VALUE_FIELD_NUMBER: _ClassVar[int]
+    OPERATOR_FIELD_NUMBER: _ClassVar[int]
+    subject_external_selector_value: str
+    operator: SubjectMappingOperatorEnum
+    def __init__(self, subject_external_selector_value: _Optional[str] = ..., operator: _Optional[_Union[SubjectMappingOperatorEnum, str]] = ...) -> None: ...
+
+class DynamicValueMapping(_message.Message):
+    __slots__ = ("id", "attribute_definition", "value_resolver", "subject_condition_set", "actions", "namespace", "metadata")
+    ID_FIELD_NUMBER: _ClassVar[int]
+    ATTRIBUTE_DEFINITION_FIELD_NUMBER: _ClassVar[int]
+    VALUE_RESOLVER_FIELD_NUMBER: _ClassVar[int]
+    SUBJECT_CONDITION_SET_FIELD_NUMBER: _ClassVar[int]
+    ACTIONS_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FIELD_NUMBER: _ClassVar[int]
+    METADATA_FIELD_NUMBER: _ClassVar[int]
+    id: str
+    attribute_definition: Attribute
+    value_resolver: DynamicValueResolver
+    subject_condition_set: SubjectConditionSet
+    actions: _containers.RepeatedCompositeFieldContainer[Action]
+    namespace: Namespace
+    metadata: _common_pb2.Metadata
+    def __init__(self, id: _Optional[str] = ..., attribute_definition: _Optional[_Union[Attribute, _Mapping]] = ..., value_resolver: _Optional[_Union[DynamicValueResolver, _Mapping]] = ..., subject_condition_set: _Optional[_Union[SubjectConditionSet, _Mapping]] = ..., actions: _Optional[_Iterable[_Union[Action, _Mapping]]] = ..., namespace: _Optional[_Union[Namespace, _Mapping]] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
+
 class Condition(_message.Message):
     __slots__ = ("subject_external_selector_value", "operator", "subject_external_values")
     SUBJECT_EXTERNAL_SELECTOR_VALUE_FIELD_NUMBER: _ClassVar[int]
@@ -317,18 +351,20 @@ class ResourceMappingGroup(_message.Message):
     def __init__(self, id: _Optional[str] = ..., namespace_id: _Optional[str] = ..., name: _Optional[str] = ..., fqn: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ...) -> None: ...
 
 class ResourceMapping(_message.Message):
-    __slots__ = ("id", "metadata", "attribute_value", "terms", "group")
+    __slots__ = ("id", "metadata", "attribute_value", "terms", "group", "namespace")
     ID_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     ATTRIBUTE_VALUE_FIELD_NUMBER: _ClassVar[int]
     TERMS_FIELD_NUMBER: _ClassVar[int]
     GROUP_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FIELD_NUMBER: _ClassVar[int]
     id: str
     metadata: _common_pb2.Metadata
     attribute_value: Value
     terms: _containers.RepeatedScalarFieldContainer[str]
     group: ResourceMappingGroup
-    def __init__(self, id: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ..., attribute_value: _Optional[_Union[Value, _Mapping]] = ..., terms: _Optional[_Iterable[str]] = ..., group: _Optional[_Union[ResourceMappingGroup, _Mapping]] = ...) -> None: ...
+    namespace: Namespace
+    def __init__(self, id: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.Metadata, _Mapping]] = ..., attribute_value: _Optional[_Union[Value, _Mapping]] = ..., terms: _Optional[_Iterable[str]] = ..., group: _Optional[_Union[ResourceMappingGroup, _Mapping]] = ..., namespace: _Optional[_Union[Namespace, _Mapping]] = ...) -> None: ...
 
 class KeyAccessServer(_message.Message):
     __slots__ = ("id", "uri", "public_key", "source_type", "kas_keys", "name", "metadata")
