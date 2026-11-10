@@ -29,14 +29,23 @@ class CreateProviderConfigResponse(_message.Message):
     def __init__(self, provider_config: _Optional[_Union[_objects_pb2.KeyProviderConfig, _Mapping]] = ...) -> None: ...
 
 class GetProviderConfigRequest(_message.Message):
-    __slots__ = ("id", "name", "manager")
+    __slots__ = ("id", "name", "name_manager", "manager")
+    class NameManager(_message.Message):
+        __slots__ = ("name", "manager")
+        NAME_FIELD_NUMBER: _ClassVar[int]
+        MANAGER_FIELD_NUMBER: _ClassVar[int]
+        name: str
+        manager: str
+        def __init__(self, name: _Optional[str] = ..., manager: _Optional[str] = ...) -> None: ...
     ID_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
+    NAME_MANAGER_FIELD_NUMBER: _ClassVar[int]
     MANAGER_FIELD_NUMBER: _ClassVar[int]
     id: str
     name: str
+    name_manager: GetProviderConfigRequest.NameManager
     manager: str
-    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., manager: _Optional[str] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., name: _Optional[str] = ..., name_manager: _Optional[_Union[GetProviderConfigRequest.NameManager, _Mapping]] = ..., manager: _Optional[str] = ...) -> None: ...
 
 class GetProviderConfigResponse(_message.Message):
     __slots__ = ("provider_config",)

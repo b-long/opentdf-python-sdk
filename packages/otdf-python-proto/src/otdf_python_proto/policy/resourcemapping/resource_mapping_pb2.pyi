@@ -11,12 +11,14 @@ from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class ListResourceMappingGroupsRequest(_message.Message):
-    __slots__ = ("namespace_id", "pagination")
+    __slots__ = ("namespace_id", "namespace_fqn", "pagination")
     NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
     PAGINATION_FIELD_NUMBER: _ClassVar[int]
     namespace_id: str
+    namespace_fqn: str
     pagination: _selectors_pb2.PageRequest
-    def __init__(self, namespace_id: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ...) -> None: ...
+    def __init__(self, namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ...) -> None: ...
 
 class ListResourceMappingGroupsResponse(_message.Message):
     __slots__ = ("resource_mapping_groups", "pagination")
@@ -39,14 +41,16 @@ class GetResourceMappingGroupResponse(_message.Message):
     def __init__(self, resource_mapping_group: _Optional[_Union[_objects_pb2.ResourceMappingGroup, _Mapping]] = ...) -> None: ...
 
 class CreateResourceMappingGroupRequest(_message.Message):
-    __slots__ = ("namespace_id", "name", "metadata")
+    __slots__ = ("namespace_id", "namespace_fqn", "name", "metadata")
     NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     namespace_id: str
+    namespace_fqn: str
     name: str
     metadata: _common_pb2.MetadataMutable
-    def __init__(self, namespace_id: _Optional[str] = ..., name: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
+    def __init__(self, namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., name: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
 
 class CreateResourceMappingGroupResponse(_message.Message):
     __slots__ = ("resource_mapping_group",)
@@ -55,18 +59,20 @@ class CreateResourceMappingGroupResponse(_message.Message):
     def __init__(self, resource_mapping_group: _Optional[_Union[_objects_pb2.ResourceMappingGroup, _Mapping]] = ...) -> None: ...
 
 class UpdateResourceMappingGroupRequest(_message.Message):
-    __slots__ = ("id", "namespace_id", "name", "metadata", "metadata_update_behavior")
+    __slots__ = ("id", "namespace_id", "namespace_fqn", "name", "metadata", "metadata_update_behavior")
     ID_FIELD_NUMBER: _ClassVar[int]
     NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
     NAME_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     METADATA_UPDATE_BEHAVIOR_FIELD_NUMBER: _ClassVar[int]
     id: str
     namespace_id: str
+    namespace_fqn: str
     name: str
     metadata: _common_pb2.MetadataMutable
     metadata_update_behavior: _common_pb2.MetadataUpdateEnum
-    def __init__(self, id: _Optional[str] = ..., namespace_id: _Optional[str] = ..., name: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ..., metadata_update_behavior: _Optional[_Union[_common_pb2.MetadataUpdateEnum, str]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., name: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ..., metadata_update_behavior: _Optional[_Union[_common_pb2.MetadataUpdateEnum, str]] = ...) -> None: ...
 
 class UpdateResourceMappingGroupResponse(_message.Message):
     __slots__ = ("resource_mapping_group",)
@@ -87,12 +93,16 @@ class DeleteResourceMappingGroupResponse(_message.Message):
     def __init__(self, resource_mapping_group: _Optional[_Union[_objects_pb2.ResourceMappingGroup, _Mapping]] = ...) -> None: ...
 
 class ListResourceMappingsRequest(_message.Message):
-    __slots__ = ("group_id", "pagination")
+    __slots__ = ("group_id", "namespace_id", "namespace_fqn", "pagination")
     GROUP_ID_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
     PAGINATION_FIELD_NUMBER: _ClassVar[int]
     group_id: str
+    namespace_id: str
+    namespace_fqn: str
     pagination: _selectors_pb2.PageRequest
-    def __init__(self, group_id: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ...) -> None: ...
+    def __init__(self, group_id: _Optional[str] = ..., namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ...) -> None: ...
 
 class ListResourceMappingsResponse(_message.Message):
     __slots__ = ("resource_mappings", "pagination")
@@ -142,16 +152,20 @@ class GetResourceMappingResponse(_message.Message):
     def __init__(self, resource_mapping: _Optional[_Union[_objects_pb2.ResourceMapping, _Mapping]] = ...) -> None: ...
 
 class CreateResourceMappingRequest(_message.Message):
-    __slots__ = ("attribute_value_id", "terms", "group_id", "metadata")
+    __slots__ = ("attribute_value_id", "terms", "group_id", "namespace_id", "namespace_fqn", "metadata")
     ATTRIBUTE_VALUE_ID_FIELD_NUMBER: _ClassVar[int]
     TERMS_FIELD_NUMBER: _ClassVar[int]
     GROUP_ID_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     attribute_value_id: str
     terms: _containers.RepeatedScalarFieldContainer[str]
     group_id: str
+    namespace_id: str
+    namespace_fqn: str
     metadata: _common_pb2.MetadataMutable
-    def __init__(self, attribute_value_id: _Optional[str] = ..., terms: _Optional[_Iterable[str]] = ..., group_id: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
+    def __init__(self, attribute_value_id: _Optional[str] = ..., terms: _Optional[_Iterable[str]] = ..., group_id: _Optional[str] = ..., namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ...) -> None: ...
 
 class CreateResourceMappingResponse(_message.Message):
     __slots__ = ("resource_mapping",)
@@ -160,20 +174,24 @@ class CreateResourceMappingResponse(_message.Message):
     def __init__(self, resource_mapping: _Optional[_Union[_objects_pb2.ResourceMapping, _Mapping]] = ...) -> None: ...
 
 class UpdateResourceMappingRequest(_message.Message):
-    __slots__ = ("id", "attribute_value_id", "terms", "group_id", "metadata", "metadata_update_behavior")
+    __slots__ = ("id", "attribute_value_id", "terms", "group_id", "namespace_id", "namespace_fqn", "metadata", "metadata_update_behavior")
     ID_FIELD_NUMBER: _ClassVar[int]
     ATTRIBUTE_VALUE_ID_FIELD_NUMBER: _ClassVar[int]
     TERMS_FIELD_NUMBER: _ClassVar[int]
     GROUP_ID_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
+    NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
     METADATA_FIELD_NUMBER: _ClassVar[int]
     METADATA_UPDATE_BEHAVIOR_FIELD_NUMBER: _ClassVar[int]
     id: str
     attribute_value_id: str
     terms: _containers.RepeatedScalarFieldContainer[str]
     group_id: str
+    namespace_id: str
+    namespace_fqn: str
     metadata: _common_pb2.MetadataMutable
     metadata_update_behavior: _common_pb2.MetadataUpdateEnum
-    def __init__(self, id: _Optional[str] = ..., attribute_value_id: _Optional[str] = ..., terms: _Optional[_Iterable[str]] = ..., group_id: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ..., metadata_update_behavior: _Optional[_Union[_common_pb2.MetadataUpdateEnum, str]] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., attribute_value_id: _Optional[str] = ..., terms: _Optional[_Iterable[str]] = ..., group_id: _Optional[str] = ..., namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., metadata: _Optional[_Union[_common_pb2.MetadataMutable, _Mapping]] = ..., metadata_update_behavior: _Optional[_Union[_common_pb2.MetadataUpdateEnum, str]] = ...) -> None: ...
 
 class UpdateResourceMappingResponse(_message.Message):
     __slots__ = ("resource_mapping",)

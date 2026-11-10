@@ -44,6 +44,9 @@ class UnsafeService(Protocol):
     async def unsafe_delete_attribute_value(self, request: policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteAttributeValueRequest, ctx: RequestContext) -> policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteAttributeValueResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
 
+    async def unsafe_update_key(self, request: policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyRequest, ctx: RequestContext) -> policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyResponse:
+        raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
+
     async def unsafe_delete_kas_key(self, request: policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteKasKeyRequest, ctx: RequestContext) -> policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteKasKeyResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
 
@@ -142,6 +145,16 @@ class UnsafeServiceASGIApplication(ConnectASGIApplication[UnsafeService]):
                         idempotency_level=IdempotencyLevel.UNKNOWN,
                     ),
                     function=svc.unsafe_delete_attribute_value,
+                ),
+                "/policy.unsafe.UnsafeService/UnsafeUpdateKey": Endpoint.unary(
+                    method=MethodInfo(
+                        name="UnsafeUpdateKey",
+                        service_name="policy.unsafe.UnsafeService",
+                        input=policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyRequest,
+                        output=policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyResponse,
+                        idempotency_level=IdempotencyLevel.UNKNOWN,
+                    ),
+                    function=svc.unsafe_update_key,
                 ),
                 "/policy.unsafe.UnsafeService/UnsafeDeleteKasKey": Endpoint.unary(
                     method=MethodInfo(
@@ -346,6 +359,26 @@ class UnsafeServiceClient(ConnectClient):
             timeout_ms=timeout_ms,
         )
 
+    async def unsafe_update_key(
+        self,
+        request: policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyRequest,
+        *,
+        headers: Headers | Mapping[str, str] | None = None,
+        timeout_ms: int | None = None,
+    ) -> policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyResponse:
+        return await self.execute_unary(
+            request=request,
+            method=MethodInfo(
+                name="UnsafeUpdateKey",
+                service_name="policy.unsafe.UnsafeService",
+                input=policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyRequest,
+                output=policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyResponse,
+                idempotency_level=IdempotencyLevel.UNKNOWN,
+            ),
+            headers=headers,
+            timeout_ms=timeout_ms,
+        )
+
     async def unsafe_delete_kas_key(
         self,
         request: policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteKasKeyRequest,
@@ -385,6 +418,8 @@ class UnsafeServiceSync(Protocol):
     def unsafe_reactivate_attribute_value(self, request: policy_dot_unsafe_dot_unsafe__pb2.UnsafeReactivateAttributeValueRequest, ctx: RequestContext) -> policy_dot_unsafe_dot_unsafe__pb2.UnsafeReactivateAttributeValueResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
     def unsafe_delete_attribute_value(self, request: policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteAttributeValueRequest, ctx: RequestContext) -> policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteAttributeValueResponse:
+        raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
+    def unsafe_update_key(self, request: policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyRequest, ctx: RequestContext) -> policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
     def unsafe_delete_kas_key(self, request: policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteKasKeyRequest, ctx: RequestContext) -> policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteKasKeyResponse:
         raise ConnectError(Code.UNIMPLEMENTED, "Not implemented")
@@ -483,6 +518,16 @@ class UnsafeServiceWSGIApplication(ConnectWSGIApplication):
                         idempotency_level=IdempotencyLevel.UNKNOWN,
                     ),
                     function=service.unsafe_delete_attribute_value,
+                ),
+                "/policy.unsafe.UnsafeService/UnsafeUpdateKey": EndpointSync.unary(
+                    method=MethodInfo(
+                        name="UnsafeUpdateKey",
+                        service_name="policy.unsafe.UnsafeService",
+                        input=policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyRequest,
+                        output=policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyResponse,
+                        idempotency_level=IdempotencyLevel.UNKNOWN,
+                    ),
+                    function=service.unsafe_update_key,
                 ),
                 "/policy.unsafe.UnsafeService/UnsafeDeleteKasKey": EndpointSync.unary(
                     method=MethodInfo(
@@ -681,6 +726,26 @@ class UnsafeServiceClientSync(ConnectClientSync):
                 service_name="policy.unsafe.UnsafeService",
                 input=policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteAttributeValueRequest,
                 output=policy_dot_unsafe_dot_unsafe__pb2.UnsafeDeleteAttributeValueResponse,
+                idempotency_level=IdempotencyLevel.UNKNOWN,
+            ),
+            headers=headers,
+            timeout_ms=timeout_ms,
+        )
+
+    def unsafe_update_key(
+        self,
+        request: policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyRequest,
+        *,
+        headers: Headers | Mapping[str, str] | None = None,
+        timeout_ms: int | None = None,
+    ) -> policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyResponse:
+        return self.execute_unary(
+            request=request,
+            method=MethodInfo(
+                name="UnsafeUpdateKey",
+                service_name="policy.unsafe.UnsafeService",
+                input=policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyRequest,
+                output=policy_dot_unsafe_dot_unsafe__pb2.UnsafeUpdateKeyResponse,
                 idempotency_level=IdempotencyLevel.UNKNOWN,
             ),
             headers=headers,

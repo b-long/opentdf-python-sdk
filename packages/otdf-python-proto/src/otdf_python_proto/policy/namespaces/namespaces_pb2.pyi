@@ -65,14 +65,16 @@ class NamespacesSort(_message.Message):
     def __init__(self, field: _Optional[_Union[SortNamespacesType, str]] = ..., direction: _Optional[_Union[_selectors_pb2.SortDirection, str]] = ...) -> None: ...
 
 class ListNamespacesRequest(_message.Message):
-    __slots__ = ("state", "pagination", "sort")
+    __slots__ = ("state", "pagination", "sort", "search")
     STATE_FIELD_NUMBER: _ClassVar[int]
     PAGINATION_FIELD_NUMBER: _ClassVar[int]
     SORT_FIELD_NUMBER: _ClassVar[int]
+    SEARCH_FIELD_NUMBER: _ClassVar[int]
     state: _common_pb2.ActiveStateEnum
     pagination: _selectors_pb2.PageRequest
     sort: _containers.RepeatedCompositeFieldContainer[NamespacesSort]
-    def __init__(self, state: _Optional[_Union[_common_pb2.ActiveStateEnum, str]] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[NamespacesSort, _Mapping]]] = ...) -> None: ...
+    search: _selectors_pb2.Search
+    def __init__(self, state: _Optional[_Union[_common_pb2.ActiveStateEnum, str]] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[NamespacesSort, _Mapping]]] = ..., search: _Optional[_Union[_selectors_pb2.Search, _Mapping]] = ...) -> None: ...
 
 class ListNamespacesResponse(_message.Message):
     __slots__ = ("namespaces", "pagination")

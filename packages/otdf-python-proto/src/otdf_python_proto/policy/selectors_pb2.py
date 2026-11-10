@@ -22,9 +22,10 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
+from buf.validate import validate_pb2 as buf_dot_validate_dot_validate__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x16policy/selectors.proto\x12\x06policy\"\xcc\x03\n\x1a\x41ttributeNamespaceSelector\x12]\n\x0fwith_attributes\x18\n \x01(\x0b\x32\x34.policy.AttributeNamespaceSelector.AttributeSelectorR\x0ewithAttributes\x1a\xce\x02\n\x11\x41ttributeSelector\x12\x33\n\x16with_key_access_grants\x18\x01 \x01(\x08R\x13withKeyAccessGrants\x12\x63\n\x0bwith_values\x18\n \x01(\x0b\x32\x42.policy.AttributeNamespaceSelector.AttributeSelector.ValueSelectorR\nwithValues\x1a\x9e\x01\n\rValueSelector\x12\x33\n\x16with_key_access_grants\x18\x01 \x01(\x08R\x13withKeyAccessGrants\x12*\n\x11with_subject_maps\x18\x02 \x01(\x08R\x0fwithSubjectMaps\x12,\n\x12with_resource_maps\x18\x03 \x01(\x08R\x10withResourceMaps\"\xba\x03\n\x1b\x41ttributeDefinitionSelector\x12\x33\n\x16with_key_access_grants\x18\x01 \x01(\x08R\x13withKeyAccessGrants\x12\\\n\x0ewith_namespace\x18\n \x01(\x0b\x32\x35.policy.AttributeDefinitionSelector.NamespaceSelectorR\rwithNamespace\x12R\n\x0bwith_values\x18\x0b \x01(\x0b\x32\x31.policy.AttributeDefinitionSelector.ValueSelectorR\nwithValues\x1a\x13\n\x11NamespaceSelector\x1a\x9e\x01\n\rValueSelector\x12\x33\n\x16with_key_access_grants\x18\x01 \x01(\x08R\x13withKeyAccessGrants\x12*\n\x11with_subject_maps\x18\x02 \x01(\x08R\x0fwithSubjectMaps\x12,\n\x12with_resource_maps\x18\x03 \x01(\x08R\x10withResourceMaps\"\xcb\x03\n\x16\x41ttributeValueSelector\x12\x33\n\x16with_key_access_grants\x18\x01 \x01(\x08R\x13withKeyAccessGrants\x12*\n\x11with_subject_maps\x18\x02 \x01(\x08R\x0fwithSubjectMaps\x12,\n\x12with_resource_maps\x18\x03 \x01(\x08R\x10withResourceMaps\x12W\n\x0ewith_attribute\x18\n \x01(\x0b\x32\x30.policy.AttributeValueSelector.AttributeSelectorR\rwithAttribute\x1a\xc8\x01\n\x11\x41ttributeSelector\x12\x33\n\x16with_key_access_grants\x18\x01 \x01(\x08R\x13withKeyAccessGrants\x12i\n\x0ewith_namespace\x18\n \x01(\x0b\x32\x42.policy.AttributeValueSelector.AttributeSelector.NamespaceSelectorR\rwithNamespace\x1a\x13\n\x11NamespaceSelector\";\n\x0bPageRequest\x12\x14\n\x05limit\x18\x01 \x01(\x05R\x05limit\x12\x16\n\x06offset\x18\x02 \x01(\x05R\x06offset\"l\n\x0cPageResponse\x12%\n\x0e\x63urrent_offset\x18\x01 \x01(\x05R\rcurrentOffset\x12\x1f\n\x0bnext_offset\x18\x02 \x01(\x05R\nnextOffset\x12\x14\n\x05total\x18\x03 \x01(\x05R\x05total*`\n\rSortDirection\x12\x1e\n\x1aSORT_DIRECTION_UNSPECIFIED\x10\x00\x12\x16\n\x12SORT_DIRECTION_ASC\x10\x01\x12\x17\n\x13SORT_DIRECTION_DESC\x10\x02\x42T\n\ncom.policyB\x0eSelectorsProtoP\x01\xa2\x02\x03PXX\xaa\x02\x06Policy\xca\x02\x06Policy\xe2\x02\x12Policy\\GPBMetadata\xea\x02\x06Policyb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x16policy/selectors.proto\x12\x06policy\x1a\x1b\x62uf/validate/validate.proto\"\xcc\x03\n\x1a\x41ttributeNamespaceSelector\x12]\n\x0fwith_attributes\x18\n \x01(\x0b\x32\x34.policy.AttributeNamespaceSelector.AttributeSelectorR\x0ewithAttributes\x1a\xce\x02\n\x11\x41ttributeSelector\x12\x33\n\x16with_key_access_grants\x18\x01 \x01(\x08R\x13withKeyAccessGrants\x12\x63\n\x0bwith_values\x18\n \x01(\x0b\x32\x42.policy.AttributeNamespaceSelector.AttributeSelector.ValueSelectorR\nwithValues\x1a\x9e\x01\n\rValueSelector\x12\x33\n\x16with_key_access_grants\x18\x01 \x01(\x08R\x13withKeyAccessGrants\x12*\n\x11with_subject_maps\x18\x02 \x01(\x08R\x0fwithSubjectMaps\x12,\n\x12with_resource_maps\x18\x03 \x01(\x08R\x10withResourceMaps\"\xba\x03\n\x1b\x41ttributeDefinitionSelector\x12\x33\n\x16with_key_access_grants\x18\x01 \x01(\x08R\x13withKeyAccessGrants\x12\\\n\x0ewith_namespace\x18\n \x01(\x0b\x32\x35.policy.AttributeDefinitionSelector.NamespaceSelectorR\rwithNamespace\x12R\n\x0bwith_values\x18\x0b \x01(\x0b\x32\x31.policy.AttributeDefinitionSelector.ValueSelectorR\nwithValues\x1a\x13\n\x11NamespaceSelector\x1a\x9e\x01\n\rValueSelector\x12\x33\n\x16with_key_access_grants\x18\x01 \x01(\x08R\x13withKeyAccessGrants\x12*\n\x11with_subject_maps\x18\x02 \x01(\x08R\x0fwithSubjectMaps\x12,\n\x12with_resource_maps\x18\x03 \x01(\x08R\x10withResourceMaps\"\xcb\x03\n\x16\x41ttributeValueSelector\x12\x33\n\x16with_key_access_grants\x18\x01 \x01(\x08R\x13withKeyAccessGrants\x12*\n\x11with_subject_maps\x18\x02 \x01(\x08R\x0fwithSubjectMaps\x12,\n\x12with_resource_maps\x18\x03 \x01(\x08R\x10withResourceMaps\x12W\n\x0ewith_attribute\x18\n \x01(\x0b\x32\x30.policy.AttributeValueSelector.AttributeSelectorR\rwithAttribute\x1a\xc8\x01\n\x11\x41ttributeSelector\x12\x33\n\x16with_key_access_grants\x18\x01 \x01(\x08R\x13withKeyAccessGrants\x12i\n\x0ewith_namespace\x18\n \x01(\x0b\x32\x42.policy.AttributeValueSelector.AttributeSelector.NamespaceSelectorR\rwithNamespace\x1a\x13\n\x11NamespaceSelector\"(\n\x06Search\x12\x1e\n\x04term\x18\x01 \x01(\tB\n\xbaH\x07r\x05\x10\x01\x18\xfd\x01R\x04term\";\n\x0bPageRequest\x12\x14\n\x05limit\x18\x01 \x01(\x05R\x05limit\x12\x16\n\x06offset\x18\x02 \x01(\x05R\x06offset\"l\n\x0cPageResponse\x12%\n\x0e\x63urrent_offset\x18\x01 \x01(\x05R\rcurrentOffset\x12\x1f\n\x0bnext_offset\x18\x02 \x01(\x05R\nnextOffset\x12\x14\n\x05total\x18\x03 \x01(\x05R\x05total*`\n\rSortDirection\x12\x1e\n\x1aSORT_DIRECTION_UNSPECIFIED\x10\x00\x12\x16\n\x12SORT_DIRECTION_ASC\x10\x01\x12\x17\n\x13SORT_DIRECTION_DESC\x10\x02\x42T\n\ncom.policyB\x0eSelectorsProtoP\x01\xa2\x02\x03PXX\xaa\x02\x06Policy\xca\x02\x06Policy\xe2\x02\x12Policy\\GPBMetadata\xea\x02\x06Policyb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,28 +33,32 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'policy.selectors_pb2', _glo
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'\n\ncom.policyB\016SelectorsProtoP\001\242\002\003PXX\252\002\006Policy\312\002\006Policy\342\002\022Policy\\GPBMetadata\352\002\006Policy'
-  _globals['_SORTDIRECTION']._serialized_start=1575
-  _globals['_SORTDIRECTION']._serialized_end=1671
-  _globals['_ATTRIBUTENAMESPACESELECTOR']._serialized_start=35
-  _globals['_ATTRIBUTENAMESPACESELECTOR']._serialized_end=495
-  _globals['_ATTRIBUTENAMESPACESELECTOR_ATTRIBUTESELECTOR']._serialized_start=161
-  _globals['_ATTRIBUTENAMESPACESELECTOR_ATTRIBUTESELECTOR']._serialized_end=495
-  _globals['_ATTRIBUTENAMESPACESELECTOR_ATTRIBUTESELECTOR_VALUESELECTOR']._serialized_start=337
-  _globals['_ATTRIBUTENAMESPACESELECTOR_ATTRIBUTESELECTOR_VALUESELECTOR']._serialized_end=495
-  _globals['_ATTRIBUTEDEFINITIONSELECTOR']._serialized_start=498
-  _globals['_ATTRIBUTEDEFINITIONSELECTOR']._serialized_end=940
-  _globals['_ATTRIBUTEDEFINITIONSELECTOR_NAMESPACESELECTOR']._serialized_start=760
-  _globals['_ATTRIBUTEDEFINITIONSELECTOR_NAMESPACESELECTOR']._serialized_end=779
-  _globals['_ATTRIBUTEDEFINITIONSELECTOR_VALUESELECTOR']._serialized_start=337
-  _globals['_ATTRIBUTEDEFINITIONSELECTOR_VALUESELECTOR']._serialized_end=495
-  _globals['_ATTRIBUTEVALUESELECTOR']._serialized_start=943
-  _globals['_ATTRIBUTEVALUESELECTOR']._serialized_end=1402
-  _globals['_ATTRIBUTEVALUESELECTOR_ATTRIBUTESELECTOR']._serialized_start=1202
-  _globals['_ATTRIBUTEVALUESELECTOR_ATTRIBUTESELECTOR']._serialized_end=1402
-  _globals['_ATTRIBUTEVALUESELECTOR_ATTRIBUTESELECTOR_NAMESPACESELECTOR']._serialized_start=760
-  _globals['_ATTRIBUTEVALUESELECTOR_ATTRIBUTESELECTOR_NAMESPACESELECTOR']._serialized_end=779
-  _globals['_PAGEREQUEST']._serialized_start=1404
-  _globals['_PAGEREQUEST']._serialized_end=1463
-  _globals['_PAGERESPONSE']._serialized_start=1465
-  _globals['_PAGERESPONSE']._serialized_end=1573
+  _globals['_SEARCH'].fields_by_name['term']._loaded_options = None
+  _globals['_SEARCH'].fields_by_name['term']._serialized_options = b'\272H\007r\005\020\001\030\375\001'
+  _globals['_SORTDIRECTION']._serialized_start=1646
+  _globals['_SORTDIRECTION']._serialized_end=1742
+  _globals['_ATTRIBUTENAMESPACESELECTOR']._serialized_start=64
+  _globals['_ATTRIBUTENAMESPACESELECTOR']._serialized_end=524
+  _globals['_ATTRIBUTENAMESPACESELECTOR_ATTRIBUTESELECTOR']._serialized_start=190
+  _globals['_ATTRIBUTENAMESPACESELECTOR_ATTRIBUTESELECTOR']._serialized_end=524
+  _globals['_ATTRIBUTENAMESPACESELECTOR_ATTRIBUTESELECTOR_VALUESELECTOR']._serialized_start=366
+  _globals['_ATTRIBUTENAMESPACESELECTOR_ATTRIBUTESELECTOR_VALUESELECTOR']._serialized_end=524
+  _globals['_ATTRIBUTEDEFINITIONSELECTOR']._serialized_start=527
+  _globals['_ATTRIBUTEDEFINITIONSELECTOR']._serialized_end=969
+  _globals['_ATTRIBUTEDEFINITIONSELECTOR_NAMESPACESELECTOR']._serialized_start=789
+  _globals['_ATTRIBUTEDEFINITIONSELECTOR_NAMESPACESELECTOR']._serialized_end=808
+  _globals['_ATTRIBUTEDEFINITIONSELECTOR_VALUESELECTOR']._serialized_start=366
+  _globals['_ATTRIBUTEDEFINITIONSELECTOR_VALUESELECTOR']._serialized_end=524
+  _globals['_ATTRIBUTEVALUESELECTOR']._serialized_start=972
+  _globals['_ATTRIBUTEVALUESELECTOR']._serialized_end=1431
+  _globals['_ATTRIBUTEVALUESELECTOR_ATTRIBUTESELECTOR']._serialized_start=1231
+  _globals['_ATTRIBUTEVALUESELECTOR_ATTRIBUTESELECTOR']._serialized_end=1431
+  _globals['_ATTRIBUTEVALUESELECTOR_ATTRIBUTESELECTOR_NAMESPACESELECTOR']._serialized_start=789
+  _globals['_ATTRIBUTEVALUESELECTOR_ATTRIBUTESELECTOR_NAMESPACESELECTOR']._serialized_end=808
+  _globals['_SEARCH']._serialized_start=1433
+  _globals['_SEARCH']._serialized_end=1473
+  _globals['_PAGEREQUEST']._serialized_start=1475
+  _globals['_PAGEREQUEST']._serialized_end=1534
+  _globals['_PAGERESPONSE']._serialized_start=1536
+  _globals['_PAGERESPONSE']._serialized_end=1644
 # @@protoc_insertion_point(module_scope)

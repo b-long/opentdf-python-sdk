@@ -37,6 +37,16 @@ class AttributesServiceStub(object):
                 request_serializer=policy_dot_attributes_dot_attributes__pb2.GetAttributeValuesByFqnsRequest.SerializeToString,
                 response_deserializer=policy_dot_attributes_dot_attributes__pb2.GetAttributeValuesByFqnsResponse.FromString,
                 _registered_method=True)
+        self.GetKeyMappingsByFqns = channel.unary_unary(
+                '/policy.attributes.AttributesService/GetKeyMappingsByFqns',
+                request_serializer=policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsRequest.SerializeToString,
+                response_deserializer=policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsResponse.FromString,
+                _registered_method=True)
+        self.GetEntitleableAttributesByFqns = channel.unary_unary(
+                '/policy.attributes.AttributesService/GetEntitleableAttributesByFqns',
+                request_serializer=policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsRequest.SerializeToString,
+                response_deserializer=policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsResponse.FromString,
+                _registered_method=True)
         self.CreateAttribute = channel.unary_unary(
                 '/policy.attributes.AttributesService/CreateAttribute',
                 request_serializer=policy_dot_attributes_dot_attributes__pb2.CreateAttributeRequest.SerializeToString,
@@ -144,7 +154,26 @@ class AttributesServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def GetAttributeValuesByFqns(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Deprecated: Use GetKeyMappingsByFqns for client-side key splits and
+        GetEntitleableAttributesByFqns for server-side entitlement resolution.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetKeyMappingsByFqns(self, request, context):
+        """Returns only key-mapping information (rule and effective KAS keys) for the
+        requested attribute value FQNs, for client-side key split construction.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetEntitleableAttributesByFqns(self, request, context):
+        """Returns only entitlement-relevant information (rule, value identity, ordered
+        definition values, subject mappings, and dynamic mappings) for the requested attribute value
+        FQNs, for server-side decisioning / entitlement resolution.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -276,6 +305,16 @@ def add_AttributesServiceServicer_to_server(servicer, server):
                     servicer.GetAttributeValuesByFqns,
                     request_deserializer=policy_dot_attributes_dot_attributes__pb2.GetAttributeValuesByFqnsRequest.FromString,
                     response_serializer=policy_dot_attributes_dot_attributes__pb2.GetAttributeValuesByFqnsResponse.SerializeToString,
+            ),
+            'GetKeyMappingsByFqns': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetKeyMappingsByFqns,
+                    request_deserializer=policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsRequest.FromString,
+                    response_serializer=policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsResponse.SerializeToString,
+            ),
+            'GetEntitleableAttributesByFqns': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetEntitleableAttributesByFqns,
+                    request_deserializer=policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsRequest.FromString,
+                    response_serializer=policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsResponse.SerializeToString,
             ),
             'CreateAttribute': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateAttribute,
@@ -464,6 +503,60 @@ class AttributesService(object):
             '/policy.attributes.AttributesService/GetAttributeValuesByFqns',
             policy_dot_attributes_dot_attributes__pb2.GetAttributeValuesByFqnsRequest.SerializeToString,
             policy_dot_attributes_dot_attributes__pb2.GetAttributeValuesByFqnsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetKeyMappingsByFqns(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/policy.attributes.AttributesService/GetKeyMappingsByFqns',
+            policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsRequest.SerializeToString,
+            policy_dot_attributes_dot_attributes__pb2.GetKeyMappingsByFqnsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetEntitleableAttributesByFqns(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/policy.attributes.AttributesService/GetEntitleableAttributesByFqns',
+            policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsRequest.SerializeToString,
+            policy_dot_attributes_dot_attributes__pb2.GetEntitleableAttributesByFqnsResponse.FromString,
             options,
             channel_credentials,
             insecure,

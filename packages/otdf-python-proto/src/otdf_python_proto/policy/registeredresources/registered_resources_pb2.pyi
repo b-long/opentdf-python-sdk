@@ -69,16 +69,18 @@ class RegisteredResourcesSort(_message.Message):
     def __init__(self, field: _Optional[_Union[SortRegisteredResourcesType, str]] = ..., direction: _Optional[_Union[_selectors_pb2.SortDirection, str]] = ...) -> None: ...
 
 class ListRegisteredResourcesRequest(_message.Message):
-    __slots__ = ("namespace_id", "namespace_fqn", "pagination", "sort")
+    __slots__ = ("namespace_id", "namespace_fqn", "pagination", "sort", "search")
     NAMESPACE_ID_FIELD_NUMBER: _ClassVar[int]
     NAMESPACE_FQN_FIELD_NUMBER: _ClassVar[int]
     PAGINATION_FIELD_NUMBER: _ClassVar[int]
     SORT_FIELD_NUMBER: _ClassVar[int]
+    SEARCH_FIELD_NUMBER: _ClassVar[int]
     namespace_id: str
     namespace_fqn: str
     pagination: _selectors_pb2.PageRequest
     sort: _containers.RepeatedCompositeFieldContainer[RegisteredResourcesSort]
-    def __init__(self, namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[RegisteredResourcesSort, _Mapping]]] = ...) -> None: ...
+    search: _selectors_pb2.Search
+    def __init__(self, namespace_id: _Optional[str] = ..., namespace_fqn: _Optional[str] = ..., pagination: _Optional[_Union[_selectors_pb2.PageRequest, _Mapping]] = ..., sort: _Optional[_Iterable[_Union[RegisteredResourcesSort, _Mapping]]] = ..., search: _Optional[_Union[_selectors_pb2.Search, _Mapping]] = ...) -> None: ...
 
 class ListRegisteredResourcesResponse(_message.Message):
     __slots__ = ("resources", "pagination")

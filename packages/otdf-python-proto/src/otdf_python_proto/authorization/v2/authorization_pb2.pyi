@@ -33,7 +33,7 @@ class EntityIdentifier(_message.Message):
     def __init__(self, entity_chain: _Optional[_Union[_entity_pb2.EntityChain, _Mapping]] = ..., registered_resource_value_fqn: _Optional[str] = ..., token: _Optional[_Union[_entity_pb2.Token, _Mapping]] = ..., with_request_token: _Optional[_Union[_wrappers_pb2.BoolValue, _Mapping]] = ...) -> None: ...
 
 class EntityEntitlements(_message.Message):
-    __slots__ = ("ephemeral_id", "actions_per_attribute_value_fqn")
+    __slots__ = ("ephemeral_id", "actions_per_attribute_value_fqn", "entity_category")
     class ActionsList(_message.Message):
         __slots__ = ("actions",)
         ACTIONS_FIELD_NUMBER: _ClassVar[int]
@@ -48,9 +48,11 @@ class EntityEntitlements(_message.Message):
         def __init__(self, key: _Optional[str] = ..., value: _Optional[_Union[EntityEntitlements.ActionsList, _Mapping]] = ...) -> None: ...
     EPHEMERAL_ID_FIELD_NUMBER: _ClassVar[int]
     ACTIONS_PER_ATTRIBUTE_VALUE_FQN_FIELD_NUMBER: _ClassVar[int]
+    ENTITY_CATEGORY_FIELD_NUMBER: _ClassVar[int]
     ephemeral_id: str
     actions_per_attribute_value_fqn: _containers.MessageMap[str, EntityEntitlements.ActionsList]
-    def __init__(self, ephemeral_id: _Optional[str] = ..., actions_per_attribute_value_fqn: _Optional[_Mapping[str, EntityEntitlements.ActionsList]] = ...) -> None: ...
+    entity_category: _entity_pb2.Entity.Category
+    def __init__(self, ephemeral_id: _Optional[str] = ..., actions_per_attribute_value_fqn: _Optional[_Mapping[str, EntityEntitlements.ActionsList]] = ..., entity_category: _Optional[_Union[_entity_pb2.Entity.Category, str]] = ...) -> None: ...
 
 class Resource(_message.Message):
     __slots__ = ("ephemeral_id", "attribute_values", "registered_resource_value_fqn")
